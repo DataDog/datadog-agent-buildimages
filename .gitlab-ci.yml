@@ -17,6 +17,12 @@ build_deb_x64:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
+build_rpm_x64:
+  <<: *build
+  variables:
+    DOCKERFILE: rpm-x64/Dockerfile
+    IMAGE: rpm_x64
+
 .release: &release
   stage: release
   except: [ tags, schedules ]
@@ -34,3 +40,8 @@ release_deb_x64:
   <<: *release
   variables:
     IMAGE: deb_x64
+
+release_rpm_x64:
+  <<: *release
+  variables:
+    IMAGE: rpm_x64
