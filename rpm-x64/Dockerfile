@@ -7,16 +7,18 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
 ARG CMAKE_VERSION=3.14.4
+ARG CLANG_VERSION=8.0.0
 
 # Environment
 ENV GOPATH /go
-ENV CONDA_PATH /root/miniconda2
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV MQ_URL $MQ_URL
 ENV CMAKE_VERSION $CMAKE_VERSION
+ENV CLANG_VERSION $CLANG_VERSION
+ENV CONDA_PATH /root/miniconda2
+ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 
 RUN yum groupinstall -y development
 RUN yum -y install \
@@ -85,15 +87,14 @@ RUN mkdir -p /tmp/mq \
     # Clean up all the downloaded files
     && rm -rf /tmp/mq
 
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
 # Update pip and setuptools
 RUN ${CONDA_PATH}/bin/pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
 RUN ${CONDA_PATH}/bin/pip install  --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION}
 
-RUN ${CONDA_PATH}/bin/pip install awscli==1.11.152
+RUN ${CONDA_PATH}/bin/pip install invoke awscli==1.11.152
+
+# Add systemd headers
+COPY ./rpm-headers/systemd /usr/include/systemd
 
 # CMake
 RUN set -ex \
@@ -103,9 +104,17 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
+# Install clang and llvm version 8
+# Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
+RUN curl -O http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
+    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
+    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+
+# Entrypoint
+COPY ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
-
-COPY ./rpm-headers/systemd /usr/include/systemd
 
 ENTRYPOINT ["/entrypoint.sh"]
