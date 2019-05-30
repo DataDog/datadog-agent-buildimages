@@ -95,6 +95,22 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
+# Install clang and llvm version 8
+# Version built for sles11 is linked against an old enough glibc to be used from this image
+RUN curl -O http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-sles11.3.tar.xz && \
+    tar -xf clang+llvm-8.0.0-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
+    rm clang+llvm-8.0.0-x86_64-linux-sles11.3.tar.xz
+
+# To build the EBPF code we need headers for Linux 4.9, get them from .deb files from a newer Debian version
+# --skip-old-files (--keep-old-files on older `tar`) makes sure we don't overwrite existing files
+RUN curl -O http://security-cdn.debian.org/debian-security/pool/updates/main/l/linux/linux-headers-4.9.0-9-amd64_4.9.168-1+deb9u3_amd64.deb && \
+    ar p linux-headers-4.9.0-9-amd64_4.9.168-1+deb9u3_amd64.deb data.tar.xz | tar xJ --no-same-owner --keep-old-files -C / && \
+    curl -O http://security-cdn.debian.org/debian-security/pool/updates/main/l/linux/linux-headers-4.9.0-9-common_4.9.168-1+deb9u3_all.deb && \
+    ar p linux-headers-4.9.0-9-common_4.9.168-1+deb9u3_all.deb data.tar.xz | tar xJ --no-same-owner --keep-old-files -C / && \
+    curl -O http://security-cdn.debian.org/debian-security/pool/updates/main/l/linux/linux-libc-dev_4.9.168-1+deb9u3_amd64.deb && \
+    ar p linux-libc-dev_4.9.168-1+deb9u3_amd64.deb data.tar.xz | tar xJ --no-same-owner --keep-old-files -C / && \
+    rm linux-headers-4.9.0-9-amd64_4.9.168-1+deb9u3_amd64.deb linux-headers-4.9.0-9-common_4.9.168-1+deb9u3_all.deb linux-libc-dev_4.9.168-1+deb9u3_amd64.deb
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
