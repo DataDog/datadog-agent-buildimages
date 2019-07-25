@@ -7,6 +7,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
 ARG CMAKE_VERSION=3.14.4
+ARG CLANG_VERSION=8.0.0
 
 # Environment
 ENV GOPATH /go
@@ -15,6 +16,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV MQ_URL $MQ_URL
 ENV CMAKE_VERSION $CMAKE_VERSION
+ENV CLANG_VERSION $CLANG_VERSION
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -94,6 +96,12 @@ RUN set -ex \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
+
+# Install clang and llvm version 8
+# Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
+RUN curl -O http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
+    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
+    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
 
 # Entrypoint
 COPY ./entrypoint.sh /
