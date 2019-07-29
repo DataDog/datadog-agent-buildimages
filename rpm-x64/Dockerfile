@@ -116,6 +116,14 @@ RUN rm -r /usr/src/kernels/* && \
     tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr && \
     rm kernel-4.9-headers-rpm-x64.tgz
 
+# Update GCC: CentOS6 gcc-4.4 is a little too far behind what we use with the debian builder
+RUN curl -o /etc/yum.repos.d/devtools-1.1.repo https://people.centos.org/tru/devtools-1.1/devtools-1.1.repo
+RUN yum --enablerepo=testing-1.1-devtools-6 -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
+
+ENV CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc
+ENV CPP=/opt/centos/devtoolset-1.1/root/usr/bin/cpp
+ENV CXX=/opt/centos/devtoolset-1.1/root/usr/bin/c++
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
