@@ -12,7 +12,7 @@ the same artifact that's distributed through the official Yum repository.
 If you're a Datadog employee building new images used in the Datadog Agent
 pipeline, you will have to replace the `DATADOG_AGENT_BUILDIMAGES` variable
 in the [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent/blob/master/.gitlab-ci.yml)
-of the datadog-agent repository to use the newly created images.
+of the [datadog-agent repository][agent] to use the newly created images.
 
 [agent]: https://github.com/DataDog/datadog-agent
 [agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/master/docs/dev/agent_omnibus.md
