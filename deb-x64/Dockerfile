@@ -85,6 +85,9 @@ RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
+# Doxygen
+RUN apt-get install -y doxygen graphviz
+
 # Docker
 # Pin docker to before they broke wheezy
 RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
