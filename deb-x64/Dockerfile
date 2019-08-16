@@ -2,7 +2,7 @@ FROM debian:wheezy-backports
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Build Args
-ARG GIMME_GO_VERSION=1.12.8
+ARG GIMME_GO_VERSION=1.12.9
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
