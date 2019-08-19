@@ -16,3 +16,16 @@ of the [datadog-agent repository][agent] to use the newly created images.
 
 [agent]: https://github.com/DataDog/datadog-agent
 [agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/master/docs/dev/agent_omnibus.md
+
+## Upgrading Golang version
+
+Upgrade all `GIMME_GO_VERSION` in the Dockerfiles like in
+[this](https://github.com/DataDog/datadog-agent-buildimages/pull/12) PR.
+
+Once pushed, Gitlab will build and push the containers to aws for you. Look for
+the pipeline and get the new images ID (in each job log). The
+new images ID should resemble something like
+`datadog-agent-buildimages/rpm_x64:v1581559-c7ff053`
+
+Update the `.gitlab-ci.yaml` file in the `datadog-agent` repo to use the new images,
+push a new PR and see if gitlab is still green.
