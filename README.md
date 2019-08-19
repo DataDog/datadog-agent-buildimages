@@ -27,5 +27,5 @@ the pipeline and get the new images ID (in each job log). The
 new images ID should resemble something like
 `datadog-agent-buildimages/rpm_x64:v1581559-c7ff053`
 
-Update the `.gitlab-ci.yaml` file in the `datadog-agent` repo to use the new images and
+Update the `.gitlab-ci.yaml` file in the `datadog-agent` repo to use the new images,
 push a new PR and see if gitlab is still green.
