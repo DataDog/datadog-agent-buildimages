@@ -58,7 +58,6 @@ RUN curl -sL -o ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda2-${
 RUN bash ~/miniconda.sh -b
 COPY ./conda.sh /etc/profile.d/
 ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$CONDA_PATH/lib
 
 # The miniconda libreadline is broken. It breaks system tools by including it on the ld_library_path.
 # use the sytem libreadline instead.
