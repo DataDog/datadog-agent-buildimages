@@ -25,12 +25,10 @@ RUN yum -y install \
   glibc-static tar
 
 # python2.7
-RUN yum info python27
-RUN yum -y install python27
+RUN yum -y install python27 python27-python-pip
 
 # python3.6 - rtloader tests
 RUN yum install -y centos-release-scl
-RUN yum info rh-python36
 RUN yum install -y rh-python36
 
 # Git
