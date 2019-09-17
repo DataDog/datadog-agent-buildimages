@@ -81,6 +81,9 @@ RUN mkdir -p /tmp/mq \
     && rm -rf /tmp/mq
 
 # Update pip and setuptools
+ENV PATH="/opt/rh/python27/root/usr/bin:${PATH}"
+RUN echo /opt/rh/python27/root/usr/lib64 > /etc/ld.so.conf.d/python27.conf \
+    && ldconfig
 RUN pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
 RUN pip install  --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION}
 
