@@ -2,7 +2,6 @@ FROM centos:6
 
 # Build Args
 ARG GIMME_GO_VERSION=1.12.9
-ARG DD_CONDA_VERSION=4.2.12
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
@@ -17,8 +16,6 @@ ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV MQ_URL $MQ_URL
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-ENV CONDA_PATH /root/miniconda2
-ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 
 RUN yum groupinstall -y development
 RUN yum -y install \
@@ -26,6 +23,15 @@ RUN yum -y install \
   centos-release-scl pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar
+
+# python2.7
+RUN yum info python27
+RUN yum -y install python27
+
+# python3.6 - rtloader tests
+RUN yum install -y centos-release-scl
+RUN yum info rh-python36
+RUN yum install -y rh-python36
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
@@ -53,16 +59,6 @@ RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
-# Conda
-RUN curl -sL -o ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda2-${DD_CONDA_VERSION}-Linux-x86_64.sh
-RUN bash ~/miniconda.sh -b
-COPY ./conda.sh /etc/profile.d/
-ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
-
-# The miniconda libreadline is broken. It breaks system tools by including it on the ld_library_path.
-# use the sytem libreadline instead.
-RUN rm /root/miniconda2/lib/libreadline.so && rm /root/miniconda2/lib/libreadline.so.6 && rm /root/miniconda2/lib/libreadline.so.6.2 && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so.6 && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so.6.2
-
 # IBM MQ
 # IBM MQ is required in the builder.
 # It cannot be shipped with the agent for licensing reasons,
@@ -87,10 +83,10 @@ RUN mkdir -p /tmp/mq \
     && rm -rf /tmp/mq
 
 # Update pip and setuptools
-RUN ${CONDA_PATH}/bin/pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
-RUN ${CONDA_PATH}/bin/pip install  --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION}
+RUN pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
+RUN pip install  --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION}
 
-RUN ${CONDA_PATH}/bin/pip install invoke awscli==1.11.152
+RUN pip install invoke awscli==1.11.152
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
