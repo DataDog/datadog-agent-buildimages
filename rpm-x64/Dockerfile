@@ -2,7 +2,7 @@ FROM centos:6
 
 # Build Args
 ARG GIMME_GO_VERSION=1.12.9
-ARG DD_CONDA_VERSION=4.2.12
+ARG DD_CONDA_VERSION=4.7.10
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
@@ -17,7 +17,7 @@ ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV MQ_URL $MQ_URL
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-ENV CONDA_PATH /root/miniconda2
+ENV CONDA_PATH /root/miniconda3
 ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 
 RUN yum groupinstall -y development
@@ -54,14 +54,16 @@ RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
 # Conda
-RUN curl -sL -o ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda2-${DD_CONDA_VERSION}-Linux-x86_64.sh
+RUN curl -sL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-${DD_CONDA_VERSION}-Linux-x86_64.sh
 RUN bash ~/miniconda.sh -b
 COPY ./conda.sh /etc/profile.d/
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+
 ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
 
-# The miniconda libreadline is broken. It breaks system tools by including it on the ld_library_path.
-# use the sytem libreadline instead.
-RUN rm /root/miniconda2/lib/libreadline.so && rm /root/miniconda2/lib/libreadline.so.6 && rm /root/miniconda2/lib/libreadline.so.6.2 && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so.6 && ln -s /lib64/libreadline.so.6 /root/miniconda2/lib/libreadline.so.6.2
+# Setup pythons
+RUN conda create -n ddpy2 python python=2
+RUN conda create -n ddpy3 python python=3
 
 # IBM MQ
 # IBM MQ is required in the builder.
@@ -86,11 +88,20 @@ RUN mkdir -p /tmp/mq \
     # Clean up all the downloaded files
     && rm -rf /tmp/mq
 
-# Update pip and setuptools
-RUN ${CONDA_PATH}/bin/pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
-RUN ${CONDA_PATH}/bin/pip install  --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION}
+# CONDA prep
+RUN conda init bash
 
-RUN ${CONDA_PATH}/bin/pip install invoke awscli==1.11.152
+# Update pip, setuptools and misc deps
+RUN source /root/.bashrc && conda activate ddpy2 \
+    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
+    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
+    && pip install invoke awscli==1.16.240
+
+# Update pip, setuptools and misc deps
+RUN source /root/.bashrc && conda activate ddpy3 \
+    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
+    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
+    && pip install invoke awscli==1.16.240
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd

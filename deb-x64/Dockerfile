@@ -3,6 +3,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Build Args
 ARG GIMME_GO_VERSION=1.12.9
+ARG DD_CONDA_VERSION=4.7.10
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
@@ -17,6 +18,8 @@ ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV MQ_URL $MQ_URL
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
+ENV CONDA_PATH /root/miniconda3
+ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -31,7 +34,6 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
-  python2.7-dev \
   build-essential pkg-config\
   rpm tar
 
@@ -66,9 +68,10 @@ RUN mkdir -p /tmp/mq \
     # Clean up all the downloaded files
     && rm -rf /tmp/mq
 
-# Pip
-RUN curl "https://bootstrap.pypa.io/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke awscli==1.11.152
+# Conda
+RUN curl -sL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-${DD_CONDA_VERSION}-Linux-x86_64.sh
+RUN bash ~/miniconda.sh -b
+COPY ./conda.sh /etc/profile.d/
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -78,6 +81,28 @@ RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+
+# CONDA prep
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+RUN conda init bash
+
+# Setup pythons
+RUN conda create -n ddpy2 python python=2
+RUN conda create -n ddpy3 python python=3
+
+# Update pip, setuptools and misc deps
+RUN source /root/.bashrc && conda activate ddpy2 \
+    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
+    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
+    && pip install invoke awscli==1.16.240
+
+# Update pip, setuptools and misc deps
+RUN source /root/.bashrc && conda activate ddpy3 \
+    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
+    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
+    && pip install invoke awscli==1.16.240
+
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
