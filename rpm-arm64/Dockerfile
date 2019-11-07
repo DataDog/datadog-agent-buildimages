@@ -15,8 +15,9 @@ ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 
+
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig
+    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig 
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -29,7 +30,9 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
 RUN curl "https://bootstrap.pypa.io/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke awscli==1.11.152
+RUN pip install invoke awscli==1.16.240
+
+
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
@@ -39,22 +42,16 @@ COPY ./gobin.sh /etc/profile.d/
 
 # CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
 RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz && \
-    tar xf cmake-${CMAKE_VERSION}-amzn-arm64.tar.xz --no-same-owner -kC / && \
-    rm cmake-${CMAKE_VERSION}-amzn-arm64.tar.xz
+    tar xf cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz --no-same-owner -kC / && \
+    rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz
 ENV PATH="/opt/cmake/bin:$PATH"
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
-RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
-    tar xf clang+llvm-${CLANG_VERSION}-arm64-linux.tar.xz --no-same-owner -kC / && \
-    rm clang+llvm-${CLANG_VERSION}-arm64-linux.tar.xz
+RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
+    tar xf clang_llvm.tar.xz --no-same-owner -kC / && \
+    rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
-
-# To build the EBPF code we need kernel headers for Linux 4.9
-RUN rm -r /usr/src/kernels/* && \
-    curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm-arm64.tgz && \
-    tar xf kernel-4.9-headers-rpm-arm64.tgz --no-same-owner --strip 1 -C /usr && \
-    rm kernel-4.9-headers-rpm-arm64.tgz
 
 # Entrypoint
 COPY ./entrypoint.sh /
@@ -62,5 +59,8 @@ RUN chmod +x /entrypoint.sh
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
+
+# Force umask to 0022
+RUN echo "umask 0022" >> /root/.bashrc
 
 ENTRYPOINT ["/entrypoint.sh"]
