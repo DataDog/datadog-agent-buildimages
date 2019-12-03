@@ -89,7 +89,7 @@ RUN conda init bash
 
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3
+RUN conda create -n ddpy3 python python=3.7
 
 # Update pip, setuptools and misc deps
 RUN source /root/.bashrc && conda activate ddpy2 \
@@ -132,6 +132,9 @@ RUN curl -O http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz && \
     tar xf kernel-4.9-headers-deb-x64.tgz --no-same-owner --strip 1 -C /usr && \
     rm kernel-4.9-headers-deb-x64.tgz
+
+# Download and install golangci-lint
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
 
 # Entrypoint
 COPY ./entrypoint.sh /
