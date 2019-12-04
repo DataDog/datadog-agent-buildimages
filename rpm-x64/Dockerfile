@@ -63,7 +63,7 @@ ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
 
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3
+RUN conda create -n ddpy3 python python=3.7
 
 # IBM MQ
 # IBM MQ is required in the builder.
@@ -133,6 +133,9 @@ RUN yum --enablerepo=testing-1.1-devtools-6 -y install devtoolset-1.1-gcc devtoo
 ENV CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc
 ENV CPP=/opt/centos/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX=/opt/centos/devtoolset-1.1/root/usr/bin/c++
+
+# Download and install golangci-lint
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
 
 # Entrypoint
 COPY ./entrypoint.sh /
