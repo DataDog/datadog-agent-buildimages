@@ -23,6 +23,31 @@ build_rpm_x64:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
 
+.armbuild:
+  stage: build
+  except: [ tags, schedules ]
+  tags: ["runner:docker-arm", "platform:arm64"]
+  image: arm64v8/docker:18.04
+  script:
+    - apk add --update python py-pip
+    - pip install awscli
+    - aws --version
+    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
+    - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+
+build_deb_arm64:
+  extends: .armbuild
+  variables:
+    DOCKERFILE: deb-arm64/Dockerfile
+    IMAGE: deb_arm64
+
+build_rpm_arm64:
+  extends: .armbuild
+  variables:
+    DOCKERFILE: rpm-arm64/Dockerfile
+    IMAGE: rpm_arm64
+
 .release: &release
   stage: release
   except: [ tags, schedules ]
