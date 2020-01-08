@@ -33,7 +33,7 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 # Pip & Invoke
 RUN curl "https://bootstrap.pypa.io/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
 RUN curl "https://bootstrap.pypa.io/get-pip.py" | python3 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke awscli==1.16.240
+RUN pip install invoke distro==1.4.0 awscli==1.16.240
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
