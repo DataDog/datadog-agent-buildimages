@@ -63,7 +63,7 @@ ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
 
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3.7
+RUN conda create -n ddpy3 python python=3.8
 
 # IBM MQ
 # IBM MQ is required in the builder.

@@ -89,7 +89,7 @@ RUN conda init bash
 
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3.7
+RUN conda create -n ddpy3 python python=3.8
 
 # Update pip, setuptools and misc deps
 RUN source /root/.bashrc && conda activate ddpy2 \
