@@ -18,7 +18,7 @@ ENV CLANG_VERSION $CLANG_VERSION
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     python2.7-dev build-essential pkg-config tar libsystemd-dev libkrb5-dev \
-    python3-dev
+    python3-dev gettext libtool autopoint autoconf libtool-bin
 
 
 # RVM
