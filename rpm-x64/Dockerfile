@@ -25,7 +25,7 @@ RUN yum -y install \
   which perl-ExtUtils-MakeMaker \
   centos-release-scl pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar
+  glibc-static tar libtool
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
@@ -64,6 +64,17 @@ ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
 RUN conda create -n ddpy3 python python=3.8
+
+# Autoconf
+# We need a newer version of autoconf to compile procps-ng (installing 2.69 over 2.63).
+RUN curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
+    && cd /tmp \
+    && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
+    && cd autoconf-2.69 \
+    && ./configure \
+    && make && make install \
+    && cd / \
+    && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz
 
 # IBM MQ
 # IBM MQ is required in the builder.
