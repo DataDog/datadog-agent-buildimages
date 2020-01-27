@@ -2,7 +2,7 @@ stages:
   - build
   - release
 
-.build: &build
+.build:
   stage: build
   except: [ tags, schedules ]
   tags: [ "runner:docker", "size:large" ]
@@ -12,13 +12,13 @@ stages:
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
 
 build_deb_x64:
-  <<: *build
+  extends: .build
   variables:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
 build_rpm_x64:
-  <<: *build
+  extends: .build
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
@@ -48,7 +48,19 @@ build_rpm_arm64:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
 
-.release: &release
+build_system-probe_x64:
+  extends: .build
+  variables:
+    DOCKERFILE: system-probe_x64/Dockerfile
+    IMAGE: system-probe_x64
+
+build_system-probe_arm64:
+  extends: .armbuild
+  variables:
+    DOCKERFILE: system-probe_arm64/Dockerfile
+    IMAGE: system-probe_arm64
+
+.release:
   stage: release
   except: [ tags, schedules ]
   only: [ master ]
@@ -67,11 +79,11 @@ build_rpm_arm64:
     - docker push datadog/agent-buildimages-$IMAGE:latest
 
 release_deb_x64:
-  <<: *release
+  extends: .release
   variables:
     IMAGE: deb_x64
 
 release_rpm_x64:
-  <<: *release
+  extends: .release
   variables:
     IMAGE: rpm_x64
