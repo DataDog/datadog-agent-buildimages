@@ -20,20 +20,21 @@ RUN apt install -y \
         bison \
         cmake \
         flex \
-        libclang-dev \
-    && git clone -b "$BCC_VERSION" --depth=1 https://github.com/iovisor/bcc.git /tmp/bcc \
-    && mkdir /tmp/bcc/build \
-    && cd /tmp/bcc/build \
-    && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/libbcc \
-    && make -j "$(nproc)" \
-    && make install \
-    && cd / \
-    && rm -rf /tmp/bcc \
-    && apt remove -y \
-        bison \
-        cmake \
-        flex \
         libclang-dev
+
+#     && git clone -b "$BCC_VERSION" --depth=1 https://github.com/iovisor/bcc.git /tmp/bcc \
+#     && mkdir /tmp/bcc/build \
+#     && cd /tmp/bcc/build \
+#     && cmake .. -DCMAKE_INSTALL_PREFIX=/opt/libbcc \
+#     && make -j "$(nproc)" \
+#     && make install \
+#     && cd / \
+#     && rm -rf /tmp/bcc \
+#     && apt remove -y \
+#         bison \
+#         cmake \
+#         flex \
+#         libclang-dev
 
 
 ENV GOPATH=/go
