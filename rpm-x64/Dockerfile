@@ -63,7 +63,7 @@ ENV PKG_CONFIG_LIBDIR $PKG_CONFIG_LIBDIR:$CONDA_PATH/lib/pkgconfig
 
 # Setup pythons
 RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3.7
+RUN conda create -n ddpy3 python python=3.8
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng (installing 2.69 over 2.63).
@@ -106,13 +106,13 @@ RUN conda init bash
 RUN source /root/.bashrc && conda activate ddpy2 \
     && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
     && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke awscli==1.16.240
+    && pip install invoke distro==1.4.0 awscli==1.16.240
 
 # Update pip, setuptools and misc deps
 RUN source /root/.bashrc && conda activate ddpy3 \
     && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
     && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke awscli==1.16.240
+    && pip install invoke distro==1.4.0 awscli==1.16.240
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
