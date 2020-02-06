@@ -132,7 +132,7 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
 # Download and install libc glibc_version_header headers
 # dropped in /usr/local/glibc_version_header-0.1
 RUN set -ex \
-    && curl -sL -o glibc_version_header.tar.gz https://github.com/wheybags/glibc_version_header/archive/0.1.tar.gz \
+    && curl -sL -o glibc_version_header.tar.gz https://github.com/wheybags/glibc_version_header/tarball/master \
     && mkdir /usr/local/glibc_version_header \
     && tar -xf glibc_version_header.tar.gz --strip 1 -C /usr/local/glibc_version_header \
     && rm glibc_version_header.tar.gz
