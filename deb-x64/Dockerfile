@@ -32,7 +32,7 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
   build-essential pkg-config \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  libsystemd-dev selinux-basics
+  libsystemd-dev libtinfo5 selinux-basics
 
 # The license does not recognize debian based systems for some reason
 # It's a bug in this version. So, it has been rewritten
