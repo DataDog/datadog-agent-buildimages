@@ -1,4 +1,4 @@
-FROM debian:wheezy-backports
+FROM debian:buster
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Build Args
@@ -29,16 +29,10 @@ RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # expired making the following option necessary for apt to work.
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
-RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /etc/apt/sources.list && \
- echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
- echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
-
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
-  build-essential pkg-config\
+  build-essential pkg-config \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics
-
-RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
+  libsystemd-dev selinux-basics
 
 # The license does not recognize debian based systems for some reason
 # It's a bug in this version. So, it has been rewritten
@@ -80,7 +74,7 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
+RUN /bin/bash -l -c "rvm install 2.4 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # CONDA prep
@@ -112,8 +106,7 @@ RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
 # Docker
-# Pin docker to before they broke wheezy
-RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
+RUN curl -fsSL https://get.docker.com | sh
 
 # CMake
 RUN set -ex \
@@ -124,10 +117,9 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install clang and llvm version 8
-# Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
-    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
-    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+RUN curl -O http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
+    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
+    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz
 
 # To build the EBPF code we need kernel headers for Linux 4.9
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz && \
@@ -136,6 +128,15 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 
 # Download and install golangci-lint
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
+
+# Download and install libc glibc_version_header headers
+# dropped in /usr/local/glibc_version_header-0.1
+RUN set -ex \
+    && curl -sL -o glibc_version_header.tar.gz https://github.com/wheybags/glibc_version_header/archive/0.1.tar.gz \
+    && mkdir /usr/local/glibc_version_header \
+    && tar -xf glibc_version_header.tar.gz --strip 1 -C /usr/local/glibc_version_header \
+    && rm glibc_version_header.tar.gz
+
 
 # Entrypoint
 COPY ./entrypoint.sh /
