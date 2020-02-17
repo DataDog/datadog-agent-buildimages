@@ -14,9 +14,12 @@ RUN apt install -y \
         libelf-dev \
         linux-headers-amd64 \
         llvm \
+        python \
+        python-pip \
+        python3-distro \
         python3-distutils \
         python3-invoke \
-        python-pip
+        python3-pip
 
 
 ENV GOPATH=/go
