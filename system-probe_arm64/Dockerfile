@@ -19,8 +19,10 @@ RUN apt install -y \
         python3-distro \
         python3-distutils \
         python3-invoke \
-        python3-pip
+        python3-pip \
+        wget
 
+RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
 
 ENV GOPATH=/go
 
