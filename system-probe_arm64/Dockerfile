@@ -4,13 +4,13 @@ RUN apt update && apt full-upgrade -y
 RUN apt install -y \
         awscli \
         bison \
-        clang \
+        clang-8 \
         cmake \
         flex \
         git \
         go-dep \
         golang \
-        libclang-dev \
+        libclang-8-dev \
         libelf-dev \
         linux-headers-arm64 \
         llvm \
