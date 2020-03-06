@@ -23,6 +23,7 @@ RUN apt install -y \
         wget
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
+RUN ln /usr/bin/clang-8  /usr/bin/clang
 
 ENV GOPATH=/go
 
