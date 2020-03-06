@@ -28,3 +28,5 @@ ENV GOPATH=/go
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
+
+RUN ln /usr/bin/clang-8  /usr/bin/clang
