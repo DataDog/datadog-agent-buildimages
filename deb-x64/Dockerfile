@@ -2,7 +2,7 @@ FROM debian:wheezy-backports
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Build Args
-ARG GIMME_GO_VERSION=1.13.6
+ARG GIMME_GO_VERSION=1.13.8
 ARG DD_CONDA_VERSION=4.7.10
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
