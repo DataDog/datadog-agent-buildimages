@@ -35,7 +35,8 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
   build-essential pkg-config\
-  rpm tar gettext libtool autopoint autoconf pkg-config flex
+  rpm tar gettext libtool autopoint autoconf pkg-config flex \
+  selinux-basics
 
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
 
