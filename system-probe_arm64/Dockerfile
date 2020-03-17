@@ -30,3 +30,4 @@ ENV GOPATH=/go
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 RUN ln /usr/bin/clang-8  /usr/bin/clang
+RUN ln -s /usr/lib/llvm-8 /usr/lib/llvm
