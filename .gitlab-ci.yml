@@ -60,6 +60,29 @@ build_system-probe_arm64:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
 
+.winbuild: &winbuild
+  stage: build
+  except: [ tags, schedules ]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  script:
+    - echo  "build $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
+    - docker build $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE .
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
+
+build_windows_x64:
+  extends: .winbuild
+  variables:
+    DOCKERFILE: windows-x64/Dockerfile
+    IMAGE: windows_x64
+
+build_windows_x86:
+  extends: .winbuild
+  variables:
+    DOCKERFILE: windows-x64/Dockerfile
+    IMAGE: windows_x86
+    BUILDARGS: --build-arg
+    BUILDARGSVAL: TARGET_ARCH=x86
+
 .release:
   stage: release
   except: [ tags, schedules ]
