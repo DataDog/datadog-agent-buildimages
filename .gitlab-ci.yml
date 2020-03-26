@@ -110,3 +110,30 @@ release_rpm_x64:
   extends: .release
   variables:
     IMAGE: rpm_x64
+
+.winrelease: &winrelease
+  stage: release
+  except: [ tags, schedules ]
+  only: [ master ]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  script:
+    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker pull $SRC_IMAGE
+    - docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
+    - docker push datadog/agent-buildimages-$IMAGE:latest
+
+release_windows_x64:
+  extends: .winrelease
+  variables:
+    IMAGE: windows_x64
+
+release_windows_x86:
+  extends: .winrelease
+  variables:
+    IMAGE: windows_x86
