@@ -43,7 +43,7 @@ LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 ### TODO: Stop doing this once Wix 3.14 is available
 
 # Install .NET Fx 3.5
-COPY ./windows-x64/install_net35.bat install_net35.bat
+COPY ./windows/install_net35.bat install_net35.bat
 RUN .\install_net35.bat
 
 ### End of preliminary step
@@ -88,6 +88,6 @@ RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
 RUN ridk install 2 3
 
 # Install embedded pythons (for unit testing)
-COPY ./windows-x64/install_embedded_pythons.ps1 install_embedded_pythons.ps1
+COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
