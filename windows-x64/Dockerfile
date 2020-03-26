@@ -1,3 +1,14 @@
+# Use the Microsoft-provided .NET Runtime 4.8 image as the base image
+# because installing it in the image with Chocolatey requires a reboot.
+
+# There is a bug in the February 11, 2020 update that makes commands fail in
+# docker containers (see: https://support.microsoft.com/en-us/help/4542617/you-might-encounter-issues-when-using-windows-server-containers-with-t)
+# To avoid that, there are two solutions:
+# - both the host and the container must have the February 11, 2020 update, or
+# - neither the host and the container must have the February 11, 2020 update.
+# Since our 1809 windows-docker host image does not have this update, we use a base
+# container image that does not have this update either (thus the 20200114 tag).
+# TODO: Once the 1809 windows-docker host image is updated, update the base container image.
 ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
 FROM ${BASE_IMAGE}
 
@@ -29,7 +40,7 @@ LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 ### manually the install .NET Framework 3.5 runtime using the instructions in
 ### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
 ### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
-### TODO: Stop doing this once 
+### TODO: Stop doing this once Wix 3.14 is available
 
 # Install .NET Fx 3.5
 COPY ./windows-x64/install_net35.bat install_net35.bat
