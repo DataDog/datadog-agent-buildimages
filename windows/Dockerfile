@@ -18,7 +18,7 @@ ARG TARGET_ARCH
 ENV TARGET_ARCH ${TARGET_ARCH:-x64}
 
 ENV GO_VERSION "1.13.8"
-ENV RUBY_VERSION "2.4.3.1"
+ENV RUBY_VERSION "2.7.0.1"
 ENV PYTHON_VERSION "2.7.17"
 ENV WIX_VERSION "3.11.2"
 
@@ -87,6 +87,7 @@ RUN gem install bundler
 # Install msys2 system & install C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
 RUN ridk install 2 3
+
 
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
