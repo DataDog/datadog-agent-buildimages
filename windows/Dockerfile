@@ -58,7 +58,7 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools --package-parameters \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81\"
+RUN cinst -y --no-progress visualstudio2017buildtools --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81\"
 RUN cinst -y --no-progress visualstudio2017-workload-vctools
 
 # Install VC compiler for Python 2.7
@@ -81,6 +81,7 @@ RUN cinst -y --no-progress python2 --version $ENV:PYTHON_VERSION
 
 # Install ruby and bundler (for omnibus builds)
 RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
+RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
 # Install msys2 system & install C/C++ compilation toolchain
