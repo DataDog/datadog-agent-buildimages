@@ -55,8 +55,8 @@ if ( $Env:TARGET_ARCH -eq "x86") {
 } 
 
 
-$py2Target = "c:\embeddedpy\py2.${Env:EMBEDDED_PYTHON_2_VERSION}"
-$py3Target = "c:\embeddedpy\py3.${Env:EMBEDDED_PYTHON_3_VERSION}"
+$py2Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_2_VERSION}"
+$py3Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_3_VERSION}"
 
 DownloadAndExpandTo -TargetDir $py2Target -SourceURL $py2
 DownloadAndExpandTo -TargetDir $py3Target -SourceURL $py3
