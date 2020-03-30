@@ -18,7 +18,7 @@ ARG TARGET_ARCH
 ENV TARGET_ARCH ${TARGET_ARCH:-x64}
 
 ENV GO_VERSION "1.13.8"
-ENV RUBY_VERSION "2.7.0.1"
+ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "2.7.17"
 ENV WIX_VERSION "3.11.2"
 
@@ -48,46 +48,50 @@ RUN .\install_net35.bat
 
 ### End of preliminary step
 
+RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
+
 # Install Chocolatey
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install git
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG
 
 # Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81\"
-RUN cinst -y --no-progress visualstudio2017-workload-vctools
+RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.10240 --add Microsoft.Visualstudio.Component.Windows81sdk --add Microsoft.Component.VC.Runtime.UCRTSDK --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre --add Microsoft.VisualStudio.Component.Windows10SDK.17763\"
 
 # Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27
+RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
 
 # Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset --version $ENV:WIX_VERSION
+RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake
+RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang --version $ENV:GO_VERSION
+RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
 RUN setx GOPATH C:\dev\go
 
 # Install system Python 2 (to use invoke)
-RUN cinst -y --no-progress python2 --version $ENV:PYTHON_VERSION
+RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
 # Install ruby and bundler (for omnibus builds)
-RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
+RUN cinst -y --no-progress ruby $ENV:CHOCO_ARCH_FLAG --version $ENV:RUBY_VERSION
 RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
 # Install msys2 system & install C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
+RUN cinst -y --no-progress msys2 $ENV:CHOCO_ARCH_FLAG --params \"/NoUpdate\"
 RUN ridk install 3
 
+# Install aws cli
+COPY ./windows/install_awscli.ps1 install_awscli.ps1
+RUN powershell -C .\install_awscli.ps1
 
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
