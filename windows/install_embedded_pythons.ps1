@@ -42,7 +42,7 @@ function DownloadAndExpandTo{
         md $TargetDir
     }
 
-    Start-Process "C:\program files\7-Zip\7z.exe" -ArgumentList "x -o${TargetDir} $tmpOutFile" -Wait
+    Start-Process "7z" -ArgumentList "x -o${TargetDir} $tmpOutFile" -Wait
     Remove-Item $tmpOutFile
 }
 
