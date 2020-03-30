@@ -13,7 +13,7 @@ RUN apt update && apt full-upgrade -y && apt install -y  \
         libelf-dev \
         linux-headers-amd64 \
         python \
-        python-pip \
+        python3-pip \
         python3-distro \
         python3-distutils \
         python3-invoke \
