@@ -86,7 +86,7 @@ RUN gem install bundler
 
 # Install msys2 system & install C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
-RUN ridk install 2 3
+RUN ridk install 3
 
 
 # Install embedded pythons (for unit testing)
