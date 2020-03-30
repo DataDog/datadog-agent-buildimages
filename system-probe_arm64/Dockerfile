@@ -15,7 +15,7 @@ RUN apt install -y \
         linux-headers-arm64 \
         llvm \
         python \
-        python-pip \
+        python3-pip \
         python3-distro \
         python3-distutils \
         python3-invoke \
