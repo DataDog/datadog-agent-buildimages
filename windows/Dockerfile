@@ -67,11 +67,13 @@ RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
 
 # Install Wix and update PATH to include it
 RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine) }
+RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install Cmake and update PATH to include it
 RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
+RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
@@ -97,3 +99,6 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
+COPY ./windows/entrypoint.bat /entrypoint.bat
+COPY ./windows/aws_networking.ps1 /aws_networking.ps1
+ENTRYPOINT ["/entrypoint.bat"]
