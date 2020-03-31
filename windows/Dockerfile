@@ -100,8 +100,12 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
+# Add certificates
 COPY ./windows/cert.pem /tools/cert.pem
 RUN setx SSL_CERT_FILE \"C:\tools\cert.pem\"
+
+# Add signtool to path
+RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
