@@ -100,6 +100,9 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
+COPY ./windows/cert.pem /tools/cert.pem
+RUN setx SSL_CERT_FILE \"C:\tools\cert.pem\"
+
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
 ENTRYPOINT ["/entrypoint.bat"]
