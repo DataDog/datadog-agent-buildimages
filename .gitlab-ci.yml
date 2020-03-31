@@ -101,7 +101,7 @@ build_windows_x86:
     - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
     - docker push datadog/agent-buildimages-$IMAGE:latest
-    - docker rmi $SRC_IMAGE
+    - docker rmi $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
 
 release_deb_x64:
   extends: .release
