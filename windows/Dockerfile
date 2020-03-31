@@ -84,7 +84,7 @@ RUN setx GOPATH C:\dev\go
 RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
 # Install ruby and bundler (for omnibus builds)
-RUN cinst -y --no-progress ruby $ENV:CHOCO_ARCH_FLAG --version $ENV:RUBY_VERSION
+RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
