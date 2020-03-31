@@ -68,7 +68,7 @@ build_system-probe_arm64:
     - echo  "build $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
     - docker build --no-cache $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
 
 build_windows_x64:
   extends: .winbuild
