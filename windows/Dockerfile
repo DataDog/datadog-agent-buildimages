@@ -61,6 +61,7 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $
 
 # Install VS2017
 RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
+RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
 # Install VC compiler for Python 2.7
 RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
