@@ -82,14 +82,18 @@ RUN setx GOPATH C:\dev\go
 # Install system Python 2 (to use invoke)
 RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
-# Install ruby and bundler (for omnibus builds)
-RUN cinst -y --no-progress ruby $ENV:CHOCO_ARCH_FLAG --version $ENV:RUBY_VERSION
+# Install 64-bit ruby and bundler (for omnibus builds)
+RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
-# Install msys2 system & install C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 $ENV:CHOCO_ARCH_FLAG --params \"/NoUpdate\"
+# Install msys2 system & install 64-bit C/C++ compilation toolchain
+RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
 RUN ridk install 3
+
+# (32-bit only) Install 32-bit C/C++ compilation toolchain
+RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
+RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install aws cli
 COPY ./windows/install_awscli.ps1 install_awscli.ps1
