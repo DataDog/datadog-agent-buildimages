@@ -115,4 +115,7 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
+
+SHELL ["cmd", "/S", "/C"]
+
 ENTRYPOINT ["/entrypoint.bat"]
