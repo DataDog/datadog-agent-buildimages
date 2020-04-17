@@ -69,6 +69,7 @@ RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
 # Install Wix and update PATH to include it
 RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN setx WIX \"c:\Program Files (x86)\WiX Toolset v3.11\bin\"
 
 # Install Cmake and update PATH to include it
 RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
@@ -115,7 +116,5 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
-
-SHELL ["cmd", "/S", "/C"]
 
 ENTRYPOINT ["/entrypoint.bat"]
