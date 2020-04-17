@@ -6,6 +6,7 @@ RUN apt install -y \
         bison \
         clang-8 \
         cmake \
+        curl \
         flex \
         git \
         go-dep \
