@@ -53,6 +53,7 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Objec
 
 # Install git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git
+RUN git config --system core.symlinks false
 
 # Install 7zip
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip
