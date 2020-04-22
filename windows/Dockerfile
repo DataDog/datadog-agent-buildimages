@@ -48,47 +48,56 @@ RUN .\install_net35.bat
 
 ### End of preliminary step
 
+RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
+
 # Install Chocolatey
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install git
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG
 
 # Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81\"
-RUN cinst -y --no-progress visualstudio2017-workload-vctools
+RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
+RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
 # Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27
+RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
 
 # Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset --version $ENV:WIX_VERSION
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
+RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
+RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
+RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang --version $ENV:GO_VERSION
+RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
 RUN setx GOPATH C:\dev\go
 
 # Install system Python 2 (to use invoke)
-RUN cinst -y --no-progress python2 --version $ENV:PYTHON_VERSION
+RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
-# Install ruby and bundler (for omnibus builds)
+# Install 64-bit ruby and bundler (for omnibus builds)
 RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
-# Install msys2 system & install C/C++ compilation toolchain
+# Install msys2 system & install 64-bit C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
-RUN ridk install 2 3
+RUN ridk install 3
+
+# (32-bit only) Install 32-bit C/C++ compilation toolchain
+RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
+RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
+# Set 32-bit flag env var
+RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
