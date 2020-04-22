@@ -95,9 +95,18 @@ RUN ridk install 3
 RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
 RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
+# Install aws cli
+COPY ./windows/install_awscli.ps1 install_awscli.ps1
+RUN powershell -C .\install_awscli.ps1
+
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
 # Set 32-bit flag env var
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
+
+COPY ./windows/entrypoint.bat /entrypoint.bat
+COPY ./windows/aws_networking.ps1 /aws_networking.ps1
+
+ENTRYPOINT ["/entrypoint.bat"]
