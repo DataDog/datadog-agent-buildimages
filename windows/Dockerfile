@@ -103,6 +103,13 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
+# Add certificates
+COPY ./windows/cert.pem /tools/cert.pem
+RUN setx SSL_CERT_FILE \"C:\tools\cert.pem\"
+
+# Add signtool to path
+RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
+
 # Set 32-bit flag env var
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
