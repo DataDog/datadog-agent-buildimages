@@ -35,12 +35,16 @@ LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 
-### Preliminary step: we need both the .NET 3.5 runtime (needed because of a Wix 3.11 bug) and
+### Preliminary step: we need both the .NET 3.5 runtime and
 ### the .NET 4.8 runtime. To do this, we get 4.8 from a base image and we
 ### manually the install .NET Framework 3.5 runtime using the instructions in
 ### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
 ### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
-### TODO: Stop doing this once Wix 3.14 is available
+
+### The .NET Fx 3.5 is needed for the Visual C++ Compiler for Python 2.7
+### (https://www.microsoft.com/en-us/download/details.aspx?id=44266)
+### and to work around a bug in the WiX 3.11 installer
+### (https://github.com/wixtoolset/issues/issues/5661).
 
 # Install .NET Fx 3.5
 COPY ./windows/install_net35.bat install_net35.bat
@@ -55,6 +59,9 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Objec
 
 # Install git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG
+### HACK: we disable symbolic links when cloning repositories
+### to work around a symlink-related failure in the agent-binaries omnibus project
+### when copying the datadog-agent project twice.
 RUN git config --system core.symlinks false
 
 # Install 7zip
