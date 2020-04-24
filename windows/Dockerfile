@@ -35,19 +35,6 @@ LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 
-### Preliminary step: we need both the .NET 3.5 runtime (needed because of a Wix 3.11 bug) and
-### the .NET 4.8 runtime. To do this, we get 4.8 from a base image and we
-### manually the install .NET Framework 3.5 runtime using the instructions in
-### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
-### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
-### TODO: Stop doing this once Wix 3.14 is available
-
-# Install .NET Fx 3.5
-COPY ./windows/install_net35.bat install_net35.bat
-RUN .\install_net35.bat
-
-### End of preliminary step
-
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
 
 # Install Chocolatey
@@ -67,9 +54,13 @@ RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Bu
 # Install VC compiler for Python 2.7
 RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
 
-# Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+# Install Wix
+# We don't install WiX with the installer (what chocolatey would do) because of
+# a bug in the WiX 3.11 installer (https://github.com/wixtoolset/issues/issues/5661)
+# that would require us to add the .NET 3.5 runtime to the image to work around it.
+# Instead, we directly download the bundled binaries and install them.
+COPY ./windows/install_wix.ps1 install_wix.ps1
+RUN powershell -C .\install_wix.ps1
 
 # Install Cmake and update PATH to include it
 RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
