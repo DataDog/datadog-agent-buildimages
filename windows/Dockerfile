@@ -37,6 +37,13 @@ LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 
+# Add certificates needed for build & check certificates file hash
+# We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
+# to be able to download some Python components during the Agent build.
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\")
+RUN if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
+RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
+
 ### Preliminary step: we need both the .NET 3.5 runtime and
 ### the .NET 4.8 runtime. To do this, we get 4.8 from a base image and we
 ### manually the install .NET Framework 3.5 runtime using the instructions in
@@ -112,11 +119,6 @@ RUN powershell -C .\install_awscli.ps1
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
-
-# Add certificates & check certificates file hash
-RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\")
-RUN if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
-RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
