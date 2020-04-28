@@ -25,6 +25,8 @@ ENV WIX_VERSION "3.11.2"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
 
+ENV CACERTS_HASH "ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C02081F"
+
 LABEL target_agent="Agent 6/7"
 LABEL target_arch=${TARGET_ARCH}
 LABEL containerbase=${BASE_IMAGE}
@@ -111,9 +113,10 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
-# Add certificates
-COPY ./windows/cert.pem /tools/cert.pem
-RUN setx SSL_CERT_FILE \"C:\tools\cert.pem\"
+# Add certificates & check certificates file hash
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\")
+RUN if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
+RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
