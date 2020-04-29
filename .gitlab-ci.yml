@@ -63,28 +63,57 @@ build_system-probe_arm64:
 .winbuild: &winbuild
   stage: build
   except: [ tags, schedules ]
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   script:
-    - echo  "build $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
-    - docker build --no-cache $($Env:BUILDARGS) $($Env:BUILDARGSVAL) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE .
+    - echo  "build --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
+    - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
   after_script:
     - docker image prune -f
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
 
-build_windows_x64:
+build_windows_1809_x64:
   extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_x64
+    IMAGE: windows_1809_x64
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
+    TARGET_ARCH: x64
+    WINDOWS_VERSION: 1809
+  resource_group: windows_x64
 
-build_windows_x86:
+build_windows_1809_x86:
   extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_x86
-    BUILDARGS: --build-arg
-    BUILDARGSVAL: TARGET_ARCH=x86
+    IMAGE: windows_1809_x86
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
+    TARGET_ARCH: x86
+    WINDOWS_VERSION: 1809
+  resource_group: windows_x86
+
+build_windows_1909_x64:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_1909_x64
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200310-windowsservercore-1909
+    TARGET_ARCH: x64
+    WINDOWS_VERSION: 1909
+  resource_group: windows_x64
+
+build_windows_1909_x86:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_1909_x86
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200310-windowsservercore-1909
+    TARGET_ARCH: x86
+    WINDOWS_VERSION: 1909
+  resource_group: windows_x86
 
 .release:
   stage: release
@@ -110,7 +139,6 @@ build_windows_x86:
   stage: release
   except: [ tags, schedules ]
   only: [ master ]
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   script:
     - $Env:SRC_IMAGE="486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))"
     - docker pull $($Env:SRC_IMAGE)
@@ -135,12 +163,26 @@ release_rpm_x64:
   variables:
     IMAGE: rpm_x64
 
-release_windows_x64:
+release_windows_1809_x64:
   extends: .winrelease
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
-    IMAGE: windows_x64
+    IMAGE: windows_1809_x64
 
-release_windows_x86:
+release_windows_1809_x86:
   extends: .winrelease
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
-    IMAGE: windows_x86
+    IMAGE: windows_1809_x86
+
+release_windows_1909_x64:
+  extends: .winrelease
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    IMAGE: windows_1909_x64
+
+release_windows_1909_x86:
+  extends: .winrelease
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    IMAGE: windows_1909_x86

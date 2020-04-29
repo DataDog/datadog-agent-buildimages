@@ -8,14 +8,20 @@
 # - neither the host and the container must have the February 11, 2020 update.
 # Since our 1809 windows-docker host image does not have this update, we use a base
 # container image that does not have this update either (thus the 20200114 tag).
+# On the contrary, since our 1909 windows-docker host image does have this update,
+# we use a base container image that does have this update.
 # TODO: Once the 1809 windows-docker host image is updated, update the base container image.
 ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
+
 FROM ${BASE_IMAGE}
 
 SHELL ["powershell", "-Command"]
 
+ARG WINDOWS_VERSION
+ENV WINDOWS_VERSION=${WINDOWS_VERSION:-1809}
+
 ARG TARGET_ARCH
-ENV TARGET_ARCH ${TARGET_ARCH:-x64}
+ENV TARGET_ARCH=${TARGET_ARCH:-x64}
 
 ENV GO_VERSION "1.13.8"
 ENV RUBY_VERSION "2.4.3.1"
@@ -29,7 +35,7 @@ ENV CACERTS_HASH "ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C0208
 
 LABEL target_agent="Agent 6/7"
 LABEL target_arch=${TARGET_ARCH}
-LABEL containerbase=${BASE_IMAGE}
+LABEL windows_version=${WINDOWS_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
 LABEL wix_version=${WIX_VERSION}
@@ -56,8 +62,10 @@ RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 ### (https://github.com/wixtoolset/issues/issues/5661).
 
 # Install .NET Fx 3.5
-COPY ./windows/install_net35.bat install_net35.bat
-RUN .\install_net35.bat
+COPY ./windows/install_net35_1809.bat install_net35_1809.bat
+COPY ./windows/install_net35_1909.bat install_net35_1909.bat
+RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\install_net35_1809.bat }
+RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
 
 ### End of preliminary step
 

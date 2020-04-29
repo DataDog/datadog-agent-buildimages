@@ -1,8 +1,7 @@
 ::
-:: Installs .NET Runtime 3.5, used by Wix 3.11.
+:: Installs .NET Runtime 3.5, used by Wix 3.11 and the Visual C++ Compiler for Python 2.7
 :: Taken from the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
 :: https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
-:: TODO: Stop using it once Wix is upgraded to 3.14
 ::
 
 curl -fSLo microsoft-windows-netfx3.zip https://dotnetbinaries.blob.core.windows.net/dockerassets/microsoft-windows-netfx3-1809.zip
