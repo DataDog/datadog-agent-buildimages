@@ -2,64 +2,6 @@ stages:
   - build
   - release
 
-.build:
-  stage: build
-  except: [ tags, schedules ]
-  tags: [ "runner:docker", "size:large" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
-  script:
-    - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-
-build_deb_x64:
-  extends: .build
-  variables:
-    DOCKERFILE: deb-x64/Dockerfile
-    IMAGE: deb_x64
-
-build_rpm_x64:
-  extends: .build
-  variables:
-    DOCKERFILE: rpm-x64/Dockerfile
-    IMAGE: rpm_x64
-
-.armbuild:
-  stage: build
-  except: [ tags, schedules ]
-  tags: ["runner:docker-arm", "platform:arm64"]
-  image: arm64v8/docker:18.04
-  script:
-    - apk add --update python py-pip
-    - pip install awscli
-    - aws --version
-    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-
-build_deb_arm64:
-  extends: .armbuild
-  variables:
-    DOCKERFILE: deb-arm64/Dockerfile
-    IMAGE: deb_arm64
-
-build_rpm_arm64:
-  extends: .armbuild
-  variables:
-    DOCKERFILE: rpm-arm64/Dockerfile
-    IMAGE: rpm_arm64
-
-build_system-probe_x64:
-  extends: .build
-  variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
-    IMAGE: system-probe_x64
-
-build_system-probe_arm64:
-  extends: .armbuild
-  variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
-    IMAGE: system-probe_arm64
-
 .winbuild: &winbuild
   stage: build
   except: [ tags, schedules ]
@@ -82,63 +24,9 @@ build_windows_1809_x64:
     WINDOWS_VERSION: 1809
   resource_group: windows_x64
 
-build_windows_1809_x86:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x86
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
-    TARGET_ARCH: x86
-    WINDOWS_VERSION: 1809
-  resource_group: windows_x86
-
-build_windows_1909_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1909_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200310-windowsservercore-1909
-    TARGET_ARCH: x64
-    WINDOWS_VERSION: 1909
-  resource_group: windows_x64
-
-build_windows_1909_x86:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1909_x86
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200310-windowsservercore-1909
-    TARGET_ARCH: x86
-    WINDOWS_VERSION: 1909
-  resource_group: windows_x86
-
-.release:
-  stage: release
-  except: [ tags, schedules ]
-  only: [ master ]
-  tags: [ "runner:docker", "size:large" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
-  script:
-    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    - docker pull $SRC_IMAGE
-    - docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
-    - docker push datadog/agent-buildimages-$IMAGE:latest
-  after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
-
 .winrelease:
   stage: release
   except: [ tags, schedules ]
-  only: [ master ]
   script:
     - $Env:SRC_IMAGE="486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))"
     - docker pull $($Env:SRC_IMAGE)
@@ -154,41 +42,11 @@ build_windows_1909_x86:
     # Tag & push to Dockerhub
     - docker tag $($Env:SRC_IMAGE) datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
     - docker push datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
-    - docker tag $($Env:SRC_IMAGE) datadog/agent-buildimages-$($Env:IMAGE):latest
-    - docker push datadog/agent-buildimages-$($Env:IMAGE):latest
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-$($Env:IMAGE):latest
-
-release_deb_x64:
-  extends: .release
-  variables:
-    IMAGE: deb_x64
-
-release_rpm_x64:
-  extends: .release
-  variables:
-    IMAGE: rpm_x64
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
 
 release_windows_1809_x64:
   extends: .winrelease
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     IMAGE: windows_1809_x64
-
-release_windows_1809_x86:
-  extends: .winrelease
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  variables:
-    IMAGE: windows_1809_x86
-
-release_windows_1909_x64:
-  extends: .winrelease
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    IMAGE: windows_1909_x64
-
-release_windows_1909_x86:
-  extends: .winrelease
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    IMAGE: windows_1909_x86
