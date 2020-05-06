@@ -1,52 +1,52 @@
 stages:
-  - build
+  #- build
   - release
 
-.winbuild: &winbuild
-  stage: build
-  except: [ tags, schedules ]
-  script:
-    - echo  "build --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
-    - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) --file $DOCKERFILE ."
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
-  after_script:
-    - docker image prune -f
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
+# .winbuild: &winbuild
+#   stage: build
+#   except: [ tags, schedules ]
+#   script:
+#     - echo  "build --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55 --file $DOCKERFILE ."
+#     - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$($Env:BASE_IMAGE) --build-arg TARGET_ARCH=$($Env:TARGET_ARCH) --build-arg WINDOWS_VERSION=$($Env:WINDOWS_VERSION) --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55 --file $DOCKERFILE ."
+#     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55
+#   after_script:
+#     - docker image prune -f
+#     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55
 
-build_windows_1809_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
-    TARGET_ARCH: x64
-    WINDOWS_VERSION: 1809
-  resource_group: windows_x64
+# build_windows_1809_x64:
+#   extends: .winbuild
+#   tags: [ "runner:windows-docker", "windowsversion:1809" ]
+#   variables:
+#     DOCKERFILE: windows/Dockerfile
+#     IMAGE: windows_1809_x64
+#     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
+#     TARGET_ARCH: x64
+#     WINDOWS_VERSION: 1809
+#   resource_group: windows_x64
 
 .winrelease:
   stage: release
   except: [ tags, schedules ]
+  tags: ["runner:windows-docker", "windowsversion:1909"]
   script:
-    - $Env:SRC_IMAGE="486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))"
+    - $Env:SRC_IMAGE="486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55"
     - docker pull $($Env:SRC_IMAGE)
     - docker tag $($Env:SRC_IMAGE) 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):latest
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):latest
     # ECR Login
-    - $Env:AWS_ECR_PASSWORD=aws ecr get-login-password --region us-east-1
+    - $Env:AWS_ECR_PASSWORD = aws ecr get-login-password --region us-east-1
     - docker login --username AWS --password "$($Env:AWS_ECR_PASSWORD)" 486234852809.dkr.ecr.us-east-1.amazonaws.com
     # DockerHub login
     - $Env:DOCKER_REGISTRY_LOGIN = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text
     - $Env:DOCKER_REGISTRY_PWD = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text
     - docker login --username "$($Env:DOCKER_REGISTRY_LOGIN)" --password "$($Env:DOCKER_REGISTRY_PWD)" docker.io
     # Tag & push to Dockerhub
-    - docker tag $($Env:SRC_IMAGE) datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
-    - docker push datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
+    - docker tag $($Env:SRC_IMAGE) datadog/agent-buildimages-$($Env:IMAGE):v2472051-29c3f55
+    - docker push datadog/agent-buildimages-$($Env:IMAGE):v2472051-29c3f55
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-$($Env:IMAGE):v$($Env:CI_PIPELINE_ID)-$($Env:CI_COMMIT_SHA.SubString(0,7))
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$($Env:IMAGE):v2472051-29c3f55 datadog/agent-buildimages-$($Env:IMAGE):v2472051-29c3f55
 
 release_windows_1809_x64:
   extends: .winrelease
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     IMAGE: windows_1809_x64
