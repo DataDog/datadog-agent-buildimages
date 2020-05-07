@@ -124,6 +124,7 @@ build_windows_1909_x86:
 .release:
   stage: release
   except: [ tags, schedules ]
+  only: [ master ]
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
