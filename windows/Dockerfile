@@ -124,6 +124,10 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Pa
 COPY ./windows/install_awscli.ps1 install_awscli.ps1
 RUN powershell -C .\install_awscli.ps1
 
+# Install docker, manifest-tool and notary
+COPY ./windows/install_docker.ps1 install_docker.ps1
+RUN powershell -Command .\install_docker.ps1
+
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
