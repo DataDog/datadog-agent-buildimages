@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Installs the signing certificates and makes sure then can be used
+# Installs the signing certificates and makes sure they can be used
 # in a CI environment (ie. without confirmation prompts) by code-signing apps.
 # Allows creating signed builds of the Agent.
 
