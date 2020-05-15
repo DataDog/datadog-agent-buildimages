@@ -1,11 +1,15 @@
-FROM ubuntu:16.04
+## Valid archs are
+# amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, s390x
 
 # Build Args
+ARG ARCH=arm64v8
 ARG GIMME_GO_VERSION=1.13.8
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+
+FROM ${ARCH}/debian:10
 
 # Environment
 ENV GOPATH /go
