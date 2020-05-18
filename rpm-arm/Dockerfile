@@ -1,7 +1,7 @@
 ## Valid archs are
 # amd64, arm32v7, arm64v8, i386, ppc64le
-ARG ARCH=arm64v8
-FROM ${ARCH}/centos:7
+ARG BASE_IMAGE=arm64v8/centos:7
+FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.13.8
@@ -9,6 +9,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+ARG TARGET_ARCH=arm64v8
 
 # Environment
 ENV GOPATH /go
@@ -17,6 +18,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
+ENV GIMME_ARCH $TARGET_ARCH
 
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
