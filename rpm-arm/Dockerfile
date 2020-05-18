@@ -47,14 +47,14 @@ COPY ./gobin.sh /etc/profile.d/
 # CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
 RUN if [ "$ARCH" = "arm64v8" ] ; then curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz && \
     tar xf cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz --no-same-owner -kC / && \
-    rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz ;
+    rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz ; fi
 ENV PATH="/opt/cmake/bin:$PATH"
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
 RUN if [ "$ARCH" = "arm64v8" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
     tar xf clang_llvm.tar.xz --no-same-owner -kC / && \
-    rm clang_llvm.tar.xz ;
+    rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
 
 # Entrypoint
