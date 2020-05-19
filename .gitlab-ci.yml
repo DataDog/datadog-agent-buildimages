@@ -68,7 +68,7 @@ build_rpm_arm32v7:
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_arm32
-    BASE_IMAGE: arm64v8/centos:7
+    BASE_IMAGE: arm32v7/centos:7
     TARGET_ARCH: arm32v7
 
 build_system-probe_x64:
