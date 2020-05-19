@@ -52,7 +52,7 @@ build_deb_arm32v7:
   extends: .armbuild
   variables:
     DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_arm32v7
+    IMAGE: deb_arm32
     BASE_IMAGE: arm32v7/ubuntu:16.04
     TARGET_ARCH: arm32v7
 
@@ -67,7 +67,7 @@ build_rpm_arm32v7:
   extends: .armbuild
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
-    IMAGE: rpm_arm32v7
+    IMAGE: rpm_arm32
     BASE_IMAGE: arm64v8/centos:7
     TARGET_ARCH: arm32v7
 
