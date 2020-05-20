@@ -21,12 +21,12 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV GIMME_ARCH $TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
-RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; echo "armhfp" > /etc/yum/vars/basearch && \
+RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then echo "armhfp" > /etc/yum/vars/basearch && \
     echo "armv7hl" > /etc/yum/vars/arch && \
     echo "armv7hl-redhat-linux-gnu" > /etc/rpm/platform ; fi
 
 # Resolves a nasty NOKEY warning that appears when using yum
-RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
+RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32 ; fi
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
