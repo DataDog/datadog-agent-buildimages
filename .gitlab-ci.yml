@@ -42,32 +42,32 @@ build_rpm_x64:
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
 
-build_deb_arm64v8:
+build_deb_arm64:
   extends: .armbuild
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
 
-build_deb_arm32v7:
+build_deb_armhf:
   extends: .armbuild
   variables:
     DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_arm32
+    IMAGE: deb_armhf
     BASE_IMAGE: arm32v7/ubuntu:16.04
     TARGET_ARCH: arm32v7
 
-build_rpm_arm64v8:
+build_rpm_arm64:
   extends: .armbuild
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_arm64
     BASE_IMAGE: arm64v8/centos:7
 
-build_rpm_arm32v7:
+build_rpm_armhf:
   extends: .armbuild
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
-    IMAGE: rpm_arm32
+    IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
     TARGET_ARCH: arm32v7
 
