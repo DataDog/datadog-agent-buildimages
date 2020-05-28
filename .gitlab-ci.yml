@@ -31,25 +31,45 @@ build_rpm_x64:
   except: [ tags, schedules ]
   tags: ["runner:docker-arm", "platform:arm64"]
   image: arm64v8/docker:18.04
+  variables:
+    BASE_IMAGE: arm64v8/ubuntu:16.04
+    TARGET_ARCH: arm64v8
   script:
     - apk add --update python py-pip
     - pip install awscli
     - aws --version
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
 
 build_deb_arm64:
   extends: .armbuild
   variables:
-    DOCKERFILE: deb-arm64/Dockerfile
+    DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
+
+build_deb_armhf:
+  extends: .armbuild
+  variables:
+    DOCKERFILE: deb-arm/Dockerfile
+    IMAGE: deb_armhf
+    BASE_IMAGE: arm32v7/ubuntu:16.04
+    TARGET_ARCH: arm32v7
 
 build_rpm_arm64:
   extends: .armbuild
   variables:
-    DOCKERFILE: rpm-arm64/Dockerfile
+    DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_arm64
+    BASE_IMAGE: arm64v8/centos:7
+
+build_rpm_armhf:
+  extends: .armbuild
+  variables:
+    DOCKERFILE: rpm-arm/Dockerfile
+    IMAGE: rpm_armhf
+    BASE_IMAGE: arm32v7/centos:7
+    TARGET_ARCH: arm32v7
 
 build_system-probe_x64:
   extends: .build

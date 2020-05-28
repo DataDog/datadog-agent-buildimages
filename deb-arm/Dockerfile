@@ -1,4 +1,7 @@
-FROM ubuntu:16.04
+## Valid archs are
+# amd64, arm32v7, arm64v8, i386, ppc64le, s390x
+ARG BASE_IMAGE=arm64v8/ubuntu:16.04
+FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.13.8
@@ -6,6 +9,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+ARG TARGET_ARCH=arm64v8
 
 # Environment
 ENV GOPATH /go
@@ -14,6 +18,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
+ENV GIMME_ARCH $TARGET_ARCH
 
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
@@ -43,18 +48,17 @@ RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
 # CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
-RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-ubuntu-aarch64.tar.xz && \
+RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-ubuntu-aarch64.tar.xz && \
     tar xf cmake-${CMAKE_VERSION}-ubuntu-aarch64.tar.xz --no-same-owner -kC / && \
-    rm cmake-${CMAKE_VERSION}-ubuntu-aarch64.tar.xz
+    rm cmake-${CMAKE_VERSION}-ubuntu-aarch64.tar.xz ; fi
 ENV PATH="/opt/cmake/bin:$PATH"
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
-RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
+RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
     tar xf clang_llvm.tar.xz --no-same-owner -kC / && \
-    rm clang_llvm.tar.xz
+    rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
-
 
 # Entrypoint
 COPY ./entrypoint.sh /
