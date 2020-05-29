@@ -18,7 +18,6 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-ENV GIMME_ARCH $TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
 RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then echo "armhfp" > /etc/yum/vars/basearch && \
@@ -49,7 +48,16 @@ RUN pip install invoke distro==1.4.0 awscli==1.16.240
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
 RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
+
+# GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
+# https://github.com/golang/go/blob/master/src/go/build/syslist.go
+# Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
+RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then \
+        $GIMME_ARCH=arm64 gimme $GIMME_GO_VERSION \
+    else \
+        $GIMME_ARCH=arm gimme $GIMME_GO_VERSION \
+    fi
+
 COPY ./gobin.sh /etc/profile.d/
 
 # CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
