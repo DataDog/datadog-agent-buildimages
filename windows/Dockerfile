@@ -23,10 +23,16 @@ ENV WINDOWS_VERSION=${WINDOWS_VERSION:-1809}
 ARG TARGET_ARCH
 ENV TARGET_ARCH=${TARGET_ARCH:-x64}
 
+# Chocolatey package versions
+ENV GIT_VERSION "2.26.2"
+ENV SEVENZIP_VERSION "19.0"
+ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
+ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.13.8"
 ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "2.7.17"
 ENV WIX_VERSION "3.11.2"
+ENV CMAKE_VERSION "3.17.2"
 ENV MSYS_VERSION "20190524.0.0.20191030"
 
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
@@ -37,9 +43,14 @@ ENV CACERTS_HASH "ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C0208
 LABEL target_agent="Agent 6/7"
 LABEL target_arch=${TARGET_ARCH}
 LABEL windows_version=${WINDOWS_VERSION}
+LABEL git_version=${GIT_VERSION}
+LABEL sevenzip_version=${SEVENZIP_VERSION}
+LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
 LABEL wix_version=${WIX_VERSION}
+LABEL cmake_version=${CMAKE_VERSION}
+LABEL msys_version=${MSYS_VERSION}
 LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
@@ -76,28 +87,28 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install git
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
 ### HACK: we disable symbolic links when cloning repositories
 ### to work around a symlink-related failure in the agent-binaries omnibus project
 ### when copying the datadog-agent project twice.
 RUN git config --system core.symlinks false
 
 # Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
+RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
 RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
 # Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG
+RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
 
 # Install Wix and update PATH to include it
 RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG
+RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
 RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
