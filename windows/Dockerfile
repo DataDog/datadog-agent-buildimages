@@ -27,6 +27,7 @@ ENV GO_VERSION "1.13.8"
 ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "2.7.17"
 ENV WIX_VERSION "3.11.2"
+ENV MSYS_VERSION "20190524.0.0.20191030"
 
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
@@ -113,7 +114,7 @@ RUN setx RIDK ((Get-Command ridk).Path)
 RUN gem install bundler
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 --params \"/NoUpdate\"
+RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
 RUN ridk install 3
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
