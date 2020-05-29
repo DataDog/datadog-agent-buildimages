@@ -53,9 +53,9 @@ RUN chmod +x /bin/gimme
 # https://github.com/golang/go/blob/master/src/go/build/syslist.go
 # Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
 RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then \
-        $GIMME_ARCH=arm64 gimme $GIMME_GO_VERSION \
+        GIMME_ARCH=arm64 gimme $GIMME_GO_VERSION ; \
     else \
-        $GIMME_ARCH=arm gimme $GIMME_GO_VERSION \
+        GIMME_ARCH=arm gimme $GIMME_GO_VERSION ; \
     fi
 
 COPY ./gobin.sh /etc/profile.d/
