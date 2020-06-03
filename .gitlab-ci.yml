@@ -101,8 +101,7 @@ test_deb_x64:
   tags: [ "runner:main", "size:2xlarge" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - source /root/.bashrc && conda activate ddpy3
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
@@ -115,8 +114,7 @@ test_deb_arm64:
   tags: [ "runner:docker-arm", "platform:arm64" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - source /root/.bashrc
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
@@ -129,8 +127,7 @@ test_rpm_x64:
   tags: [ "runner:main", "size:2xlarge" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - source /root/.bashrc && conda activate ddpy3
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
@@ -143,8 +140,7 @@ test_rpm_arm64:
   tags: [ "runner:docker-arm", "platform:arm64" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - source /root/.bashrc
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
@@ -157,8 +153,7 @@ test_system-probe_x64:
   tags: [ "runner:main", "size:2xlarge" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
     - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
@@ -170,8 +165,7 @@ test_system-probe_arm64:
   tags: [ "runner:docker-arm", "platform:arm64" ]
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION=$(git --no-pager tag --list | grep -E "^6\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-    - git checkout $VERSION
+    - git checkout master
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
     - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
@@ -238,8 +232,7 @@ build_windows_1909_x86:
   extends: .test
   script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - $VERSION=(git --no-pager tag --list | Select-String "^6\.\d+\.\d+$" | Sort-Object { [version] $_.ToString() } | Select-Object -Last 1 | Out-String).Trim()
-    - git checkout $VERSION
+    - git checkout master
     - if (Test-Path build-out) { remove-item -recurse -force build-out }
     - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
 
@@ -264,7 +257,7 @@ test_windows_1909_x64:
     ARCH: x86
     IMAGE: windows_1909_x64
 
-test_windows_1909_x64:
+test_windows_1909_x86:
   extends: .test_windows
   tags: [ "runner:windows-docker", "windowsversion:1909" ]
   variables:
