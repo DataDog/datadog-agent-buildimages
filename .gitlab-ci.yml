@@ -235,12 +235,14 @@ build_windows_1909_x86:
 .test_windows:
   extends: .test
   script:
+    - if (Test-Path /go/src/github.com/DataDog/datadog-agent) { remove-item -recurse -force /go/src/github.com/DataDog/datadog-agent }
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - $VERSION="nightly"
     - git checkout master
     - if (Test-Path build-out) { remove-item -recurse -force build-out }
     - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
+    - if (Test-Path /go/src/github.com/DataDog/datadog-agent) { remove-item -recurse -force /go/src/github.com/DataDog/datadog-agent }
 
 test_windows_1809_x64:
   extends: .test_windows
