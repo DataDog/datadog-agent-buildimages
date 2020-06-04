@@ -46,6 +46,7 @@ LABEL windows_version=${WINDOWS_VERSION}
 LABEL git_version=${GIT_VERSION}
 LABEL sevenzip_version=${SEVENZIP_VERSION}
 LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
+LABEL vcpython27_version=${VCPYTHON27_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
 LABEL wix_version=${WIX_VERSION}
