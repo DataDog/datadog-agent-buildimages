@@ -235,7 +235,8 @@ build_windows_1909_x86:
 .test_windows:
   extends: .test
   script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+    - cd /go/src/github.com/DataDog/datadog-agent
     - $VERSION="nightly"
     - git checkout master
     - if (Test-Path build-out) { remove-item -recurse -force build-out }
