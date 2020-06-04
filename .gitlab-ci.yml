@@ -256,7 +256,7 @@ test_windows_1809_x86:
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
   needs: [ "build_windows_1809_x86" ]
   variables:
-    ARCH: x64
+    ARCH: x86
     IMAGE: windows_1809_x86
 
 test_windows_1909_x64:
@@ -264,7 +264,7 @@ test_windows_1909_x64:
   tags: [ "runner:windows-docker", "windowsversion:1909" ]
   needs: [ "build_windows_1909_x64" ]
   variables:
-    ARCH: x86
+    ARCH: x64
     IMAGE: windows_1909_x64
 
 test_windows_1909_x86:
