@@ -172,7 +172,7 @@ test_system-probe_arm64:
     - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
     - docker push $SRC_IMAGE
   after_script:
-    - docker image prune -a -f
+    - docker image prune -f
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
 build_windows_1809_x64:
