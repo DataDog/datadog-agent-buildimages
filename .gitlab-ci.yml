@@ -94,85 +94,72 @@ build_system-probe_arm64:
   stage: test
   except: [ tags, schedules ]
 
-test_deb_x64:
+.test_agent6_x64:
   extends: .test
+  before_script:
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - VERSION="nightly"
+    - git checkout master
+    - source /root/.bashrc && conda activate ddpy3
+    - inv -e deps --no-checks --verbose --dep-vendor-only
+  script:
+    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+
+.test_agent6_arm64:
+  extends: .test
+  before_script:
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - VERSION="nightly"
+    - git checkout master
+    - source /root/.bashrc
+    - inv -e deps --no-checks --verbose --dep-vendor-only
+  script:
+    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+
+test_deb_x64:
+  extends: .test_agent6_x64
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
   needs: [ "build_deb_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - git checkout master
-    - source /root/.bashrc && conda activate ddpy3
-    - inv -e deps --no-checks --verbose --dep-vendor-only
-  script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
 test_deb_arm64:
-  extends: .test
+  extends: .test_agent6_arm64
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
   needs: [ "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - git checkout master
-    - source /root/.bashrc
-    - inv -e deps --no-checks --verbose --dep-vendor-only
-  script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
 test_rpm_x64:
-  extends: .test
+  extends: .test_agent6_x64
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - git checkout master
-    - source /root/.bashrc && conda activate ddpy3
-    - inv -e deps --no-checks --verbose --dep-vendor-only
-  script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
 test_rpm_arm64:
-  extends: .test
+  extends: .test_agent6_arm64
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
+
+.test_system_probe:
+  extends: .test
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
     - git checkout master
-    - source /root/.bashrc
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+    - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
 
 test_system-probe_x64:
-  extends: .test
+  extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - git checkout master
-    - inv -e deps --no-checks --verbose --dep-vendor-only
-  script:
-    - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
 
 test_system-probe_arm64:
-  extends: .test
+  extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - git checkout master
-    - inv -e deps --no-checks --verbose --dep-vendor-only
-  script:
-    - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
 
 .winbuild: &winbuild
   stage: build
