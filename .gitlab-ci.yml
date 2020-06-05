@@ -234,6 +234,7 @@ build_windows_1909_x86:
 
 .test_windows:
   extends: .test
+  timeout: 2h 00m
   script:
     - if (Test-Path go/src/github.com/DataDog/datadog-agent) { remove-item -recurse -force go/src/github.com/DataDog/datadog-agent }
     - git clone https://github.com/DataDog/datadog-agent go/src/github.com/DataDog/datadog-agent
