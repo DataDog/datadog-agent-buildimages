@@ -24,44 +24,42 @@ ARG TARGET_ARCH
 ENV TARGET_ARCH=${TARGET_ARCH:-x64}
 
 # Chocolatey package versions
-ENV GIT_VERSION "2.26.2"
-ENV SEVENZIP_VERSION "19.0"
-ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
-ENV VCPYTHON27_VERSION "9.0.0.30729"
-ENV GO_VERSION "1.13.8"
-ENV RUBY_VERSION "2.4.3.1"
-ENV PYTHON_VERSION "2.7.17"
-ENV WIX_VERSION "3.11.2"
-ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20190524.0.0.20191030"
+ENV GIT_VERSION="2.26.2" \
+    SEVENZIP_VERSION="19.0" \
+    VS2017BUILDTOOLS_VERSION="15.9.23.0" \
+    VCPYTHON27_VERSION="9.0.0.30729" \
+    GO_VERSION="1.13.8" \
+    RUBY_VERSION="2.4.3.1" \
+    PYTHON_VERSION="2.7.17" \
+    WIX_VERSION="3.11.2" \
+    CMAKE_VERSION="3.17.2" \
+    MSYS_VERSION="20190524.0.0.20191030" \
+    EMBEDDED_PYTHON_2_VERSION="2.7.17" \
+    EMBEDDED_PYTHON_3_VERSION="3.8.1" \
+    CACERTS_HASH="ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C02081F"
 
-ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
-ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
-
-ENV CACERTS_HASH "ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C02081F"
-
-LABEL target_agent="Agent 6/7"
-LABEL target_arch=${TARGET_ARCH}
-LABEL windows_version=${WINDOWS_VERSION}
-LABEL git_version=${GIT_VERSION}
-LABEL sevenzip_version=${SEVENZIP_VERSION}
-LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
-LABEL vcpython27_version=${VCPYTHON27_VERSION}
-LABEL go_version=${GO_VERSION}
-LABEL ruby_version=${RUBY_VERSION}
-LABEL wix_version=${WIX_VERSION}
-LABEL cmake_version=${CMAKE_VERSION}
-LABEL msys_version=${MSYS_VERSION}
-LABEL system_python_version=${PYTHON_VERSION}
-LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
-LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
+LABEL target_agent="Agent 6/7" \
+      target_arch=${TARGET_ARCH} \
+      windows_version=${WINDOWS_VERSION} \
+      git_version=${GIT_VERSION} \
+      sevenzip_version=${SEVENZIP_VERSION} \
+      vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION} \
+      vcpython27_version=${VCPYTHON27_VERSION} \
+      go_version=${GO_VERSION} \
+      ruby_version=${RUBY_VERSION} \
+      wix_version=${WIX_VERSION} \
+      cmake_version=${CMAKE_VERSION} \
+      msys_version=${MSYS_VERSION} \
+      system_python_version=${PYTHON_VERSION} \
+      embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION} \
+      embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 
 # Add certificates needed for build & check certificates file hash
 # We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
 # to be able to download some Python components during the Agent build.
-RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\")
-RUN if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
-RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\") ; \
+    if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 } ; \
+    setx SSL_CERT_FILE \"C:\cacert.pem\"
 
 ### Preliminary step: we need both the .NET 3.5 runtime and
 ### the .NET 4.8 runtime. To do this, we get 4.8 from a base image and we
@@ -88,50 +86,53 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install git
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
 ### HACK: we disable symbolic links when cloning repositories
 ### to work around a symlink-related failure in the agent-binaries omnibus project
 ### when copying the datadog-agent project twice.
+
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
 RUN git config --system core.symlinks false
 
 # Install 7zip
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
-RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
+RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\" ; \
+    setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
 # Install VC compiler for Python 2.7
 RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
 
 # Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION ; \
+    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
-RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
-RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
+RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION ; \
+    if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) } ; \
+    if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
-RUN setx GOPATH C:\dev\go
+RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION ; \
+    setx GOPATH C:\dev\go
 
 # Install system Python 2 (to use invoke)
 RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
 # Install 64-bit ruby and bundler (for omnibus builds)
 RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
-RUN setx RIDK ((Get-Command ridk).Path)
-RUN gem install bundler
+RUN setx RIDK ((Get-Command ridk).Path) ; \
+    gem install bundler
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
-RUN ridk install 3
+RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION ; \
+    ridk install 3
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
-RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
-RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
+RUN if ($Env:TARGET_ARCH -eq 'x86') { \
+      ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" ; \
+      [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) \
+    }
 
 # Install aws cli
 COPY ./windows/install_awscli.ps1 install_awscli.ps1
