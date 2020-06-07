@@ -36,7 +36,7 @@ ENV GIT_VERSION="2.26.2" \
     CACERTS_HASH="ADF770DFD574A0D6026BFAA270CB6879B063957177A991D453FF1D302C02081F"
 
 LABEL target_agent="Agent 6/7" \
-      target_arch=${TARGET_ARCH} \
+      target_arch="x86" \
       windows_version=${WINDOWS_VERSION} \
       git_version=${GIT_VERSION} \
       sevenzip_version=${SEVENZIP_VERSION} \
@@ -60,6 +60,9 @@ RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cac
     if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 } ; \
     setx SSL_CERT_FILE \"C:\cacert.pem\"
 
+# Set 32-bit flag env var
+RUN setx WINDOWS_BUILD_32_BIT 1
+
 # Install Chocolatey
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
@@ -67,22 +70,24 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Objec
 ### HACK: we disable symbolic links when cloning repositories
 ### to work around a symlink-related failure in the agent-binaries omnibus project
 ### when copying the datadog-agent project twice.
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git --version $ENV:GIT_VERSION
+
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git -x86 --version $ENV:GIT_VERSION
 RUN git config --system core.symlinks false
 
 # Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip --version $ENV:SEVENZIP_VERSION
+RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip -x86 --version $ENV:SEVENZIP_VERSION
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake --version $ENV:CMAKE_VERSION ; \
+RUN cinst -y --no-progress cmake -x86 --version $ENV:CMAKE_VERSION ; \
+    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) ; \
     [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang --version $ENV:GO_VERSION ; \
+RUN cinst -y --no-progress golang -x86 --version $ENV:GO_VERSION ; \
     setx GOPATH C:\dev\go
 
 # Install system Python 2 (to use invoke)
-RUN cinst -y --no-progress python2 --version $ENV:PYTHON_VERSION
+RUN cinst -y --no-progress python2 -x86 --version $ENV:PYTHON_VERSION
 
 # Install 64-bit ruby and bundler (for omnibus builds)
 RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
@@ -92,6 +97,10 @@ RUN setx RIDK ((Get-Command ridk).Path) ; \
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION ; \
     ridk install 3
+
+# (32-bit only) Install 32-bit C/C++ compilation toolchain
+RUN ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" ; \
+    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install aws cli
 RUN powershell -C .\scripts\install_awscli.ps1
@@ -118,15 +127,15 @@ RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\scripts\install_net35_1809.bat }
 RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\scripts\install_net35_1909.bat }
 
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\" ; \
+RUN cinst -y --no-progress visualstudio2017buildtools -x86 --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\" ; \
     setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\" ; \
     [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
 
 # Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27 --version $ENV:VCPYTHON27_VERSION
+RUN cinst -y --no-progress vcpython27 -x86 --version $ENV:VCPYTHON27_VERSION
 
 # Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset --version $ENV:WIX_VERSION ; \
+RUN cinst -y --no-progress wixtoolset -x86 --version $ENV:WIX_VERSION ; \
     [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
 ENTRYPOINT ["scripts/entrypoint.bat"]

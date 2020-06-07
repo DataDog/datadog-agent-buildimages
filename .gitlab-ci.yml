@@ -112,7 +112,7 @@ build_windows_1809_x86:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
-    DOCKERFILE: windows/Dockerfile
+    DOCKERFILE: windows/Dockerfile-x86
     IMAGE: windows_1809_x86
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
     TARGET_ARCH: x86
@@ -134,7 +134,7 @@ build_windows_1909_x86:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:1909" ]
   variables:
-    DOCKERFILE: windows/Dockerfile
+    DOCKERFILE: windows/Dockerfile-x86
     IMAGE: windows_1909_x86
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200310-windowsservercore-1909
     TARGET_ARCH: x86
