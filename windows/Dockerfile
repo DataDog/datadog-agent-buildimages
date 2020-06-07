@@ -103,10 +103,13 @@ RUN powershell -Command .\scripts\install_docker.ps1
 RUN powershell -C .\scripts\install_embedded_pythons.ps1
 
 ### We need both the .NET 3.5 runtime and
-### the .NET 4.8 runtime. To do this, we get 4.8 from a base image and we
+### the .NET 4.8 runtime. To do this, on 1809 we get 4.8 from a base image and we
 ### manually the install .NET Framework 3.5 runtime using the instructions in
 ### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
 ### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
+
+### 1909 includes .NET Framework 4.8 by default, so we use the image that includes
+### .NET Framework 3.5 as well, and thus we don't need to install it manually here.
 
 ### The .NET Fx 3.5 is needed for the Visual C++ Compiler for Python 2.7
 ### (https://www.microsoft.com/en-us/download/details.aspx?id=44266)
@@ -115,7 +118,6 @@ RUN powershell -C .\scripts\install_embedded_pythons.ps1
 
 # Install .NET Fx 3.5
 RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\scripts\install_net35_1809.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\scripts\install_net35_1909.bat }
 
 # Install VS2017
 RUN cinst -y --no-progress visualstudio2017buildtools --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\" ; \
