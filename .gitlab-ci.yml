@@ -98,28 +98,6 @@ build_system-probe_arm64:
     - docker image prune -f
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
-build_windows_1909_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1909_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
-    TARGET_ARCH: x64
-    WINDOWS_VERSION: 1909
-  resource_group: windows_x64
-
-build_windows_1909_x86:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile-x86
-    IMAGE: windows_1909_x86
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
-    TARGET_ARCH: x86
-    WINDOWS_VERSION: 1909
-  resource_group: windows_x86
-
 build_windows_1809_x64:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
@@ -135,11 +113,33 @@ build_windows_1809_x86:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
-    DOCKERFILE: windows/Dockerfile-x86
+    DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x86
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
     TARGET_ARCH: x86
     WINDOWS_VERSION: 1809
+  resource_group: windows_x86
+
+build_windows_1909_x64:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_1909_x64
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
+    TARGET_ARCH: x64
+    WINDOWS_VERSION: 1909
+  resource_group: windows_x64
+
+build_windows_1909_x86:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_1909_x86
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
+    TARGET_ARCH: x86
+    WINDOWS_VERSION: 1909
   resource_group: windows_x86
 
 .release:

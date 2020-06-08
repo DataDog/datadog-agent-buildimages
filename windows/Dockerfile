@@ -20,6 +20,9 @@ SHELL ["powershell", "-Command"]
 ARG WINDOWS_VERSION
 ENV WINDOWS_VERSION=${WINDOWS_VERSION:-1809}
 
+ARG TARGET_ARCH
+ENV TARGET_ARCH=${TARGET_ARCH:-x64}
+
 # Chocolatey package versions
 ENV GIT_VERSION="2.26.2" \
     SEVENZIP_VERSION="19.0" \
@@ -53,82 +56,17 @@ LABEL target_agent="Agent 6/7" \
 
 COPY ./windows/scripts scripts
 
-# Add certificates needed for build & check certificates file hash
-# We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
-# to be able to download some Python components during the Agent build.
-RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert.pem\", \"cacert.pem\") ; \
-    if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 } ; \
-    setx SSL_CERT_FILE \"C:\cacert.pem\"
+RUN scripts/setup.ps1
 
-# Install Chocolatey
-RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-
-# Install git
-### HACK: we disable symbolic links when cloning repositories
-### to work around a symlink-related failure in the agent-binaries omnibus project
-### when copying the datadog-agent project twice.
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git --version $ENV:GIT_VERSION
-RUN git config --system core.symlinks false
-
-# Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip --version $ENV:SEVENZIP_VERSION
-
-# Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake --version $ENV:CMAKE_VERSION ; \
-    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine)
-
-# Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang --version $ENV:GO_VERSION ; \
-    setx GOPATH C:\dev\go
-
-# Install system Python 2 (to use invoke)
-RUN cinst -y --no-progress python2 --version $ENV:PYTHON_VERSION
-
-# Install 64-bit ruby and bundler (for omnibus builds)
-RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
-RUN setx RIDK ((Get-Command ridk).Path) ; \
-    gem install bundler
-
-# Install msys2 system & install 64-bit C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION ; \
-    ridk install 3
+RUN scripts/postsetup.ps1
 
 # Install aws cli
-RUN powershell -C .\scripts\install_awscli.ps1
+RUN scripts/install_awscli.ps1
 
 # Install docker, manifest-tool and notary
-RUN powershell -Command .\scripts\install_docker.ps1
+RUN scripts/install_docker.ps1
 
 # Install embedded pythons (for unit testing)
-RUN powershell -C .\scripts\install_embedded_pythons.ps1
-
-### We need both the .NET 3.5 runtime and
-### the .NET 4.8 runtime. To do this, on 1809 we get 4.8 from a base image and we
-### manually the install .NET Framework 3.5 runtime using the instructions in
-### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
-### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
-
-### 1909 includes .NET Framework 4.8 by default, so we use the image that includes
-### .NET Framework 3.5 as well, and thus we don't need to install it manually here.
-
-### The .NET Fx 3.5 is needed for the Visual C++ Compiler for Python 2.7
-### (https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-### and to work around a bug in the WiX 3.11 installer
-### (https://github.com/wixtoolset/issues/issues/5661).
-
-# Install .NET Fx 3.5
-RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\scripts\install_net35_1809.bat }
-
-# Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\" ; \
-    setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\" ; \
-    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
-
-# Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27 --version $ENV:VCPYTHON27_VERSION
-
-# Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset --version $ENV:WIX_VERSION ; \
-    [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+RUN scripts/install_embedded_pythons.ps1
 
 ENTRYPOINT ["scripts/entrypoint.bat"]
