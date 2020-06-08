@@ -31,8 +31,8 @@ setx GOPATH C:\dev\go
 # Install system Python 2 (to use invoke)
 cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
 
-# Install 64-bit ruby and bundler (for omnibus builds)
-cinst -y --no-progress ruby $ENV:CHOCO_ARCH_FLAG --version $ENV:RUBY_VERSION
+# Install 64-bit ruby (for omnibus builds)
+cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 
 ### We need both the .NET 3.5 runtime and
 ### the .NET 4.8 runtime. To do this, on 1809 we get 4.8 from a base image and we

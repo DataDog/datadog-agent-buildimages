@@ -69,4 +69,4 @@ RUN scripts/install_docker.ps1
 # Install embedded pythons (for unit testing)
 RUN scripts/install_embedded_pythons.ps1
 
-ENTRYPOINT ["scripts/entrypoint.bat"]
+ENTRYPOINT ["/scripts/entrypoint.bat"]
