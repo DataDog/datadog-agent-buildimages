@@ -34,8 +34,8 @@ cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSIO
 # Install 64-bit ruby (for omnibus builds)
 cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 
-### We need both the .NET 3.5 runtime and
-### the .NET 4.8 runtime. To do this, on 1809 we get 4.8 from a base image and we
+### We need both the .NET 3.5 runtime and the .NET 4.8 runtime.
+### To do this, on 1809 we get 4.8 from a base image and we
 ### manually the install .NET Framework 3.5 runtime using the instructions in
 ### the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
 ### https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile

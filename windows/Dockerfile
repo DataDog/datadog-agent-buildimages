@@ -56,8 +56,10 @@ LABEL target_agent="Agent 6/7" \
 
 COPY ./windows/scripts scripts
 
+# Install builder tools
 RUN scripts/setup.ps1
 
+# Run setup commands that need builder tools
 RUN scripts/postsetup.ps1
 
 # Install aws cli
