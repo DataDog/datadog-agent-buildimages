@@ -1,5 +1,13 @@
 $ErrorActionPreference = 'Stop'
 
+function Code-Check {
+    param ($Code, $Element)
+    if ($Code -ne 0) {
+        Write-Host -ForegroundColor Red "$Element install failed"
+        [Environment]::Exit(1)
+    }
+}
+
 # Add certificates needed for build & check certificates file hash
 # We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
 # to be able to download some Python components during the Agent build.
@@ -12,27 +20,43 @@ if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' ; setx WINDOWS_BUI
 
 # Install Chocolatey
 $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+Code-Check -Code $LASTEXITCODE -Element "chocolatey"
+
 
 # Install git
 $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
+Code-Check -Code $LASTEXITCODE -Element "git"
+
 
 # Install 7zip
 $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
+Code-Check -Code $LASTEXITCODE -Element "7zip"
+
 
 # Install Cmake and update PATH to include it
 cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
+Code-Check -Code $LASTEXITCODE -Element "cmake"
+
+
 if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${Env:ProgramFiles(x86)}\CMake\bin", [System.EnvironmentVariableTarget]::Machine) }
 if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles}\CMake\bin", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
+Code-Check -Code $LASTEXITCODE -Element "golang"
+
+
 setx GOPATH C:\dev\go
 
 # Install system Python 2 (to use invoke)
 cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
+Code-Check -Code $LASTEXITCODE -Element "python2"
+
 
 # Install 64-bit ruby (for omnibus builds)
 cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
+Code-Check -Code $LASTEXITCODE -Element "ruby"
+
 
 ### We need both the .NET 3.5 runtime and the .NET 4.8 runtime.
 ### To do this, on 1809 we get 4.8 from a base image and we
@@ -50,9 +74,14 @@ cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
 
 # Install .NET Fx 3.5
 if ($Env:WINDOWS_VERSION -eq '1809') { .\scripts\install_net35_1809.bat }
+Code-Check -Code $LASTEXITCODE -Element ".NET 3.5"
+
 
 # Install VS2017
 cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params "--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools"
+Code-Check -Code $LASTEXITCODE -Element "visualstudio2017buildtools"
+
+
 setx VSTUDIO_ROOT "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools"
 
 # Add signtool to path
@@ -60,10 +89,16 @@ setx VSTUDIO_ROOT "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTo
 
 # Install VC compiler for Python 2.7
 cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
+Code-Check -Code $LASTEXITCODE -Element "vcpython27"
+
 
 # Install Wix and update PATH to include it
 cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
+Code-Check -Code $LASTEXITCODE -Element "wixtoolset"
+
+
 [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin", [System.EnvironmentVariableTarget]::Machine)
 
 # Install msys2 system
 cinst -y --no-progress msys2 --params "/NoUpdate" --version $ENV:MSYS_VERSION
+Code-Check -Code $LASTEXITCODE -Element "msys2"
