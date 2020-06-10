@@ -7,7 +7,7 @@ conda activate ddpy3 || true # We use system python3 on some images, allow this 
 
 if [ "$TARGET_ARCH" = "arm64v8" ] ; then
     export GIMME_ARCH=arm64
-else
+elif [ "$TARGET_ARCH" = "arm32v7" ] ; then
     export GIMME_ARCH=arm
 fi
 eval "$(gimme)"
