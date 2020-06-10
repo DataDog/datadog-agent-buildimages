@@ -18,6 +18,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
+ENV TARGET_ARCH $TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
 RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then echo "armhfp" > /etc/yum/vars/basearch && \

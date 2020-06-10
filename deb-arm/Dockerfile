@@ -18,7 +18,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-
+ENV TARGET_ARCH $TARGET_ARCH
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     python2.7-dev build-essential pkg-config tar libsystemd-dev libkrb5-dev \
