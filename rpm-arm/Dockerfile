@@ -33,6 +33,17 @@ RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMa
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python
 
+# This trick preloads a dynamic libary that will replace the uname syscall to pretend the machine is armv7l
+RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then \
+        git clone https://github.com/robotpy/fakearmv7l ; \
+        cd fakearmv7l ; \
+        make ; \
+        make install ; \
+        cd .. ; \
+        rm -rf ./fakearmv7l ; \
+        export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so" ; \
+    fi
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
