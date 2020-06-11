@@ -19,27 +19,38 @@ setx SSL_CERT_FILE "C:\cacert.pem"
 if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' ; setx WINDOWS_BUILD_32_BIT 1 }
 
 # Install Chocolatey
-$env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+$env:chocolateyUseWindowsCompression = 'true'
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 Code-Check -Code $LASTEXITCODE -Element "chocolatey"
 
 
 # Install git
-$env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
+cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
 Code-Check -Code $LASTEXITCODE -Element "git"
 
 
 # Install 7zip
-$env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
+cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
 Code-Check -Code $LASTEXITCODE -Element "7zip"
 
+# We have 7zip now, no need for Windows compression
+$env:chocolateyUseWindowsCompression = 'false'
 
 # Install Cmake and update PATH to include it
 cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
 Code-Check -Code $LASTEXITCODE -Element "cmake"
 
 
-if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${Env:ProgramFiles(x86)}\CMake\bin", [System.EnvironmentVariableTarget]::Machine) }
-if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles}\CMake\bin", [System.EnvironmentVariableTarget]::Machine) }
+if ($Env:TARGET_ARCH -eq 'x86') {
+    [Environment]::SetEnvironmentVariable("Path",
+        [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) +
+        ";${Env:ProgramFiles(x86)}\CMake\bin", [System.EnvironmentVariableTarget]::Machine)
+}
+if ($Env:TARGET_ARCH -eq 'x64') {
+    [Environment]::SetEnvironmentVariable("Path",
+        [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) +
+        ";${env:ProgramFiles}\CMake\bin", [System.EnvironmentVariableTarget]::Machine)
+}
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
@@ -85,7 +96,9 @@ Code-Check -Code $LASTEXITCODE -Element "visualstudio2017buildtools"
 setx VSTUDIO_ROOT "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools"
 
 # Add signtool to path
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64", [System.EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("Path",
+    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) +
+    ";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64", [System.EnvironmentVariableTarget]::Machine)
 
 # Install VC compiler for Python 2.7
 cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
@@ -96,8 +109,9 @@ Code-Check -Code $LASTEXITCODE -Element "vcpython27"
 cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 Code-Check -Code $LASTEXITCODE -Element "wixtoolset"
 
-
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin", [System.EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("Path",
+    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) +
+    ";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin", [System.EnvironmentVariableTarget]::Machine)
 
 # Install msys2 system
 cinst -y --no-progress msys2 --params "/NoUpdate" --version $ENV:MSYS_VERSION
