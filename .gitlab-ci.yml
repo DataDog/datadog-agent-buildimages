@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
   - release
 
 variables:
@@ -13,6 +14,9 @@ variables:
   script:
     - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    # For testing purposes
+    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
 
 build_deb_x64:
   extends: .build
@@ -41,6 +45,9 @@ build_rpm_x64:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    # For testing purposes
+    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
 
 build_deb_arm64:
   extends: .armbuild
@@ -82,6 +89,77 @@ build_system-probe_arm64:
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
+
+.test:
+  stage: test
+  except: [ tags, schedules ]
+
+.test_agent6_x64:
+  extends: .test
+  before_script:
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - VERSION="nightly"
+    - git checkout master
+    - source /root/.bashrc && conda activate ddpy3
+    - inv -e deps --no-checks --verbose --dep-vendor-only
+  script:
+    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+
+.test_agent6_arm64:
+  extends: .test
+  before_script:
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - VERSION="nightly"
+    - git checkout master
+    - source /root/.bashrc
+    - inv -e deps --no-checks --verbose --dep-vendor-only
+  script:
+    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+
+test_deb_x64:
+  extends: .test_agent6_x64
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
+  needs: [ "build_deb_x64" ]
+  tags: [ "runner:main", "size:2xlarge" ]
+
+test_deb_arm64:
+  extends: .test_agent6_arm64
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
+  needs: [ "build_deb_arm64" ]
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+
+test_rpm_x64:
+  extends: .test_agent6_x64
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
+  needs: [ "build_rpm_x64" ]
+  tags: [ "runner:main", "size:2xlarge" ]
+
+test_rpm_arm64:
+  extends: .test_agent6_arm64
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID
+  needs: [ "build_rpm_arm64" ]
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+
+.test_system_probe:
+  extends: .test
+  before_script:
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - git checkout master
+    - inv -e deps --no-checks --verbose --dep-vendor-only
+  script:
+    - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
+
+test_system-probe_x64:
+  extends: .test_system_probe
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
+  needs: [ "build_system-probe_x64" ]
+  tags: [ "runner:main", "size:2xlarge" ]
+
+test_system-probe_arm64:
+  extends: .test_system_probe
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
+  needs: [ "build_system-probe_arm64" ]
+  tags: [ "runner:docker-arm", "platform:arm64" ]
 
 .winbuild: &winbuild
   stage: build
@@ -142,6 +220,53 @@ build_windows_1909_x86:
     WINDOWS_VERSION: 1909
   resource_group: windows_x86
 
+.test_windows:
+  extends: .test
+  timeout: 2h 00m
+  script:
+    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
+    - git clone https://github.com/DataDog/datadog-agent datadog-agent
+    - cd datadog-agent
+    - $VERSION="nightly"
+    - git checkout master
+    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
+  after_script:
+    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
+    - docker image prune -f
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
+
+test_windows_1809_x64:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  needs: [ "build_windows_1809_x64" ]
+  variables:
+    ARCH: x64
+    IMAGE: windows_1809_x64
+
+test_windows_1809_x86:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  needs: [ "build_windows_1809_x86" ]
+  variables:
+    ARCH: x86
+    IMAGE: windows_1809_x86
+
+test_windows_1909_x64:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  needs: [ "build_windows_1909_x64" ]
+  variables:
+    ARCH: x64
+    IMAGE: windows_1909_x64
+
+test_windows_1909_x86:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  needs: [ "build_windows_1909_x86" ]
+  variables:
+    ARCH: x86
+    IMAGE: windows_1909_x86
+
 .release:
   stage: release
   except: [ tags, schedules ]
@@ -198,30 +323,36 @@ build_windows_1909_x86:
 
 release_deb_x64:
   extends: .release
+  needs: [ "test_deb_x64" ]
   variables:
     IMAGE: deb_x64
 
 release_rpm_x64:
   extends: .release
+  needs: [ "test_rpm_x64" ]
   variables:
     IMAGE: rpm_x64
 
 release_windows_1809_x64:
   extends: .winrelease
+  needs: [ "test_windows_1809_x64" ]
   variables:
     IMAGE: windows_1809_x64
 
 release_windows_1809_x86:
   extends: .winrelease
+  needs: [ "test_windows_1809_x86" ]
   variables:
     IMAGE: windows_1809_x86
 
 release_windows_1909_x64:
   extends: .winrelease
+  needs: [ "test_windows_1909_x64" ]
   variables:
     IMAGE: windows_1909_x64
 
 release_windows_1909_x86:
   extends: .winrelease
+  needs: [ "test_windows_1909_x86" ]
   variables:
     IMAGE: windows_1909_x86

@@ -19,7 +19,7 @@ source ~/.build_setup
 
 # Clone the repo
 go get github.com/DataDog/datadog-agent
-cd go/src/github.com/Datadog/datadog-agent
+cd $GOPATH/src/github.com/Datadog/datadog-agent
 
 # Checkout to correct version
 git pull
