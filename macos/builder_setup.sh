@@ -26,7 +26,7 @@ ln -s /usr/local/bin/pip3 /usr/local/bin/pip # Use pip3 by default
 brew install pkg-config -f
 brew install cmake -f
 
-mkdir $HOME/go
+mkdir -p $HOME/go
 export GOPATH=$HOME/go
 echo 'export GOPATH=$HOME/go' >> ~/.build_setup
 export PATH="$GOPATH/bin:$PATH"
