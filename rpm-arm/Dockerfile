@@ -34,14 +34,14 @@ RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMa
     libtool autoconf policycoreutils-python
 
 # This trick preloads a dynamic libary that will replace the uname syscall to pretend the machine is armv7l
+# The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
 RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then \
-        git clone https://github.com/robotpy/fakearmv7l ; \
+        git clone https://github.com/DataDog/fakearmv7l ; \
         cd fakearmv7l ; \
         make ; \
         make install ; \
         cd .. ; \
         rm -rf ./fakearmv7l ; \
-        export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so" ; \
     fi
 
 # RVM
