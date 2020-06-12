@@ -31,7 +31,11 @@ RUN if [ "$DD_TARGET_ARCH" = "arm32v7" ] ; then rpm --import /etc/pki/rpm-gpg/RP
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
-    libtool autoconf policycoreutils-python gcc-4.9 g++-4.9
+    libtool autoconf policycoreutils-python
+
+RUN yum -y install centos-release-scl-rh && \
+    yum -y install devtoolset-9 && \
+    echo source scl_source enable devtoolset-9 >> /root/.bashrc
 
 # This trick preloads a dynamic libary that will replace the uname syscall to pretend the machine is armv7l
 # The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
