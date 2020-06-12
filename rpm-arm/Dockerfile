@@ -9,7 +9,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
-ARG TARGET_ARCH=arm64v8
+ARG DD_TARGET_ARCH=arm64v8
 
 # Environment
 ENV GOPATH /go
@@ -18,24 +18,24 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-ENV TARGET_ARCH $TARGET_ARCH
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
-RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then echo "armhfp" > /etc/yum/vars/basearch && \
+RUN if [ "$DD_TARGET_ARCH" = "arm32v7" ] ; then echo "armhfp" > /etc/yum/vars/basearch && \
     echo "armv7hl" > /etc/yum/vars/arch && \
     echo "armv7hl-redhat-linux-gnu" > /etc/rpm/platform ; fi
 
 # Resolves a nasty NOKEY warning that appears when using yum
-RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
+RUN if [ "$DD_TARGET_ARCH" = "arm32v7" ] ; then rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32 ; fi
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
-    libtool autoconf policycoreutils-python
+    libtool autoconf policycoreutils-python libstdc++6
 
 # This trick preloads a dynamic libary that will replace the uname syscall to pretend the machine is armv7l
 # The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
-RUN if [ "$TARGET_ARCH" = "arm32v7" ] ; then \
+RUN if [ "$DD_TARGET_ARCH" = "arm32v7" ] ; then \
         git clone https://github.com/DataDog/fakearmv7l ; \
         cd fakearmv7l ; \
         make ; \
@@ -64,7 +64,7 @@ RUN chmod +x /bin/gimme
 # GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
 # https://github.com/golang/go/blob/master/src/go/build/syslist.go
 # Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
-RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then \
+RUN if [ "$DD_TARGET_ARCH" = "arm64v8" ] ; then \
         GIMME_ARCH=arm64 gimme $GIMME_GO_VERSION ; \
     else \
         GIMME_ARCH=arm gimme $GIMME_GO_VERSION ; \
@@ -73,14 +73,14 @@ RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then \
 COPY ./gobin.sh /etc/profile.d/
 
 # CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
-RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz && \
+RUN if [ "$DD_TARGET_ARCH" = "arm64v8" ] ; then curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz && \
     tar xf cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz --no-same-owner -kC / && \
     rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz ; fi
 ENV PATH="/opt/cmake/bin:$PATH"
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
-RUN if [ "$TARGET_ARCH" = "arm64v8" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
+RUN if [ "$DD_TARGET_ARCH" = "arm64v8" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
     tar xf clang_llvm.tar.xz --no-same-owner -kC / && \
     rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
