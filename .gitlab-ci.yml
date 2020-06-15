@@ -66,9 +66,9 @@ build_deb_armhf:
 build_rpm_arm64:
   extends: .armbuild
   variables:
-    DOCKERFILE: rpm-arm/Dockerfile
+    DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
-    BASE_IMAGE: arm64v8/centos:7
+    BASE_IMAGE: amazonlinux:2.0.20181114
 
 build_rpm_armhf:
   extends: .armbuild
