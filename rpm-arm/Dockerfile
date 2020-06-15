@@ -36,7 +36,8 @@ RUN git clone https://github.com/DataDog/fakearmv7l ; \
         make ; \
         make install ; \
         cd .. ; \
-        rm -rf ./fakearmv7l ;
+        rm -rf ./fakearmv7l ; \
+        export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so"
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
