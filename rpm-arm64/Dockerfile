@@ -19,7 +19,7 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig libsystemd-dev
+    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig systemd-devel
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
