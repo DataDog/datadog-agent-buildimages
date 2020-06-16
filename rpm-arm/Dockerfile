@@ -31,7 +31,7 @@ RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMa
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python
 
-# This trick preloads a dynamic libary that will replace the uname syscall to pretend the machine is armv7l
+# This trick preloads a dynamic library that will replace the uname syscall to pretend the machine is armv7l
 # The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
 RUN git clone https://github.com/DataDog/fakearmv7l ; \
         cd fakearmv7l ; \
