@@ -7,6 +7,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+ARG DD_TARGET_ARCH=arm64v8
 
 # Environment
 ENV GOPATH /go
@@ -15,7 +16,7 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig 
