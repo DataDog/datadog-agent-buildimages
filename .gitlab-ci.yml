@@ -5,11 +5,6 @@ stages:
 
 variables:
   WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/windows_1909_x64:v2348149-ba6640d
-  GIMME_GO_VERSION: 1.13.8
-  DD_PIP_VERSION: 19.1
-  DD_SETUPTOOLS_VERSION: 41.0.1
-  CMAKE_VERSION: 3.14.4
-  CLANG_VERSION: 8.0.0
 
 .build:
   stage: build
@@ -48,15 +43,7 @@ build_rpm_x64:
     - pip install awscli
     - aws --version
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE
-                   --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
-                   --build-arg GIMME_GO_VERSION=$GIMME_GO_VERSION
-                   --build-arg DD_PIP_VERSION=$DD_PIP_VERSION
-                   --build-arg DD_SETUPTOOLS_VERSION=$DD_SETUPTOOLS_VERSION
-                   --build-arg CMAKE_VERSION=$CMAKE_VERSION
-                   --build-arg CLANG_VERSION=$CLANG_VERSION
-                   --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-                   --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
