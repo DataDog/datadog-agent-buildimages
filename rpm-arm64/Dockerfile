@@ -19,7 +19,8 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig systemd-devel
+    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
+    libtool autoconf policycoreutils-python
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -32,9 +33,7 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
 RUN curl "https://bootstrap.pypa.io/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke awscli==1.16.240
-
-
+RUN pip install invoke distro==1.4.0 awscli==1.16.240
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
