@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=arm32v7/centos:7
+ARG BASE_IMAGE=amazonlinux:2.0.20181114
 FROM ${BASE_IMAGE}
 
 # Build Args
@@ -7,7 +7,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
-ARG DD_TARGET_ARCH=arm32v7
+ARG DD_TARGET_ARCH=arm64v8
 
 # Environment
 ENV GOPATH /go
@@ -18,28 +18,9 @@ ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
-# configure yum and rpm for running on non-armv7l architectures
-RUN echo "armhfp" > /etc/yum/vars/basearch && \
-    echo "armv7hl" > /etc/yum/vars/arch && \
-    echo "armv7hl-redhat-linux-gnu" > /etc/rpm/platform
-
-# Resolves a nasty NOKEY warning that appears when using yum
-RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
-    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
-
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python
-
-# This trick preloads a dynamic library that will replace the uname syscall to pretend the machine is armv7l
-# The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
-RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
-        cd fakearmv7l ; \
-        make ; \
-        make install ; \
-        cd .. ; \
-        rm -rf ./fakearmv7l ; \
-        export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so"
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -57,13 +38,21 @@ RUN pip install invoke distro==1.4.0 awscli==1.16.240
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
 RUN chmod +x /bin/gimme
-
-# GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
-# https://github.com/golang/go/blob/master/src/go/build/syslist.go
-# Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
-RUN GIMME_ARCH=arm gimme $GIMME_GO_VERSION
-
+RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
+
+# CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
+RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz && \
+    tar xf cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz --no-same-owner -kC / && \
+    rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz
+ENV PATH="/opt/cmake/bin:$PATH"
+
+# Install clang and llvm version 8. Pre-built because building takes ~4 hours.
+# This was built from sources on centos 7, using the build-clang.sh script
+RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
+    tar xf clang_llvm.tar.xz --no-same-owner -kC / && \
+    rm clang_llvm.tar.xz
+ENV PATH="/opt/clang/bin:$PATH"
 
 # Entrypoint
 COPY ./entrypoint.sh /
