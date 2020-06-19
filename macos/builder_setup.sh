@@ -38,7 +38,7 @@ eval `gimme $GO_VERSION`
 echo 'eval `gimme '$GO_VERSION'`' >> ~/.build_setup
 
 # Install IBM MQ
-sudo mkdir /opt/mqm
+sudo mkdir -p /opt/mqm
 curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/${IBM_MQ_VERSION}-IBM-MQ-Toolkit-MacX64.tar.gz" -o /tmp/mq_client.tar.gz
 sudo tar -C /opt/mqm -xf /tmp/mq_client.tar.gz
 sudo rm -rf /tmp/mq_client.tar.gz
