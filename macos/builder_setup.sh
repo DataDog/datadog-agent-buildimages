@@ -35,3 +35,9 @@ echo 'export PATH="$GOPATH/bin:$PATH"' >> ~/.build_setup
 brew install gimme
 eval `gimme $GO_VERSION`
 echo 'eval `gimme '$GO_VERSION'`' >> ~/.build_setup
+
+# Install IBM MQ
+sudo mkdir /opt/mqm
+curl https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/9.1.5.0-IBM-MQ-Toolkit-MacX64.tar.gz \
+    -o /tmp/9.1.5.0-IBM-MQ-Toolkit-MacX64.tar.gz
+sudo tar -C /opt/mqm -xf /tmp/*-IBM-MQ-Toolkit-MacX64.tar.gz
