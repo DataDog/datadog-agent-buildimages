@@ -7,7 +7,7 @@
 # Prerequisites:
 # - A MacOS 10.13.6 (High Sierra) box
 
-export GO_VERSION=1.13.8
+export GO_VERSION=1.13.12
 export RUBY_VERSION=2.4
 
 # Install brew (will also install Command Line Tools)
