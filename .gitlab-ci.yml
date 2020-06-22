@@ -37,13 +37,13 @@ build_rpm_x64:
   image: arm64v8/docker:18.04
   variables:
     BASE_IMAGE: arm64v8/ubuntu:16.04
-    TARGET_ARCH: arm64v8
+    DD_TARGET_ARCH: arm64v8
   script:
     - apk add --update python py-pip
     - pip install awscli
     - aws --version
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
@@ -61,14 +61,14 @@ build_deb_armhf:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
     BASE_IMAGE: arm32v7/ubuntu:16.04
-    TARGET_ARCH: arm32v7
+    DD_TARGET_ARCH: arm32v7
 
 build_rpm_arm64:
   extends: .armbuild
   variables:
-    DOCKERFILE: rpm-arm/Dockerfile
+    DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
-    BASE_IMAGE: arm64v8/centos:7
+    BASE_IMAGE: amazonlinux:2.0.20181114
 
 build_rpm_armhf:
   extends: .armbuild
@@ -76,7 +76,7 @@ build_rpm_armhf:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
-    TARGET_ARCH: arm32v7
+    DD_TARGET_ARCH: arm32v7
 
 build_system-probe_x64:
   extends: .build
@@ -168,8 +168,8 @@ test_system-probe_arm64:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
-    - echo "build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
-    - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TARGET_ARCH=$TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
+    - echo "build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
+    - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
     - docker images
     - docker push $SRC_IMAGE
   after_script:
@@ -183,7 +183,7 @@ build_windows_1809_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x64
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
-    TARGET_ARCH: x64
+    DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 1809
   resource_group: windows_x64
 
@@ -194,7 +194,7 @@ build_windows_1809_x86:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x86
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-20200114-windowsservercore-ltsc2019
-    TARGET_ARCH: x86
+    DD_TARGET_ARCH: x86
     WINDOWS_VERSION: 1809
   resource_group: windows_x86
 
@@ -205,7 +205,7 @@ build_windows_1909_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x64
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
-    TARGET_ARCH: x64
+    DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 1909
   resource_group: windows_x64
 
@@ -216,7 +216,7 @@ build_windows_1909_x86:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x86
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:3.5-20200512-windowsservercore-1909
-    TARGET_ARCH: x86
+    DD_TARGET_ARCH: x86
     WINDOWS_VERSION: 1909
   resource_group: windows_x86
 
