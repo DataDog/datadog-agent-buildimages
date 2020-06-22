@@ -18,7 +18,7 @@ export RELEASE_VERSION=${RELEASE_VERSION:-$VERSION}
 source ~/.build_setup
 
 # Clone the repo
-go get github.com/DataDog/datadog-agent
+go get github.com/DataDog/datadog-agent || true # Go get fails if the datadog-agent repo is already there
 cd $GOPATH/src/github.com/Datadog/datadog-agent
 
 # Checkout to correct version
