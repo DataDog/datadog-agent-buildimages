@@ -9,6 +9,7 @@
 
 export GO_VERSION=1.13.8
 export RUBY_VERSION=2.4
+export IBM_MQ_VERSION=9.1.5.0
 
 # Install brew (will also install Command Line Tools)
 CI=1 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -35,3 +36,9 @@ echo 'export PATH="$GOPATH/bin:$PATH"' >> ~/.build_setup
 brew install gimme
 eval `gimme $GO_VERSION`
 echo 'eval `gimme '$GO_VERSION'`' >> ~/.build_setup
+
+# Install IBM MQ
+sudo mkdir -p /opt/mqm
+curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/${IBM_MQ_VERSION}-IBM-MQ-Toolkit-MacX64.tar.gz" -o /tmp/mq_client.tar.gz
+sudo tar -C /opt/mqm -xf /tmp/mq_client.tar.gz
+sudo rm -rf /tmp/mq_client.tar.gz
