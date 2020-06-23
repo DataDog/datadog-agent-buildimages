@@ -147,7 +147,7 @@ test_rpm_arm64:
     - git checkout master
     - inv -e deps --no-checks --verbose --dep-vendor-only
   script:
-    - inv -e system-probe.build --go-version=1.13.8 --no-with-bcc
+    - inv -e system-probe.build --go-version=1.13.11 --no-with-bcc
 
 test_system-probe_x64:
   extends: .test_system_probe
