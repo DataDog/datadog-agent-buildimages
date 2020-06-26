@@ -172,7 +172,6 @@ test_system-probe_arm64:
     - powershell -Command "docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
     - docker push $SRC_IMAGE
   after_script:
-    - docker image prune -f
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
 build_windows_1809_x64:
@@ -231,7 +230,6 @@ build_windows_1909_x86:
     - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
   after_script:
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - docker image prune -f
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
 test_windows_1809_x64:
