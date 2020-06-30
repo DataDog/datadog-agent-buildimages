@@ -101,7 +101,7 @@ build_system-probe_arm64:
     - VERSION="nightly"
     - git checkout master
     - source /root/.bashrc && conda activate ddpy3
-    - inv -e deps --no-checks --verbose --dep-vendor-only
+    - inv -e deps --verbose --dep-vendor-only
   script:
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
@@ -112,7 +112,7 @@ build_system-probe_arm64:
     - VERSION="nightly"
     - git checkout master
     - source /root/.bashrc
-    - inv -e deps --no-checks --verbose --dep-vendor-only
+    - inv -e deps --verbose --dep-vendor-only
   script:
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
