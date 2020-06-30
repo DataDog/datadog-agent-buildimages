@@ -40,6 +40,7 @@ Then follow these instructions:
 - If you added the notarization password to your keychain:
 
 `xcrun altool --notarize-app --primary-bundle-id "com.datadoghq.agent.$VERSION" --username "$APPLE_ACCOUNT" --password "@keychain:AC_PASSWORD" --file <dmg file>`
+
 - Otherwise:
 
 `xcrun altool --notarize-app --primary-bundle-id "com.datadoghq.agent.$VERSION" --username "$APPLE_ACCOUNT" --password "$NOTARIZATION_PWD" --file <dmg file>`
@@ -48,4 +49,11 @@ This command will upload the dmg package to Apple and return a UUID identifying 
 
 4. Use the provided UUID to check on the notarization status
 
+- If you added the notarization password to your keychain:
+
 `xcrun altool --notarization-info <UUID> -u "$APPLE_ACCOUNT" -p "@keychain:AC_PASSWORD"`
+
+- Otherwise:
+
+`xcrun altool --notarization-info <UUID> -u "$APPLE_ACCOUNT" -p "$NOTARIZATION_PWD"`
+
