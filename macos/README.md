@@ -31,13 +31,18 @@ Then follow these instructions:
 
 `sudo xcode-select -s /Applications/Xcode.app`
 
-2. Add notarization password to keychain
+2. Add notarization password to keychain (XCode >= 11 only)
 
 `xcrun altool --store-password-in-keychain-item "AC_PASSWORD" -u "package@datadoghq.com" -p "$NOTARIZATION_PWD"`
 
 3. Send notarization request
 
+- If you added the notarization password to your keychain:
+
 `xcrun altool --notarize-app --primary-bundle-id "com.datadoghq.agent.$VERSION" --username "$APPLE_ACCOUNT" --password "@keychain:AC_PASSWORD" --file <dmg file>`
+- Otherwise:
+
+`xcrun altool --notarize-app --primary-bundle-id "com.datadoghq.agent.$VERSION" --username "$APPLE_ACCOUNT" --password "$NOTARIZATION_PWD" --file <dmg file>`
 
 This command will upload the dmg package to Apple and return a UUID identifying the notarization request (if successful).
 
