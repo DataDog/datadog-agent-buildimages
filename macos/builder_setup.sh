@@ -14,6 +14,8 @@ export IBM_MQ_VERSION=9.1.5.0
 # Install or upgrade brew (will also install Command Line Tools)
 CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
+brew uninstall python@2 || true # Uninstall python 2 if present
+
 # Install ruby & bundler
 brew install ruby@$RUBY_VERSION -f
 export PATH="/usr/local/opt/ruby@$RUBY_VERSION/bin:/usr/local/lib/ruby/gems/$RUBY_VERSION.0/bin:$PATH"
@@ -21,9 +23,7 @@ echo 'export PATH="/usr/local/opt/ruby@'$RUBY_VERSION'/bin:/usr/local/lib/ruby/g
 gem install bundle -f
 
 # Install build tools
-brew uninstall python@2 || true # Uninstall python 2 if present
 brew upgrade python -f || brew install python -f # If python 3 is already present, upgrade it. Otherwise install it.
-ln -s /usr/local/bin/pip3 /usr/local/bin/pip # Use pip3 by default
 
 brew install pkg-config -f
 brew install cmake -f
