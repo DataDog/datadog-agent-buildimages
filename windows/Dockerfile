@@ -27,10 +27,9 @@ ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 ENV GIT_VERSION "2.26.2"
 ENV SEVENZIP_VERSION "19.0"
 ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
-ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.13.11"
 ENV RUBY_VERSION "2.4.3.1"
-ENV PYTHON_VERSION "2.7.17"
+ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
 ENV MSYS_VERSION "20190524.0.0.20191030"
@@ -46,7 +45,6 @@ LABEL windows_version=${WINDOWS_VERSION}
 LABEL git_version=${GIT_VERSION}
 LABEL sevenzip_version=${SEVENZIP_VERSION}
 LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
-LABEL vcpython27_version=${VCPYTHON27_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
 LABEL wix_version=${WIX_VERSION}
@@ -101,9 +99,6 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $
 RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools\"
 RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
-# Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
-
 # Install Wix and update PATH to include it
 RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
@@ -117,8 +112,9 @@ RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Pa
 RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
 RUN setx GOPATH C:\dev\go
 
-# Install system Python 2 (to use invoke)
-RUN cinst -y --no-progress python2 $ENV:CHOCO_ARCH_FLAG --version $ENV:PYTHON_VERSION
+# Install system Python 3 (to use invoke).
+# We always install the 64 bit version because vcredist140 won't work otherwise
+RUN cinst -y --no-progress python3 --version $ENV:PYTHON_VERSION
 
 # Install 64-bit ruby and bundler (for omnibus builds)
 RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
