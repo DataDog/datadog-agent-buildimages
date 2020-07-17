@@ -8,7 +8,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
 ARG CMAKE_VERSION=3.14.4
-ARG CLANG_VERSION=8.0.0
+ARG CLANG_VERSION=10.0.0
 
 # Environment
 ENV GOPATH /go
@@ -117,7 +117,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install clang and llvm version 8
-RUN curl -O http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
+RUN curl -O https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
     tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
     rm clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-18.04.tar.xz
 
