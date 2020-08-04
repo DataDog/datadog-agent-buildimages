@@ -21,7 +21,7 @@ Start-Process wdksetup.exe -ArgumentList '/q' -Wait
 mkdir c:\tmp
 copy "C:\Program Files (x86)\Windows Kits\10\Vsix\WDK.vsix" C:\TMP\wdkvsix.zip
 Expand-Archive C:\TMP\wdkvsix.zip -DestinationPath C:\TMP\wdkvsix
-robocopy /e "C:\TMP\wdkvsix\`$VCTargets\Platforms" "${Env:VSTUDIO_ROOT}Common7\IDE\VC\VCTargets\Platforms" 
+robocopy /e "C:\TMP\wdkvsix\`$VCTargets\Platforms" "${Env:VSTUDIO_ROOT}\Common7\IDE\VC\VCTargets\Platforms" 
 remove-item -Force -Recurse -Path "c:\tmp"
 
 #.`clean_tmps.ps1
