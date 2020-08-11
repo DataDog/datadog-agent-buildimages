@@ -33,7 +33,7 @@ Then follow these instructions:
 
 2. Add notarization password to keychain (XCode >= 11 only)
 
-`xcrun altool --store-password-in-keychain-item "AC_PASSWORD" -u "package@datadoghq.com" -p "$NOTARIZATION_PWD"`
+`xcrun altool --store-password-in-keychain-item "AC_PASSWORD" -u "$APPLE_ACCOUNT" -p "$NOTARIZATION_PWD"`
 
 3. Send notarization request
 
