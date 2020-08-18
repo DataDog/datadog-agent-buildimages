@@ -7,7 +7,7 @@
 # Prerequisites:
 # - A MacOS 10.13.6 (High Sierra) box
 
-export GO_VERSION=1.13.11
+export GO_VERSION=1.14.7
 export RUBY_VERSION=2.4
 export IBM_MQ_VERSION=9.1.5.0
 
