@@ -39,10 +39,10 @@ sudo mkdir -p /opt/datadog-agent /var/cache/omnibus && sudo chown "$USER" /opt/d
 
 # Launch omnibus build
 if [ "$SIGN" = "true" ]; then
-    # Unlock the login keychain to get access to the signing certificates
+    # Unlock the keychain to get access to the signing certificates
     security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_NAME"
     inv -e agent.omnibus-build --hardened-runtime --python-runtimes "$PYTHON_RUNTIMES" --major-version "$AGENT_MAJOR_VERSION" --release-version "$RELEASE_VERSION"
-    # Lock the login keychain once we're done
+    # Lock the keychain once we're done
     security lock-keychain "$KEYCHAIN_NAME"
 else
     inv -e agent.omnibus-build --skip-sign --python-runtimes "$PYTHON_RUNTIMES" --major-version "$AGENT_MAJOR_VERSION" --release-version "$RELEASE_VERSION"
