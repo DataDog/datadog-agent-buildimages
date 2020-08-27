@@ -10,9 +10,12 @@
 # - $AGENT_MAJOR_VERSION contains the major version to release
 # - $PYTHON_RUNTIMES contains the included python runtimes
 # - $SIGN set to true if signing is enabled
-# - if $SIGN is set to true, $KEYCHAIN_PWD contains the keychain password
+# - if $SIGN is set to true:
+#   - $KEYCHAIN_NAME contains the keychain name. Defaults to login.keychain
+#   - $KEYCHAIN_PWD contains the keychain password
 
 export RELEASE_VERSION=${RELEASE_VERSION:-$VERSION}
+export KEYCHAIN_NAME=${KEYCHAIN_NAME:-"login.keychain"}
 
 # Load build setup vars
 source ~/.build_setup
@@ -23,7 +26,7 @@ cd $GOPATH/src/github.com/Datadog/datadog-agent
 
 # Checkout to correct version
 git pull
-git checkout $VERSION
+git checkout "$VERSION"
 
 # Install python deps (invoke, etc.)
 python3 -m pip install -r requirements.txt
@@ -32,15 +35,15 @@ python3 -m pip install -r requirements.txt
 sudo rm -rf /opt/datadog-agent ./vendor ./vendor-new /var/cache/omnibus/src/* ./omnibus/Gemfile.lock
 
 # Create target folders
-sudo mkdir -p /opt/datadog-agent /var/cache/omnibus && sudo chown $USER /opt/datadog-agent /var/cache/omnibus
+sudo mkdir -p /opt/datadog-agent /var/cache/omnibus && sudo chown "$USER" /opt/datadog-agent /var/cache/omnibus
 
 # Launch omnibus build
 if [ "$SIGN" = "true" ]; then
-    # Unlock the login keychain to get access to the signing certificates
-    security unlock-keychain -p $KEYCHAIN_PWD "login.keychain"
-    inv -e agent.omnibus-build --hardened-runtime --python-runtimes $PYTHON_RUNTIMES --major-version $AGENT_MAJOR_VERSION --release-version $RELEASE_VERSION
-    # Lock the login keychain once we're done
-    security lock-keychain "login.keychain"
+    # Unlock the keychain to get access to the signing certificates
+    security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_NAME"
+    inv -e agent.omnibus-build --hardened-runtime --python-runtimes "$PYTHON_RUNTIMES" --major-version "$AGENT_MAJOR_VERSION" --release-version "$RELEASE_VERSION"
+    # Lock the keychain once we're done
+    security lock-keychain "$KEYCHAIN_NAME"
 else
-    inv -e agent.omnibus-build --skip-sign --python-runtimes $PYTHON_RUNTIMES --major-version $AGENT_MAJOR_VERSION --release-version $RELEASE_VERSION
+    inv -e agent.omnibus-build --skip-sign --python-runtimes "$PYTHON_RUNTIMES" --major-version "$AGENT_MAJOR_VERSION" --release-version "$RELEASE_VERSION"
 fi
