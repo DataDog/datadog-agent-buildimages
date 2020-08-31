@@ -5,7 +5,7 @@ ARG GIMME_GO_VERSION=1.14.7
 ARG DD_CONDA_VERSION=4.7.10
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
-ARG MQ_URL=https://s3.amazonaws.com/dd-agent-tarball-mirror/mqadv_dev80_linux_x86-64.tar.gz
+ARG IBM_MQ_VERSION=9.1.5.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 
@@ -14,7 +14,7 @@ ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
-ENV MQ_URL $MQ_URL
+ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
@@ -77,27 +77,10 @@ RUN curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoc
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz
 
 # IBM MQ
-# IBM MQ is required in the builder.
-# It cannot be shipped with the agent for licensing reasons,
-# so it can't be included in Omnibus
-RUN mkdir -p /tmp/mq \
-    && cd /tmp/mq \
-    && curl -LO $MQ_URL \
-    && tar -zxvf ./*.tar.gz \
-    # Recommended: Create the mqm user ID with a fixed UID and group, so that the file permissions work between different images
-    && groupadd --gid 1000 mqm \
-    && useradd --uid 1000 --gid mqm --home-dir /var/mqm mqm \
-    && usermod -G mqm root \
-    && cd /tmp/mq/MQServer \
-    # Accept the MQ license
-    && ./mqlicense.sh -text_only -accept \
-    && rpm -ivh *.rpm \
-    # Recommended: Set the default MQ installation (makes the MQ commands available on the PATH)
-    && /opt/mqm/bin/setmqinst -p /opt/mqm -i \
-    && echo /opt/mqm/lib64 > /etc/ld.so.conf.d/ibm_mq.conf \
-    && ldconfig \
-    # Clean up all the downloaded files
-    && rm -rf /tmp/mq
+RUN mkdir -p /opt/mqm \
+    && curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
+    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
+    && rm -rf /tmp/mq_client.tar.gz
 
 # CONDA prep
 RUN conda init bash
