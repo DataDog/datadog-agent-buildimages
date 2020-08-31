@@ -32,7 +32,11 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
+RUN if [ "$DD_TARGET_ARCH" = "arm64v8" ] ; then \
+        /bin/bash -l -c "rvm install 2.3 && rvm cleanup all" ; \
+    else \
+        /bin/bash -l -c "rvm install --disable-binary 2.3 && rvm cleanup all" ; \
+    fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
