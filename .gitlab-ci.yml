@@ -165,7 +165,6 @@ test_system-probe_arm64:
   stage: build
   except: [ tags, schedules ]
   script:
-    - cmd /c ver
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
@@ -179,7 +178,7 @@ test_system-probe_arm64:
 
 build_windows_1809_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x64
@@ -190,7 +189,7 @@ build_windows_1809_x64:
 
 build_windows_1809_x86:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x86
@@ -201,7 +200,7 @@ build_windows_1809_x86:
 
 build_windows_1909_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x64
@@ -212,7 +211,7 @@ build_windows_1909_x64:
 
 build_windows_1909_x86:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x86
@@ -238,7 +237,7 @@ build_windows_1909_x86:
 
 test_windows_1809_x64:
   extends: .test_windows
-  tags: ["windows_release:1809_2020_09_test"]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   needs: [ "build_windows_1809_x64" ]
   variables:
     ARCH: x64
@@ -246,7 +245,7 @@ test_windows_1809_x64:
 
 test_windows_1809_x86:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809" ]
   needs: [ "build_windows_1809_x86" ]
   variables:
     ARCH: x86
@@ -254,7 +253,7 @@ test_windows_1809_x86:
 
 test_windows_1909_x64:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
   needs: [ "build_windows_1909_x64" ]
   variables:
     ARCH: x64
@@ -262,7 +261,7 @@ test_windows_1909_x64:
 
 test_windows_1909_x86:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
   needs: [ "build_windows_1909_x86" ]
   variables:
     ARCH: x86
@@ -292,7 +291,7 @@ test_windows_1909_x86:
   stage: release
   except: [ tags, schedules ]
   only: [ master ]
-  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909" ]
   script:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
