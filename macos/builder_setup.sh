@@ -29,6 +29,9 @@ export IBM_MQ_VERSION=9.1.5.0
 # Install or upgrade brew (will also install Command Line Tools)
 CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
+# Add our custom repository
+brew tap DataDog/datadog-agent-macos-build
+
 brew uninstall python@2 -f || true # Uninstall python 2 if present
 brew uninstall python -f || true # Uninstall python 3 if present
 
