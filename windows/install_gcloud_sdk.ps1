@@ -3,7 +3,8 @@ $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host -ForegroundColor Green Installing Google Cloud SDK
-$gsdk = 'https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-315.0.0-windows-x86_64.zip'
+$version = "315.0.0"
+$gsdk = "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$version-windows-x86_64.zip"
 $out = 'gsdk.zip'
 
 Write-Host -ForegroundColor Green Downloading $gsdk to $out
