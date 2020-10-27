@@ -32,7 +32,6 @@ ENV GO_VERSION "1.14.7"
 ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
-ENV CMAKE_VERSION "3.17.2"
 ENV MSYS_VERSION "20200903.0.0"
 
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
@@ -112,11 +111,6 @@ RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTH
 RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 
-# Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
-RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
-RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
-
 # Install golang and set GOPATH to the dev path used in builds & tests
 RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
 RUN setx GOPATH C:\dev\go
@@ -133,6 +127,8 @@ RUN gem install bundler
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
 RUN ridk install 3
+
+RUN ridk enable; bash -c \"pacman -S --needed --noconfirm cmake mingw-w64-x86_64-dlfcn\"
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
 RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
