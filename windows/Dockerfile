@@ -132,6 +132,9 @@ RUN gem install bundler
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
+
+# TODO: as soon as a new msys distribution (with working packages) is available, use it
+# and stop doing ridk install 2, which force-upgrades packages to the latest available.
 RUN ridk install 2 3
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
