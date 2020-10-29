@@ -149,6 +149,10 @@ RUN powershell -C .\install_awscli.ps1
 COPY ./windows/install_docker.ps1 install_docker.ps1
 RUN powershell -Command .\install_docker.ps1
 
+# Install google cloud SDK
+COPY ./windows/install_gcloud_sdk.ps1 install_gcloud_sdk.ps1
+RUN powershell -C .\install_gcloud_sdk.ps1
+
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
