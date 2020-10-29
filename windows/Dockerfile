@@ -33,12 +33,12 @@ ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20190524.0.0.20191030"
+ENV MSYS_VERSION "20200903.0.0"
 
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
 
-ENV CACERTS_HASH "2782F0F8E89C786F40240FC1916677BE660FB8D8E25DEDE50C9F6F7B0C2C2178"
+ENV CACERTS_HASH "BB28D145ED1A4EE67253D8DDB11268069C9DAFE3DB25A9EEE654974C4E43EEE5"
 
 LABEL target_agent="Agent 6/7"
 LABEL target_arch=${TARGET_ARCH}
@@ -132,7 +132,10 @@ RUN gem install bundler
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
 RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
-RUN ridk install 3
+
+# TODO: as soon as a new msys distribution (with working packages) is available, use it
+# and stop doing ridk install 2, which force-upgrades packages to the latest available.
+RUN ridk install 2 3
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
 RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
