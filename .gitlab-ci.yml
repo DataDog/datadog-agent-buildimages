@@ -168,8 +168,13 @@ test_system-probe_arm64:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
-    - echo "build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
-    - docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE .
+    # Get the NuGet executable
+    - powershell -Command "Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile .\nuget.exe"
+    # Get the credentials
+    - nuget sources update -Name datadog -UserName "$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.chocolatey_username --with-decryption --query "Parameter.Value" --out text)" -Password $(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.chocolatey_access_token --with-decryption --query "Parameter.Value" --out text)
+    - nuget restore
+    - echo "build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --build-arg CHOCOLATEY_PKG_SRC=.\packages --tag $SRC_IMAGE --file $DOCKERFILE ."
+    - docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --build-arg CHOCOLATEY_PKG_SRC=.\packages --tag $SRC_IMAGE --file $DOCKERFILE .
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - docker push $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
