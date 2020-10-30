@@ -94,9 +94,9 @@ RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Objec
 # Add cache as higher priority source
 RUN $env:chocolateyUseWindowsCompression = 'true'; choco source add -n=cache --source=C:\tmp_build\packages --priority=99
 
-RUN $env:chocolateyUseWindowsCompression = 'true'; choco source list
-
 RUN if ($Env:DISABLE_DEFAULT_CHOCO_FEED -eq 'true') { choco source disable -n=chocolatey }
+
+RUN $env:chocolateyUseWindowsCompression = 'true'; choco source list
 
 # Install git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
