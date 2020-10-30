@@ -23,8 +23,8 @@ ENV WINDOWS_VERSION=${WINDOWS_VERSION:-1809}
 ARG DD_TARGET_ARCH
 ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 
-# If there is a package cache present, use it
-ADD packages C:\packages
+# Copy entire build folder, later handpick which files we want
+COPY ./windows/ C:\tmp_build
 
 # Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
@@ -78,10 +78,8 @@ RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 ### (https://github.com/wixtoolset/issues/issues/5661).
 
 # Install .NET Fx 3.5
-COPY ./windows/install_net35_1809.bat install_net35_1809.bat
-COPY ./windows/install_net35_1909.bat install_net35_1909.bat
-RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\install_net35_1809.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
+RUN if ($Env:WINDOWS_VERSION -eq '1809') { C:\tmp_build\install_net35_1809.bat }
+RUN if ($Env:WINDOWS_VERSION -eq '1909') { C:\tmp_build\install_net35_1909.bat }
 
 ### End of preliminary step
 
@@ -91,7 +89,7 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Add cache as higher priority source
-RUN $env:chocolateyUseWindowsCompression = 'true'; choco add source --source=C:\packages --priority=99
+RUN $env:chocolateyUseWindowsCompression = 'true'; choco add source --source=C:\tmp_build\packages --priority=99
 
 # Install git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
@@ -173,6 +171,6 @@ COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
 
 # Cleanup package cache
-RUN Remove-Item C:\packages -Recurse -Force
+RUN Remove-Item C:\tmp_build -Recurse -Force
 
 ENTRYPOINT ["/entrypoint.bat"]
