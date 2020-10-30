@@ -24,7 +24,7 @@ ARG DD_TARGET_ARCH
 ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 
 # Copy entire build folder, later handpick which files we want
-COPY ./windows/ C:\tmp_build
+COPY ./windows/ C:/tmp_build
 
 # Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
@@ -106,8 +106,7 @@ RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --ver
 RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
 
 # If x64, install the WDK for driver development
-COPY ./windows/install_wdk.ps1 install_wdk.ps1
-RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
+RUN if ($Env:TARGET_ARCH -eq 'x64') { C:\tmp_build\install_wdk.ps1 }
 
 # Install VC compiler for Python 2.7
 RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
@@ -146,20 +145,16 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed 
 RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install aws cli
-COPY ./windows/install_awscli.ps1 install_awscli.ps1
-RUN powershell -C .\install_awscli.ps1
+RUN C:\tmp_build\install_awscli.ps1
 
 # Install docker, manifest-tool and notary
-COPY ./windows/install_docker.ps1 install_docker.ps1
-RUN powershell -Command .\install_docker.ps1
+RUN C:\tmp_build\install_docker.ps1
 
 # Install google cloud SDK
-COPY ./windows/install_gcloud_sdk.ps1 install_gcloud_sdk.ps1
-RUN powershell -C .\install_gcloud_sdk.ps1
+RUN C:\tmp_build\install_gcloud_sdk.ps1
 
 # Install embedded pythons (for unit testing)
-COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
-RUN powershell -C .\install_embedded_pythons.ps1
+RUN C:\tmp_build\install_embedded_pythons.ps1
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
@@ -167,8 +162,8 @@ RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmen
 # Set 32-bit flag env var
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
-COPY ./windows/entrypoint.bat /entrypoint.bat
-COPY ./windows/aws_networking.ps1 /aws_networking.ps1
+RUN Move-Item C:\tmp_build\entrypoint.bat C:\entrypoint.bat
+RUN Move-Item C:\tmp_build\aws_networking.ps1 C:\aws_networking.ps1
 
 # Cleanup package cache
 RUN Remove-Item C:\tmp_build -Recurse -Force
