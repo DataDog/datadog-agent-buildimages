@@ -170,8 +170,8 @@ test_system-probe_arm64:
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
     # Create package cache
     - powershell windows/restore_packages.ps1
-    - echo "build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
-    - docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE .
+    - echo "build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --build-arg DISABLE_DEFAULT_CHOCO_FEED=true --tag $SRC_IMAGE --file $DOCKERFILE ."
+    - docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --build-arg DISABLE_DEFAULT_CHOCO_FEED=true --tag $SRC_IMAGE --file $DOCKERFILE .
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - docker push $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
