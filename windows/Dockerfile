@@ -89,7 +89,7 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
 RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Add cache as higher priority source
-RUN $env:chocolateyUseWindowsCompression = 'true'; choco add source --source=C:\tmp_build\packages --priority=99
+RUN $env:chocolateyUseWindowsCompression = 'true'; choco source add -n=cache --source=C:\tmp_build\packages --priority=99
 
 # Install git
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
