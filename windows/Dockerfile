@@ -11,6 +11,7 @@
 # On the contrary, since our 1909 windows-docker host image does have this update,
 # we use a base container image that does have this update.
 # TODO: Once the 1809 windows-docker host image is updated, update the base container image.
+
 ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
 
 FROM ${BASE_IMAGE}
@@ -26,7 +27,7 @@ ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 # Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
 ENV SEVENZIP_VERSION "19.0"
-ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
+ENV VS2019BUILDTOOLS_VERSION "16.7.4.0"
 ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.14.7"
 ENV RUBY_VERSION "2.4.3.1"
@@ -45,7 +46,7 @@ LABEL target_arch=${TARGET_ARCH}
 LABEL windows_version=${WINDOWS_VERSION}
 LABEL git_version=${GIT_VERSION}
 LABEL sevenzip_version=${SEVENZIP_VERSION}
-LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
+LABEL vs2019buildtools_version=${VS2019BUILDTOOLS_VERSION}
 LABEL vcpython27_version=${VCPYTHON27_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
@@ -97,9 +98,27 @@ RUN git config --system core.symlinks false
 # Install 7zip
 RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
 
-# Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre --add Microsoft.VisualStudio.Component.Windows10SDK.17763\"
-RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
+# Install VS2019
+RUN cinst -y --no-progress visualstudio2019buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2019BUILDTOOLS_VERSION --params \
+    \"--add Microsoft.VisualStudio.Workload.ManagedDesktop \
+    --add Microsoft.VisualStudio.Workload.NetCoreTools \
+    --add Microsoft.VisualStudio.Workload.NativeDesktop \
+    --add Microsoft.NetCore.Component.SDK \
+    --add Microsoft.Net.Component.4.7.TargetingPack \
+    --add Microsoft.Net.Component.4.5.TargetingPack \
+    --add Microsoft.Net.Component.4.6.1.TargetingPack \
+    --add Microsoft.Net.Component.4.8.SDK \
+    --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 \
+    --add Microsoft.VisualStudio.Workload.VCTools \
+    --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.17763\"
+
+##RUN cinst -y visualstudio2019buildtools --version $ENV:VS2019BUILDTOOLS_VERSION
+RUN cinst -y visualstudio2019-workload-vctools
+RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\"
+
+# install dotnet SDK
+RUN cinst -y dotnetcore-sdk --version 3.1.403
 
 # If x64, install the WDK for driver development
 COPY ./windows/install_wdk.ps1 install_wdk.ps1
@@ -156,6 +175,9 @@ RUN powershell -C .\install_gcloud_sdk.ps1
 # Install embedded pythons (for unit testing)
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
+
+# install nuget
+RUN cinst -y nuget.commandline
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
