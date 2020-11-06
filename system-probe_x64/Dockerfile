@@ -1,6 +1,6 @@
 FROM debian:bullseye
 
-RUN apt update && apt full-upgrade -y && apt-get install -y apt-utils && apt install -y \
+RUN apt-get update && apt-get install -y apt-utils && apt-get dist-upgrade -y && apt install -y \
         awscli \
         bison \
         cmake \
