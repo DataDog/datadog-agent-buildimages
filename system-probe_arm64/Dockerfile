@@ -1,6 +1,7 @@
 FROM debian:bullseye
 
-RUN apt-get update && apt-get install -y apt-utils && apt-get dist-upgrade -y && apt install -y \
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt install -y \
         awscli \
         bison \
         cmake \
