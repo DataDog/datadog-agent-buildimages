@@ -11,13 +11,13 @@ RUN apt update && apt full-upgrade -y && apt-get install -y apt-utils && apt ins
         golang \
         libelf-dev \
         linux-headers-arm64 \
-        llvm \
         python \
         python3-pip \
         python3-distro \
         python3-distutils \
         python3-invoke \
         python3-pip \
+        libtinfo5 \
         wget
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
