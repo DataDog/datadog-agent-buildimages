@@ -4,14 +4,12 @@ RUN apt update && apt full-upgrade -y
 RUN apt install -y \
         awscli \
         bison \
-        clang-8 \
         cmake \
         curl \
         flex \
         git \
         go-dep \
         golang \
-        libclang-8-dev \
         libelf-dev \
         linux-headers-arm64 \
         llvm \
@@ -30,5 +28,8 @@ ENV GOPATH=/go
 # create the agent build folder within $GOPATH
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
-RUN ln /usr/bin/clang-8  /usr/bin/clang
-RUN ln -s /usr/lib/llvm-8 /usr/lib/llvm
+# install clang from the website since the package manager can change at any time
+RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
+RUN mkdir -p /opt/clang
+RUN tar xf /tmp/clang.tar.xz  -C /opt/clang --strip-components=1
+ENV PATH /opt/clang/bin:${PATH}
