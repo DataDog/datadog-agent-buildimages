@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-invoke \
         python3-pip \
         libtinfo5 \
-        wget
+        wget \
+        xz-utils
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
 
