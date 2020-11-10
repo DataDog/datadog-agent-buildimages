@@ -12,7 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         go-dep \
         golang \
         libelf-dev \
+        libstdc++-10-dev \
+        libxml2-dev \
         linux-headers-arm64 \
+        ninja-build \
         python \
         python3-pip \
         python3-distro \
