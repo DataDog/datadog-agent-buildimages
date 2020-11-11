@@ -20,7 +20,8 @@ RUN apt update && apt full-upgrade -y && apt install -y  \
         python3-invoke \
         python3-pip \
         libtinfo5 \
-        wget
+        wget \
+        libc6-dev-i386
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
 
