@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         curl \
         flex \
         gcc \
+        g++ \
         git \
         go-dep \
         golang \
