@@ -7,23 +7,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         cmake \
         curl \
         flex \
-        gcc \
         g++ \
+        gcc \
         git \
         go-dep \
         golang \
         libelf-dev \
         libstdc++-10-dev \
+        libtinfo-dev \
         libxml2-dev \
         linux-headers-arm64 \
         ninja-build \
         python \
-        python3-pip \
         python3-distro \
         python3-distutils \
         python3-invoke \
         python3-pip \
-        libtinfo5 \
+        python3-pip \
         wget \
         xz-utils
 
