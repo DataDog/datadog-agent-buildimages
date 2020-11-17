@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-distutils \
         python3-invoke \
         python3-pip \
-        python3-pip \
         wget \
         xz-utils
 
