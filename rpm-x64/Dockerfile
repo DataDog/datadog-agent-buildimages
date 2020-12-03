@@ -20,10 +20,15 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
 ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 
+# Enable the vault (archive) repos, as we are past CentOS6 EOL
+RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
+    sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
+    rm /etc/yum.repos.d/CentOS-Base.repo
+
 RUN yum groupinstall -y development
 RUN yum -y install \
   which perl-ExtUtils-MakeMaker \
-  centos-release-scl pkgconfig \
+  pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool
 
