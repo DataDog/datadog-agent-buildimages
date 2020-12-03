@@ -118,7 +118,12 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Pa
 RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
 
 # Install golang and set GOPATH to the dev path used in builds & tests
-RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
+# RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
+
+# Some go point releases are not available as chocolatey packages, we have to install them directly
+COPY ./windows/install_go.ps1 install_go.ps1
+RUN powershell -C .\install_go.ps1
+
 RUN setx GOPATH C:\dev\go
 
 # Install system Python 3 (to use invoke).
