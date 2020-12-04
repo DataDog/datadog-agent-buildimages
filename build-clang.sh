@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CLANG_VERSION=8.0.0
+CLANG_VERSION=8.0.1
 
-curl -LO http://releases.llvm.org/${CLANG_VERSION}/llvm-${CLANG_VERSION}.src.tar.xz
+curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/llvm-${CLANG_VERSION}.src.tar.xz
 tar -xf llvm-${CLANG_VERSION}.src.tar.xz
-curl -LO http://releases.llvm.org/${CLANG_VERSION}/cfe-${CLANG_VERSION}.src.tar.xz
+curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/cfe-${CLANG_VERSION}.src.tar.xz
 tar -xf cfe-${CLANG_VERSION}.src.tar.xz
 mv cfe-${CLANG_VERSION}.src/ clang
 cd llvm-${CLANG_VERSION}.src

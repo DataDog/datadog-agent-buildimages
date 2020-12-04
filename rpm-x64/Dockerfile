@@ -7,7 +7,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG IBM_MQ_VERSION=9.2.0.1
 ARG CMAKE_VERSION=3.14.4
-ARG CLANG_VERSION=8.0.0
+ARG CLANG_VERSION=8.0.1
 
 # Environment
 ENV GOPATH /go
@@ -115,7 +115,8 @@ RUN set -ex \
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
+
+RUN curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
     tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
     rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
 
