@@ -41,6 +41,7 @@ RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz  -C /opt/clang --strip-components=1
+ENV PATH "/opt/clang/bin:${PATH}"
 
 RUN python3 -m pip install invoke==1.4.1
 
