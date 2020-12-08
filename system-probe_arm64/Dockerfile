@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         git \
         libelf-dev \
         libstdc++-8-dev \
+        libtinfo-dev \
         libtinfo5 \
         libxml2-dev \
         linux-headers-arm64 \
