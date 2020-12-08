@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python \
         python3-distro \
         python3-distutils \
+        python3-setuptools \
         python3-pip \
         wget \
         xz-utils
