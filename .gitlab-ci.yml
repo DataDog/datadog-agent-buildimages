@@ -220,6 +220,17 @@ build_windows_1909_x86:
     WINDOWS_VERSION: 1909
   resource_group: windows_x86
 
+build_windows_2004_x64:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:2004" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_2004_x64
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004
+    DD_TARGET_ARCH: x64
+    WINDOWS_VERSION: 2004
+  resource_group: windows_x64
+
 .test_windows:
   extends: .test
   timeout: 2h 00m
@@ -258,6 +269,14 @@ test_windows_1909_x64:
   variables:
     ARCH: x64
     IMAGE: windows_1909_x64
+
+test_windows_2004_x64:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:2004" ]
+  needs: [ "build_windows_2004_x64" ]
+  variables:
+    ARCH: x64
+    IMAGE: windows_2004_x64
 
 test_windows_1909_x86:
   extends: .test_windows
@@ -356,3 +375,9 @@ release_windows_1909_x86:
   needs: [ "test_windows_1909_x86" ]
   variables:
     IMAGE: windows_1909_x86
+
+release_windows_2004_x64:
+  extends: .winrelease
+  needs: [ "test_windows_2004_x64" ]
+  variables:
+    IMAGE: windows_2004_x64
