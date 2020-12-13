@@ -25,8 +25,9 @@ ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 
 # Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
-ENV SEVENZIP_VERSION "19.0"
+ENV SEVENZIP_VERSION "19.0.0" # now needs all 3 digits
 ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
+ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
 ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.14.12"
 ENV RUBY_VERSION "2.4.3.1"
@@ -82,40 +83,38 @@ RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
 
 ### End of preliminary step
 
-RUN if ($Env:TARGET_ARCH -eq 'x86') { setx CHOCO_ARCH_FLAG '-x86' }
-
-# Install Chocolatey
-RUN $env:chocolateyUseWindowsCompression = 'true'; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+# Install 7-zip
+Copy ./windows/install_7zip.ps1 install_7zip.ps1
+RUN powershell -Command .\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION
 
 # Install git
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress git $ENV:CHOCO_ARCH_FLAG --version $ENV:GIT_VERSION
+COPY ./windows/install_mingit.ps1 install_mingit.ps1
+RUN powershell -Command .\install_mingit.ps1 -Version $ENV:GIT_VERSION
+
 ### HACK: we disable symbolic links when cloning repositories
 ### to work around a symlink-related failure in the agent-binaries omnibus project
 ### when copying the datadog-agent project twice.
 RUN git config --system core.symlinks false
 
-# Install 7zip
-RUN $env:chocolateyUseWindowsCompression = 'true'; cinst -y --no-progress 7zip $ENV:CHOCO_ARCH_FLAG --version $ENV:SEVENZIP_VERSION
-
 # Install VS2017
-RUN cinst -y --no-progress visualstudio2017buildtools $ENV:CHOCO_ARCH_FLAG --version $ENV:VS2017BUILDTOOLS_VERSION --params \"--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre --add Microsoft.VisualStudio.Component.Windows10SDK.17763\"
-RUN setx VSTUDIO_ROOT \"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\"
+COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
+RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
 
 # If x64, install the WDK for driver development
 COPY ./windows/install_wdk.ps1 install_wdk.ps1
 RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
 
 # Install VC compiler for Python 2.7
-RUN cinst -y --no-progress vcpython27 $ENV:CHOCO_ARCH_FLAG --version $ENV:VCPYTHON27_VERSION
+COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
+RUN powershell -Command .\install_vcpython.ps1
 
 # Install Wix and update PATH to include it
-RUN cinst -y --no-progress wixtoolset $ENV:CHOCO_ARCH_FLAG --version $ENV:WIX_VERSION
-RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+COPY ./windows/install_wix.ps1 install_wix.ps1
+RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
 
 # Install Cmake and update PATH to include it
-RUN cinst -y --no-progress cmake $ENV:CHOCO_ARCH_FLAG --version $ENV:CMAKE_VERSION
-RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${Env:ProgramFiles(x86)}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
-RUN if ($Env:TARGET_ARCH -eq 'x64') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles}\CMake\bin\", [System.EnvironmentVariableTarget]::Machine) }
+COPY ./windows/install_cmake.ps1 install_cmake.ps1
+RUN powershell -Command .\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Arch $ENV:TARGET_ARCH
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 # RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
@@ -128,15 +127,16 @@ RUN setx GOPATH C:\dev\go
 
 # Install system Python 3 (to use invoke).
 # We always install the 64 bit version because vcredist140 won't work otherwise
-RUN cinst -y --no-progress python3 --version $ENV:PYTHON_VERSION
+COPY ./windows/install_python.ps1 install_python.ps1
+RUN powershell -C .\install_python.ps1 -Version $ENV:PYTHON_VERSION
 
 # Install 64-bit ruby and bundler (for omnibus builds)
-RUN cinst -y --no-progress ruby --version $ENV:RUBY_VERSION
-RUN setx RIDK ((Get-Command ridk).Path)
-RUN gem install bundler
+COPY ./windows/install_ruby.ps1 install_ruby.ps1
+RUN powershell -C .\install_ruby.ps1 -Version $ENV:RUBY_VERSION
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
-RUN cinst -y --no-progress msys2 --params \"/NoUpdate\" --version $ENV:MSYS_VERSION
+copy ./windows/install_msys.ps1 install_msys.ps1
+RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
 
 # TODO: as soon as a new msys distribution (with working packages) is available, use it
 # and stop doing ridk install 2, which force-upgrades packages to the latest available.
