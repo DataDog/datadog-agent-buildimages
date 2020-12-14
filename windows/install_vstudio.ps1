@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 Write-Host -ForegroundColor Green "Installing Visual Studio $($Version) from $($Url)"
 
 $out = "$($PSROOT)\vs_buildtools.exe"
-
+$consoleout = "$($PSROOT)\vs_out.txt"
 Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
 # write file size to make sure it worked
@@ -33,6 +33,7 @@ $processparams = @{
     FilePath = $out
     NoNewWindow = $true
     Wait = $true
+    RedirectStandardOutput = $consoleout
     ArgumentList = "--quiet --wait --norestart --nocache --installPath c:\devtools\vstudio --add $VSPackageListParam"
 }
 Start-Process @processparams
@@ -41,4 +42,5 @@ Start-Process @processparams
 setx VSTUDIO_ROOT "c:\devtools\vstudio"
 
 Remove-Item $out
+Remove-Item $consoleout
 Write-Host -ForegroundColor Green Done with Visual Studio

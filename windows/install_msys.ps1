@@ -51,4 +51,18 @@ Remove-Item $msystar
 ## invoke the first-run shell
 Invoke-Msys2Shell
 
+# TODO: as soon as a new msys distribution (with working packages) is available, use it
+# and stop doing ridk install 2, which force-upgrades packages to the latest available.
+## RUN ridk install 2 3
+$consoleout = "$($PSScriptRoot)\ridkout.txt"
+$ridkparams = @{
+    FilePath = "ridk"
+    NoNewWindow = $true
+    Wait = $true
+    RedirectStandardOutput = $consoleout
+    ArgumentList = "install 2 3"
+}
+Start-Process @ridkparams
+
+remove-item $consoleout
 Write-Host -ForegroundColor Green Done with MSYS

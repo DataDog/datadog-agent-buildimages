@@ -138,10 +138,6 @@ RUN powershell -C .\install_ruby.ps1 -Version $ENV:RUBY_VERSION
 copy ./windows/install_msys.ps1 install_msys.ps1
 RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
 
-# TODO: as soon as a new msys distribution (with working packages) is available, use it
-# and stop doing ridk install 2, which force-upgrades packages to the latest available.
-RUN ridk install 2 3
-
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
 RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
 RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
