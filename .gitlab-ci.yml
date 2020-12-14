@@ -310,7 +310,8 @@ test_windows_1909_x86:
   stage: release
   except: [ tags, schedules ]
   only: [ master ]
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  ## this always needs to be the newest available builder version
+  tags: [ "runner:windows-docker", "windowsversion:2004" ]
   script:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
