@@ -18,7 +18,25 @@ Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
-Start-Process $out -ArgumentList  '--quiet --wait --norestart --nocache --installPath c:\devtools\vstudio --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64  --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre --add Microsoft.VisualStudio.Component.Windows10SDK.17763' -Wait
+
+$VSPackages = @(
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
+    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+    "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
+    "Microsoft.VisualStudio.Component.Windows10SDK.17763"
+)
+
+$VSPackageListParam = $VSPackages -join " --add "
+$processparams = @{
+    FilePath = $out
+    NoNewWindow = $true
+    Wait = $true
+    ArgumentList = "--quiet --wait --norestart --nocache --installPath c:\devtools\vstudio --add $VSPackageListParam"
+}
+Start-Process @processparams
+
 
 setx VSTUDIO_ROOT "c:\devtools\vstudio"
 

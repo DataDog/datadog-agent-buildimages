@@ -25,10 +25,11 @@ Write-Host -ForegroundColor Green Done downloading wix, installing
 Start-Process $out -ArgumentList '/q' -Wait
 
 #Copy-Item c:\devtools\wix\sdk\inc -Destination c:\devtools\wix\sdk\vs2017\inc -Recurse
-#[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\", [System.EnvironmentVariableTarget]::Machine)
 #setx PATH "$Env:Path;C:\devtools\wix"
 #$Env:Path="$Env:Path;c:\devtools\wix"
-#setx WIX "C:\devtools\wix\"
+#setx WIX "C:\Program Files (x86)\WiX Toolset v3.11\"
+[Environment]::SetEnvironmentVariable("WIX", "C:\Program Files (x86)\WiX Toolset v3.11\")
 Remove-Item $out
 
 Write-Host -ForegroundColor Green Done with WiX
