@@ -181,8 +181,7 @@ test_system-probe_arm64:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
-    - echo "build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE ."
-    - docker build --no-cache --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --build-arg WINDOWS_VERSION=$WINDOWS_VERSION --tag $SRC_IMAGE --file $DOCKERFILE .
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - docker push $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
@@ -195,9 +194,7 @@ build_windows_1809_x64:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
     DD_TARGET_ARCH: x64
-    WINDOWS_VERSION: 1809
 
 build_windows_1809_x86:
   extends: .winbuild
@@ -205,9 +202,7 @@ build_windows_1809_x86:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x86
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
     DD_TARGET_ARCH: x86
-    WINDOWS_VERSION: 1809
 
 build_windows_1909_x64:
   extends: .winbuild
@@ -215,9 +210,7 @@ build_windows_1909_x64:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909
     DD_TARGET_ARCH: x64
-    WINDOWS_VERSION: 1909
 
 build_windows_1909_x86:
   extends: .winbuild
@@ -225,9 +218,7 @@ build_windows_1909_x86:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x86
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909
     DD_TARGET_ARCH: x86
-    WINDOWS_VERSION: 1909
 
 build_windows_2004_x64:
   extends: .winbuild
@@ -235,9 +226,7 @@ build_windows_2004_x64:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_2004_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004
     DD_TARGET_ARCH: x64
-    WINDOWS_VERSION: 2004
 
 build_windows_20h2_x64:
   extends: .winbuild
@@ -245,9 +234,7 @@ build_windows_20h2_x64:
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_20h2_x64
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2
     DD_TARGET_ARCH: x64
-    WINDOWS_VERSION: 20H2
 
 .test_windows:
   extends: .test
