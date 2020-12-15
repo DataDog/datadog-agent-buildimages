@@ -4,7 +4,11 @@ stages:
   - release
 
 variables:
-  WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/windows_1909_x64:v2348149-ba6640d
+  # To release Windows images, we need tools that are not necessarily present on the Windows Gitlab runners
+  # (eg. updated versions of awscli, tools to sign images - if we decide to sign buildimages some day)
+  # Thus, to release buildimages, we do the same thing as what we do in the Agent: we run the Docker publish script in
+  # the buildimage for the highest Windows version supported.
+  WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/windows_2004_x64:v3541301-fcf9226
 
 .build:
   stage: build
