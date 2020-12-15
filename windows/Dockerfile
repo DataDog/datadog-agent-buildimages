@@ -75,12 +75,8 @@ RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 ### (https://github.com/wixtoolset/issues/issues/5661).
 
 # Install .NET Fx 3.5
-COPY ./windows/install_net35_1809.bat install_net35_1809.bat
-COPY ./windows/install_net35_1909.bat install_net35_1909.bat
-COPY ./windows/install_net35_2004.bat install_net35_2004.bat
-RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\install_net35_1809.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '2004') { .\install_net35_2004.bat }
+COPY ./windows/install_net35.ps1 install_net35.ps1
+RUN Powershell -C .\install_net35.ps1
 
 ### End of preliminary step
 
