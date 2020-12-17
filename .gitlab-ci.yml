@@ -189,7 +189,6 @@ build_windows_1809_x64:
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
     DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 1809
-  resource_group: windows_x64
 
 build_windows_1809_x86:
   extends: .winbuild
@@ -200,7 +199,6 @@ build_windows_1809_x86:
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
     DD_TARGET_ARCH: x86
     WINDOWS_VERSION: 1809
-  resource_group: windows_x86
 
 build_windows_1909_x64:
   extends: .winbuild
@@ -211,7 +209,6 @@ build_windows_1909_x64:
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909
     DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 1909
-  resource_group: windows_x64
 
 build_windows_1909_x86:
   extends: .winbuild
@@ -222,7 +219,6 @@ build_windows_1909_x86:
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909
     DD_TARGET_ARCH: x86
     WINDOWS_VERSION: 1909
-  resource_group: windows_x86
 
 build_windows_2004_x64:
   extends: .winbuild
