@@ -341,7 +341,7 @@ test_windows_1909_x86:
       docker push datadog/agent-buildimages-${IMAGE}:latest
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
-    - docker run --rm -w C:\mnt -e IS_AWS_CONTAINER=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
+    - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:latest
 
