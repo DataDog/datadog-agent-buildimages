@@ -26,8 +26,9 @@ ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 # Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
 ENV SEVENZIP_VERSION "19.0.0" # now needs all 3 digits
-ENV VS2017BUILDTOOLS_VERSION "15.9.23.0"
-ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
+ENV VS2017BUILDTOOLS_VERSION "16.8.3.0"
+#ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
+ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
 ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.14.12"
 ENV RUBY_VERSION "2.4.3.1"
@@ -35,7 +36,7 @@ ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
 ENV MSYS_VERSION "20200903.0.0"
-
+ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
 
@@ -56,7 +57,7 @@ LABEL msys_version=${MSYS_VERSION}
 LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
-
+LABEL nuget_version=${NUGET_VERSION}
 # Add certificates needed for build & check certificates file hash
 # We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
 # to be able to download some Python components during the Agent build.
@@ -76,12 +77,8 @@ RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 ### (https://github.com/wixtoolset/issues/issues/5661).
 
 # Install .NET Fx 3.5
-COPY ./windows/install_net35_1809.bat install_net35_1809.bat
-COPY ./windows/install_net35_1909.bat install_net35_1909.bat
-COPY ./windows/install_net35_2004.bat install_net35_2004.bat
-RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\install_net35_1809.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
-RUN if ($Env:WINDOWS_VERSION -eq '2004') { .\install_net35_2004.bat }
+COPY ./windows/install_net35.ps1 install_net35.ps1
+RUN Powershell -C .\install_net35.ps1
 
 ### End of preliminary step
 
@@ -98,21 +95,11 @@ RUN powershell -Command .\install_mingit.ps1 -Version $ENV:GIT_VERSION
 ### when copying the datadog-agent project twice.
 RUN git config --system core.symlinks false
 
-# Install VS2017
-COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
-RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
-
-# If x64, install the WDK for driver development
-COPY ./windows/install_wdk.ps1 install_wdk.ps1
-RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
 
 # Install VC compiler for Python 2.7
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
 RUN powershell -Command .\install_vcpython.ps1
 
-# Install Wix and update PATH to include it
-COPY ./windows/install_wix.ps1 install_wix.ps1
-RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
 
 # Install Cmake and update PATH to include it
 COPY ./windows/install_cmake.ps1 install_cmake.ps1
@@ -172,6 +159,25 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
+# Install VS2017
+COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
+RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
+
+# If x64, install the WDK for driver development
+COPY ./windows/install_wdk.ps1 install_wdk.ps1
+RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
+
+# Install Wix and update PATH to include it
+COPY ./windows/install_wix.ps1 install_wix.ps1
+RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
+
+# Install dotnet core
+COPY ./windows/install_dotnet.ps1 install_dotnet.ps1
+RUN powershell -Command .\install_dotnet.ps1
+
+# install nuget
+COPY ./windows/install_nuget.ps1 install_nuget.ps1
+RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
 
 ENTRYPOINT ["/entrypoint.bat"]

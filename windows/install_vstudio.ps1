@@ -1,6 +1,8 @@
 param (
     [Parameter(Mandatory=$true)][string]$Version,
-    [Parameter(Mandatory=$true)][string]$Url
+    [Parameter(Mandatory=$true)][string]$Url,
+    [Parameter(Mandatory=$false)][string]$InstallRoot="c:\devtools\vstudio",
+    [Parameter(Mandatory=$false)][switch]$NoQuiet
 )
 
 # Enabled TLS12
@@ -12,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 
 Write-Host -ForegroundColor Green "Installing Visual Studio $($Version) from $($Url)"
 
-$out = "$($PSROOT)\vs_buildtools.exe"
+$out = "$($PSScriptRoot)\vs_buildtools.exe"
 
 Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
@@ -20,25 +22,39 @@ Write-Host -ForegroundColor Green Downloading $Url to $out
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 
 $VSPackages = @(
+    "Microsoft.VisualStudio.Workload.ManagedDesktop",
+    "Microsoft.VisualStudio.Workload.NetCoreTools",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
-    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
+    "Microsoft.NetCore.Component.SDK",
+    "Microsoft.Net.Component.4.7.TargetingPack",
+    "Microsoft.Net.Component.4.5.TargetingPack",
+    "Microsoft.Net.Component.4.6.1.TargetingPack",
+    "Microsoft.Net.Component.4.8.SDK",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
     "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
-    "Microsoft.VisualStudio.Component.Windows10SDK.17763"
+    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+    "Microsoft.VisualStudio.Component.Windows10SDK.17763",
+    "Microsoft.VisualStudio.Component.Windows10SDK.18362",
+    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
 )
 
 $VSPackageListParam = $VSPackages -join " --add "
+$ArgList = "--wait --norestart --nocache --installPath `"$($InstallRoot)`" --add $VSPackageListParam"
+if(-not $NoQuiet){
+    $ArgList = "--quiet $ArgList"
+}
 $processparams = @{
     FilePath = $out
     NoNewWindow = $true
     Wait = $true
-    ArgumentList = "--quiet --wait --norestart --nocache --installPath c:\devtools\vstudio --add $VSPackageListParam"
+    ArgumentList = $ArgList
 }
 Start-Process @processparams
 
 
-setx VSTUDIO_ROOT "c:\devtools\vstudio"
+setx VSTUDIO_ROOT "$InstallRoot"
 
 Remove-Item $out
 Write-Host -ForegroundColor Green Done with Visual Studio
