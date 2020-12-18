@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $false)][string] $Arch = "x64",
-    [Parameter(Mandatory = $false)][string] $Tag = $null
+    [Parameter(Mandatory = $false)][string] $Tag = $null,
+    [Parameter(Mandatory = $false)][switch] $Cache
 )
 
 
@@ -16,8 +17,11 @@ Write-Host -ForegroundColor Green "Detected kernel version $kernelver, using bas
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"
 }
-
-$buildcommand = "build --no-cache --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
+$buildcommandparams = "--build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
+if( -not $Cache) {
+    $buildcommandparams = "--no-cache $buildcommandparams"
+}
+$buildcommand = "build $buildcommandparams"
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
 & docker $buildcommand.split()

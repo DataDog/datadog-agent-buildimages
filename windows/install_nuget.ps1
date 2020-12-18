@@ -15,7 +15,7 @@ $nugetexe="https://dist.nuget.org/win-x86-commandline/v$($Version)/nuget.exe"
 
 Write-Host -ForegroundColor Green "Downloading nuget"
 $out = "$($PSScriptRoot)\nuget.exe"
-(New-Object System.Net.WebClient).DownloadFile($sevenzip, $out)
+(New-Object System.Net.WebClient).DownloadFile($nugetexe, $out)
 
 # just put it in it's own directory
 mkdir \nuget

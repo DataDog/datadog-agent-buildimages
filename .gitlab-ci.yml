@@ -218,7 +218,6 @@ build_windows_2004_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_2004_x64
     DD_TARGET_ARCH: x64
-  resource_group: windows_x64
 
 .test_windows:
   extends: .test

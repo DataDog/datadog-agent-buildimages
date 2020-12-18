@@ -41,9 +41,11 @@ DISM /Online /Quiet /Add-Package /PackagePath:.\microsoft-windows-netfx3-ondeman
 remove-item microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
 Remove-Item -Force -Recurse ${Env:TEMP}\*
 
+Write-Host curl.exe -fSLo patch.msu $UpgradeTable[$kernelver]["patch"]
 curl.exe -fSLo patch.msu $UpgradeTable[$kernelver]["patch"]
 mkdir patch
 expand patch.msu patch -F:*
 remove-item -force patch.msu
-DISM /Online /Quiet /Add-Package /PackagePath:C:\patch\$UpgradeTable[$kernelver]["expandedpatch"]
+Write-Host DISM /Online /Quiet /Add-Package /PackagePath:C:\patch\$($UpgradeTable[$kernelver]["expandedpatch"])
+DISM /Online /Quiet /Add-Package /PackagePath:C:\patch\$($UpgradeTable[$kernelver]["expandedpatch"])
 remove-item -force -recurse patch

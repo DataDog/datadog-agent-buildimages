@@ -35,9 +35,9 @@ $VSPackages = @(
     "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
-    "Microsoft.VisualStudio.Component.Windows10SDK.17763",
-    "Microsoft.VisualStudio.Component.Windows10SDK.18362",
-    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
+#    "Microsoft.VisualStudio.Component.Windows10SDK.17763",
+    "Microsoft.VisualStudio.Component.Windows10SDK.18362"
+#    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
 )
 
 $VSPackageListParam = $VSPackages -join " --add "
@@ -55,6 +55,10 @@ Start-Process @processparams
 
 
 setx VSTUDIO_ROOT "$InstallRoot"
+
+# add SDK added above to path for signtool
+# C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
+[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64", [System.EnvironmentVariableTarget]::Machine)
 
 Remove-Item $out
 Write-Host -ForegroundColor Green Done with Visual Studio

@@ -94,6 +94,25 @@ RUN powershell -Command .\install_mingit.ps1 -Version $ENV:GIT_VERSION
 ### to work around a symlink-related failure in the agent-binaries omnibus project
 ### when copying the datadog-agent project twice.
 RUN git config --system core.symlinks false
+# Install VS2017
+COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
+RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
+
+# If x64, install the WDK for driver development
+COPY ./windows/install_wdk.ps1 install_wdk.ps1
+RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
+
+# Install Wix and update PATH to include it
+COPY ./windows/install_wix.ps1 install_wix.ps1
+RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
+
+# Install dotnet core
+COPY ./windows/install_dotnetcore.ps1 install_dotnetcore.ps1
+RUN powershell -Command .\install_dotnetcore.ps1
+
+# install nuget
+COPY ./windows/install_nuget.ps1 install_nuget.ps1
+RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
 
 # Install VC compiler for Python 2.7
@@ -159,25 +178,6 @@ RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
-# Install VS2017
-COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
-RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
-
-# If x64, install the WDK for driver development
-COPY ./windows/install_wdk.ps1 install_wdk.ps1
-RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
-
-# Install Wix and update PATH to include it
-COPY ./windows/install_wix.ps1 install_wix.ps1
-RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
-
-# Install dotnet core
-COPY ./windows/install_dotnet.ps1 install_dotnet.ps1
-RUN powershell -Command .\install_dotnet.ps1
-
-# install nuget
-COPY ./windows/install_nuget.ps1 install_nuget.ps1
-RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
 
 ENTRYPOINT ["/entrypoint.bat"]
