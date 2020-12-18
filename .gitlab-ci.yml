@@ -297,8 +297,8 @@ test_windows_1909_x86:
     - docker pull $SRC_IMAGE
     - docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
@@ -329,12 +329,16 @@ test_windows_1909_x86:
       `$DOCKER_REGISTRY_LOGIN = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text
       `$DOCKER_REGISTRY_PWD = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text
       docker login --username "`$DOCKER_REGISTRY_LOGIN" --password "`$DOCKER_REGISTRY_PWD" docker.io
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
       docker push datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:latest
       docker push datadog/agent-buildimages-${IMAGE}:latest
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
     - docker run --rm -w C:\mnt -e IS_AWS_CONTAINER=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
