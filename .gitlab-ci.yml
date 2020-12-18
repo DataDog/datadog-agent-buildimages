@@ -229,7 +229,6 @@ build_windows_2004_x64:
     BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004
     DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 2004
-  resource_group: windows_x64
 
 .test_windows:
   extends: .test
