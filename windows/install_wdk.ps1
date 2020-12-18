@@ -14,15 +14,17 @@ Get-ChildItem $out
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 
 
-
-Start-Process wdksetup.exe -ArgumentList '/q' -Wait
+Start-Process $out -ArgumentList '/q' -Wait
 
 #install WDK.vsix (hack)
-mkdir c:\tmp
-copy "C:\Program Files (x86)\Windows Kits\10\Vsix\WDK.vsix" C:\TMP\wdkvsix.zip
-Expand-Archive C:\TMP\wdkvsix.zip -DestinationPath C:\TMP\wdkvsix
-robocopy /e "C:\TMP\wdkvsix\`$VCTargets\Platforms" "${Env:VSTUDIO_ROOT}\Common7\IDE\VC\VCTargets\Platforms" 
-remove-item -Force -Recurse -Path "c:\tmp"
+mkdir \tmp
 
+# copy the vsix file out of the installed directory
+copy-item -Path "C:\Program Files (x86)\Windows Kits\10\Vsix\VS2019\WDK.vsix" -Destination c:\tmp
+Start-Process "7z" -ArgumentList "x -oc:\tmp c:\tmp\wdk.vsix" -wait
+Copy-Item 'c:\tmp\$MSBuild\Microsoft\*' -Destination "C:\devtools\vstudio\MSBuild\Microsoft" -Recurse -Force
+
+remove-item -Force -Path $out
+remove-item -Force -Path c:\tmp\wdk.vsix
 #.`clean_tmps.ps1
 Write-Host -ForegroundColor Green Done with WDK
