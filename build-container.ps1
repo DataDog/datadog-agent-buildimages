@@ -17,7 +17,7 @@ Write-Host -ForegroundColor Green "Detected kernel version $kernelver, using bas
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"
 }
-$buildcommandparams = "--build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
+$buildcommandparams = "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
 if( -not $Cache) {
     $buildcommandparams = "--no-cache $buildcommandparams"
 }
