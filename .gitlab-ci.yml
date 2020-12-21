@@ -16,6 +16,8 @@ variables:
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
