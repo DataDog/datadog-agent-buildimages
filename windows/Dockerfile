@@ -35,7 +35,7 @@ ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20200903.0.0"
+ENV MSYS_VERSION "20201109.0.0"
 ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
@@ -146,9 +146,7 @@ RUN powershell -C .\install_ruby.ps1 -Version $ENV:RUBY_VERSION
 copy ./windows/install_msys.ps1 install_msys.ps1
 RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
 
-# TODO: as soon as a new msys distribution (with working packages) is available, use it
-# and stop doing ridk install 2, which force-upgrades packages to the latest available.
-RUN ridk install 2 3
+RUN ridk install 3
 
 # (32-bit only) Install 32-bit C/C++ compilation toolchain
 RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
