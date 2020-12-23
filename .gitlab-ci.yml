@@ -16,7 +16,35 @@ variables:
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
+    # Dockerhub login
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # Build
     - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    # For testing purposes
+    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+
+.build_arm:
+  stage: build
+  except: [ tags, schedules ]
+  tags: ["runner:docker-arm", "platform:arm64"]
+  image: arm64v8/docker:18.04
+  variables:
+    BASE_IMAGE: arm64v8/ubuntu:16.04
+    DD_TARGET_ARCH: arm64v8
+  script:
+    - apk add --update python py-pip
+    - pip install awscli
+    - aws --version
+    # Dockerhub login
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # ECR login
+    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
+    # Build
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
@@ -34,33 +62,14 @@ build_rpm_x64:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
 
-.armbuild:
-  stage: build
-  except: [ tags, schedules ]
-  tags: ["runner:docker-arm", "platform:arm64"]
-  image: arm64v8/docker:18.04
-  variables:
-    BASE_IMAGE: arm64v8/ubuntu:16.04
-    DD_TARGET_ARCH: arm64v8
-  script:
-    - apk add --update python py-pip
-    - pip install awscli
-    - aws --version
-    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-
 build_deb_arm64:
-  extends: .armbuild
+  extends: .build_arm
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
 
 build_deb_armhf:
-  extends: .armbuild
+  extends: .build_arm
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
@@ -68,14 +77,14 @@ build_deb_armhf:
     DD_TARGET_ARCH: arm32v7
 
 build_rpm_arm64:
-  extends: .armbuild
+  extends: .build_arm
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
     BASE_IMAGE: amazonlinux:2.0.20181114
 
 build_rpm_armhf:
-  extends: .armbuild
+  extends: .build_arm
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_armhf
@@ -89,7 +98,7 @@ build_system-probe_x64:
     IMAGE: system-probe_x64
 
 build_system-probe_arm64:
-  extends: .armbuild
+  extends: .build_arm
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
@@ -285,8 +294,8 @@ test_windows_1909_x86:
     - docker pull $SRC_IMAGE
     - docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent-buildimages.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
@@ -317,15 +326,19 @@ test_windows_1909_x86:
       `$DOCKER_REGISTRY_LOGIN = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text
       `$DOCKER_REGISTRY_PWD = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text
       docker login --username "`$DOCKER_REGISTRY_LOGIN" --password "`$DOCKER_REGISTRY_PWD" docker.io
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
       docker push datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:latest
       docker push datadog/agent-buildimages-${IMAGE}:latest
+      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
-    - docker run --rm -w C:\mnt -e IS_AWS_CONTAINER=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
+    - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:latest
 
