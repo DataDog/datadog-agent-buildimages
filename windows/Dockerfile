@@ -79,10 +79,11 @@ RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 COPY ./windows/install_net35_1809.bat install_net35_1809.bat
 COPY ./windows/install_net35_1909.bat install_net35_1909.bat
 COPY ./windows/install_net35_2004.bat install_net35_2004.bat
+COPY ./windows/install_net35_20h2.bat install_net35_20h2.bat
 RUN if ($Env:WINDOWS_VERSION -eq '1809') { .\install_net35_1809.bat }
 RUN if ($Env:WINDOWS_VERSION -eq '1909') { .\install_net35_1909.bat }
 RUN if ($Env:WINDOWS_VERSION -eq '2004') { .\install_net35_2004.bat }
-
+RUN if ($Env:WINDOWS_VERSION -eq '20H2') { .\install_net35_20h2.bat }
 ### End of preliminary step
 
 # Install 7-zip

@@ -239,6 +239,16 @@ build_windows_2004_x64:
     DD_TARGET_ARCH: x64
     WINDOWS_VERSION: 2004
 
+build_windows_20h2_x64:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_20h2_x64
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2
+    DD_TARGET_ARCH: x64
+    WINDOWS_VERSION: 20H2
+
 .test_windows:
   extends: .test
   timeout: 2h 00m
@@ -286,6 +296,14 @@ test_windows_2004_x64:
     ARCH: x64
     IMAGE: windows_2004_x64
 
+test_windows_20h2_x64:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  needs: [ "build_windows_20h2_x64" ]
+  variables:
+    ARCH: x64
+    IMAGE: windows_20h2_x64
+
 test_windows_1909_x86:
   extends: .test_windows
   tags: [ "runner:windows-docker", "windowsversion:1909" ]
@@ -319,7 +337,7 @@ test_windows_1909_x86:
   except: [ tags, schedules ]
   only: [ master ]
   ## this always needs to be the newest available builder version
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
+  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
   script:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
@@ -394,3 +412,9 @@ release_windows_2004_x64:
   needs: [ "test_windows_2004_x64" ]
   variables:
     IMAGE: windows_2004_x64
+
+release_windows_20h2_x64:
+  extends: .winrelease
+  needs: [ "test_windows_20h2_x64" ]
+  variables:
+    IMAGE: windows_202h_x64
