@@ -417,4 +417,4 @@ release_windows_20h2_x64:
   extends: .winrelease
   needs: [ "test_windows_20h2_x64" ]
   variables:
-    IMAGE: windows_202h_x64
+    IMAGE: windows_20h2_x64
