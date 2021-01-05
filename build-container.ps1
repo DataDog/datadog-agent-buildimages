@@ -8,7 +8,9 @@ param(
 $BaseTable = @{
     1809 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019";
     1909 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909";
-    2004 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004"
+    2004 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004";
+    ## 20H2 reports itself as 2009 in the registry
+    2009 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2"
 }
 
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid

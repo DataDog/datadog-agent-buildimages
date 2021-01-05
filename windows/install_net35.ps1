@@ -25,7 +25,14 @@ $UpgradeTable = @{
         # https://github.com/microsoft/dotnet-framework-docker/blob/25bdac46765c6dae7d05994cace836303f63b5e3/src/runtime/3.5/windowsservercore-2004/Dockerfile
         netfxzip = "https://dotnetbinaries.blob.core.windows.net/dockerassets/microsoft-windows-netfx3-2004.zip";
         patch = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2020/10/windows10.0-kb4580419-x64-ndp48_197efbd77177abe76a587359cea77bda5398c594.msu";
-        expandedpatch = "Windows10.0-KB4580419-x64-NDP48.cab";
+        expandedpatch = "Windows10.0-KB4580419-x64-NDP48.cab"
+    }
+    2009 = @{ ## 20H2 reports itself as 2009 from the registry
+        # Taken from the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
+        # https://github.com/microsoft/dotnet-framework-docker/blob/e0b59f4aeb47bd6bf13e4c7ec6676a1935306df9/src/runtime/3.5/windowsservercore-20H2/Dockerfile
+        netfxzip = "https://dotnetbinaries.blob.core.windows.net/dockerassets/microsoft-windows-netfx3-2009.zip";
+        patch = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2020/10/windows10.0-kb4580419-x64-ndp48_197efbd77177abe76a587359cea77bda5398c594.msu";
+        expandedpatch = "Windows10.0-KB4580419-x64-NDP48.cab"
     }
 }
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
