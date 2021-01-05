@@ -3,7 +3,8 @@ $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 
-$wdk ='https://go.microsoft.com/fwlink/?linkid=2026156'
+## $wdk ='https://go.microsoft.com/fwlink/?linkid=2026156'
+$wdk = 'https://go.microsoft.com/fwlink/?linkid=2085767' ## 1903 WDK link
 
 Write-Host -ForegroundColor Green Installing WDK
 $out = 'wdksetup.exe'
