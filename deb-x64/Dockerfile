@@ -32,12 +32,23 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
-  build-essential pkg-config\
+RUN apt-get update && apt-get install -y fakeroot curl procps bzip2 \
+  build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libz-dev \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics
 
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
+
+# Git
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
+# --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs.
+RUN tar xzf git-2.10.1.tar.gz --no-same-owner
+RUN cd git-2.10.1 && make prefix=/usr/local all
+RUN cd git-2.10.1 && make prefix=/usr/local install
+RUN rm -rf git-2.10.1 git-2.10.1.tar.gz
+
+RUN git config --global user.email "package@datadoghq.com"
+RUN git config --global user.name "Bits"
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
