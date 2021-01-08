@@ -420,6 +420,6 @@ notify-on-failure:
     AUTHOR=$(git show -s --format="%an" HEAD)
     MESSAGE_TEXT=":red-light: datadog-agent-buildimages build failed for $CI_COMMIT_TITLE (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>) by $AUTHOR"
     if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
-      MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)
+      MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)"
     fi
     postmessage "#agent-platform" "$MESSAGE_TEXT"
