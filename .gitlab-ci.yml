@@ -1,7 +1,10 @@
+include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
+
 stages:
   - build
   - test
   - release
+  - notify
 
 variables:
   # To release Windows images, we need tools that are not necessarily present on the Windows Gitlab runners
@@ -12,7 +15,7 @@ variables:
 
 .build:
   stage: build
-  except: [ tags, schedules ]
+  except: [ tags ]
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
@@ -24,7 +27,7 @@ variables:
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
 
 .build_arm:
   stage: build
@@ -48,7 +51,7 @@ variables:
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
 
 build_deb_x64:
   extends: .build
@@ -176,14 +179,14 @@ test_system-probe_arm64:
 
 .winbuild: &winbuild
   stage: build
-  except: [ tags, schedules ]
+  except: [ tags ]
   script:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - docker push $SRC_IMAGE
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
@@ -405,3 +408,18 @@ release_windows_20h2_x64:
   needs: [ "test_windows_20h2_x64" ]
   variables:
     IMAGE: windows_20h2_x64
+
+notify-on-failure:
+  extends: .slack-notifier-base
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_failure
+  dependencies: []
+  script: |
+    COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
+    AUTHOR=$(git show -s --format="%an" HEAD)
+    MESSAGE_TEXT=":red-light: datadog-agent-buildimages build failed for $CI_COMMIT_TITLE (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>) by $AUTHOR"
+    if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
+      MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)
+    fi
+    postmessage "#agent-platform" "$MESSAGE_TEXT"
