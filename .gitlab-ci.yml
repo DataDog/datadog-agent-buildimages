@@ -1,9 +1,16 @@
 stages:
   - test
 
-test_deb_arm64:
+test_bullseye_arm64:
   stage: test
   image: debian:bullseye
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+  script:
+    - echo "Test"
+
+test_buster_arm64:
+  stage: test
+  image: debian:buster
   tags: [ "runner:docker-arm", "platform:arm64" ]
   script:
     - echo "Test"
