@@ -244,6 +244,7 @@ build_windows_20h2_x64:
   extends: .test
   timeout: 2h 00m
   script:
+    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
     - git clone https://github.com/DataDog/datadog-agent datadog-agent
     - cd datadog-agent
