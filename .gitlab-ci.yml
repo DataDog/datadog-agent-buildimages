@@ -324,8 +324,6 @@ test_windows_1909_x86:
 
 .winrelease:
   stage: release
-  except: [ tags, schedules ]
-  only: [ master ]
   ## this always needs to be the newest available builder version
   tags: [ "runner:windows-docker", "windowsversion:20h2" ]
   script:
