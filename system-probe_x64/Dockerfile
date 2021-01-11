@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GIMME_GO_VERSION=1.14.12
@@ -16,9 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         gcc \
         git \
         libelf-dev \
-        libstdc++-8-dev \
+        libstdc++-10-dev \
         libtinfo-dev \
-        libtinfo5 \
         libxml2-dev \
         linux-headers-amd64 \
         ninja-build \

@@ -163,19 +163,23 @@ test_rpm_arm64:
     - git checkout master
     - inv -e deps --verbose
   script:
-    - inv -e system-probe.build --go-version=1.14.12 --no-with-bcc
+    - inv -e system-probe.build --go-version=$SYSTEM_PROBE_GO_VERSION --embedded-path=$DATADOG_AGENT_EMBEDDED_PATH --no-with-bcc
 
 test_system-probe_x64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
+  variables:
+    ARCH: amd64
 
 test_system-probe_arm64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
+  variables:
+    ARCH: arm64
 
 .winbuild: &winbuild
   stage: build
