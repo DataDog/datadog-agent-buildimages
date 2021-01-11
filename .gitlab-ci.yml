@@ -8,6 +8,20 @@ test_bullseye_arm64:
   script:
     - echo "Test"
 
+test_bullseye-slim_arm64:
+  stage: test
+  image: debian:bullseye-slim
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+  script:
+    - echo "Test"
+
+test_bullseye-20200908_arm64:
+  stage: test
+  image: debian:bullseye-20200908
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+  script:
+    - echo "Test"
+
 test_buster_arm64:
   stage: test
   image: debian:buster
