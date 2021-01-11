@@ -187,7 +187,7 @@ test_windows_1909_x86:
       docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-      If (`${DOCKERHUB_IMAGE} -ne `$null) {
+      If ("${DOCKERHUB_IMAGE}" -ne "") {
         docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
         docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
         If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
@@ -200,7 +200,7 @@ test_windows_1909_x86:
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
-    - If (${DOCKERHUB_IMAGE} -ne $null) { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}; echo "TEST" }
+    - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}; echo "TEST" }
 
 release_windows_1809_x64:
   extends: .winrelease
