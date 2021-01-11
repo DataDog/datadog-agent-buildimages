@@ -2,7 +2,6 @@ include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 stages:
   - build
-  - test
   - release
   - notify
 
@@ -12,10 +11,6 @@ variables:
   # Thus, to release buildimages, we do the same thing as what we do in the Agent: we run the Docker publish script in
   # the buildimage for the highest Windows version supported.
   WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_2004_x64:v3541301-fcf9226
-
-.test:
-  stage: test
-  except: [ tags, schedules ]
 
 .winbuild: &winbuild
   stage: build
@@ -39,22 +34,6 @@ build_windows_1809_x64:
     IMAGE: windows_1809_x64
     DD_TARGET_ARCH: x64
 
-build_windows_1809_x86:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x86
-    DD_TARGET_ARCH: x86
-
-build_windows_1909_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1909_x64
-    DD_TARGET_ARCH: x64
-
 build_windows_1909_x86:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:1909" ]
@@ -62,85 +41,6 @@ build_windows_1909_x86:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x86
     DD_TARGET_ARCH: x86
-
-build_windows_2004_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_2004_x64
-    DD_TARGET_ARCH: x64
-
-build_windows_20h2_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_20h2_x64
-    DD_TARGET_ARCH: x64
-
-.test_windows:
-  extends: .test
-  timeout: 2h 00m
-  script:
-    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - git clone https://github.com/DataDog/datadog-agent datadog-agent
-    - cd datadog-agent
-    - $VERSION="nightly"
-    - git checkout master
-    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
-
-test_windows_1809_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  needs: [ "build_windows_1809_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_1809_x64
-
-test_windows_1809_x86:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  needs: [ "build_windows_1809_x86" ]
-  variables:
-    ARCH: x86
-    IMAGE: windows_1809_x86
-
-test_windows_1909_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  needs: [ "build_windows_1909_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_1909_x64
-
-test_windows_2004_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
-  needs: [ "build_windows_2004_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_2004_x64
-
-test_windows_20h2_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
-  needs: [ "build_windows_20h2_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_20h2_x64
-
-test_windows_1909_x86:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  needs: [ "build_windows_1909_x86" ]
-  variables:
-    ARCH: x86
-    IMAGE: windows_1909_x86
 
 .release:
   stage: release
@@ -204,47 +104,15 @@ test_windows_1909_x86:
 
 release_windows_1809_x64:
   extends: .winrelease
-  needs: [ "test_windows_1809_x64" ]
   variables:
     IMAGE: windows_1809_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "1809"
 
-release_windows_1809_x86:
-  extends: .winrelease
-  needs: [ "test_windows_1809_x86" ]
-  variables:
-    IMAGE: windows_1809_x86
-
-release_windows_1909_x64:
-  extends: .winrelease
-  needs: [ "test_windows_1909_x64" ]
-  variables:
-    IMAGE: windows_1909_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "1909"
-
 release_windows_1909_x86:
   extends: .winrelease
-  needs: [ "test_windows_1909_x86" ]
   variables:
     IMAGE: windows_1909_x86
-
-release_windows_2004_x64:
-  extends: .winrelease
-  needs: [ "test_windows_2004_x64" ]
-  variables:
-    IMAGE: windows_2004_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "2004"
-
-release_windows_20h2_x64:
-  extends: .winrelease
-  needs: [ "test_windows_20h2_x64" ]
-  variables:
-    IMAGE: windows_20h2_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "20h2"
 
 notify-on-failure:
   extends: .slack-notifier-base
