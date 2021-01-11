@@ -94,18 +94,6 @@ build_rpm_armhf:
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: arm32v7
 
-build_system-probe_x64:
-  extends: .build
-  variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
-    IMAGE: system-probe_x64
-
-build_system-probe_arm64:
-  extends: .build_arm
-  variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
-    IMAGE: system-probe_arm64
-
 .test:
   stage: test
   except: [ tags, schedules ]
