@@ -202,18 +202,6 @@ test_windows_1909_x86:
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
     - If (${DOCKERHUB_IMAGE} -ne $null) { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG} }
 
-release_deb_x64:
-  extends: .release
-  needs: [ "test_deb_x64" ]
-  variables:
-    IMAGE: deb_x64
-
-release_rpm_x64:
-  extends: .release
-  needs: [ "test_rpm_x64" ]
-  variables:
-    IMAGE: rpm_x64
-
 release_windows_1809_x64:
   extends: .winrelease
   needs: [ "test_windows_1809_x64" ]
