@@ -349,17 +349,20 @@ test_windows_1909_x86:
       docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-      docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
-      docker push datadog/agent-buildimages-${IMAGE}:${SRC_TAG}
-      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-      docker tag $SRC_IMAGE datadog/agent-buildimages-${IMAGE}:latest
-      docker push datadog/agent-buildimages-${IMAGE}:latest
-      If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+      If ("${DOCKERHUB_IMAGE}" -ne "") {
+        docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
+        docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
+        If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+      }
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
     - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine $WINDOWS_RELEASE_IMAGE powershell -C C:\mnt\ci-scripts\docker-publish.ps1
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) datadog/agent-buildimages-${IMAGE}:latest
+    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
+    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
+    - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
+    - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG} }
 
 release_deb_x64:
   extends: .release
@@ -378,6 +381,8 @@ release_windows_1809_x64:
   needs: [ "test_windows_1809_x64" ]
   variables:
     IMAGE: windows_1809_x64
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    DOCKERHUB_TAG_PREFIX: "1809"
 
 release_windows_1809_x86:
   extends: .winrelease
@@ -390,6 +395,8 @@ release_windows_1909_x64:
   needs: [ "test_windows_1909_x64" ]
   variables:
     IMAGE: windows_1909_x64
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    DOCKERHUB_TAG_PREFIX: "1909"
 
 release_windows_1909_x86:
   extends: .winrelease
@@ -402,12 +409,16 @@ release_windows_2004_x64:
   needs: [ "test_windows_2004_x64" ]
   variables:
     IMAGE: windows_2004_x64
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    DOCKERHUB_TAG_PREFIX: "2004"
 
 release_windows_20h2_x64:
   extends: .winrelease
   needs: [ "test_windows_20h2_x64" ]
   variables:
     IMAGE: windows_20h2_x64
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    DOCKERHUB_TAG_PREFIX: "20h2"
 
 notify-on-failure:
   extends: .slack-notifier-base
