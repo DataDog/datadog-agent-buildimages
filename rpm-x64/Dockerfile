@@ -126,12 +126,16 @@ RUN rm -r /usr/src/kernels/* && \
     rm kernel-4.9-headers-rpm-x64.tgz
 
 # Update GCC: CentOS6 gcc-4.4 is a little too far behind what we use with the debian builder
-RUN curl -o /etc/yum.repos.d/devtools-1.1.repo https://people.centos.org/tru/devtools-1.1/devtools-1.1.repo
-RUN yum --enablerepo=testing-1.1-devtools-6 -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
+# Copy (and import through the repo file) the CERN signing key:
+# pub   1024D/1D1E034B 2005-06-27
+# uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
+COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+RUN curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
+RUN yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
 
-ENV CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc
-ENV CPP=/opt/centos/devtoolset-1.1/root/usr/bin/cpp
-ENV CXX=/opt/centos/devtoolset-1.1/root/usr/bin/c++
+ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
+ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
+ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 
 # Download and install golangci-lint
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
