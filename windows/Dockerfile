@@ -172,6 +172,10 @@ RUN powershell -C .\install_embedded_pythons.ps1
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
 
+# install HLK studio for HLK signing jobs (driver)
+COPY ./windows/install_hlkstudio.ps1 install_hlkstudio.ps1
+RUN powershell -C .\install_hlkstudio.ps1
+
 # Set 32-bit flag env var
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
