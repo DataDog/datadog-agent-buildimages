@@ -65,13 +65,13 @@ setx TEST_EMBEDDED_PY2 $py2Target
 setx TEST_EMBEDDED_PY3 $py3Target
 
 cd $py2Target
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-.\python get-pip.py
+curl https://bootstrap.pypa.io/2.7/get-pip.py -o get-pip.py
+.\python get-pip.py pip==${Env:EMBEDDED_PIP_VERSION}
 
 
 cd $py3Target
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-.\python get-pip.py
+.\python get-pip.py pip==${Env:EMBEDDED_PIP_VERSION}
 
 if ( $Env:TARGET_ARCH -eq "x86") {
     $crt = "https://s3.amazonaws.com/dd-agent-omnibus/msvc_ucrt_runtime_x86.zip"
