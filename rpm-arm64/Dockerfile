@@ -3,11 +3,13 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.14.12
+ARG DD_CONDA_VERSION=4.7.12-0
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
-ARG DD_TARGET_ARCH=arm64v8
+ARG DD_TARGET_ARCH=aarch64
+
 
 # Environment
 ENV GOPATH /go
@@ -16,6 +18,8 @@ ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
+ENV CONDA_PATH /root/miniforge3
+ENV DD_CONDA_VERSION $DD_CONDA_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
@@ -31,9 +35,12 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# Pip & Invoke
-RUN curl "https://bootstrap.pypa.io/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke distro==1.4.0 awscli==1.16.240
+# CONDA
+COPY ./setup_python.sh /setup_python.sh
+RUN ./setup_python.sh
+COPY ./conda.sh /etc/profile.d/conda.sh
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme

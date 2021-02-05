@@ -2,12 +2,13 @@ FROM debian:wheezy-backports
 
 # Build Args
 ARG GIMME_GO_VERSION=1.14.12
-ARG DD_CONDA_VERSION=4.7.10
+ARG DD_CONDA_VERSION=4.7.12
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG IBM_MQ_VERSION=9.2.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+ARG DD_TARGET_ARCH=x64
 
 # Environment
 ENV GOPATH /go
@@ -19,6 +20,7 @@ ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
 ENV DD_CONDA_VERSION $DD_CONDA_VERSION
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -56,11 +58,6 @@ RUN mkdir -p /opt/mqm \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
-# Conda
-RUN curl -sL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-${DD_CONDA_VERSION}-Linux-x86_64.sh
-RUN bash ~/miniconda.sh -b
-COPY ./conda.sh /etc/profile.d/
-
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
@@ -70,27 +67,12 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# CONDA prep
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+# CONDA
+COPY ./setup_python.sh /setup_python.sh
+RUN ./setup_python.sh
+COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
-RUN conda init bash
-
-# Setup pythons
-RUN conda create -n ddpy2 python python=2
-RUN conda create -n ddpy3 python python=3.8
-
-# Update pip, setuptools and misc deps
-RUN  /bin/bash -c "source /root/.bashrc && conda activate ddpy2 \
-    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
-    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke distro==1.4.0 awscli==1.16.240"
-
-# Update pip, setuptools and misc deps
-RUN  /bin/bash -c "source /root/.bashrc && conda activate ddpy3 \
-    && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
-    && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke distro==1.4.0 awscli==1.16.240"
-
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
