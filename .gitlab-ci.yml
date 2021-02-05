@@ -12,6 +12,9 @@ variables:
   # Thus, to release buildimages, we do the same thing as what we do in the Agent: we run the Docker publish script in
   # the buildimage for the highest Windows version supported.
   WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_2004_x64:v3541301-fcf9226
+  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
+  S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
+  DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
 
 .build:
   stage: build
@@ -162,6 +165,9 @@ test_rpm_arm64:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
     - git checkout master
     - inv -e deps --verbose
+    - $S3_CP_CMD $S3_PERMANENT_ARTIFACTS_URI/clang-$ARCH-11.0.0.tar.xz /tmp/clang.tar.xz
+    - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
+    - tar -xvf /tmp/clang.tar.xz -C $DATADOG_AGENT_EMBEDDED_PATH
   script:
     - inv -e system-probe.build --go-version=1.14.12 --no-with-bcc
 
@@ -170,12 +176,16 @@ test_system-probe_x64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
+  variables:
+    ARCH: amd64
 
 test_system-probe_arm64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
+  variables:
+    ARCH: arm64
 
 .winbuild: &winbuild
   stage: build
