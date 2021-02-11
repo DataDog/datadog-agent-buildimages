@@ -27,12 +27,56 @@ RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     rm /etc/yum.repos.d/CentOS-Base.repo
 
-RUN yum groupinstall -y development
+# The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
+  @development \
   which perl-ExtUtils-MakeMaker \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar libtool
+  glibc-static tar libtool \
+  bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
+  libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
+
+# Autoconf
+# We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
+RUN curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
+    && cd /tmp \
+    && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
+    && cd autoconf-2.69 \
+    && ./configure \
+    && make && make install \
+    && cd / \
+    && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz
+
+# New libarchive is required for the new rpm version
+RUN curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
+    && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
+    && rpm -Uvh --nodeps /root/rpmbuild/RPMS/x86_64/* \
+    && rm -rf /tmp/libarchive-3.1.2-12.el7.src.rpm /root/rpmbuild
+
+# Actually build new rpm
+COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
+# The sed command basically replaces this:
+#   --pipe 'rpm --addsign `grep ".*: .*\.rpm$"|cut -d: -f2` < "/dev/"`ps -p $$ -o tty | tail -n 1`' \
+# (which makes `rpmbuild --sign` fail when there's no tty - e.g. in Gitlab) with this:
+#   --pipe 'rpm --addsign `grep ".*: .*\.rpm$"|cut -d: -f2`' \
+# (which makes `rpmbuild --sign` succeed even without tty)
+RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
+    && cd /tmp \
+    && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
+    && cd rpm-4.15.1 \
+    && cat /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch | patch -p1 \
+    && ./configure --without-lua --without-audit \
+    && make \
+    && make install \
+    && sed -i -e 's/ <.*/\x27 \\/' /usr/local/lib/rpm/rpmpopt-4.15.1 \
+    && cd / \
+    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
+
+# Rebuild RPM database with the new rpm
+RUN mkdir -p /usr/local/var/lib/rpm \
+    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
+    && /usr/local/bin/rpm --rebuilddb
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
@@ -67,16 +111,6 @@ RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
-# Autoconf
-# We need a newer version of autoconf to compile procps-ng (installing 2.69 over 2.63).
-RUN curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
-    && cd /tmp \
-    && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
-    && cd autoconf-2.69 \
-    && ./configure \
-    && make && make install \
-    && cd / \
-    && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
