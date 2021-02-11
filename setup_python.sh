@@ -30,11 +30,11 @@ conda create -n ddpy3 python python=3.8
 conda activate ddpy2 \
     && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
     && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke distro==1.4.0 awscli==1.16.240
+    && pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3 \
     && pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION} \
     && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
-    && pip install invoke distro==1.4.0 awscli==1.16.240
+    && pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
