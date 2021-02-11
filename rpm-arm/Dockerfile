@@ -7,7 +7,7 @@ ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=41.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
-ARG DD_TARGET_ARCH=arm32v7
+ARG DD_TARGET_ARCH=armhf
 
 # Environment
 ENV GOPATH /go
@@ -52,7 +52,7 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
 RUN curl "https://bootstrap.pypa.io/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke distro==1.4.0 awscli==1.16.240
+RUN pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme

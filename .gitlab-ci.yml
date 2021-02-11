@@ -21,6 +21,8 @@ variables:
   except: [ tags ]
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
+  variables:
+    DD_TARGET_ARCH: x64
   script:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
@@ -39,7 +41,7 @@ variables:
   image: arm64v8/docker:18.04
   variables:
     BASE_IMAGE: arm64v8/ubuntu:16.04
-    DD_TARGET_ARCH: arm64v8
+    DD_TARGET_ARCH: aarch64
   script:
     - apk add --update python py-pip
     - pip install awscli
@@ -80,7 +82,7 @@ build_deb_armhf:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
     BASE_IMAGE: arm32v7/ubuntu:16.04
-    DD_TARGET_ARCH: arm32v7
+    DD_TARGET_ARCH: armhf
 
 build_rpm_arm64:
   extends: .build_arm
@@ -95,7 +97,7 @@ build_rpm_armhf:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
-    DD_TARGET_ARCH: arm32v7
+    DD_TARGET_ARCH: armhf
 
 build_system-probe_x64:
   extends: .build
@@ -113,7 +115,7 @@ build_system-probe_arm64:
   stage: test
   except: [ tags, schedules ]
 
-.test_agent6_x64:
+.test_agent6:
   extends: .test
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
@@ -124,37 +126,26 @@ build_system-probe_arm64:
   script:
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
-.test_agent6_arm64:
-  extends: .test
-  before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - git checkout master
-    - source /root/.bashrc
-    - inv -e deps --verbose
-  script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
-
 test_deb_x64:
-  extends: .test_agent6_x64
+  extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
   needs: [ "build_deb_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
 
 test_deb_arm64:
-  extends: .test_agent6_arm64
+  extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
   needs: [ "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_rpm_x64:
-  extends: .test_agent6_x64
+  extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
   tags: [ "runner:main", "size:2xlarge" ]
 
 test_rpm_arm64:
-  extends: .test_agent6_arm64
+  extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]

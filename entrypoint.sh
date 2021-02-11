@@ -5,13 +5,13 @@ source /root/.bashrc
 
 if command -v conda; then
   # Only try to use conda if it's installed.
-  # On ARM images, we use the system Python 3 because conda is not supported.
+  # On ARM32 images, we use the system Python 3 because conda is not supported.
   conda activate ddpy3
 fi
 
-if [ "$DD_TARGET_ARCH" = "arm64v8" ] ; then
+if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
     export GIMME_ARCH=arm64
-elif [ "$DD_TARGET_ARCH" = "arm32v7" ] ; then
+elif [ "$DD_TARGET_ARCH" = "armhf" ] ; then
     export GIMME_ARCH=arm
 fi
 eval "$(gimme)"
