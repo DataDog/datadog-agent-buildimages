@@ -114,6 +114,7 @@ RUN powershell -Command .\install_dotnetcore.ps1
 
 # install nuget
 # TODO: Remove when we replace it with vcpkg
+COPY ./windows/install_nuget.ps1 install_nuget.ps1
 RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 RUN git clone https://github.com/microsoft/vcpkg && .\vcpkg\bootstrap-vcpkg.bat
 RUN powershell -Command [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\vcpkg", [System.EnvironmentVariableTarget]::Machine)
