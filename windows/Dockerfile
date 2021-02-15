@@ -116,8 +116,10 @@ RUN powershell -Command .\install_dotnetcore.ps1
 # TODO: Remove when we replace it with vcpkg
 COPY ./windows/install_nuget.ps1 install_nuget.ps1
 RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
-RUN git clone https://github.com/microsoft/vcpkg && .\vcpkg\bootstrap-vcpkg.bat
-RUN powershell -Command [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\vcpkg", [System.EnvironmentVariableTarget]::Machine)
+
+RUN git clone https://github.com/microsoft/vcpkg
+RUN .\vcpkg\scripts\bootstrap.ps1
+RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\vcpkg", [System.EnvironmentVariableTarget]::Machine)
 
 # Install VC compiler for Python 2.7
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
