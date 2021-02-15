@@ -51,8 +51,8 @@ RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
-RUN curl "https://bootstrap.pypa.io/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-RUN pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
+COPY ./setup_python.sh /setup_python.sh
+RUN ./setup_python.sh
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme

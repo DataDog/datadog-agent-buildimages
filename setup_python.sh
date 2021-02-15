@@ -10,7 +10,9 @@ case $DD_TARGET_ARCH in
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
     ;;
 *)
-    echo "Not installing conda"
+    echo "Using system python since DD_TARGET_ARCH is $DD_TARGET_ARCH"
+    curl "https://bootstrap.pypa.io/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
+    pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
 esac
 
