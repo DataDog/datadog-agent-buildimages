@@ -383,6 +383,18 @@ release_rpm_x64:
   variables:
     IMAGE: rpm_x64
 
+release_deb_arm64:
+  extends: .release
+  needs: [ "test_deb_arm64" ]
+  variables:
+    IMAGE: deb_arm64
+
+release_rpm_arm64:
+  extends: .release
+  needs: [ "test_rpm_arm64" ]
+  variables:
+    IMAGE: rpm_arm64
+
 release_windows_1809_x64:
   extends: .winrelease
   needs: [ "test_windows_1809_x64" ]
