@@ -31,11 +31,6 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
-# The sed command basically replaces this:
-#   --pipe 'rpm --addsign `grep ".*: .*\.rpm$"|cut -d: -f2` < "/dev/"`ps -p $$ -o tty | tail -n 1`' \
-# (which makes `rpmbuild --sign` fail when there's no tty - e.g. in Gitlab) with this:
-#   --pipe 'rpm --addsign `grep ".*: .*\.rpm$"|cut -d: -f2`' \
-# (which makes `rpmbuild --sign` succeed even without tty)
 RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
@@ -44,7 +39,6 @@ RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/r
     && ./configure --without-lua --without-audit \
     && make \
     && make install \
-    && sed -i -e 's/ <.*/\x27 \\/' /usr/local/lib/rpm/rpmpopt-4.15.1 \
     && cd / \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
 
