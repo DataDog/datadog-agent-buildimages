@@ -195,7 +195,7 @@ test_system-probe_arm64:
 
 build_windows_1809_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x64
@@ -203,7 +203,7 @@ build_windows_1809_x64:
 
 build_windows_1809_x86:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x86
@@ -211,7 +211,7 @@ build_windows_1809_x86:
 
 build_windows_1909_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x64
@@ -219,7 +219,7 @@ build_windows_1909_x64:
 
 build_windows_1909_x86:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1909_x86
@@ -227,7 +227,7 @@ build_windows_1909_x86:
 
 build_windows_2004_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
+  tags: [ "runner:windows-docker", "windowsversion:2004_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_2004_x64
@@ -235,7 +235,7 @@ build_windows_2004_x64:
 
 build_windows_20h2_x64:
   extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  tags: [ "runner:windows-docker", "windowsversion:20H2_test" ]
   variables:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_20h2_x64
@@ -259,7 +259,7 @@ build_windows_20h2_x64:
 
 test_windows_1809_x64:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
   needs: [ "build_windows_1809_x64" ]
   variables:
     ARCH: x64
@@ -267,7 +267,7 @@ test_windows_1809_x64:
 
 test_windows_1809_x86:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1809" ]
+  tags: [ "runner:windows-docker", "windowsversion:1809_test" ]
   needs: [ "build_windows_1809_x86" ]
   variables:
     ARCH: x86
@@ -275,7 +275,7 @@ test_windows_1809_x86:
 
 test_windows_1909_x64:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
   needs: [ "build_windows_1909_x64" ]
   variables:
     ARCH: x64
@@ -283,7 +283,7 @@ test_windows_1909_x64:
 
 test_windows_2004_x64:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
+  tags: [ "runner:windows-docker", "windowsversion:2004_test" ]
   needs: [ "build_windows_2004_x64" ]
   variables:
     ARCH: x64
@@ -291,7 +291,7 @@ test_windows_2004_x64:
 
 test_windows_20h2_x64:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  tags: [ "runner:windows-docker", "windowsversion:20H2_test" ]
   needs: [ "build_windows_20h2_x64" ]
   variables:
     ARCH: x64
@@ -299,7 +299,7 @@ test_windows_20h2_x64:
 
 test_windows_1909_x86:
   extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
+  tags: [ "runner:windows-docker", "windowsversion:1909_test" ]
   needs: [ "build_windows_1909_x86" ]
   variables:
     ARCH: x86
@@ -330,7 +330,7 @@ test_windows_1909_x86:
   except: [ tags, schedules ]
   only: [ master ]
   ## this always needs to be the newest available builder version
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  tags: [ "runner:windows-docker", "windowsversion:20H2_test" ]
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
