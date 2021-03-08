@@ -11,7 +11,7 @@ case $DD_TARGET_ARCH in
     ;;
 *)
     echo "Using system python since DD_TARGET_ARCH is $DD_TARGET_ARCH"
-    curl "https://bootstrap.pypa.io/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
+    curl "https://bootstrap.pypa.io/pip/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
     pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
 esac
