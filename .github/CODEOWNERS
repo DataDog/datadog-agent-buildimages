@@ -13,5 +13,5 @@
 
 /entrypoint-sysprobe.sh @DataDog/networks @DataDog/agent-platform
 
-/system-probe_x64/      @DataDog/networks @DataDog/agent-platform
 /system-probe_arm64/    @DataDog/networks @DataDog/agent-platform
+/system-probe_x64/      @DataDog/networks @DataDog/agent-platform
