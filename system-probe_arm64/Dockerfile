@@ -9,26 +9,35 @@ ENV GOPATH=/go
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         awscli \
         bison \
+        bzip2 \
+        build-essential \
         cmake \
         curl \
+        fakeroot \
         flex \
         g++ \
         gcc \
         git \
         libelf-dev \
+        libreadline-dev \
+        libssl-dev \
         libstdc++-8-dev \
         libtinfo-dev \
         libtinfo5 \
         libxml2-dev \
         linux-headers-arm64 \
+        meson \
         ninja-build \
+        pkg-config \
+        perl \
         python \
         python3-distro \
         python3-distutils \
         python3-setuptools \
         python3-pip \
         wget \
-        xz-utils
+        xz-utils \
+        zlib1g-dev
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
 RUN chmod +x /bin/gimme
@@ -46,6 +55,14 @@ RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
 RUN python3 -m pip install invoke==1.4.1
+
+# install bundler
+RUN curl -L https://github.com/rbenv/ruby-build/archive/v20210309.tar.gz | tar -zxf - -C /tmp/ && \
+        cd /tmp/ruby-build-* && \
+        ./install.sh && \
+        cd / && \
+        ruby-build 2.6.1 /usr/local
+RUN gem install bundler --no-document
 
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
