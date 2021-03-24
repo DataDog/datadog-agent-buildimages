@@ -4,7 +4,7 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GIMME_GO_VERSION=1.14.12
 ARG DD_PIP_VERSION=19.1
-ARG DD_SETUPTOOLS_VERSION=41.0.1
+ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=armhf
@@ -28,7 +28,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
+    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python
 
 # This trick preloads a dynamic library that will replace the uname syscall to pretend the machine is armv7l
