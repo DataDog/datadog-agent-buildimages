@@ -2,6 +2,11 @@
 
 set -ex
 
+function detect_distro(){
+    local KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
+    DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
+}
+
 case $DD_TARGET_ARCH in
 "x64")
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-${DD_CONDA_VERSION}-Linux-x86_64.sh
@@ -11,8 +16,17 @@ case $DD_TARGET_ARCH in
     ;;
 *)
     echo "Using system python since DD_TARGET_ARCH is $DD_TARGET_ARCH"
-    curl "https://bootstrap.pypa.io/pip/2.7/get-pip.py" | python2.7 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
-    pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
+    detect_distro
+    if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
+        apt-get update && apt-get install -y software-properties-common
+        add-apt-repository ppa:deadsnakes/ppa
+        apt-get update && apt-get install -y python3.9-dev
+    elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
+        yum install -y python3-devel
+    fi
+
+    curl "https://bootstrap.pypa.io/pip/get-pip.py" | python3 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
+    python3 -m pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
 esac
 

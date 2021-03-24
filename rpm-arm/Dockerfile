@@ -28,7 +28,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
 
 RUN yum groupinstall -y development && yum -y install which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
+    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python
 
 # This trick preloads a dynamic library that will replace the uname syscall to pretend the machine is armv7l
