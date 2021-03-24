@@ -19,8 +19,9 @@ case $DD_TARGET_ARCH in
     detect_distro
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
         apt-get update && apt-get install -y software-properties-common
-        add-apt-repository ppa:deadsnakes/ppa
+        add-apt-repository -y ppa:deadsnakes/ppa
         apt-get update && apt-get install -y python3.9-dev
+        ln -sf /usr/bin/python3.9 /usr/bin/python3
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         yum install -y python3-devel
     fi
