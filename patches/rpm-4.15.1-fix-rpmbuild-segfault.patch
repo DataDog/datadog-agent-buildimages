@@ -1,0 +1,15 @@
+# This diff fixes a segfault in RPM built agains Centos 6 GCC
+# It is a variant of a fix mentioned in comment
+# https://github.com/rpm-software-management/rpm/commit/18c92e6fe76df334fed8d5f04b5f40b776daba8c#r34102314
+diff --git a/build/pack.c b/build/pack.c
+--- a/build/pack.c
++++ b/build/pack.c
+@@ -752,7 +752,7 @@
+     #pragma omp parallel
+     #pragma omp single
+     for (pkg = spec->packages; pkg != NULL; pkg = pkg->next) {
+-	#pragma omp task
++	#pragma omp task firstprivate(spec, pkg, cookie, cheating)
+ 	{
+ 	pkg->rc = packageBinary(spec, pkg, cookie, cheating, &pkg->filename);
+ 	rpmlog(RPMLOG_DEBUG,
