@@ -18,6 +18,7 @@ ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f3
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="9ef854b71949f825362a119bf2597f744836cb571131ae6b721cd102ffea8cd0"
 ARG DD_TARGET_ARCH=x64
+ARG RUST_VERSION=1.53
 
 # Environment
 ENV GOPATH /go
@@ -32,6 +33,7 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV RUST_VERSION $RUST_VERSION
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -137,6 +139,10 @@ RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/gol
     && sh ./golangci-lint-install.sh -b $GOPATH/bin v1.21.0 \
     && echo "942efc00799b83aebaf6628c34e1151467b7fa21f0cfd78554279dc73f8c8ef3  $GOPATH/bin/golangci-lint" | sha256sum --check \
     && rm golangci-lint-install.sh
+
+# Rust is needed to compile some python libs
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # Entrypoint
 COPY ./entrypoint.sh /
