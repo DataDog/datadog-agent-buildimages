@@ -57,5 +57,5 @@ conda activate ddpy3 \
 
 if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
     # Conda creates "lib" but on Amazon Linux, the embedded Python2 we use in unit tests will look in "lib64" instead
-    ln -s /root/miniforge3/envs/ddpy2/lib /root/miniforge3/envs/ddpy2/lib64
+    ln -s "${CONDA_PATH}/envs/ddpy2/lib" "${CONDA_PATH}/envs/ddpy2/lib64"
 fi
