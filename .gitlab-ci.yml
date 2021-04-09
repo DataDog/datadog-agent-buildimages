@@ -16,32 +16,21 @@ variables:
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
 
-.build:
-  stage: build
-  except: [ tags ]
+.x64:
   tags: [ "runner:docker", "size:large" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-py3
   variables:
     DD_TARGET_ARCH: x64
-  script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Build
-    - docker build --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
 
-.build_arm:
-  stage: build
-  except: [ tags, schedules ]
+.arm:
   tags: ["runner:docker-arm", "platform:arm64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-arm64-py3
   variables:
-    BASE_IMAGE: arm64v8/ubuntu:16.04
     DD_TARGET_ARCH: aarch64
+
+.build:
+  stage: build
+  except: [ tags ]
   script:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
@@ -56,25 +45,26 @@ variables:
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
 
 build_deb_x64:
-  extends: .build
+  extends: [ .build, .x64 ]
   variables:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
 build_rpm_x64:
-  extends: .build
+  extends: [ .build, .x64 ]
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
 
 build_deb_arm64:
-  extends: .build_arm
+  extends: [ .build, .arm ]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
+    BASE_IMAGE: arm64v8/ubuntu:16.04
 
 build_deb_armhf:
-  extends: .build_arm
+  extends: [ .build, .arm ]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
@@ -82,14 +72,14 @@ build_deb_armhf:
     DD_TARGET_ARCH: armhf
 
 build_rpm_arm64:
-  extends: .build_arm
+  extends: [ .build, .arm ]
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
     BASE_IMAGE: amazonlinux:2.0.20181114
 
 build_rpm_armhf:
-  extends: .build_arm
+  extends: [ .build, .arm ]
   variables:
     DOCKERFILE: rpm-arm/Dockerfile
     IMAGE: rpm_armhf
@@ -97,13 +87,13 @@ build_rpm_armhf:
     DD_TARGET_ARCH: armhf
 
 build_system-probe_x64:
-  extends: .build
+  extends: [ .build, .x64 ]
   variables:
     DOCKERFILE: system-probe_x64/Dockerfile
     IMAGE: system-probe_x64
 
 build_system-probe_arm64:
-  extends: .build_arm
+  extends: [ .build, .arm ]
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
