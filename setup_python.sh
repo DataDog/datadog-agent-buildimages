@@ -55,3 +55,7 @@ conda activate ddpy3 \
     && pip install --ignore-installed setuptools==${DD_SETUPTOOLS_VERSION} \
     && pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
+if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
+    # Conda creates "lib" but on Amazon Linux, the embedded Python2 we use in unit tests will look in "lib64" instead
+    ln -s "${CONDA_PATH}/envs/ddpy2/lib" "${CONDA_PATH}/envs/ddpy2/lib64"
+fi
