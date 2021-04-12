@@ -36,6 +36,7 @@ ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
 ENV MSYS_VERSION "20201109.0.0"
+ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
 ENV EMBEDDED_PIP_VERSION "20.3.4"
@@ -110,6 +111,10 @@ RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
 # Install dotnet core
 COPY ./windows/install_dotnetcore.ps1 install_dotnetcore.ps1
 RUN powershell -Command .\install_dotnetcore.ps1
+
+# install nuget
+COPY ./windows/install_nuget.ps1 install_nuget.ps1
+RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
 # install vcpkg
 COPY ./windows/install_vcpkg.ps1 install_vcpkg.ps1
