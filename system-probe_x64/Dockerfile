@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         linux-headers-amd64 \
         linux-libc-dev \
         ninja-build \
+        patch \
         python \
         python3-distro \
         python3-distutils \
