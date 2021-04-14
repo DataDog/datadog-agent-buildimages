@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libzip-dev \
         linux-headers-amd64 \
         linux-libc-dev \
+        make \
         ninja-build \
         patch \
         python \
