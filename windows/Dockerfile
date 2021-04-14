@@ -116,6 +116,9 @@ RUN powershell -Command .\install_dotnetcore.ps1
 COPY ./windows/install_nuget.ps1 install_nuget.ps1
 RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
+# install vcpkg
+COPY ./windows/install_vcpkg.ps1 install_vcpkg.ps1
+RUN powershell -Command .\install_vcpkg.ps1
 
 # Install VC compiler for Python 2.7
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
