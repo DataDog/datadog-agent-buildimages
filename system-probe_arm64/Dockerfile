@@ -15,18 +15,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         g++ \
         gcc \
         git \
+        libbpf-dev \
+        libedit-dev \
         libelf-dev \
+        libfl-dev \
         libstdc++-8-dev \
         libtinfo-dev \
         libtinfo5 \
         libxml2-dev \
+        libzip-dev \
         linux-headers-arm64 \
+        linux-libc-dev \
+        make \
         ninja-build \
+        patch \
         python \
         python3-distro \
         python3-distutils \
+        python3-netaddr \
         python3-setuptools \
         python3-pip \
+        python3-pyroute2 \
         wget \
         xz-utils
 
