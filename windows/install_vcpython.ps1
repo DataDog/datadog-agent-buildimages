@@ -13,7 +13,7 @@ $out = "$($PSScriptRoot)\vcp.msi"
 
 (New-Object System.Net.WebClient).DownloadFile($vcpmsi, $out)
 
-if ((Get-FileHash -Algorithm MD5 $out).Hash -ne "4E6342923A8153A94D44FF7307FCDD1F")
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "070474DB76A2E625513A5835DF4595DF9324D820F9CC97EAB2A596DCBC2F5CBF")
 {
     Write-Error "VCForPython27.msi hash doesn't match"
 }
