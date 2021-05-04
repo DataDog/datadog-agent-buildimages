@@ -109,7 +109,7 @@ build_system-probe_arm64:
     - VERSION="nightly"
     - git checkout master
     - source /root/.bashrc && conda activate ddpy3
-    - inv -e deps --verbose
+    - inv -e deps
   script:
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
@@ -142,7 +142,7 @@ test_rpm_arm64:
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
     - git checkout master
-    - inv -e deps --verbose
+    - inv -e deps
     - $S3_CP_CMD $S3_PERMANENT_ARTIFACTS_URI/clang-$ARCH-11.0.1.tar.xz /tmp/clang.tar.xz
     - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
     - tar -xvf /tmp/clang.tar.xz -C $DATADOG_AGENT_EMBEDDED_PATH
