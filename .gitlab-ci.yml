@@ -98,11 +98,11 @@ build_system-probe_arm64:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
 
-build_omnibus_nikos:
+build_omnibus-nikos_x64:
   extends: [ .build, .x64 ]
   variables:
-    DOCKERFILE: omnibus-nikos/Dockerfile
-    IMAGE: omnibus-nikos
+    DOCKERFILE: omnibus-nikos_x64/Dockerfile
+    IMAGE: omnibus-nikos_x64
 
 .test:
   stage: test

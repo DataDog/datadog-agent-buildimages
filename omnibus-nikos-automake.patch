@@ -1,3 +1,9 @@
+# Automake 1.16 attempts to import the 'none' function from perl's List::Util module;
+# however, that function is not present in older versions of perl (ie 5.14.2, which is present
+# on debian:wheezy-backports).
+# To get around that, this patch removes the use of List::Util 'none' by re-implementing the function using 'reduce'.
+# Source: https://github.com/Homebrew/linuxbrew-core/blob/dec6db52ad887a27210e0521a0bc5c271a7c9332/Formula/automake.rb
+
 diff -bur automake-1.16/bin/automake.in  automake-1.16.new/bin/automake.in
 --- automake-1.16/bin/automake.in       2018-02-26 01:13:58.000000000 +1100
 +++ automake-1.16.new/bin/automake.in   2018-03-04 10:28:25.357886554 +1100

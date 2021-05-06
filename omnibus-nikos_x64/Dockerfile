@@ -32,7 +32,7 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc-4.9-backport git \
+RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config wget xz-utils zlib1g-dev
 
@@ -59,6 +59,8 @@ RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
+RUN conda install -c psi4 gcc-5
 
 # Python 3.8
 RUN curl -O -k https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tar.xz && \
@@ -97,7 +99,8 @@ COPY ./gobin.sh /etc/profile.d/
 # Automake
 RUN curl -OL https://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz
 RUN tar xzf automake-1.16.tar.gz
-COPY ./omnibus-nikos/automake.patch automake-1.16/automake.patch
+# Patch automake to resolve a build error from building with a version of perl which is too old (see patch for more details)
+COPY ./omnibus-nikos-automake.patch automake-1.16/automake.patch
 RUN cd automake-1.16 && patch -p1 < automake.patch
 RUN cd automake-1.16 && ./bootstrap && ./configure --prefix=/usr/local && make -j 5 && make install
 RUN rm -rf automake-1.16 automake-1.16.tar.gz
