@@ -6,7 +6,7 @@ ARG GIMME_GO_VERSION=1.15.11
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
 
-RUN apt update && apt full-upgrade -y  && apt install -y  \
+RUN apt update && apt full-upgrade -y && apt install -y \
         awscli \
         bison \
         cmake \
@@ -21,6 +21,8 @@ RUN apt update && apt full-upgrade -y  && apt install -y  \
         python3-distutils \
         python3-invoke \
         python3-pip \
+        libtinfo-dev \
+        libtinfo5 \
         wget
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
