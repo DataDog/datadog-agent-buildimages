@@ -40,7 +40,7 @@ build_rpm_x64:
   stage: build
   except: [ tags, schedules ]
   tags: ["runner:docker-arm", "platform:arm64"]
-  image: arm64v8/docker:18.04
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-arm64-py3
   variables:
     BASE_IMAGE: arm64v8/ubuntu:16.04
     DD_TARGET_ARCH: arm64v8
