@@ -3,14 +3,12 @@ FROM debian:bullseye
 RUN apt update && apt full-upgrade -y && apt install -y  \
         awscli \
         bison \
-        clang-8 \
         cmake \
         curl \
         flex \
         git \
         go-dep \
         golang \
-        libclang-8-dev \
         libelf-dev \
         linux-headers-amd64 \
         python \
