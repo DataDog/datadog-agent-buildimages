@@ -1,5 +1,11 @@
 FROM debian:bullseye
 
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GIMME_GO_VERSION=1.15.11
+
+ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GOPATH=/go
+
 RUN apt update && apt full-upgrade -y && apt install -y  \
         awscli \
         bison \
@@ -7,8 +13,6 @@ RUN apt update && apt full-upgrade -y && apt install -y  \
         curl \
         flex \
         git \
-        go-dep \
-        golang \
         libelf-dev \
         linux-headers-amd64 \
         python \
@@ -21,8 +25,7 @@ RUN apt update && apt full-upgrade -y && apt install -y  \
         wget
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
-
-ENV GOPATH=/go
+RUN gimme $GIMME_GO_VERSION
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
