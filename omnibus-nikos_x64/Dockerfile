@@ -70,9 +70,7 @@ RUN curl -O -k https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tar.xz && \
         make -j 8 && \
         make install
 
-RUN python -m pip install awscli
-RUN python -m pip install meson
-RUN python -m pip install ninja
+RUN python -m pip install awscli meson ninja
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
