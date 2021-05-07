@@ -91,7 +91,7 @@ COPY ./gobin.sh /etc/profile.d/
 RUN curl -OL https://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz
 RUN tar xzf automake-1.16.tar.gz
 # Patch automake to resolve a build error from building with a version of perl which is too old (see patch for more details)
-COPY ./omnibus-nikos/automake.patch automake-1.16/automake.patch
+COPY ./omnibus-nikos_x64/automake.patch automake-1.16/automake.patch
 RUN cd automake-1.16 && patch -p1 < automake.patch
 RUN cd automake-1.16 && ./bootstrap && ./configure --prefix=/usr/local && make -j 5 && make install
 RUN rm -rf automake-1.16 automake-1.16.tar.gz
