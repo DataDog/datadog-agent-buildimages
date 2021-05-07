@@ -61,14 +61,7 @@ ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 RUN conda install -c psi4 gcc-5
-
-# Python 3.8
-RUN curl -O -k https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tar.xz && \
-        tar -xf Python-3.8.0.tar.xz -C /tmp/ && \
-        cd /tmp/Python-3.8.0 && \
-        ./configure && \
-        make -j 8 && \
-        make install
+RUN conda install -c anaconda python=3.8
 
 RUN python -m pip install awscli meson ninja
 
@@ -98,7 +91,7 @@ COPY ./gobin.sh /etc/profile.d/
 RUN curl -OL https://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz
 RUN tar xzf automake-1.16.tar.gz
 # Patch automake to resolve a build error from building with a version of perl which is too old (see patch for more details)
-COPY ./omnibus-nikos-automake.patch automake-1.16/automake.patch
+COPY ./omnibus-nikos/automake.patch automake-1.16/automake.patch
 RUN cd automake-1.16 && patch -p1 < automake.patch
 RUN cd automake-1.16 && ./bootstrap && ./configure --prefix=/usr/local && make -j 5 && make install
 RUN rm -rf automake-1.16 automake-1.16.tar.gz
