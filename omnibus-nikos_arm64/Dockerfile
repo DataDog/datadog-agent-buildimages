@@ -1,4 +1,4 @@
-FROM BASE_IMAGE=arm64v8/ubuntu:16.04
+FROM arm64v8/ubuntu:16.04
 
 # Build Args
 ARG GIMME_GO_VERSION=1.15.11
