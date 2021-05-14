@@ -9,9 +9,11 @@ function detect_distro(){
 
 case $DD_TARGET_ARCH in
 "x64")
+    DD_CONDA_VERSION=4.9.2
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-${DD_CONDA_VERSION}-Linux-x86_64.sh
     ;;
 "aarch64")
+    DD_CONDA_VERSION=4.10.1-1
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
     ;;
 *)
