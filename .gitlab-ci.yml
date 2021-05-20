@@ -17,28 +17,30 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
 
 .x64:
-  tags: [ "runner:docker", "size:large" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-py3
   variables:
     DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
 
 .arm:
-  tags: ["runner:docker-arm", "platform:arm64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-arm64-py3
   variables:
     DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
 
 .build:
   stage: build
+  tags: [ "runner:docker", "size:large" ]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10.3
   except: [ tags ]
   script:
+    - apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
+    - python3 -m pip install awscli~=1.11.152
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # ECR login
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker buildx build --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
@@ -57,30 +59,11 @@ build_rpm_x64:
     IMAGE: rpm_x64
 
 build_deb_arm64:
-  tags: [ "runner:docker", "size:large" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10.3
+  extends: [ .build, .arm ]
   variables:
-    DD_TARGET_ARCH: aarch64
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
     BASE_IMAGE: arm64v8/ubuntu:16.04
-  stage: build
-  except: [ tags ]
-  script:
-    - apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
-    - python3 -m pip install awscli~=1.11.152
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # ECR login
-    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
-    # Build
-    - docker buildx build --platform linux/arm64 --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
-
 
 build_deb_armhf:
   extends: [ .build, .arm ]
