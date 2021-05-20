@@ -72,6 +72,7 @@ build_deb_armhf:
     IMAGE: deb_armhf
     BASE_IMAGE: arm32v7/ubuntu:16.04
     DD_TARGET_ARCH: armhf
+    PLATFORM: linux/arm
 
 build_rpm_arm64:
   extends: [ .build, .arm ]
@@ -87,6 +88,7 @@ build_rpm_armhf:
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: armhf
+    PLATFORM: linux/arm
 
 build_system-probe_x64:
   extends: [ .build, .x64 ]
