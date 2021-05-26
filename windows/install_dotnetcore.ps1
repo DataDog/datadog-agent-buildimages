@@ -14,7 +14,14 @@ $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
 Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
 
+# Skip extraction of XML docs - generally not useful within an image/container - helps performance
+setx NUGET_XMLDOC_MODE skip
+
 start-process -FilePath $out -ArgumentList "/install /quiet /norestart" -wait
 
 Remove-Item $out
+
+# Trigger first run experience by running arbitrary cmd
+dotnet help
+
 Write-Host -ForegroundColor Green Done with DotNet Core SDK $Version
