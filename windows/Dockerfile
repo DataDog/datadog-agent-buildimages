@@ -180,6 +180,9 @@ RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmen
 # Set 32-bit flag env var
 RUN if ($Env:TARGET_ARCH -eq 'x86') { setx WINDOWS_BUILD_32_BIT 1 }
 
+COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
+RUN .\set_cpython_compiler.cmd
+
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/aws_networking.ps1 /aws_networking.ps1
 
