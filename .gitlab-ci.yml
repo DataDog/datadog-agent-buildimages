@@ -113,7 +113,6 @@ build_omnibus-nikos_x64:
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
-    - git checkout master
     - source /root/.bashrc && conda activate ddpy3
     - inv -e deps
   script:
@@ -147,7 +146,6 @@ test_rpm_arm64:
   extends: .test
   before_script:
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
-    - git checkout master
     - inv -e deps
     - $S3_CP_CMD $S3_PERMANENT_ARTIFACTS_URI/clang-$ARCH-11.0.1.tar.xz /tmp/clang.tar.xz
     - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
@@ -243,7 +241,6 @@ build_windows_20h2_x64:
     - git clone https://github.com/DataDog/datadog-agent datadog-agent
     - cd datadog-agent
     - $VERSION="nightly"
-    - git checkout master
     - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
