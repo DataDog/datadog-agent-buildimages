@@ -41,7 +41,7 @@ source /root/.bashrc
 
 # Setup pythons
 conda create -n ddpy2 python python=2
-conda create -n ddpy3 python python=3.8
+conda create -n ddpy3 python python=3.8.10=hdb3f193_7 # FIXME: Pinning specific build since the last version doesn't seem to work with the glibc in the base image
 
 # Update pip, setuptools and misc deps
 conda activate ddpy2 \
