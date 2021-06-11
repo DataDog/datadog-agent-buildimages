@@ -298,7 +298,7 @@ test_windows_1909_x86:
 .release:
   stage: release
   except: [ tags, schedules ]
-  only: [ master ]
+  only: [ master, main ]
   tags: [ "runner:docker", "size:large" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
@@ -318,7 +318,7 @@ test_windows_1909_x86:
 .winrelease:
   stage: release
   except: [ tags, schedules ]
-  only: [ master ]
+  only: [ master, main ]
   ## this always needs to be the newest available builder version
   tags: [ "runner:windows-docker", "windowsversion:20h2" ]
   script:
@@ -432,7 +432,7 @@ release_windows_20h2_x64:
 notify-on-failure:
   extends: .slack-notifier-base
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
       when: on_failure
   dependencies: []
   script: |
