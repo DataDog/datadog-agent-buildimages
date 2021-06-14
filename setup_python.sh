@@ -11,10 +11,12 @@ case $DD_TARGET_ARCH in
 "x64")
     DD_CONDA_VERSION=4.9.2
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
+    PY3_VERSION=3.8.10=hdb3f193_7 # FIXME: Pinning specific build since the last version doesn't seem to work with the glibc in the base image
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
+    PY3_VERSION=3.8.10
     ;;
 *)
     echo "Using system python since DD_TARGET_ARCH is $DD_TARGET_ARCH"
@@ -43,7 +45,7 @@ source /root/.bashrc
 
 # Setup pythons
 conda create -n ddpy2 python python=2
-conda create -n ddpy3 python python=3.8
+conda create -n ddpy3 python python=$PY3_VERSION
 
 # Update pip, setuptools and misc deps
 conda activate ddpy2 \
