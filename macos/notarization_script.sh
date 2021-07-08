@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Requests notarization of the Agent package to Apple.
 

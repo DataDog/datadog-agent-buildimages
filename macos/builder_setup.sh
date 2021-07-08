@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Setups a MacOS builder that can do unsigned builds of the MacOS Agent.
 # The .build_setup file is populated with the correct envvar definitions to do the build,
@@ -18,7 +18,8 @@
 export PKG_CONFIG_VERSION=0.29.2
 export RUBY_VERSION=2.4.10
 export PYTHON_VERSION=3.8.5
-export CMAKE_VERSION=3.18.2
+# Pin cmake version without sphinx-doc, which causes build issues
+export CMAKE_VERSION=3.18.2.2
 export GIMME_VERSION=1.5.4
 
 export BUNDLER_VERSION=2.1.4
@@ -34,6 +35,10 @@ brew tap DataDog/datadog-agent-macos-build
 
 brew uninstall python@2 -f || true # Uninstall python 2 if present
 brew uninstall python -f || true # Uninstall python 3 if present
+
+# Install cmake
+brew install DataDog/datadog-agent-macos-build/cmake@$CMAKE_VERSION -f
+brew link --overwrite cmake@$CMAKE_VERSION
 
 # Install pkg-config
 brew install DataDog/datadog-agent-macos-build/pkg-config@$PKG_CONFIG_VERSION -f
@@ -57,10 +62,6 @@ gem install bundler -v $BUNDLER_VERSION -f
 # Install python
 brew install DataDog/datadog-agent-macos-build/python@$PYTHON_VERSION -f
 brew link --overwrite python@$PYTHON_VERSION
-
-# Install cmake (depends on python@3.8)
-brew install DataDog/datadog-agent-macos-build/cmake@$CMAKE_VERSION -f
-brew link --overwrite cmake@$CMAKE_VERSION
 
 mkdir -p $HOME/go
 export GOPATH=$HOME/go
