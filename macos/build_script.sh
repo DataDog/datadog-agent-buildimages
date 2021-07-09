@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
 
 # Fetches the datadog-agent repo, checks out to the requested version
 # and does an omnibus build of the Agent.
