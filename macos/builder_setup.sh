@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
 
 # Setups a MacOS builder that can do unsigned builds of the MacOS Agent.
 # The .build_setup file is populated with the correct envvar definitions to do the build,

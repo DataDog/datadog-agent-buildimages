@@ -1,5 +1,11 @@
 #!/bin/bash -e
 
+# FIXME: Uncomment this once we fix the way we cache the builder setup
+# in datadog-agent-macos-build, we have non-critical errors that make
+# the script fail with set -e.
+# set -e
+
+
 # Fetches the datadog-agent repo, checks out to the requested version
 # and does an omnibus build of the Agent.
 
