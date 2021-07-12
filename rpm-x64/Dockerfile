@@ -8,6 +8,7 @@ ARG IBM_MQ_VERSION=9.2.0.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=x64
+ARG RUST_VERSION=1.53
 
 # Environment
 ENV GOPATH /go
@@ -19,6 +20,7 @@ ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV RUST_VERSION $RUST_VERSION
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
 RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
@@ -147,6 +149,10 @@ ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 
 # Download and install golangci-lint
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
+
+# Rust is needed to compile some python libs
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # Entrypoint
 COPY ./entrypoint.sh /
