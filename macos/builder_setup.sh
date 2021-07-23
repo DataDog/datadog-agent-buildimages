@@ -27,7 +27,7 @@ export GIMME_VERSION=1.5.4
 export BUNDLER_VERSION=2.1.4
 
 export GO_VERSION=1.15.13
-export IBM_MQ_VERSION=9.2.0.0
+export IBM_MQ_VERSION=9.2.2.0
 
 # Install or upgrade brew (will also install Command Line Tools)
 CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -79,6 +79,6 @@ echo 'eval `gimme '$GO_VERSION'`' >> ~/.build_setup
 
 # Install IBM MQ
 sudo mkdir -p /opt/mqm
-curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/${IBM_MQ_VERSION}-IBM-MQ-Toolkit-MacX64.tar.gz" -o /tmp/mq_client.tar.gz
-sudo tar -C /opt/mqm -xf /tmp/mq_client.tar.gz
-sudo rm -rf /tmp/mq_client.tar.gz
+curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/${IBM_MQ_VERSION}-IBM-MQ-Toolkit-MacX64.pkg" -o /tmp/mq_client.pkg
+sudo installer -pkg /tmp/mq_client.pkg -target /
+sudo rm -rf /tmp/mq_client.pkg
