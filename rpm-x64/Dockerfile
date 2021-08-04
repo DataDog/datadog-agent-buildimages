@@ -33,7 +33,7 @@ RUN yum -y install \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
-  libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
+  libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
