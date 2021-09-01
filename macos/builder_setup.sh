@@ -26,7 +26,7 @@ export GIMME_VERSION=1.5.4
 
 export BUNDLER_VERSION=2.1.4
 
-export GO_VERSION=1.15.13
+export GO_VERSION=1.16.7
 export IBM_MQ_VERSION=9.2.2.0
 
 # Install or upgrade brew (will also install Command Line Tools)
