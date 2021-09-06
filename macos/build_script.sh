@@ -27,7 +27,8 @@ export KEYCHAIN_NAME=${KEYCHAIN_NAME:-"login.keychain"}
 source ~/.build_setup
 
 # Clone the repo
-go get github.com/DataDog/datadog-agent || true # Go get fails if the datadog-agent repo is already there
+mkdir -p $GOPATH/src/github.com/Datadog && cd $GOPATH/src/github.com/Datadog
+git clone https://github.com/DataDog/datadog-agent || true # git clone fails if the datadog-agent repo is already there
 cd $GOPATH/src/github.com/Datadog/datadog-agent
 
 # Checkout to correct version
