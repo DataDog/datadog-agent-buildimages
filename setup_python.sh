@@ -11,7 +11,9 @@ case $DD_TARGET_ARCH in
 "x64")
     DD_CONDA_VERSION=4.9.2
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
-    PY3_VERSION=3.8.10=hdb3f193_7 # FIXME: Pinning specific build since the last version doesn't seem to work with the glibc in the base image
+    # FIXME: Pinning specific build since the last version doesn't seem to work with the glibc in the base image
+    # FIXME: Pinning OpenSSL to a version that's compatible with the Python build we pin (we get `SSL module is not available` errors with OpenSSL 1.1.1l)
+    PY3_VERSION="3.8.10=hdb3f193_7 openssl=1.1.1k=h27cfd23_0"
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
