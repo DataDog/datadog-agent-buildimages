@@ -58,7 +58,7 @@ pip install distro==1.4.0 awscli==1.16.240
 # Update pip, setuptools and misc deps
 conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
-pip install setuptools==${DD_SETUPTOOLS_VERSION}
+pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
 if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
