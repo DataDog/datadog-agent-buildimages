@@ -60,8 +60,7 @@ COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-RUN conda install -c psi4 gcc-5
-RUN conda install -c anaconda python=3.8
+RUN conda install -c psi4 gcc-5 anaconda
 
 RUN python -m pip install awscli meson ninja
 
