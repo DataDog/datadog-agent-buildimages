@@ -2,23 +2,17 @@ FROM debian:wheezy-backports
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
-ARG DD_PIP_VERSION=19.1
-ARG DD_SETUPTOOLS_VERSION=44.1.1
-ARG DD_SETUPTOOLS_VERSION_PY3=52.0.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
-ARG DD_TARGET_ARCH=x64
+ARG CONDA_VERSION=4.9.2
 
 # Environment
 ENV GOPATH /go
+ENV CONDA_PATH /root/miniconda3
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV DD_PIP_VERSION $DD_PIP_VERSION
-ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
-ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-ENV CONDA_PATH /root/miniconda3
-ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV CONDA_VERSION $CONDA_VERSION
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -53,16 +47,20 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6.6 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# CONDA
-COPY ./setup_python.sh /setup_python.sh
-RUN ./setup_python.sh
+# Use conda to install gcc
+RUN curl -fsL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_${CONDA_VERSION}-Linux-x86_64.sh
+RUN bash ~/miniconda.sh -b -p $CONDA_PATH
+RUN rm ~/miniconda.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-
-RUN conda install -c psi4 gcc-5 anaconda
-
+RUN conda install -c anaconda openssl==1.1.1k
+RUN conda install -c anaconda python=3.8
 RUN python -m pip install awscli meson ninja
+# The following line forces an upgrade to openssl 1.1.1l, which is incompatible with our version of python. This
+# results in various HTTP/SSL errors when trying to install a package using either conda or pip. For this reason,
+# all other necessary python/conda packages must be installed before this.
+RUN conda install -c psi4 gcc-5
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
