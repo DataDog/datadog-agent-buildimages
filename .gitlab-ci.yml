@@ -151,7 +151,7 @@ test_rpm_arm64:
     - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
     - tar -xvf /tmp/clang.tar.xz -C $DATADOG_AGENT_EMBEDDED_PATH
   script:
-    - inv -e system-probe.build --no-with-bcc
+    - inv -e system-probe.build
 
 test_system-probe_x64:
   extends: .test_system_probe
