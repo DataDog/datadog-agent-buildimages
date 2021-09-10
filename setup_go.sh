@@ -12,8 +12,7 @@ eval $(gimme 1.15.11)
 # We don't add it to the PATH so that it's not used in the Agent / rtloader builds
 apt-get update && apt-get install -y gcc-4.9-backport
 
-git clone https://go.googlesource.com/go goroot && cd goroot
-git checkout go$GO_VERSION
+git clone --branch go$GO_VERSION --depth 1 https://go.googlesource.com/go goroot && cd goroot
 cd src 
 
 # Use gcc 4.9 + go1.15.11 to build the target go version
