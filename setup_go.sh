@@ -3,7 +3,9 @@
 set -ex
 
 # Install gimme to get go1.15.11
-curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+# Check sha256sum, fail otherwise
+echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
 chmod +x /bin/gimme
 eval "$(gimme 1.15.11)"
 
@@ -12,8 +14,7 @@ eval "$(gimme 1.15.11)"
 # We don't add it to the PATH so that it's not used in the Agent / rtloader builds
 apt-get update && apt-get install -y gcc-4.9-backport
 
-git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot
-cd src 
+git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot/src
 
 # Use gcc 4.9 + go1.15.11 to build the target go version
 CC=/usr/lib/gcc-4.9-backport/bin/gcc ./all.bash
