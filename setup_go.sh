@@ -18,5 +18,8 @@ cd src
 # Use gcc 4.9 + go1.15.11 to build the target go version
 CC=/usr/lib/gcc-4.9-backport/bin/gcc ./all.bash
 
+# Remove gcc 4.9 after building go
+apt-get remove -y gcc-4.9-backport
+
 # Update PATH to include the built go binaries
 echo 'export PATH="/goroot/bin:$PATH"' >> /root/.bashrc
