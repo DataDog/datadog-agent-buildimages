@@ -98,7 +98,11 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
     rm kernel-4.9-headers-deb-x64.tgz
 
 # Go
-# Install from source because the binary distros are not compatible with go1.16
+# Starting with go1.16, we need to build go from source, as the publicly distributed
+# go binaries are built with a linker (binutils) version that's higher than what we have in
+# the deb_x64 builder (the builder has 2.22, while go1.16 uses 2.26). Therefore, we need to
+# build go manually in the builder for it to work with the linker present in the builder image.
+# See: https://github.com/golang/go/issues/43996#issuecomment-782547917
 COPY ./setup_go.sh /setup_go.sh
 RUN ./setup_go.sh
 COPY ./gobin.sh /etc/profile.d/
