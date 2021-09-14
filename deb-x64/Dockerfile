@@ -1,7 +1,7 @@
 FROM debian:wheezy-backports
 
 # Build Args
-ARG GIMME_GO_VERSION=1.16.7
+ARG GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG DD_SETUPTOOLS_VERSION_PY3=52.0.0
@@ -12,7 +12,7 @@ ARG DD_TARGET_ARCH=x64
 
 # Environment
 ENV GOPATH /go
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GO_VERSION
 ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
@@ -74,12 +74,6 @@ COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
-
 # Docker
 # Pin docker to before they broke wheezy
 RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
@@ -102,6 +96,17 @@ RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSI
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz && \
     tar xf kernel-4.9-headers-deb-x64.tgz --no-same-owner --strip 1 -C /usr && \
     rm kernel-4.9-headers-deb-x64.tgz
+
+# Go
+# Starting with go1.16, we need to build go from source, as the publicly distributed
+# go binaries are built with a linker (binutils) version that's higher than what we have in
+# the deb_x64 builder (the builder has 2.22, while go1.16 uses 2.26). Therefore, we need to
+# build go manually in the builder for it to work with the linker present in the builder image.
+# See: https://github.com/golang/go/issues/43996#issuecomment-782547917
+# TODO: investigate if we could use gvm to do this for us.
+COPY ./setup_go.sh /setup_go.sh
+RUN ./setup_go.sh
+COPY ./gobin.sh /etc/profile.d/
 
 # Download and install golangci-lint
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0

@@ -14,6 +14,9 @@ if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
 elif [ "$DD_TARGET_ARCH" = "armhf" ] ; then
     export GIMME_ARCH=arm
 fi
-eval "$(gimme)"
+
+if [ -n "$GIMME_GO_VERSION" ] ; then
+    eval "$(gimme)"
+fi
 
 exec "$@"
