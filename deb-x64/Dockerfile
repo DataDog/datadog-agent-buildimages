@@ -103,6 +103,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 # the deb_x64 builder (the builder has 2.22, while go1.16 uses 2.26). Therefore, we need to
 # build go manually in the builder for it to work with the linker present in the builder image.
 # See: https://github.com/golang/go/issues/43996#issuecomment-782547917
+# TODO: investigate if we could use gvm to do this for us.
 COPY ./setup_go.sh /setup_go.sh
 RUN ./setup_go.sh
 COPY ./gobin.sh /etc/profile.d/
