@@ -35,7 +35,10 @@ ENV RUBY_VERSION "2.4.3.1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20210604.0.0"
+# WARN: We currently can't update the msys distribution, as updating it gives us a version of go that's too new,
+# which makes go fail during -race tests. See the discussion in this PR: https://github.com/DataDog/datadog-agent/pull/9074
+# TODO: check when this issue is fixed in Go, then try updating again.
+ENV MSYS_VERSION "20201109.0.0"
 ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
