@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         make \
         ninja-build \
         patch \
+        pkg-config \
         python \
         python3-distro \
         python3-distutils \
