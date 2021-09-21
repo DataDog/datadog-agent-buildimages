@@ -39,9 +39,9 @@ RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-        /bin/bash -l -c "rvm install 2.3 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install 2.7 && rvm cleanup all" ; \
     else \
-        /bin/bash -l -c "rvm install --disable-binary 2.3 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
