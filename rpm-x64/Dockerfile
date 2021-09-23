@@ -89,7 +89,7 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
+RUN /bin/bash -l -c "rvm install 2.7 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # CONDA
