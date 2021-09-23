@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# https://github.com/oneclick/rubyinstaller2/releases/download/rubyinstaller-2.7.3-1/rubyinstaller-2.7.3-1-x64.exe
+# https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.7.3-1/rubyinstaller-2.7.3-1-x64.exe
 
 $rubyexe = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-$($Version)/rubyinstaller-$($Version)-x64.exe"
 
