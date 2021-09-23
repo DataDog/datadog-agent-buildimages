@@ -10,7 +10,7 @@ set -e
 # - A MacOS 10.13.6 (High Sierra) box
 
 # About brew packages:
-# We use a custom homebrew tap (DataDog/datadog-agent-macos-build)
+# We use a custom homebrew tap (DataDog/datadog-agent-macos-build, hosted in https://github.com/DataDog/homebrew-datadog-agent-macos-build)
 # to keep pinned versions of the software we need.
 
 # How to update a version of a brew package:
@@ -18,7 +18,7 @@ set -e
 #    to add a formula for the new version you want to use.
 # 2. Update here the version of the formula to use.
 export PKG_CONFIG_VERSION=0.29.2
-export RUBY_VERSION=2.4.10
+export RUBY_VERSION=2.7.4
 export PYTHON_VERSION=3.8.11
 # Pin cmake version without sphinx-doc, which causes build issues
 export CMAKE_VERSION=3.18.2.2
