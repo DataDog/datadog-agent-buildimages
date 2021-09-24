@@ -19,12 +19,11 @@ set -e
 # 2. Update here the version of the formula to use.
 export PKG_CONFIG_VERSION=0.29.2
 export RUBY_VERSION=2.7.4
+export BUNDLER_VERSION=2.2.27
 export PYTHON_VERSION=3.8.11
 # Pin cmake version without sphinx-doc, which causes build issues
 export CMAKE_VERSION=3.18.2.2
 export GIMME_VERSION=1.5.4
-
-export BUNDLER_VERSION=2.1.4
 
 export GO_VERSION=1.16.7
 export IBM_MQ_VERSION=9.2.2.0
@@ -48,17 +47,8 @@ brew link --overwrite pkg-config@$PKG_CONFIG_VERSION
 
 # Install ruby (depends on pkg-config)
 brew install DataDog/datadog-agent-macos-build/ruby@$RUBY_VERSION -f
+brew link --overwrite ruby@$RUBY_VERSION
 
-# Brew link cannot be done, as there is a system ruby version (at least up to MacOS 10.14). You need to add the
-# new ruby to the PATH directly.
-
-# Note: ${RUBY_VERSION%.*} takes RUBY_VERSION but leaves out the shortest string (from the right) that
-# matches what's after the %. Here, that means we leave out the bugfix version.
-# That's needed because gems are stored in a folder named MAJOR.MINOR.0, whatever the bugfix version is.
-export PATH="/usr/local/opt/ruby@$RUBY_VERSION/bin:/usr/local/lib/ruby/gems/${RUBY_VERSION%.*}.0/bin:$PATH"
-echo 'export PATH="/usr/local/opt/ruby@'$RUBY_VERSION'/bin:/usr/local/lib/ruby/gems/'${RUBY_VERSION%.*}'.0/bin:$PATH"' >> ~/.build_setup
-
-# Install bundler
 gem install bundler -v $BUNDLER_VERSION -f
 
 # Install python
