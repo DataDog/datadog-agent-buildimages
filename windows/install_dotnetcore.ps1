@@ -5,8 +5,8 @@ $ErrorActionPreference = 'Stop'
 # Script directory is $PSScriptRoot
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$Version = "5.0.103"
-$url = "https://download.visualstudio.microsoft.com/download/pr/674a9f7d-862e-4f92-91b6-f1cf3fed03ce/e07db4de77ada8da2c23261dfe9db138/dotnet-sdk-5.0.103-win-x64.exe"
+$Version = "5.0.401"
+$url = "https://download.visualstudio.microsoft.com/download/pr/aa5eedba-8906-4e2b-96f8-1b4f06187460/e6757becd35f67b0897bcdda44baec93/dotnet-sdk-5.0.401-win-x64.exe"
 Write-Host -ForegroundColor Green "Installing dotnetcore from $($Url)"
 
 $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
