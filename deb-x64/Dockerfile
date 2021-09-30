@@ -41,6 +41,10 @@ RUN apt-get update && apt-get install -y fakeroot curl procps bzip2 \
 
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
 
+# Add cacerts
+COPY ./deb-x64/setup_cacerts.sh /setup_cacerts.sh
+RUN ./setup_cacerts.sh
+
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
 # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs.

@@ -28,7 +28,11 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
 
 RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
-  tar pkg-config wget xz-utils zlib1g-dev
+  tar pkg-config xz-utils zlib1g-dev
+
+# Add cacerts
+COPY ./deb-x64/setup_cacerts.sh /setup_cacerts.sh
+RUN ./setup_cacerts.sh
 
 # CMake
 RUN set -ex \
@@ -57,7 +61,7 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 RUN conda install -c psi4 gcc-5
 
 # Install ssl in a custom location
-RUN wget http://www.openssl.org/source/openssl-1.1.1k.tar.gz
+RUN curl -L -O http://www.openssl.org/source/openssl-1.1.1k.tar.gz
 RUN tar -xzf openssl-1.1.1k.tar.gz
 RUN cd openssl-1.1.1k && ./config --prefix=/home/openssl --openssldir=/home/openssl
 RUN cd openssl-1.1.1k && make -j 8 && make install
