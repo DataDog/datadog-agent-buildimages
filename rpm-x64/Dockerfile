@@ -37,6 +37,9 @@ RUN yum -y install \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
 
+# We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
+RUN yum remove -y ruby
+
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
 RUN curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
