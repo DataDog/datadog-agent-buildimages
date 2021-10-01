@@ -1,3 +1,5 @@
+FROM centos:6
+
 ARG GIMME_GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
@@ -6,12 +8,6 @@ ARG IBM_MQ_VERSION=9.2.2.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=x64
-
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
-
-FROM centos:6
 
 # Environment
 ENV GOPATH /go
@@ -44,7 +40,7 @@ RUN yum -y install \
 RUN yum remove -y ruby
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN curl -L https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64 -o /usr/bin/curl
 RUN chmod +x /usr/bin/curl
 
 # Autoconf
