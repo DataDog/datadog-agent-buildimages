@@ -32,6 +32,13 @@ RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     gettext libtool autopoint autoconf libtool-bin \
     selinux-basics
 
+# CONDA
+COPY ./setup_python.sh /setup_python.sh
+RUN ./setup_python.sh
+COPY ./conda.sh /etc/profile.d/conda.sh
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
@@ -39,18 +46,11 @@ RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-        /bin/bash -l -c "rvm install 2.7 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} 2.7 && rvm cleanup all" ; \
     else \
-        /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
-
-# CONDA
-COPY ./setup_python.sh /setup_python.sh
-RUN ./setup_python.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
