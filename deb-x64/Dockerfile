@@ -58,21 +58,21 @@ RUN mkdir -p /opt/mqm \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
-
 # CONDA
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
+# RVM
+COPY ./rvm/gpg-keys /gpg-keys
+RUN gpg --import /gpg-keys/*
+RUN rm -rf /gpg-keys
+RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
+RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Docker
 # Pin docker to before they broke wheezy
