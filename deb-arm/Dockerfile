@@ -1,14 +1,4 @@
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
-
-## Valid archs are
-# amd64, arm32v7, arm64v8, i386, ppc64le, s390x
 ARG BASE_IMAGE=arm64v8/ubuntu:16.04
-FROM ${BASE_IMAGE}
-
-# Build Args
 ARG GIMME_GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
@@ -17,6 +7,14 @@ ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=aarch64
 
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
+
+## Valid archs are
+# amd64, arm32v7, arm64v8, i386, ppc64le, s390x
+FROM ${BASE_IMAGE}
 
 # Environment
 ENV GOPATH /go

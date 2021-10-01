@@ -1,8 +1,9 @@
+ARG BASE_IMAGE=amazonlinux:2.0.20181114
+
 FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
 
-ARG BASE_IMAGE=amazonlinux:2.0.20181114
 FROM ${BASE_IMAGE}
 
 # Build Args

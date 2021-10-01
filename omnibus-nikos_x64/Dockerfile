@@ -1,14 +1,13 @@
+ARG GIMME_GO_VERSION=1.16.7
+ARG CMAKE_VERSION=3.14.4
+ARG CLANG_VERSION=8.0.0
+ARG CONDA_VERSION=4.9.2
+
 FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
 
 FROM debian:wheezy-backports
-
-# Build Args
-ARG GIMME_GO_VERSION=1.16.7
-ARG CMAKE_VERSION=3.14.4
-ARG CLANG_VERSION=8.0.0
-ARG CONDA_VERSION=4.9.2
 
 # Environment
 ENV GOPATH /go

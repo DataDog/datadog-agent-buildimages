@@ -1,12 +1,11 @@
+ARG GIMME_GO_VERSION=1.16.7
+ARG CLANG_VERSION=8.0.0
+
 FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
 
 FROM arm64v8/ubuntu:16.04
-
-# Build Args
-ARG GIMME_GO_VERSION=1.16.7
-ARG CLANG_VERSION=8.0.0
 
 # Environment
 ENV GOPATH /go
