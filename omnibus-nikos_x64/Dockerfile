@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+
 FROM debian:wheezy-backports
 
 # Build Args
@@ -7,6 +11,7 @@ ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG DD_SETUPTOOLS_VERSION_PY3=52.0.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
+ARG CONDA_VERSION=4.9.2
 ARG DD_TARGET_ARCH=x64
 
 # Environment
@@ -18,6 +23,7 @@ ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
+ENV CONDA_VERSION $CONDA_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # Mitigation for CVE-2019-3462
@@ -32,9 +38,13 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ git \
+RUN apt-get update && apt-get install -y fakeroot cmake bzip2 g++ git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
-  tar pkg-config wget xz-utils zlib1g-dev
+  tar pkg-config xz-utils zlib1g-dev
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # CMake
 RUN set -ex \
@@ -44,24 +54,37 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
+
+# Use conda to install gcc
+RUN curl -fsL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_${CONDA_VERSION}-Linux-x86_64.sh
+RUN bash ~/miniconda.sh -b -p $CONDA_PATH
+RUN rm ~/miniconda.sh
+COPY ./conda.sh /etc/profile.d/conda.sh
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+RUN conda install -c psi4 gcc-5
+RUN conda install -c anaconda python=3.8
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6.6 && rvm cleanup all"
+RUN /bin/bash -l -c "rvm install 2.6.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# CONDA
-COPY ./setup_python.sh /setup_python.sh
-RUN ./setup_python.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+# Install ssl in a custom location
+RUN curl -L -O http://www.openssl.org/source/openssl-1.1.1k.tar.gz
+RUN tar -xzf openssl-1.1.1k.tar.gz
+RUN cd openssl-1.1.1k && ./config --prefix=/home/openssl --openssldir=/home/openssl
+RUN cd openssl-1.1.1k && make -j 8 && make install
 
-RUN conda install -c psi4 gcc-5
-RUN conda install -c anaconda python=3.8
+# Install python3.8 with custom openssl
+RUN curl -O -k https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tar.xz
+RUN tar -xf Python-3.8.0.tar.xz -C /tmp/
+RUN cd /tmp/Python-3.8.0 && LDFLAGS="${LDFLAGS} -Wl,-rpath=/home/openssl/lib" ./configure --with-openssl=/home/openssl
+RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
 RUN python -m pip install awscli meson ninja
 
