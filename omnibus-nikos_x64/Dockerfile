@@ -61,7 +61,7 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Install ssl in a custom location
