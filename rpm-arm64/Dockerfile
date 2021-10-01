@@ -1,8 +1,9 @@
 ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
-FROM ubuntu as CURL_GETTER
+FROM ubuntu as CERT_GETTER
+ENV CACERT_BUNDLE_VERSION=2021-09-30
 RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
+RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 
 FROM ${BASE_IMAGE}
 
@@ -34,9 +35,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
 
-# Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl
-RUN chmod +x /usr/bin/curl
+COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
