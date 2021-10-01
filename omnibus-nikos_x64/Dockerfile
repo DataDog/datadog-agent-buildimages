@@ -25,7 +25,7 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot cmake bzip2 g++ git \
+RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config xz-utils zlib1g-dev
 
