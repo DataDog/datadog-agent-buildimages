@@ -1,8 +1,9 @@
+ARG BASE_IMAGE=arm32v7/centos:7
+
 FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
 
-ARG BASE_IMAGE=arm32v7/centos:7
 FROM ${BASE_IMAGE}
 
 # Build Args
