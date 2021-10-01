@@ -1,3 +1,5 @@
+FROM debian:wheezy-backports
+
 ARG GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
@@ -6,12 +8,6 @@ ARG IBM_MQ_VERSION=9.2.2.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=x64
-
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
-
-FROM debian:wheezy-backports
 
 # Environment
 ENV GOPATH /go
@@ -37,7 +33,7 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
+RUN apt-get update && apt-get install -y wget fakeroot curl procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libz-dev \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics
@@ -45,7 +41,7 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN curl -L https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64 -o /usr/bin/curl
 RUN chmod +x /usr/bin/curl
 
 # Git

@@ -1,13 +1,9 @@
+FROM debian:wheezy-backports
+
 ARG GIMME_GO_VERSION=1.16.7
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG CONDA_VERSION=4.9.2
-
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
-
-FROM debian:wheezy-backports
 
 # Environment
 ENV GOPATH /go
@@ -33,8 +29,7 @@ RUN apt-get update && apt-get install -y fakeroot cmake bzip2 g++ git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config xz-utils zlib1g-dev
 
-# Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN curl -L https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64 -o /usr/bin/curl
 RUN chmod +x /usr/bin/curl
 
 # CMake

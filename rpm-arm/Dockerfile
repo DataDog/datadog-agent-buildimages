@@ -1,16 +1,12 @@
 ARG BASE_IMAGE=arm32v7/centos:7
+FROM ${BASE_IMAGE}
+
 ARG GIMME_GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=armhf
-
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
-
-FROM ${BASE_IMAGE}
 
 # Environment
 ENV GOPATH /go
@@ -40,7 +36,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-armv7 /usr/bin/curl
+RUN curl -L https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7 -o /usr/bin/curl
 RUN chmod +x /usr/bin/curl
 
 # Build new rpm

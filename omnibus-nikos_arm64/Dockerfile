@@ -1,11 +1,7 @@
+FROM arm64v8/ubuntu:16.04
+
 ARG GIMME_GO_VERSION=1.16.7
 ARG CLANG_VERSION=8.0.0
-
-FROM ubuntu as CURL_GETTER
-RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
-
-FROM arm64v8/ubuntu:16.04
 
 # Environment
 ENV GOPATH /go
@@ -17,7 +13,7 @@ RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc git \
   tar pkg-config xz-utils zlib1g-dev
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl
+RUN curl -L https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64 -o /usr/bin/curl
 RUN chmod +x /usr/bin/curl
 
 # RVM
