@@ -1,3 +1,8 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
+
 ## Valid archs are
 # amd64, arm32v7, arm64v8, i386, ppc64le, s390x
 ARG BASE_IMAGE=arm64v8/ubuntu:16.04
@@ -31,6 +36,16 @@ RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
     selinux-basics
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl-aarch64
+COPY --from=CURL_GETTER /curl-armv7 /usr/bin/curl-armv7
+RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
+        cp /usr/bin/curl-aarch64 /usr/bin/curl; \
+    else \
+        cp /usr/bin/curl-armv7 /usr/bin/curl; \
+    fi
+RUN chmod +x /usr/bin/curl
 
 # CONDA
 COPY ./setup_python.sh /setup_python.sh

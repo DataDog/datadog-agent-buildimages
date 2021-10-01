@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-armv7
+
 ARG BASE_IMAGE=arm32v7/centos:7
 FROM ${BASE_IMAGE}
 
@@ -35,6 +39,10 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-armv7 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp

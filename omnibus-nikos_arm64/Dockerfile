@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-aarch64
+
 FROM arm64v8/ubuntu:16.04
 
 # Build Args
@@ -6,13 +10,16 @@ ARG CLANG_VERSION=8.0.0
 
 # Environment
 ENV GOPATH /go
-ENV CONDA_PATH /root/miniconda3
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 
 RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config xz-utils zlib1g-dev
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
