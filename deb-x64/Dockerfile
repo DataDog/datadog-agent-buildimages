@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+
 FROM debian:wheezy-backports
 
 # Build Args
@@ -34,12 +38,16 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot curl procps bzip2 \
+RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libz-dev \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics
 
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
@@ -58,21 +66,21 @@ RUN mkdir -p /opt/mqm \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
-
 # CONDA
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
+# RVM
+COPY ./rvm/gpg-keys /gpg-keys
+RUN gpg --import /gpg-keys/*
+RUN rm -rf /gpg-keys
+RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
+RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Docker
 # Pin docker to before they broke wheezy
