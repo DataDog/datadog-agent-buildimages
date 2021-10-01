@@ -12,7 +12,7 @@ ENV CLANG_VERSION $CLANG_VERSION
 
 RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
-  tar pkg-config wget xz-utils zlib1g-dev
+  tar pkg-config xz-utils zlib1g-dev
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
