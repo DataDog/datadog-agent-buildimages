@@ -46,15 +46,6 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6.6 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
-
 # Use conda to install gcc
 RUN curl -fsL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_${CONDA_VERSION}-Linux-x86_64.sh
 RUN bash ~/miniconda.sh -b -p $CONDA_PATH
@@ -63,6 +54,15 @@ COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 RUN conda install -c psi4 gcc-5
+
+# RVM
+COPY ./rvm/gpg-keys /gpg-keys
+RUN gpg --import /gpg-keys/*
+RUN rm -rf /gpg-keys
+RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
+RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm install 2.6.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Install ssl in a custom location
 RUN curl -L -O http://www.openssl.org/source/openssl-1.1.1k.tar.gz
