@@ -47,6 +47,13 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
 
+# CONDA
+COPY ./setup_python.sh /setup_python.sh
+RUN ./setup_python.sh
+COPY ./conda.sh /etc/profile.d/conda.sh
+ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
@@ -54,14 +61,8 @@ RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 && rvm cleanup all"
+RUN /bin/bash -l -c "rvm reinstall 2.7 --with-openssl-dir=/root/miniconda3/envs/ddpy3/ && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
-
-# CONDA
-COPY ./setup_python.sh /setup_python.sh
-RUN ./setup_python.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
