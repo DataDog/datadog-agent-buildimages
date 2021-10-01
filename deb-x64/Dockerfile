@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+
 FROM debian:wheezy-backports
 
 # Build Args
@@ -34,12 +38,16 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot curl procps bzip2 \
+RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libz-dev \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics
 
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz

@@ -1,3 +1,7 @@
+FROM ubuntu as CURL_GETTER
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+
 FROM centos:6
 
 # Build Args
@@ -39,6 +43,10 @@ RUN yum -y install \
 
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
+
+# Update curl with a statically linked binary
+COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
+RUN chmod +x /usr/bin/curl
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
