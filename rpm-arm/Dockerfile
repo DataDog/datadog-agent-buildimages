@@ -1,8 +1,14 @@
 ARG BASE_IMAGE=arm32v7/centos:7
+
+FROM ubuntu as CERT_GETTER
+ENV CACERT_BUNDLE_VERSION=2021-09-30
+RUN apt-get update && apt-get install -y wget
+RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
+
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.15.13
+ARG GIMME_GO_VERSION=1.16.7
 ARG DD_PIP_VERSION=19.1
 ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG CMAKE_VERSION=3.14.4
@@ -35,6 +41,8 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
+
+COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
@@ -70,7 +78,7 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.3 && rvm cleanup all"
+RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke

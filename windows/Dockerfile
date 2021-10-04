@@ -30,12 +30,15 @@ ENV VS2017BUILDTOOLS_VERSION "16.8.3.0"
 #ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
 ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
 ENV VCPYTHON27_VERSION "9.0.0.30729"
-ENV GO_VERSION "1.15.13"
-ENV RUBY_VERSION "2.4.3.1"
+ENV GO_VERSION "1.16.7"
+ENV RUBY_VERSION "2.6.6-1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20210604.0.0"
+# WARN: We currently can't update the msys distribution, as updating it gives us a version of go that's too new,
+# which makes go fail during -race tests. See the discussion in this PR: https://github.com/DataDog/datadog-agent/pull/9074
+# TODO: check when this issue is fixed in Go, then try updating again.
+ENV MSYS_VERSION "20201109.0.0"
 ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"

@@ -1,7 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GIMME_GO_VERSION=1.15.13
+ARG GIMME_GO_VERSION=1.16.7
 
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         make \
         ninja-build \
         patch \
+        pkg-config \
         python \
         python3-distro \
         python3-distutils \

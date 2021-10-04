@@ -17,7 +17,7 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
 
 .x64:
-  tags: [ "runner:docker", "size:large" ]
+  tags: [ "runner:docker" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-py3
   variables:
     DD_TARGET_ARCH: x64
@@ -104,6 +104,12 @@ build_omnibus-nikos_x64:
     DOCKERFILE: omnibus-nikos_x64/Dockerfile
     IMAGE: omnibus-nikos_x64
 
+build_omnibus-nikos_arm64:
+  extends: [ .build, .arm ]
+  variables:
+    DOCKERFILE: omnibus-nikos_arm64/Dockerfile
+    IMAGE: omnibus-nikos_arm64
+
 .test:
   stage: test
   except: [ tags, schedules ]
@@ -122,7 +128,7 @@ test_deb_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
   needs: [ "build_deb_x64" ]
-  tags: [ "runner:main", "size:2xlarge" ]
+  tags: [ "runner:main" ]
 
 test_deb_arm64:
   extends: .test_agent6
@@ -134,7 +140,7 @@ test_rpm_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
-  tags: [ "runner:main", "size:2xlarge" ]
+  tags: [ "runner:main" ]
 
 test_rpm_arm64:
   extends: .test_agent6
@@ -151,13 +157,13 @@ test_rpm_arm64:
     - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
     - tar -xvf /tmp/clang.tar.xz -C $DATADOG_AGENT_EMBEDDED_PATH
   script:
-    - inv -e system-probe.build --no-with-bcc
+    - inv -e system-probe.build
 
 test_system-probe_x64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
-  tags: [ "runner:main", "size:2xlarge" ]
+  tags: [ "runner:main" ]
   variables:
     ARCH: amd64
 
@@ -299,7 +305,7 @@ test_windows_1909_x86:
   stage: release
   except: [ tags, schedules ]
   only: [ master, main ]
-  tags: [ "runner:docker", "size:large" ]
+  tags: [ "runner:docker" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
     - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
