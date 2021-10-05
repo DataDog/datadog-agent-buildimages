@@ -35,7 +35,7 @@ ENV RUBY_VERSION "2.6.6-1"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
-ENV MSYS_VERSION "20210604.0.0"
+ENV MSYS_VERSION "20210725"
 ENV NUGET_VERSION "5.8.0"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
@@ -154,9 +154,10 @@ RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
 
 RUN ridk install 3
 
-# (32-bit only) Install 32-bit C/C++ compilation toolchain
-RUN if ($Env:TARGET_ARCH -eq 'x86') { ridk enable; bash -c \"pacman -S --needed --noconfirm mingw-w64-i686-binutils mingw-w64-i686-crt-git mingw-w64-i686-gcc mingw-w64-i686-gcc-libs mingw-w64-i686-headers-git mingw-w64-i686-libmangle-git mingw-w64-i686-libwinpthread-git mingw-w64-i686-make mingw-w64-i686-pkg-config mingw-w64-i686-tools-git mingw-w64-i686-winpthreads-git\" }
-RUN if ($Env:TARGET_ARCH -eq 'x86') { [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";C:\tools\msys64\mingw32\bin;C:\tools\msys64\usr\bin\", [System.EnvironmentVariableTarget]::Machine) }
+# Downgrade gcc due to an incompatibility between gcc 10.3 and go 1.15 and 1.16
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\")
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\")
+RUN C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c \"pacman --noconfirm -U /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\"
 
 # Install aws cli
 COPY ./windows/install_awscli.ps1 install_awscli.ps1
