@@ -46,8 +46,8 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
 RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
-RUN chmod +x /usr/bin/curl
+COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
+RUN chmod +x /usr/local/bin/curl
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
