@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc git \
   tar pkg-config xz-utils zlib1g-dev
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl
-RUN chmod +x /usr/bin/curl
+COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl
+RUN chmod +x /usr/local/bin/curl
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
