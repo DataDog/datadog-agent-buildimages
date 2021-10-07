@@ -55,7 +55,6 @@ RUN set -ex \
     && rm cmake.sh
 
 # CONDA
- 7c03c86 (Fix nikos buildimage build (#171))
 RUN curl -fsL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_${CONDA_VERSION}-Linux-x86_64.sh
 RUN bash ~/miniconda.sh -b -p $CONDA_PATH
 RUN rm ~/miniconda.sh
