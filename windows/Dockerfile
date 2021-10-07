@@ -154,10 +154,11 @@ RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
 
 RUN ridk install 3
 
-# Downgrade gcc due to an incompatibility between gcc 10.3 and go 1.15 and 1.16
+# Downgrade gcc and binutils due to https://github.com/golang/go/issues/46099
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\")
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\")
-RUN C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c \"pacman --noconfirm -U /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\"
+RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\")
+RUN C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c \"pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\"
 
 # Install aws cli
 COPY ./windows/install_awscli.ps1 install_awscli.ps1
