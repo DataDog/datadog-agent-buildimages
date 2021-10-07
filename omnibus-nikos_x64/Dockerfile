@@ -35,8 +35,8 @@ RUN apt-get update && apt-get install -y fakeroot cmake bzip2 g++ git \
   tar pkg-config xz-utils zlib1g-dev
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-amd64 /usr/bin/curl
-RUN chmod +x /usr/bin/curl
+COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
+RUN chmod +x /usr/local/bin/curl
 
 # CMake
 RUN set -ex \
@@ -46,14 +46,13 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
-# Use conda to install gcc
+# CONDA
 RUN curl -fsL -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_${CONDA_VERSION}-Linux-x86_64.sh
 RUN bash ~/miniconda.sh -b -p $CONDA_PATH
 RUN rm ~/miniconda.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-RUN conda install -c psi4 gcc-5
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -63,6 +62,10 @@ RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+
+# Use conda to install gcc5
+# Must be done after installing ruby with RVM, otherwise conda's gcc is used to build ruby and it doesn't work
+RUN conda install -c psi4 gcc-5
 
 # Install ssl in a custom location
 RUN curl -L -O http://www.openssl.org/source/openssl-1.1.1k.tar.gz

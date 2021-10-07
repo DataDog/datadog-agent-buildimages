@@ -39,14 +39,14 @@ RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     selinux-basics
 
 # Update curl with a statically linked binary
-COPY --from=CURL_GETTER /curl-aarch64 /usr/bin/curl-aarch64
-COPY --from=CURL_GETTER /curl-armv7 /usr/bin/curl-armv7
+COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64
+COPY --from=CURL_GETTER /curl-armv7 /usr/local/bin/curl-armv7
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-        cp /usr/bin/curl-aarch64 /usr/bin/curl; \
+        cp /usr/local/bin/curl-aarch64 /usr/local/bin/curl; \
     else \
-        cp /usr/bin/curl-armv7 /usr/bin/curl; \
+        cp /usr/local/bin/curl-armv7 /usr/local/bin/curl; \
     fi
-RUN chmod +x /usr/bin/curl
+RUN chmod +x /usr/local/bin/curl
 
 # CONDA
 COPY ./setup_python.sh /setup_python.sh
