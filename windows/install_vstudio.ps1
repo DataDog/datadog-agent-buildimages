@@ -33,6 +33,7 @@ $VSPackages = @(
     "Microsoft.Net.Component.4.8.SDK",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
     "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Component.VC.ATL",
     "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
