@@ -32,6 +32,7 @@ $VSPackages = @(
     "Microsoft.Net.Component.4.6.1.TargetingPack",
     "Microsoft.Net.Component.4.8.SDK",
     "Microsoft.VisualStudio.Component.FSharp",
+    "Microsoft.VisualStudio.Component.FSharp.WebTemplates",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
     "Microsoft.VisualStudio.Workload.VCTools",
     "Microsoft.VisualStudio.Component.VC.ATL",
