@@ -22,15 +22,12 @@ ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV DD_PIP_VERSION $DD_PIP_VERSION
 ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
-# TODO: this wasn't there in builders
 ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
-# TODO: this was miniconda2 in builders
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV POSTGRESQL_VERSION=9.0.3-1.6.1
 ENV PATH="/opt/datadog/bin:${PATH}"
 
 # Add our profile to the image that adds RVM and Conda to environment
@@ -38,17 +35,20 @@ COPY ./suse-x64/ddprofile.sh /etc/profile.d/
 
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/NON*
-# TODO: seems that libffi-devel is provided by libffi-devel-gcc5,
-# but there's no gcc5; will this work?
+
+# Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
       bison bzip2 curl gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
-      patch procps rsync readline-devel rpm-build sqlite3-devel \
+      patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
+# While the repos are available right now, they might go out of order in the future,
+# which could then make builds fail. We shouldn't be installing any packages
+# later on anyway.
 RUN zypper clean -a && rm -rf /etc/zypp/repos.d/*
 
 # Make gcc 4.8 the default one
@@ -59,15 +59,6 @@ RUN ln -sfn /usr/bin/g++-4.8 /usr/bin/g++
 COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY --from=CURL_GETTER /curl-amd64 /opt/datadog/bin/curl
 RUN chmod +x /opt/datadog/bin/curl
-
-# Add postgresql-devel + dependencies packages, needed for psycopg2.
-# Note: These packages were copied from the https://ftp5.gwdg.de/pub/opensuse/discontinued/distribution/11.4/repo/oss/ mirror.
-# We don't know if we can fully trust the packages from this repository, but we can't use the official repositories anymore (see note above).
-RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/postgres/libecpg6-${POSTGRESQL_VERSION}.x86_64.rpm \
-    && curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/postgres/libpq5-${POSTGRESQL_VERSION}.x86_64.rpm \
-    && curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/postgres/postgresql-devel-${POSTGRESQL_VERSION}.x86_64.rpm \
-    && zypper --non-interactive install ./libecpg6-${POSTGRESQL_VERSION}.x86_64.rpm ./libpq5-${POSTGRESQL_VERSION}.x86_64.rpm ./postgresql-devel-${POSTGRESQL_VERSION}.x86_64.rpm \
-    && rm ./libecpg6-${POSTGRESQL_VERSION}.x86_64.rpm ./libpq5-${POSTGRESQL_VERSION}.x86_64.rpm ./postgresql-devel-${POSTGRESQL_VERSION}.x86_64.rpm
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
