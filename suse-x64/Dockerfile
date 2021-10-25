@@ -4,8 +4,8 @@ RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1
 ENV CACERT_BUNDLE_VERSION=2021-09-30
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 
-# We use OpenSUSE 42.3, which is based on SLES 12.3
-FROM registry.ddbuild.io/images/mirror/opensuse/archive:42.3
+# We use OpenSUSE 42.1, which is based on SLES 12.1
+FROM opensuse/archive:42.1
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
@@ -32,9 +32,11 @@ ENV PATH="/opt/datadog/bin:${PATH}"
 
 # Add our profile to the image that adds RVM and Conda to environment
 COPY ./suse-x64/ddprofile.sh /etc/profile.d/
+# Add /etc/profile to the image (taken from 42.3 image) -- it is missing from 42.1 the image
+COPY ./suse-x64/profile /etc/profile
 
 # Disable repositories with non-oss software
-RUN rm /etc/zypp/repos.d/NON*
+RUN rm /etc/zypp/repos.d/*non*
 
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
