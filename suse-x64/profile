@@ -1,0 +1,390 @@
+# /etc/profile for SUSE Linux
+#
+# PLEASE DO NOT CHANGE /etc/profile. There are chances that your changes
+# will be lost during system upgrades. Instead use /etc/profile.local for
+# your local settings, favourite global aliases, VISUAL and EDITOR
+# variables, etc ...
+
+#
+# Check which shell is reading this file
+#
+if test -f /proc/mounts ; then
+  if ! is=$(readlink /proc/$$/exe 2>/dev/null) ; then
+    case "$0" in
+    *pcksh)	is=ksh	;;
+    *)		is=sh	;;
+    esac
+  fi
+  case "$is" in
+    */bash)	is=bash
+	case "$0" in
+	sh|-sh|*/sh)
+		is=sh	;;
+	esac		;;
+    */ash)	is=ash  ;;
+    */dash)	is=ash  ;;
+    */ksh)	is=ksh  ;;
+    */ksh93)	is=ksh  ;;
+    */pdksh)	is=ksh  ;;
+    */mksh)	is=ksh  ;;
+    */lksh)	is=ksh  ;;
+    */*pcksh)	is=ksh  ;;
+    */zsh)	is=zsh  ;;
+    */*)	is=sh   ;;
+  esac
+  #
+  # `r' in $- occurs *after* system files are parsed
+  #
+  for a in $SHELL ; do
+    case "$a" in
+      */r*sh)
+        readonly restricted=true ;;
+      -r*|-[!-]r*|-[!-][!-]r*)
+        readonly restricted=true ;;
+      --restricted)
+        readonly restricted=true ;;
+    esac
+  done
+  unset a
+else
+  is=sh
+fi
+
+#
+# Call common progams from /bin or /usr/bin only
+#
+path ()
+{
+    command -p ${1+"$@"}
+}
+
+#
+# Initialize terminal
+#
+tty=`path tty 2> /dev/null`
+test $? -ne 0 && tty=""
+if test -O "$tty" -a -n "$PS1"; then
+    test -z "${TERM}"		&& { TERM=linux; export TERM; }
+    test "${TERM}" = "unknown"	&& { TERM=linux; export TERM; }
+    test "${TERM}" = "ibm327x"	&& { TERM=dumb;  export TERM; }
+    # Do not change settings on local line if connected to remote
+    if test -z "$SSH_TTY" -a "${TERM}" != "dumb" ; then
+	path stty sane cr0 pass8 dec
+	path tset -I -Q
+    fi
+    # on iSeries virtual console, detect screen size and terminal
+    if test -d /proc/iSeries -a \( "$tty" = "/dev/tty1" -o "$tty" = "/dev/console" \) ; then
+        LINES=24
+	COLUMNS=80
+	export LINES COLUMNS TERM
+	eval `path initviocons -q -e`
+    fi
+fi
+unset TERMCAP
+
+#
+# Time until a complete key sequence must have arrived
+#
+#ESCDELAY=2000
+#export ESCDELAY
+
+#
+# The user file-creation mask
+#
+# The global umask value is stored in /etc/login.defs and
+# will be set by pam_umask.so (see "man pam_umask").
+#umask 022
+
+#
+# Setup for gzip and (t)csh users
+#
+if test -z "$PROFILEREAD" ; then
+    # GZIP=-9
+    # export GZIP
+    CSHEDIT=emacs
+    export CSHEDIT
+fi
+
+#
+# ksh/ash sometimes do not know
+#
+test -z "$UID"  && readonly  UID=`path id -ur 2> /dev/null`
+test -z "$EUID" && readonly EUID=`path id -u  2> /dev/null`
+test -z "$USER" && USER=`path id -un 2> /dev/null`
+test -z "$MAIL" && MAIL=/var/spool/mail/$USER
+if test -x /bin/uname ; then
+    test -z "$HOST" && HOST=`/bin/uname -n`
+    test "$HOST" = "localhost" && HOST=`/bin/uname -n`
+    test -z "$CPU"  &&  CPU=`/bin/uname -m`
+fi
+# Remark: /proc/sys/kernel/domainname and the program domainname
+# its self will provide the NIS/YP domainname, see domainname(8).
+if test -s /etc/HOSTNAME ; then
+    test -z "$HOSTNAME" && HOSTNAME=`cat /etc/HOSTNAME`
+else
+    test -z "$HOSTNAME" && HOSTNAME=$HOST
+fi
+test -z "$LOGNAME"  && LOGNAME=$USER
+case "$CPU" in
+    i?86) HOSTTYPE=i386   ;;
+    *)    HOSTTYPE=${CPU} ;;
+esac
+  OSTYPE=linux
+MACHTYPE=${CPU}-suse-${OSTYPE}
+# Do NOT export UID, EUID, USER, and LOGNAME
+export MAIL HOST CPU HOSTNAME HOSTTYPE OSTYPE MACHTYPE
+
+#
+# You may use /etc/initscript, /etc/profile.local or the
+# ulimit package instead to set up ulimits and your PATH.
+#
+# if test "$is" != "ash" -a ! -r /etc/initscript; then
+#     ulimit -Sc 0		# don't create core files
+#     ulimit -Sd $(ulimit -Hd)
+#     ulimit -Ss $(ulimit -Hs)
+#     ulimit -Sm $(ulimit -Hm)
+# fi
+
+#
+# Make path more comfortable
+#
+if test -z "$PROFILEREAD" ; then
+    PATH=/usr/local/bin:/usr/bin:/bin
+    if test "$HOME" != "/" ; then
+	for dir in $HOME/bin/$CPU $HOME/bin ; do
+	    test -d $dir && PATH=$dir:$PATH
+	done
+    fi
+    if test "$UID" = 0 ; then
+	test -d /opt/kde3/sbin  && PATH=/opt/kde3/sbin:$PATH
+	PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH
+    fi
+    for dir in	/usr/X11/bin \
+		/usr/bin/X11 \
+		/usr/X11R6/bin \
+		/var/lib/dosemu \
+		/usr/games \
+		/opt/bin \
+		/opt/kde3/bin \
+		/opt/kde2/bin \
+		/opt/kde/bin \
+		/usr/openwin/bin \
+		/opt/cross/bin
+    do
+	test -d $dir && PATH=$PATH:$dir
+    done
+    unset dir
+    export PATH
+fi
+
+#
+# Many programs using readline library for line editing
+# should know about this (e.g. bash)
+#
+if test -z "$INPUTRC" ; then
+    INPUTRC=/etc/inputrc
+    test -s $HOME/.inputrc && INPUTRC=$HOME/.inputrc
+    export INPUTRC
+fi
+
+#
+# Most bourn shell clones knows about this
+#
+if test -z "$PROFILEREAD" ; then
+    HISTSIZE=1000
+    export HISTSIZE
+fi
+
+#
+# Set some environment variables for TeX/LaTeX (Not used due luatex)
+#
+#if test -n "$TEXINPUTS" ; then
+#    TEXINPUTS=":$TEXINPUTS:$HOME/.TeX:/usr/share/doc/.TeX:/usr/doc/.TeX"
+#else
+#    TEXINPUTS=":$HOME/.TeX:/usr/share/doc/.TeX:/usr/doc/.TeX"
+#fi
+#export TEXINPUTS
+
+#
+# Configure the default pager on SuSE Linux
+#
+if test -z "$LESS" -a -x /usr/bin/less ; then
+    LESS="-M -I -R"
+    LESSOPEN="lessopen.sh %s"
+    LESSCLOSE="lessclose.sh %s %s"
+    LESS_ADVANCED_PREPROCESSOR="no"
+    if test -s /etc/lesskey.bin ; then
+	LESSKEY=/etc/lesskey.bin
+    fi
+    PAGER=less
+    MORE=-sl
+    export LESSOPEN LESSCLOSE LESS LESSKEY PAGER LESS_ADVANCED_PREPROCESSOR MORE
+fi
+
+#
+# Minicom 
+#
+if test -z "$PROFILEREAD" ; then
+    MINICOM="-c on"
+    export MINICOM
+fi
+
+#
+# Current manpath
+#
+if test -z "$PROFILEREAD" ; then
+    tmp="$MANPATH"
+    unset MANPATH
+    if test -n "$tmp" ; then
+	MANPATH="${tmp}:`test -x /usr/bin/manpath && /usr/bin/manpath -q`"
+    else
+	MANPATH="`test -x /usr/bin/manpath && /usr/bin/manpath -q`"
+    fi
+    unset tmp
+    export MANPATH
+fi
+
+#
+# Some applications do not handle the XAPPLRESDIR environment properly,
+# when it contains more than one directory. More than one directory only
+# makes sense if you have a client with /usr mounted via nfs and you want
+# to configure applications machine dependent. Uncomment the lines below
+# if you want this.
+#
+#XAPPLRESDIR="$XAPPLRESDIR:/var/X11R6/app-defaults:/usr/X11R6/lib/X11/app-defaults"
+#export XAPPLRESDIR
+
+#
+# These settings are recommended for old motif applications
+#
+if test -z "$PROFILEREAD" ; then
+    if [ -r /usr/share/X11/XKeysymDB ]; then
+	export XKEYSYMDB=/usr/share/X11/XKeysymDB
+    else
+	export XKEYSYMDB=/usr/X11R6/lib/X11/XKeysymDB
+    fi
+    if [ -d /usr/share/X11/nls ]; then
+	export XNLSPATH=/usr/share/X11/nls
+    else
+	export XNLSPATH=/usr/X11R6/lib/X11/nls
+    fi
+
+    #
+    # Midnight Commander needs this to run in color mode
+    #
+    COLORTERM=1
+    export COLORTERM
+fi
+
+#
+# For RCS
+#
+#VERSION_CONTROL=numbered
+#export VERSION_CONTROL
+
+#
+# Source profile.d files and UTF8 settings
+#
+# But do not source this if PROFILEREAD is already set to avoid
+# overriding locale variables already present in the environment
+#
+if test -z "$PROFILEREAD" ; then
+    test -r /etc/profile.d/sh.ssh   && . /etc/profile.d/sh.ssh
+    if test -z "$SSH_SENDS_LOCALE" ; then
+        if test -r /etc/sysconfig/language -a -r /etc/profile.d/sh.utf8 ; then
+	    tmp="$(. /etc/sysconfig/language; echo $AUTO_DETECT_UTF8)"
+	    test "$tmp" = "yes" && . /etc/profile.d/sh.utf8
+	    unset tmp
+	fi
+    fi
+fi
+
+#
+# Source profile extensions for certain packages, the super
+# may disable some of them by setting the sticky bit.
+#
+if test -d /etc/profile.d -a -z "$PROFILEREAD" ; then
+    for s in /etc/profile.d/*.sh ; do
+	test -r $s -a ! -k $s && . $s
+    done
+    unset s
+fi
+
+if test "$is" != "ash" ; then
+    #
+    # And now let's see if there is a local profile
+    # (for options defined by your sysadmin, not SuSE Linux)
+    #
+    test -s /etc/profile.local && . /etc/profile.local
+fi
+
+#
+# Avoid overwriting user settings if called twice
+#
+if test -z "$PROFILEREAD" ; then
+    readonly PROFILEREAD=true
+    export PROFILEREAD
+fi
+
+#
+# Standard ssh command does not do an login, therefore
+# /etc/profile will be sourced by /etc/bash.bashrc
+#
+if test -z "$_SOURCED_FOR_SSH" ; then
+    #
+    # System BASH specials, maybe also good for other shells
+    # Note that ksh always reads /etc/ksh.kshrc
+    #
+    if test "$is" != ksh -a "$is" != zsh ; then
+	_is_save=$is
+	test -r /etc/bash.bashrc && . /etc/bash.bashrc
+	is=$_is_save
+	unset _is_save
+    fi
+    if test -n "$restricted" ; then
+	readonly _HOMEBASHRC=true
+    fi
+    if test "$is" = "bash" -a -z "$_HOMEBASHRC" ; then
+	# loop detection
+	readonly _HOMEBASHRC=true
+	test -r $HOME/.bashrc && . $HOME/.bashrc
+    fi
+
+    #
+    # KSH specials
+    #
+    if test "$is" = "ksh" -a -r /etc/ksh.kshrc ; then
+	if test -n "$restricted" ; then
+	    readonly _HOMEKSHRC=true
+	fi
+	if test ! /etc/bash.bashrc -ef /etc/ksh.kshrc ; then
+	    test -r /etc/bash.bashrc && . /etc/bash.bashrc
+	fi
+	if test -n "$ENV" -a "$ENV" != "\$HOME/.kshrc" -a "$ENV" != "$HOME/.kshrc" -a -z "$_HOMEKSHRC" ; then
+	    # loop detection
+	    readonly _HOMEKSHRC=true
+	    test -r $HOME/.kshrc && . $HOME/.kshrc
+	fi
+    fi
+fi
+if test -n "$restricted" ; then
+    PATH=/usr/lib/restricted/bin
+    export PATH
+fi
+
+#
+# An X session
+#
+case "$-" in
+*i*)
+    if test "$TERM" = "xterm" -a -O "$tty" -a -z "${SSH_TTY}" ; then
+	echo "Directory: $PWD"
+	# Last but not least
+	date
+    fi
+esac
+unset is
+
+#
+# End of /etc/profile
+#
