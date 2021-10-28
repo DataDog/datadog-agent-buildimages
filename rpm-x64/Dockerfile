@@ -1,6 +1,6 @@
 FROM ubuntu as CERT_GETTER
 RUN apt-get update && apt-get install -y wget
-ENV CACERT_BUNDLE_VERSION=2021-09-30
+ENV CACERT_BUNDLE_VERSION=2021-10-26
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 
 FROM centos:6
