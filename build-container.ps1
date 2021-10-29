@@ -11,6 +11,7 @@ $BaseTable = @{
     2004 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004";
     ## 20H2 reports itself as 2009 in the registry
     2009 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2"
+    2022 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022"
 }
 
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
