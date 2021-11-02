@@ -15,7 +15,14 @@ $BaseTable = @{
 }
 
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
-Write-Host -ForegroundColor Green "Detected kernel version $kernelver, using base image $($BaseTable[$kernelver])"
+$productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
+Write-Host -ForegroundColor Green "Detected kernel version $kernelver and product name $productname"
+// Windows Server 2022 still reports 2009 as releaseid
+if (($kernelver -eq 2009) -and ($productname.contains("Windows Server 2022"))) {
+    $kernelver = 2022
+}
+
+Write-Host -ForegroundColor Green "Using base image $($BaseTable[$kernelver])"
 
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"
