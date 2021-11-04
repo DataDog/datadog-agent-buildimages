@@ -43,10 +43,11 @@ $UpgradeTable = @{
     }
 }
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
+$build = [System.Environment]::OSVersion.version.build
 $productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
-Write-Host -ForegroundColor Green "Detected kernel version $kernelver and product name $productname"
+Write-Host -ForegroundColor Green "Detected kernel version $kernelver, build $build and product name $productname"
 # Windows Server 2022 still reports 2009 as releaseid
-if (($kernelver -eq 2009) -and ($productname.contains("Windows Server 2022"))) {
+if (($kernelver -eq 2009) -and ($build -ge 20348)) {
     $kernelver = 2022
 }
 
