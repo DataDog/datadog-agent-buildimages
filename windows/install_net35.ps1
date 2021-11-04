@@ -1,7 +1,7 @@
 #
 # Installs .NET Runtime 3.5, used by Wix 3.11 and the Visual C++ Compiler for Python 2.7
 #
-
+$ErrorActionPreference = "Stop"
 
 $UpgradeTable = @{
     1809 = @{

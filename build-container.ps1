@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory = $false)][switch] $Cache
 )
 
+$ErrorActionPreference = "Stop"
 
 $BaseTable = @{
     1809 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019";
