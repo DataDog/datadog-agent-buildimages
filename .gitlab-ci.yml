@@ -234,6 +234,14 @@ build_windows_20h2_x64:
     IMAGE: windows_20h2_x64
     DD_TARGET_ARCH: x64
 
+build_windows_2022_x64:
+  extends: .winbuild
+  tags: [ "runner:windows-docker", "windowsversion:2022" ]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_2022_x64
+    DD_TARGET_ARCH: x64
+
 .test_windows:
   extends: .test
   timeout: 2h 00m
@@ -281,6 +289,14 @@ test_windows_20h2_x64:
     ARCH: x64
     IMAGE: windows_20h2_x64
 
+test_windows_2022_x64:
+  extends: .test_windows
+  tags: [ "runner:windows-docker", "windowsversion:2022" ]
+  needs: [ "build_windows_2022_x64" ]
+  variables:
+    ARCH: x64
+    IMAGE: windows_2022_x64
+
 .release:
   stage: release
   except: [ tags, schedules ]
@@ -306,7 +322,7 @@ test_windows_20h2_x64:
   except: [ tags, schedules ]
   only: [ master, main ]
   ## this always needs to be the newest available builder version
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
+  tags: [ "runner:windows-docker", "windowsversion:2022" ]
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
@@ -408,6 +424,14 @@ release_windows_20h2_x64:
     IMAGE: windows_20h2_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "20h2"
+
+release_windows_2022_x64:
+  extends: .winrelease
+  needs: [ "test_windows_2022_x64" ]
+  variables:
+    IMAGE: windows_2022_x64
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    DOCKERHUB_TAG_PREFIX: "2022"
 
 notify-on-failure:
   extends: .slack-notifier-base

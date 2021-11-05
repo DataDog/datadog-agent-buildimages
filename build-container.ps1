@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory = $false)][switch] $Cache
 )
 
+$ErrorActionPreference = "Stop"
 
 $BaseTable = @{
     1809 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019";
@@ -11,10 +12,19 @@ $BaseTable = @{
     2004 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004";
     ## 20H2 reports itself as 2009 in the registry
     2009 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2"
+    2022 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022"
 }
 
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
-Write-Host -ForegroundColor Green "Detected kernel version $kernelver, using base image $($BaseTable[$kernelver])"
+$build = [System.Environment]::OSVersion.version.build
+$productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
+Write-Host -ForegroundColor Green "Detected kernel version $kernelver, build $build and product name $productname"
+# Windows Server 2022 still reports 2009 as releaseid
+if ($build -ge 20348) {
+    $kernelver = 2022
+}
+
+Write-Host -ForegroundColor Green "Using base image $($BaseTable[$kernelver])"
 
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"

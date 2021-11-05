@@ -1,7 +1,7 @@
 #
 # Installs .NET Runtime 3.5, used by Wix 3.11 and the Visual C++ Compiler for Python 2.7
 #
-
+$ErrorActionPreference = "Stop"
 
 $UpgradeTable = @{
     1809 = @{
@@ -34,9 +34,22 @@ $UpgradeTable = @{
         patch = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2020/10/windows10.0-kb4580419-x64-ndp48_197efbd77177abe76a587359cea77bda5398c594.msu";
         expandedpatch = "Windows10.0-KB4580419-x64-NDP48.cab"
     }
+    2022 = @{
+        # Taken from the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
+        # https://github.com/microsoft/dotnet-framework-docker/blob/ee63b25718f434065cd9d1010580ba2a7ab2119f/src/runtime/3.5/windowsservercore-ltsc2022/Dockerfile
+        netfxzip = "https://dotnetbinaries.blob.core.windows.net/dockerassets/microsoft-windows-netfx3-ltsc2022.zip";
+        patch = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2021/08/windows10.0-kb5005538-x64-ndp48_451a4214d51de628ef2c3c8a69c87826b2ab43c8.msu";
+        expandedpatch = "windows10.0-kb5005538-x64-ndp48.cab"
+    }
 }
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
-Write-Host -ForegroundColor Green "Detected kernel version $kernelver"
+$build = [System.Environment]::OSVersion.version.build
+$productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
+Write-Host -ForegroundColor Green "Detected kernel version $kernelver, build $build and product name $productname"
+# Windows Server 2022 still reports 2009 as releaseid
+if ($build -ge 20348) {
+    $kernelver = 2022
+}
 
 $Env:DOTNET_RUNNING_IN_CONTAINER="true"
 
