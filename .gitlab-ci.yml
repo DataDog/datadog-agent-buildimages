@@ -234,12 +234,12 @@ build_windows_20h2_x64:
     IMAGE: windows_20h2_x64
     DD_TARGET_ARCH: x64
 
-build_windows_2022_x64:
+build_windows_ltsc2022_x64:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:2022" ]
   variables:
     DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_2022_x64
+    IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
 
 .test_windows:
@@ -289,13 +289,13 @@ test_windows_20h2_x64:
     ARCH: x64
     IMAGE: windows_20h2_x64
 
-test_windows_2022_x64:
+test_windows_ltsc2022_x64:
   extends: .test_windows
   tags: [ "runner:windows-docker", "windowsversion:2022" ]
-  needs: [ "build_windows_2022_x64" ]
+  needs: [ "build_windows_ltsc2022_x64" ]
   variables:
     ARCH: x64
-    IMAGE: windows_2022_x64
+    IMAGE: windows_ltsc2022_x64
 
 .release:
   stage: release
@@ -425,13 +425,13 @@ release_windows_20h2_x64:
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "20h2"
 
-release_windows_2022_x64:
+release_windows_ltsc2022_x64:
   extends: .winrelease
-  needs: [ "test_windows_2022_x64" ]
+  needs: [ "test_windows_ltsc2022_x64" ]
   variables:
-    IMAGE: windows_2022_x64
+    IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "2022"
+    DOCKERHUB_TAG_PREFIX: "ltsc2022"
 
 notify-on-failure:
   extends: .slack-notifier-base
