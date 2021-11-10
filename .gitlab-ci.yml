@@ -116,6 +116,12 @@ build_omnibus-nikos_arm64:
     DOCKERFILE: omnibus-nikos_arm64/Dockerfile
     IMAGE: omnibus-nikos_arm64
 
+build_datadog-ci-uploader:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: datadog-ci-uploader/Dockerfile
+    IMAGE: datadog-ci-uploader
+
 .test:
   stage: test
   except: [ tags, schedules ]
@@ -392,6 +398,12 @@ release_rpm_arm64:
   needs: [ "test_rpm_arm64" ]
   variables:
     IMAGE: rpm_arm64
+
+release_datadog-ci-uploader:
+  extends: .release
+  needs: [ "build_datadog-ci-uploader" ]
+  variables:
+    IMAGE: datadog-ci-uploader
 
 release_windows_1809_x64:
   extends: .winrelease
