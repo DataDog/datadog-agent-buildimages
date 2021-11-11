@@ -6,9 +6,10 @@ ENV DEBCONF_NONINTERACTIVE_SEEN true
 ENV N_VERSION=8.0.0
 ENV NODE_VERSION=16.13.0
 ENV AWSCLI_VERSION=1.16.240
+ENV CODEOWNERS_VERSION=0.4.0
 
 RUN apt update && apt install -y curl git python3 python3-pip
-RUN pip install awscli==${AWSCLI_VERSION}
+RUN pip install awscli==${AWSCLI_VERSION} codeowners==${CODEOWNERS_VERSION}
 
 RUN curl -L https://raw.githubusercontent.com/tj/n/v${N_VERSION}/bin/n -o n && \
     bash n ${NODE_VERSION} && \
