@@ -6,7 +6,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN true
 ENV N_VERSION=8.0.0
 ENV NODE_VERSION=16.13.0
 
-RUN apt update && apt install -y python3 curl
+RUN apt update && apt install -y curl git python3 python3-pip
 
 RUN curl -L https://raw.githubusercontent.com/tj/n/v${N_VERSION}/bin/n -o n && \
     bash n ${NODE_VERSION} && \
