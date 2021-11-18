@@ -1,8 +1,3 @@
-FROM ubuntu as CERT_GETTER
-RUN apt-get update && apt-get install -y wget
-ENV CACERT_BUNDLE_VERSION=2021-10-26
-RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
-
 FROM quay.io/pypa/manylinux2010_x86_64:latest
 
 # Build Args
@@ -27,11 +22,6 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
-# Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    rm /etc/yum.repos.d/CentOS-Base.repo
-
 # The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
   @development \
@@ -41,8 +31,6 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel
-
-COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
