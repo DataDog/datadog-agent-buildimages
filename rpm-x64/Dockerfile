@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y wget
 ENV CACERT_BUNDLE_VERSION=2021-10-26
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 
-FROM centos:6
+FROM quay.io/pypa/manylinux2010_x86_64:latest
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
