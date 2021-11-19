@@ -109,13 +109,6 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
-
-
 # IBM MQ
 RUN mkdir -p /opt/mqm \
     && curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
@@ -156,9 +149,6 @@ RUN yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.
 ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
 ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
-
-# Download and install golangci-lint
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
 
 # Entrypoint
 COPY ./entrypoint.sh /
