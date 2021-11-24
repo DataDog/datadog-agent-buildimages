@@ -2,6 +2,11 @@
 
 set -ex
 
+DD_PIP_VERSION=20.3.3
+DD_PIP_VERSION_PY3=21.3.1
+DD_SETUPTOOLS_VERSION=44.1.1
+DD_SETUPTOOLS_VERSION_PY3=59.2.0
+
 function detect_distro(){
     local KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
     DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
@@ -32,7 +37,7 @@ case $DD_TARGET_ARCH in
         yum install -y python3-devel
     fi
 
-    curl "https://bootstrap.pypa.io/pip/get-pip.py" | python3 - pip==${DD_PIP_VERSION} setuptools==${DD_SETUPTOOLS_VERSION}
+    curl "https://bootstrap.pypa.io/pip/get-pip.py" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
     python3 -m pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
 esac
@@ -57,7 +62,7 @@ pip install distro==1.4.0 awscli==1.16.240
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
-pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
+pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
 
