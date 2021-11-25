@@ -9,8 +9,6 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
-ARG DD_PIP_VERSION=19.1
-ARG DD_SETUPTOOLS_VERSION=44.1.1
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=armhf
@@ -18,8 +16,6 @@ ARG DD_TARGET_ARCH=armhf
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV DD_PIP_VERSION $DD_PIP_VERSION
-ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
@@ -82,6 +78,7 @@ RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linu
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 

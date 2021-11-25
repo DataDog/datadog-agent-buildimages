@@ -9,9 +9,6 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
-ARG DD_PIP_VERSION=19.1
-ARG DD_SETUPTOOLS_VERSION=44.1.1
-ARG DD_SETUPTOOLS_VERSION_PY3=49.6.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=aarch64
@@ -20,9 +17,6 @@ ARG DD_TARGET_ARCH=aarch64
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV DD_PIP_VERSION $DD_PIP_VERSION
-ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
-ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CONDA_PATH /root/miniforge3
@@ -56,6 +50,7 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && /usr/local/bin/rpm --rebuilddb
 
 # CONDA
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh

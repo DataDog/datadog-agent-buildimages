@@ -1,0 +1,9 @@
+# NOTE: this is used in both Linux and Windows image builds; only use comments, newlines
+# and variable definitions here. Also don't quote variable values.
+
+# These seem to be the latest version that reliably work with Python 2; don't update
+DD_PIP_VERSION=20.3.3
+DD_SETUPTOOLS_VERSION=44.1.1
+
+DD_PIP_VERSION_PY3=21.3.1
+DD_SETUPTOOLS_VERSION_PY3=59.2.0

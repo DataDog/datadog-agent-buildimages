@@ -7,9 +7,6 @@ FROM centos:6
 
 # Build Args
 ARG GIMME_GO_VERSION=1.16.7
-ARG DD_PIP_VERSION=19.1
-ARG DD_SETUPTOOLS_VERSION=44.1.1
-ARG DD_SETUPTOOLS_VERSION_PY3=52.0.0
 ARG IBM_MQ_VERSION=9.2.2.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
@@ -18,9 +15,6 @@ ARG DD_TARGET_ARCH=x64
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV DD_PIP_VERSION $DD_PIP_VERSION
-ENV DD_SETUPTOOLS_VERSION $DD_SETUPTOOLS_VERSION
-ENV DD_SETUPTOOLS_VERSION_PY3 $DD_SETUPTOOLS_VERSION_PY3
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CLANG_VERSION $CLANG_VERSION
@@ -94,6 +88,7 @@ RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
 # CONDA
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
