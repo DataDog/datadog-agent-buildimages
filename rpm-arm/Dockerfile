@@ -78,6 +78,7 @@ RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linu
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Pip & Invoke
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 

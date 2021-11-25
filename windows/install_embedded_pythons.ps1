@@ -64,14 +64,20 @@ DownloadAndExpandTo -TargetDir $py3Target -SourceURL $py3
 setx TEST_EMBEDDED_PY2 $py2Target
 setx TEST_EMBEDDED_PY3 $py3Target
 
+# Read DD_PIP_VERSION{,_PY3} and DD_SETUPTOOLS_VERSION{,_PY3} to variables
+Get-Content .\python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
+   $var = $_.Split('=')
+   New-Variable -Name $var[0] -Value $var[1]
+}
+
 cd $py2Target
 curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
-.\python get-pip.py pip==${Env:EMBEDDED_PIP_VERSION}
+.\python get-pip.py pip==${Env:DD_PIP_VERSION}
 
 
 cd $py3Target
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-.\python get-pip.py pip==${Env:EMBEDDED_PIP_VERSION}
+.\python get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
 
 if ( $Env:TARGET_ARCH -eq "x86") {
     $crt = "https://s3.amazonaws.com/dd-agent-omnibus/msvc_ucrt_runtime_x86.zip"

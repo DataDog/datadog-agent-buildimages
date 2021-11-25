@@ -43,6 +43,7 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
 RUN chmod +x /usr/local/bin/curl
 
 # CONDA
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh

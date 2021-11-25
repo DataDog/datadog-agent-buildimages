@@ -61,6 +61,7 @@ RUN mkdir -p /opt/mqm \
     && rm -rf /tmp/mq_client.tar.gz
 
 # CONDA
+COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh

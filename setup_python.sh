@@ -2,10 +2,7 @@
 
 set -ex
 
-DD_PIP_VERSION=20.3.3
-DD_PIP_VERSION_PY3=21.3.1
-DD_SETUPTOOLS_VERSION=44.1.1
-DD_SETUPTOOLS_VERSION_PY3=59.2.0
+source python-packages-versions.txt
 
 function detect_distro(){
     local KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
