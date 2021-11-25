@@ -67,7 +67,7 @@ setx TEST_EMBEDDED_PY3 $py3Target
 # Read DD_PIP_VERSION{,_PY3} and DD_SETUPTOOLS_VERSION{,_PY3} to variables
 Get-Content .\python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
    $var = $_.Split('=')
-   New-Variable -Name $var[0] -Value $var[1]
+   [System.Environment]::SetEnvironmentVariable($var[0], $var[1])
 }
 
 cd $py2Target
