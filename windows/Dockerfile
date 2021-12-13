@@ -23,7 +23,6 @@ ENV WINDOWS_VERSION=${WINDOWS_VERSION:-1809}
 ARG DD_TARGET_ARCH
 ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 
-# Chocolatey package versions
 ENV GIT_VERSION "2.26.2"
 ENV SEVENZIP_VERSION "19.0.0" # now needs all 3 digits
 ENV VS2017BUILDTOOLS_VERSION "16.8.3.0"
@@ -32,6 +31,7 @@ ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/d
 ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.16.7"
 ENV RUBY_VERSION "2.6.6-1"
+ENV IBM_MQ_VERSION "9.2.2.0"
 ENV PYTHON_VERSION "3.8.2"
 ENV WIX_VERSION "3.11.2"
 ENV CMAKE_VERSION "3.17.2"
@@ -125,6 +125,9 @@ RUN powershell -Command .\install_vcpkg.ps1
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
 RUN powershell -Command .\install_vcpython.ps1
 
+# Install IBM MQ
+COPY ./windows/install_ibm_mq.ps1 install_ibm_mq.ps1
+RUN Powershell -C .\install_ibm_mq.ps1 $ENV:IBM_MQ_VERSION
 
 # Install Cmake and update PATH to include it
 COPY ./windows/install_cmake.ps1 install_cmake.ps1
