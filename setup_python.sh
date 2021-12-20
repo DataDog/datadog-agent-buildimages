@@ -13,13 +13,17 @@ case $DD_TARGET_ARCH in
 "x64")
     DD_CONDA_VERSION=4.9.2
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
+    # FIXME: Pinning specific zlib version as the latest one doesn't work in our old builders:
+    # version GLIBC_2.14 not found (required by /root/miniconda3/envs/ddpy2/lib/python2.7/lib-dynload/../../libz.so.1)
+    PY2_VERSION="2 zlib=1.2.11=h7b6447c_3"
     # FIXME: Pinning specific build since the last version doesn't seem to work with the glibc in the base image
     # FIXME: Pinning OpenSSL to a version that's compatible with the Python build we pin (we get `SSL module is not available` errors with OpenSSL 1.1.1l)
-    PY3_VERSION="3.8.10=hdb3f193_7 openssl=1.1.1k=h27cfd23_0"
+    PY3_VERSION="3.8.10=hdb3f193_7 openssl=1.1.1k=h27cfd23_0 zlib=1.2.11=h7b6447c_3"
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
+    PY2_VERSION=2
     PY3_VERSION=3.8.10
     ;;
 *)
@@ -48,7 +52,7 @@ conda init bash
 source /root/.bashrc
 
 # Setup pythons
-conda create -n ddpy2 python python=2
+conda create -n ddpy2 python python=$PY2_VERSION
 conda create -n ddpy3 python python=$PY3_VERSION
 
 # Update pip, setuptools and misc deps
