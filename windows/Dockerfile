@@ -128,6 +128,7 @@ RUN powershell -Command .\install_vcpython.ps1
 # Install IBM MQ
 COPY ./windows/install_ibm_mq.ps1 install_ibm_mq.ps1
 RUN Powershell -C .\install_ibm_mq.ps1 $ENV:IBM_MQ_VERSION
+RUN setx MQ_FILE_PATH c:\ibm_mq
 
 # Install Cmake and update PATH to include it
 COPY ./windows/install_cmake.ps1 install_cmake.ps1
