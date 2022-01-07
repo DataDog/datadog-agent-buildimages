@@ -5,7 +5,7 @@ RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1
 FROM debian:wheezy-backports
 
 # Build Args
-ARG GO_VERSION=1.16.7
+ARG GO_VERSION=1.16.12
 ARG IBM_MQ_VERSION=9.2.2.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
