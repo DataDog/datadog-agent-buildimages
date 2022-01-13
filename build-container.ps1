@@ -36,4 +36,5 @@ if( -not $Cache) {
 $buildcommand = "build $buildcommandparams"
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
-& docker $buildcommand.split()
+filter timestamp {"$(Get-Date -Format o): $_"}
+& docker $buildcommand.split() | timestamp
