@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         flex \
         g++ \
         gcc \
-        gcc-multilib \
         git \
         libbpf-dev \
         libedit-dev \
