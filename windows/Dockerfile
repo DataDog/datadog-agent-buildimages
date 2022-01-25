@@ -117,10 +117,6 @@ RUN powershell -Command .\install_dotnetcore.ps1
 COPY ./windows/install_nuget.ps1 install_nuget.ps1
 RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
 
-# install vcpkg
-COPY ./windows/install_vcpkg.ps1 install_vcpkg.ps1
-RUN powershell -Command .\install_vcpkg.ps1
-
 # Install VC compiler for Python 2.7
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
 RUN powershell -Command .\install_vcpython.ps1
@@ -180,6 +176,10 @@ RUN powershell -C .\install_gcloud_sdk.ps1
 COPY ./python-packages-versions.txt python-packages-versions.txt
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
+
+# install vcpkg
+COPY ./windows/install_vcpkg.ps1 install_vcpkg.ps1
+RUN powershell -Command .\install_vcpkg.ps1
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
