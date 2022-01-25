@@ -5,8 +5,9 @@ git clone --branch 2021.05.12 https://github.com/microsoft/vcpkg
 
 git clone https://github.com/microsoft/vcpkg-tool
 Push-Location vcpkg-tool
-cmake .
-cmd /C "%VSTUDIO_ROOT%\VC\Auxiliary\Build\vcvars64.bat & msbuild /p:Configuration=Release vcpkg.sln"
+git checkout 2022-01-19
+cmake -DVCPKG_EMBED_GIT_SHA=ON .
+cmd /C "%VSTUDIO_ROOT%\VC\Auxiliary\Build\vcvars64.bat && msbuild /p:Configuration=Release vcpkg.sln"
 Move-Item .\Release\vcpkg.exe c:\vcpkg\
 Pop-Location
 Remove-Item -Recurse -Force C:\vcpkg-tool
