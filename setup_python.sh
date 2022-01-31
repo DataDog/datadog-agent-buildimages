@@ -34,11 +34,13 @@ case $DD_TARGET_ARCH in
         add-apt-repository -y ppa:deadsnakes/ppa
         apt-get update && apt-get install -y python3.9-dev python3.9-distutils
         ln -sf /usr/bin/python3.9 /usr/bin/python3
+        DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/get-pip.py
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         yum install -y python3-devel
+        DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/3.6/get-pip.py
     fi
 
-    curl "https://bootstrap.pypa.io/pip/get-pip.py" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
+    curl "${DD_PIP_GET_URL}" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
     python3 -m pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
 esac
