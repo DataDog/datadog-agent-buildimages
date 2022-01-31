@@ -42,6 +42,7 @@ case $DD_TARGET_ARCH in
            make -j 8
            make install
         popd
+        rm -rf Python-3.9.9
         ln -sf /usr/bin/python3.9 /usr/bin/python3
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         echo "Installing system Python (rpm_armhf)"
