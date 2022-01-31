@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-setuptools \
         python3-pip \
         python3-pyroute2 \
+        python3-dev \
         wget \
         xz-utils
 
@@ -57,6 +58,7 @@ RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
 COPY ./requirements.txt /requirements.txt
+RUN python3 -m pip install wheel
 RUN python3 -m pip install -r requirements.txt
 
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
