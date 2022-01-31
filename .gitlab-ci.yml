@@ -73,9 +73,8 @@ build_deb_arm64:
 build_deb_armhf:
   extends: [ .build, .arm ]
   variables:
-    DOCKERFILE: deb-arm/Dockerfile
+    DOCKERFILE: deb-armhf/Dockerfile
     IMAGE: deb_armhf
-    BASE_IMAGE: arm32v7/ubuntu:16.04
     DD_TARGET_ARCH: armhf
 
 build_rpm_arm64:
