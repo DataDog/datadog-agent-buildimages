@@ -26,16 +26,27 @@ case $DD_TARGET_ARCH in
     PY2_VERSION=2
     PY3_VERSION=3.8.10
     ;;
-*)
-    echo "Using system python since DD_TARGET_ARCH is $DD_TARGET_ARCH"
+"armhf")
     detect_distro
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
-        apt-get update && apt-get install -y software-properties-common
-        add-apt-repository -y ppa:deadsnakes/ppa
-        apt-get update && apt-get install -y python3.9-dev python3.9-distutils
+        echo "Installing Python from source (deb_armhf)"
+        DEBIAN_FRONTEND=noninteractive apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        zip wget build-essential checkinstall libreadline-gplv2-dev \
+        libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
+        libc6-dev libbz2-dev libffi-dev zlib1g-dev
+        wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
+        tar xzf Python-3.9.9.tgz
+        pushd /Python-3.9.9
+           ./configure
+           make -j 8
+           make install
+        popd
+        rm -rf Python-3.9.9
+        rm Python-3.9.9.tgz
         ln -sf /usr/bin/python3.9 /usr/bin/python3
-        DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/get-pip.py
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
+        echo "Installing system Python (rpm_armhf)"
         yum install -y python3-devel # This installs python 3.6 on arm32v7/centos:7
         DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/3.6/get-pip.py
     fi
@@ -43,6 +54,10 @@ case $DD_TARGET_ARCH in
     curl "${DD_PIP_GET_URL}" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
     python3 -m pip install invoke==1.4.1 distro==1.4.0 awscli==1.16.240
     exit 0
+    ;;
+*)
+    echo "Unknown or unsupported architecture ${DD_TARGET_ARCH}"
+    exit -1
 esac
 
 curl -fsL -o ~/miniconda.sh $CONDA_URL
