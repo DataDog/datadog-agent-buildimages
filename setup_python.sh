@@ -36,7 +36,7 @@ case $DD_TARGET_ARCH in
         ln -sf /usr/bin/python3.9 /usr/bin/python3
         DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/get-pip.py
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
-        yum install -y python3-devel
+        yum install -y python3-devel # This installs python 3.6 on arm32v7/centos:7
         DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/3.6/get-pip.py
     fi
 
