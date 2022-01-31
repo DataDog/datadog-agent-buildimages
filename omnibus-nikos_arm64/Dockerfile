@@ -38,6 +38,8 @@ RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
 RUN python3.8 -m pip install --upgrade pip --user
 RUN python3.8 -m pip install awscli meson ninja
+COPY ./requirements.txt /requirements.txt
+RUN python3.8 -m pip install -r requirements.txt
 
 # Install clang and llvm version 8
 RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz && \
