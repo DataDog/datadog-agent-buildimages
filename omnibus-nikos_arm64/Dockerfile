@@ -5,7 +5,7 @@ RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1
 FROM arm64v8/ubuntu:16.04
 
 # Build Args
-ARG GIMME_GO_VERSION=1.17.6
+ARG GIMME_GO_VERSION=1.16.12
 ARG CLANG_VERSION=8.0.0
 
 # Environment

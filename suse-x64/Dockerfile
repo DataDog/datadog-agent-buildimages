@@ -8,7 +8,7 @@ RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GIMME_GO_VERSION=1.17.6
+ARG GIMME_GO_VERSION=1.16.12
 ARG IBM_MQ_VERSION=9.2.2.0
 ARG CMAKE_VERSION=3.14.4
 ARG CLANG_VERSION=8.0.0
