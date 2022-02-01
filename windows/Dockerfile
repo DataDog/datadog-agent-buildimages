@@ -174,6 +174,7 @@ RUN powershell -C .\install_gcloud_sdk.ps1
 
 # Install embedded pythons (for unit testing)
 COPY ./python-packages-versions.txt python-packages-versions.txt
+COPY ./requirements.txt /requirements.txt
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 

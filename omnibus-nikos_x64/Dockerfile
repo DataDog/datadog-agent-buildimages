@@ -80,6 +80,8 @@ RUN cd /tmp/Python-3.8.0 && LDFLAGS="${LDFLAGS} -Wl,-rpath=/home/openssl/lib" ./
 RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
 RUN python3.8 -m pip install awscli meson ninja
+COPY ./requirements.txt /requirements.txt
+RUN python3.8 -m pip install -r requirements.txt
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image

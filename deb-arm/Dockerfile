@@ -45,6 +45,7 @@ RUN chmod +x /usr/local/bin/curl
 # CONDA
 COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
+COPY ./requirements.txt /requirements.txt
 RUN ./setup_python.sh
 COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/bin:${PATH}"
