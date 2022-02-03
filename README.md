@@ -22,6 +22,8 @@ of the [datadog-agent repository][agent] to use the newly created images.
 Upgrade all `GIMME_GO_VERSION` in the Dockerfiles like in
 [this](https://github.com/DataDog/datadog-agent-buildimages/commit/812e0f81340d30bdcbf930399561f1209bb0e166) commit.
 
+Also upgrade the `GO_VERSION` in the Dockerfiles that build Go from source and in `windows/Dockerfile`.
+
 Once pushed, Gitlab will build and push the containers to aws for you. Look for
 the pipeline and get the new images ID (in each job log). The
 new images ID should resemble something like
