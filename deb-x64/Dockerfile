@@ -32,7 +32,7 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
+RUN apt-get update && apt-get install -y fakeroot procps bzip2 lz4 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics
