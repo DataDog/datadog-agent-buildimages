@@ -142,6 +142,7 @@ RUN setx GOPATH C:\dev\go
 # Install system Python 3 (to use invoke).
 # We always install the 64 bit version because vcredist140 won't work otherwise
 COPY ./windows/install_python.ps1 install_python.ps1
+COPY ./requirements.txt /requirements.txt
 RUN powershell -C .\install_python.ps1 -Version $ENV:PYTHON_VERSION
 
 # Install 64-bit ruby and bundler (for omnibus builds)
@@ -174,7 +175,6 @@ RUN powershell -C .\install_gcloud_sdk.ps1
 
 # Install embedded pythons (for unit testing)
 COPY ./python-packages-versions.txt python-packages-versions.txt
-COPY ./requirements.txt /requirements.txt
 COPY ./windows/install_embedded_pythons.ps1 install_embedded_pythons.ps1
 RUN powershell -C .\install_embedded_pythons.ps1
 
