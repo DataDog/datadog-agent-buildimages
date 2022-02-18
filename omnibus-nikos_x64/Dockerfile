@@ -79,7 +79,7 @@ RUN tar -xf Python-3.8.0.tar.xz -C /tmp/
 RUN cd /tmp/Python-3.8.0 && LDFLAGS="${LDFLAGS} -Wl,-rpath=/home/openssl/lib" ./configure --with-openssl=/home/openssl
 RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
-RUN python3.8 -m pip install awscli meson ninja
+RUN python3.8 -m pip install meson ninja
 COPY ./requirements.txt /requirements.txt
 RUN python3.8 -m pip install -r requirements.txt
 

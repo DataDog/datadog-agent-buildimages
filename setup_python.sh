@@ -52,7 +52,7 @@ case $DD_TARGET_ARCH in
     fi
 
     curl "${DD_PIP_GET_URL}" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
-    python3 -m pip install distro==1.4.0 awscli==1.16.240
+    python3 -m pip install distro==1.4.0
     python3 -m pip install -r requirements.txt
     exit 0
     ;;
@@ -77,13 +77,13 @@ conda create -n ddpy3 python python=$PY3_VERSION
 conda activate ddpy2
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
 pip install setuptools==${DD_SETUPTOOLS_VERSION}
-pip install distro==1.4.0 awscli==1.16.240
+pip install distro==1.4.0
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
-pip install distro==1.4.0 awscli==1.16.240
+pip install distro==1.4.0
 pip install -r requirements.txt
 
 
