@@ -37,7 +37,7 @@ RUN cd /tmp/Python-3.8.0 && ./configure
 RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
 RUN python3.8 -m pip install --upgrade pip --user
-RUN python3.8 -m pip install awscli meson ninja
+RUN python3.8 -m pip install meson ninja
 COPY ./requirements.txt /requirements.txt
 RUN python3.8 -m pip install -r requirements.txt
 

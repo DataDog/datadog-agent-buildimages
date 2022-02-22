@@ -7,7 +7,6 @@ ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
-        awscli \
         bison \
         cmake \
         curl \
