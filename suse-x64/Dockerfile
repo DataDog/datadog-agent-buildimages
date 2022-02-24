@@ -1,8 +1,14 @@
 FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+ENV WGET_VERSION=7.79.1
+ENV WGET_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
 ENV CACERT_BUNDLE_VERSION=2022-02-01
+ENV CACERT_BUNDLE_SHA256="1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb"
+RUN apt-get update && apt-get install -y wget
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
+RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
+RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
 # We use OpenSUSE 42.1, which is based on SLES 12.1
 FROM opensuse/archive:42.1
@@ -10,16 +16,22 @@ FROM opensuse/archive:42.1
 # Build Args
 ARG GIMME_GO_VERSION=1.17.6
 ARG IBM_MQ_VERSION=9.2.2.0
+ARG IBM_MQ_SHA256="aa619218371a3b27b94c7bbea4de57ed9651a4b8dd50a9525dabe8b9b3a64d61"
 ARG CMAKE_VERSION=3.14.4
+ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f368"
 ARG CLANG_VERSION=8.0.0
+ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
 
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
+ENV IBM_MQ_SHA256 $IBM_MQ_SHA256
 ENV CMAKE_VERSION $CMAKE_VERSION
+ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
+ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV PATH="/opt/datadog/bin:${PATH}"
@@ -57,7 +69,8 @@ COPY --from=CURL_GETTER /curl-amd64 /opt/datadog/bin/curl
 RUN chmod +x /opt/datadog/bin/curl
 
 # Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
 RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
@@ -68,6 +81,7 @@ COPY ./rpm-headers/systemd /usr/include/systemd
 # IBM MQ
 RUN mkdir -p /opt/mqm \
     && curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
+    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
@@ -95,6 +109,7 @@ RUN bash -l -c "gem install bundler --no-document"
 # CMake
 RUN set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
@@ -102,17 +117,22 @@ RUN set -ex \
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
-    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
-    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" | sha256sum --check \
+    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ \
+    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
 
 # To build the EBPF code we need kernel headers for Linux 4.9
-RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm-x64.tgz && \
-    tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr && \
-    rm kernel-4.9-headers-rpm-x64.tgz
+RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm-x64.tgz \
+    && echo "1657ffa995654bc96405d4dbce0b17a55cd1eabd19479bc1611b0cb4f3c01fcc  kernel-4.9-headers-rpm-x64.tgz" | sha256sum --check \
+    && rm kernel-4.9-headers-rpm-x64.tgz
 
 # Rust is needed to compile the cryptography python lib
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.41.0
+RUN curl -sSL -O https://static.rust-lang.org/rustup/archive/1.24.3/x86_64-unknown-linux-gnu/rustup-init \
+    && echo "3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338  rustup-init" | sha256sum --check \
+    && chmod +x rustup-init \
+    && ./rustup-init -y --default-toolchain 1.41.0 \
+    && rm rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Entrypoint
