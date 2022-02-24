@@ -2,22 +2,20 @@ ARG BASE_IMAGE=arm32v7/centos:7
 
 FROM ubuntu as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2022-02-01
+ENV CACERT_BUNDLE_SHA256="1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
+RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
 FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.17.6
-ARG CMAKE_VERSION=3.14.4
-ARG CLANG_VERSION=8.0.0
 ARG DD_TARGET_ARCH=armhf
 
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV CMAKE_VERSION $CMAKE_VERSION
-ENV CLANG_VERSION $CLANG_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
@@ -43,6 +41,7 @@ COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
+    && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
     && cd rpm-4.15.1 \
@@ -72,6 +71,8 @@ RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
+# TODO: To be able to check sums, we need to pin the rvm install script, which cannot
+# be done using the https://get.rvm.io URL.
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
@@ -84,7 +85,8 @@ COPY ./requirements.txt /requirements.txt
 RUN ./setup_python.sh
 
 # Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
 RUN chmod +x /bin/gimme
 
 # GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
