@@ -141,7 +141,7 @@ COPY ./gobin.sh /etc/profile.d/
 RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
     && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
     && sh ./golangci-lint-install.sh -b $GOPATH/bin v1.21.0 \
-    && echo "799a7a017f8b04058f61ae163684f5ef9808280ddab5aee4241bc9fa7e84bbc2 $GOPATH/bin/golangci-lint" | sha256sum --check \
+    && echo "799a7a017f8b04058f61ae163684f5ef9808280ddab5aee4241bc9fa7e84bbc2  $GOPATH/bin/golangci-lint" | sha256sum --check \
     && rm golangci-lint-install.sh
 
 # Entrypoint
