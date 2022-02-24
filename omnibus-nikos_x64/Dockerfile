@@ -111,7 +111,7 @@ RUN curl -LO https://ftp.gnu.org/gnu/glibc/glibc-2.16.0.tar.gz \
   && tar zxvf glibc-2.16.0.tar.gz \
   && cd glibc-2.16.0 \
   && mkdir build \
-  && cd build && \
+  && cd build \
   && ../configure --prefix=/opt/glibc-2.16 \
   && make -j 8 \
   && make install
