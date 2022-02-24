@@ -12,6 +12,7 @@ function detect_distro(){
 case $DD_TARGET_ARCH in
 "x64")
     DD_CONDA_VERSION=4.9.2
+    DD_CONDA_SHA256="536817d1b14cb1ada88900f5be51ce0a5e042bae178b5550e62f61e223deae7c"
     CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
     # FIXME: Pinning specific zlib version as the latest one doesn't work in our old builders:
     # version GLIBC_2.14 not found (required by /root/miniconda3/envs/ddpy2/lib/python2.7/lib-dynload/../../libz.so.1)
@@ -22,6 +23,7 @@ case $DD_TARGET_ARCH in
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
+    DD_CONDA_SHA256="ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
     PY2_VERSION=2
     PY3_VERSION=3.8.10
@@ -36,6 +38,7 @@ case $DD_TARGET_ARCH in
         libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
         libc6-dev libbz2-dev libffi-dev zlib1g-dev
         wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
+        echo "2cc7b67c1f3f66c571acc42479cdf691d8ed6b47bee12c9b68430413a17a44ea  Python-3.9.9.tgz" | sha256sum --check
         tar xzf Python-3.9.9.tgz
         pushd /Python-3.9.9
            ./configure
@@ -61,9 +64,10 @@ case $DD_TARGET_ARCH in
     exit -1
 esac
 
-curl -fsL -o ~/miniconda.sh $CONDA_URL
-bash ~/miniconda.sh -b
-rm ~/miniconda.sh
+curl -fsL -o miniconda.sh $CONDA_URL
+echo "${DD_CONDA_SHA256}  miniconda.sh" | sha256sum --check
+bash miniconda.sh -b
+rm miniconda.sh
 
 PATH="${CONDA_PATH}/bin:${PATH}"
 conda init bash

@@ -1,22 +1,35 @@
 FROM ubuntu as CURL_GETTER
+ENV WGET_VERSION=7.79.1
+ENV WGET_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
 RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
+RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check
 
 FROM debian:wheezy-backports
 
 # Build Args
+ARG GIT_VERSION=2.10.1
+ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION=1.17.6
 ARG IBM_MQ_VERSION=9.2.2.0
+ARG IBM_MQ_SHA256="aa619218371a3b27b94c7bbea4de57ed9651a4b8dd50a9525dabe8b9b3a64d61"
 ARG CMAKE_VERSION=3.14.4
+ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f368"
 ARG CLANG_VERSION=8.0.0
+ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
 
 # Environment
 ENV GOPATH /go
+ENV GIT_VERSION $GIT_VERSION
+ENV GIT_SHA256 $GIT_SHA256
 ENV GO_VERSION $GO_VERSION
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
+ENV IBM_MQ_SHA256 $IBM_MQ_SHA256
 ENV CMAKE_VERSION $CMAKE_VERSION
+ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
+ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
@@ -44,12 +57,13 @@ COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
 RUN chmod +x /usr/local/bin/curl
 
 # Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-2.10.1.tar.gz
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
+RUN echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check
 # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs.
-RUN tar xzf git-2.10.1.tar.gz --no-same-owner
-RUN cd git-2.10.1 && make prefix=/usr/local all
-RUN cd git-2.10.1 && make prefix=/usr/local install
-RUN rm -rf git-2.10.1 git-2.10.1.tar.gz
+RUN tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner
+RUN cd git-${GIT_VERSION} && make prefix=/usr/local all
+RUN cd git-${GIT_VERSION} && make prefix=/usr/local install
+RUN rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -57,6 +71,7 @@ RUN git config --global user.name "Bits"
 # IBM MQ
 RUN mkdir -p /opt/mqm \
     && curl "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
+    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
@@ -73,6 +88,8 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
+# TODO: To be able to check sums, we need to pin the rvm install script, which cannot
+# be done using the https://get.rvm.io URL.
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
@@ -80,11 +97,15 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Docker
 # Pin docker to before they broke wheezy
-RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
+RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh -o docker-install.sh
+RUN echo "68165ab5ce308d742b5e30f9e85f0a7e373fb6ba5990447143510dd92d384685  docker-install.sh" | sha256sum --check
+RUN cat docker-install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
+RUN rm -rf docker-install.sh
 
 # CMake
 RUN set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
@@ -92,14 +113,16 @@ RUN set -ex \
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
-    tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ && \
-    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" | sha256sum --check \
+    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ \
+    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
 
 # To build the EBPF code we need kernel headers for Linux 4.9
-RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz && \
-    tar xf kernel-4.9-headers-deb-x64.tgz --no-same-owner --strip 1 -C /usr && \
-    rm kernel-4.9-headers-deb-x64.tgz
+RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz \
+    && echo "245f31a066460a51849365009557f61350e46579288e3f46cf9f44b3f5bee3ed  kernel-4.9-headers-deb-x64.tgz" | sha256sum --check \
+    && tar xf kernel-4.9-headers-deb-x64.tgz --no-same-owner --strip 1 -C /usr \
+    && rm kernel-4.9-headers-deb-x64.tgz
 
 # Go
 # Starting with go1.16, we need to build go from source, as the publicly distributed
@@ -113,6 +136,7 @@ RUN ./setup_go.sh
 COPY ./gobin.sh /etc/profile.d/
 
 # Download and install golangci-lint
+# TODO: To be able to check sums, we need to pin the golangci-lint install script
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
 
 # Entrypoint
