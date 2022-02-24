@@ -88,9 +88,10 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
-# TODO: To be able to check sums, we need to pin the rvm install script, which cannot
-# be done using the https://get.rvm.io URL.
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
+RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
+    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
+    && bash get-rvm.sh stable --version latest-1.29 \
+    && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
