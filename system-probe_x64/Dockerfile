@@ -41,7 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         wget \
         xz-utils
 
-RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme && chmod +x /bin/gimme
+RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
 RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 
@@ -52,6 +53,7 @@ RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.1/clang+llvm-11.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
+RUN echo "67f18660231d7dd09dc93502f712613247b7b4395e6f48c11226629b250b53c5  clang+llvm-11.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" | sha256sum --check
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
