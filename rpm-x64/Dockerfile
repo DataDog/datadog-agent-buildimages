@@ -118,7 +118,8 @@ RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
     && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version latest-1.29 \
+    && bash get-rvm.sh stable --version 1.29.12 \
+    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
@@ -179,8 +180,11 @@ ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 
 # Download and install golangci-lint
-# TODO: To be able to check sums, we need to pin the golangci-lint install script
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.21.0
+RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
+    && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
+    && sh ./golangci-lint-install.sh -b $GOPATH/bin v1.21.0 \
+    && echo "799a7a017f8b04058f61ae163684f5ef9808280ddab5aee4241bc9fa7e84bbc2 $GOPATH/bin/golangci-lint" | sha256sum --check \
+    && rm golangci-lint-install.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
