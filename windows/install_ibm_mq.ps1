@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256
 )
 
 $ErrorActionPreference = 'Stop'
@@ -39,3 +40,4 @@ $source = "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messag
 $target = "c:\ibm_mq"
 
 DownloadAndExpandTo -TargetDir $target -SourceURL $source
+if ((Get-FileHash -Algorithm SHA256 $target).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${target}: got '$((Get-FileHash -Algorithm SHA256 $target).Hash)', expected '$Sha256'.\"; exit 1 }

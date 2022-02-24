@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256
 )
 $InstallPath = "c:\tools"
 <#
@@ -31,11 +32,12 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
-$msyszip = "http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
+$msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
 Write-Host  -ForegroundColor Green starting with MSYS
 $out = "$($PSScriptRoot)\msys.tar.xz"
 (New-Object System.Net.WebClient).DownloadFile($msyszip, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
 
 # uncompress the tar-xz into a tar
 $msystar = "msys.tar"

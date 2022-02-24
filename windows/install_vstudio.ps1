@@ -1,5 +1,6 @@
 param (
     [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256,
     [Parameter(Mandatory=$true)][string]$Url,
     [Parameter(Mandatory=$false)][string]$InstallRoot="c:\devtools\vstudio",
     [Parameter(Mandatory=$false)][switch]$NoQuiet
@@ -18,6 +19,8 @@ $out = "$($PSScriptRoot)\vs_buildtools.exe"
 
 Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
+
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 

@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256
 )
 
 # Enabled TLS12
@@ -19,6 +20,7 @@ $wixzip = "https://github.com/wixtoolset/wix3/releases/download/wix$($shortenedv
 Write-Host  -ForegroundColor Green starting with WiX
 $out = "$($PSScriptRoot)\wix.exe"
 (New-Object System.Net.WebClient).DownloadFile($wixzip, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
 
 Write-Host -ForegroundColor Green Done downloading wix, installing
 #Start-Process wix.exe -ArgumentList '/quiet' -Wait

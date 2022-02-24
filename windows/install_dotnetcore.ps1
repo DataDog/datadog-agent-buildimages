@@ -10,9 +10,11 @@ $url = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-48
 Write-Host -ForegroundColor Green "Installing dotnetcore from $($Url)"
 
 $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
+$sha256 = "1fcf6b9efd37d25e75b426cd8430eb3c006092bee07d748967f1dbfc3f9a0190"
 
 Write-Host -ForegroundColor Green Downloading $Url to $out
 (New-Object System.Net.WebClient).DownloadFile($Url, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
 
 # Skip extraction of XML docs - generally not useful within an image/container - helps performance
 setx NUGET_XMLDOC_MODE skip

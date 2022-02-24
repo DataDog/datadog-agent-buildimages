@@ -49,17 +49,14 @@ function DownloadAndExpandTo{
 $py2 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_2_VERSION}-amd64.zip"
 $py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-amd64.zip"
 
-if ( $Env:TARGET_ARCH -eq "x86") {
-    $py2 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_2_VERSION}-x86.zip"
-    $py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-x86.zip"
-} 
-
-
 $py2Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_2_VERSION}"
 $py3Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_3_VERSION}"
 
 DownloadAndExpandTo -TargetDir $py2Target -SourceURL $py2
+if ((Get-FileHash -Algorithm SHA256 $py2Target).Hash -ne "$Env:EMBEDDED_PYTHON_2_SHA256") { Write-Host \"Wrong hashsum for $py2Target: got '$((Get-FileHash -Algorithm SHA256 $py2Target).Hash)', expected '$Env:EMBEDDED_PYTHON_2_SHA256'.\"; exit 1 }
+
 DownloadAndExpandTo -TargetDir $py3Target -SourceURL $py3
+if ((Get-FileHash -Algorithm SHA256 $py3Target).Hash -ne "$Env:EMBEDDED_PYTHON_3_SHA256") { Write-Host \"Wrong hashsum for $py3Target: got '$((Get-FileHash -Algorithm SHA256 $py3Target).Hash)', expected '$Env:EMBEDDED_PYTHON_3_SHA256'.\"; exit 1 }
 
 setx TEST_EMBEDDED_PY2 $py2Target
 setx TEST_EMBEDDED_PY3 $py3Target

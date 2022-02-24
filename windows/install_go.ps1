@@ -4,15 +4,13 @@ $ProgressPreference = 'SilentlyContinue'
 Write-Host -ForegroundColor Green "Installing go $ENV:GO_VERSION"
 
 $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
-if ($Env:TARGET_ARCH -eq "x86") {
-    $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-386.zip"
-}
 
 $out = 'go.zip'
 
 Write-Host -ForegroundColor Green "Downloading $gozip to $out"
 
 (New-Object System.Net.WebClient).DownloadFile($gozip, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$ENV:GO_SHA256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$ENV:GO_SHA256'.\"; exit 1 }
 
 Write-Host -ForegroundColor Green "Extracting $out to c:\"
 

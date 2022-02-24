@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256
 )
 
 # Enabled TLS12
@@ -16,6 +17,7 @@ $rubyexe = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyIns
 Write-Host  -ForegroundColor Green starting with Ruby
 $out = "$($PSScriptRoot)\rubyinstaller.exe"
 (New-Object System.Net.WebClient).DownloadFile($rubyexe, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
 
 Write-Host -ForegroundColor Green Done downloading Ruby, installing
 Start-Process $out -ArgumentList '/verysilent /dir="c:\tools\ruby" /tasks="assocfiles,noridkinstall,modpath"' -Wait

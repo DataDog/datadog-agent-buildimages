@@ -6,9 +6,12 @@ Write-Host -ForegroundColor Green Installing Google Cloud SDK
 $version = "315.0.0"
 $gsdk = "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$version-windows-x86_64.zip"
 $out = 'gsdk.zip'
+$sha256 = "c9b283c9db4ed472111ccf32e6689fd467daf18ce3a77b8e601f9c646a83d86b"
 
 Write-Host -ForegroundColor Green Downloading $gsdk to $out
 (New-Object System.Net.WebClient).DownloadFile($gsdk, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
+
 Get-ChildItem $out
 
 # write file size to make sure it worked
