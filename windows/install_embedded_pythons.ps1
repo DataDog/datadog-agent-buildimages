@@ -70,15 +70,19 @@ Get-Content .\python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } |
    [System.Environment]::SetEnvironmentVariable($var[0], $var[1])
 }
 
-cd $py2Target
+# Python 2
 curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
-.\python get-pip.py pip==${Env:DD_PIP_VERSION}
+& "$py2Target\python" get-pip.py pip==${Env:DD_PIP_VERSION}
+If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
+& "$py2Target\python" -m pip install -r ../requirements-py2.txt
+If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
 
-
-cd $py3Target
+# Python 3
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-.\python get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
-.\python -m pip install -r requirements.txt
+& "$py3Target\python" get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
+If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
+& "$py3Target\python" -m pip install -r ../requirements.txt
+If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
 
 if ( $Env:TARGET_ARCH -eq "x86") {
     $crt = "https://s3.amazonaws.com/dd-agent-omnibus/msvc_ucrt_runtime_x86.zip"
