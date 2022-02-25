@@ -31,7 +31,7 @@ $ErrorActionPreference = 'Stop'
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
+# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
 $msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
 Write-Host  -ForegroundColor Green starting with MSYS
