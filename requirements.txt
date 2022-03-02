@@ -7,4 +7,4 @@ requests==2.27.1
 PyYAML==5.4.1
 toml==0.10.2
 packaging==21.3
-awscli==1.22.64
+awscli==1.22.65
