@@ -59,7 +59,7 @@ tar -zxf microsoft-windows-netfx3.zip
 remove-item -force microsoft-windows-netfx3.zip
 DISM /Online /Quiet /Add-Package /PackagePath:.\microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
 remove-item microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
-Remove-Item -Force -Recurse ${Env:TEMP}\*
+Remove-Item -Force -Recurse ${Env:TEMP}\* -ErrorAction SilentlyContinue
 
 Write-Host curl.exe -fSLo patch.msu $UpgradeTable[$kernelver]["patch"]
 curl.exe -fSLo patch.msu $UpgradeTable[$kernelver]["patch"]
