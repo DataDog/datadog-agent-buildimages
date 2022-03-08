@@ -123,6 +123,12 @@ build_datadog-ci-uploader:
     DOCKERFILE: datadog-ci-uploader/Dockerfile
     IMAGE: datadog-ci-uploader
 
+build_dd_agent_testing:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: dd-agent-testing/Dockerfile
+    IMAGE: dd-agent-testing
+
 .test:
   stage: test
   except: [ tags, schedules ]
