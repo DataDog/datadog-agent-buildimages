@@ -5,9 +5,7 @@ from datetime import datetime
 from dockerfile_parse import DockerfileParser
 
 # This script imports dockerfile-parse project (see https://github.com/containerbuildsystem/dockerfile-parse)
-# Before running the script run either of the following command
-#  a) pip install dockerfile-parse
-#  b) pip install -r requirements.txt
+# Before running the script run: python3 -m pip install -r requirements.txt
 #
 # This python script generates Powershell script which when executed will perform the same
 # steps as the Docker when it builds an image from the same Dockerfile. This script runs
@@ -62,7 +60,7 @@ def getCommandLine():
       if ' ' in arg:
          cmdLine += '"{}" '.format(arg)
       else:
-         cmdLine+="{} ".format(arg)
+         cmdLine += "{} ".format(arg)
 
    return cmdLine
 
@@ -110,7 +108,7 @@ def parseParams(argv):
          dockerArgs[nameValue[0].strip().upper()] = nameValue[1].strip()
 
    # Validate that both required parameters are provided
-   if (str(dockerFilePath) == 0 or str(powershellFilePath) == 0):
+   if (len(dockerFilePath) == 0 or len(powershellFilePath) == 0):
       usage()
       sys.exit(1)
 
@@ -329,6 +327,7 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
    powershellFile.write('$stopwatch = [system.diagnostics.stopwatch]::StartNew()\n')
 
    # Show step #
+   context.currentTaskIndex += 1
    generateProgress(context, powershellFile, cmd)
 
    # This will run it
@@ -351,17 +350,18 @@ def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
 
    nameValue = dockerLine['value'].split(' ')
-   if len(nameValue) != 2:
-      print('The COPY instruction format is not supported or understood'.format(dockerLine['content']))
-      sys.exit(1)
 
-   src = nameValue[0].replace('/', '\\')
-   dest = nameValue[1].replace('/', '\\')
-   cmd = 'copy $ImageRepoPath\{} {}'.format(src, dest)
+   context.currentTaskIndex += 1
 
-   generateProgress(context, powershellFile, cmd)
+   dest = nameValue[len(nameValue) - 1].replace('/', '\\')
 
-   powershellFile.write('{}\n'.format(cmd))
+   # Copy each of the few src
+   for srcIdx in range(len(nameValue) - 1):
+      src = nameValue[srcIdx].replace('/', '\\')
+      cmd = 'copy $ImageRepoPath\{} {}'.format(src, dest)
+      generateProgress(context, powershellFile, cmd)
+      powershellFile.write('{}\n'.format(cmd))
+
    powershellFile.write('Write-Host\n\n')
 
 
@@ -370,6 +370,7 @@ def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
 #
 def lineGenerator_ENTRYPOINT(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
+   powershellFile.write('\n\n')
 
 def getLineGeneratorsMap():
    lineHandlersMap = {      
@@ -471,7 +472,6 @@ def generatePowershellHeader(powershellFile):
    powershellFile.write("}\n\n")
 
 def generateProgress(context, powershellFile, cmd):
-   context.currentTaskIndex += 1
    powershellFile.write("Write-Host @'\n")
    powershellFile.write('[{}/{}] Starting to {} ...\n'.format(context.currentTaskIndex, context.totalTask, cmd))
    powershellFile.write("'@\n")

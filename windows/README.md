@@ -1,7 +1,7 @@
 # Building on Windows
 
 This part of the repo contains the Dockerfile of the image used to build Windows
-container which will be used to build Agent for Windows platform
+container which will be used to build Datadog Agent for Windows.
 
 ## [Experimental] Converting Dockerfile to Powershell script
 
