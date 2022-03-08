@@ -58,7 +58,7 @@ RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
-COPY ./requirements.txt /requirements.txt
+COPY ./requirements.txt ./requirements-py2.txt /
 RUN python3 -m pip install wheel
 RUN python3 -m pip install -r requirements.txt
 

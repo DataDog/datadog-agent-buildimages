@@ -97,7 +97,7 @@ RUN cd /tmp/Python-3.8.0 && LDFLAGS="${LDFLAGS} -Wl,-rpath=/home/openssl/lib" ./
 RUN cd /tmp/Python-3.8.0 && make -j 8 && make install
 
 RUN python3.8 -m pip install meson ninja
-COPY ./requirements.txt /requirements.txt
+COPY ./requirements.txt ./requirements-py2.txt /
 RUN python3.8 -m pip install -r requirements.txt
 
 # Install clang and llvm version 8

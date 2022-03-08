@@ -153,7 +153,7 @@ RUN setx GOPATH C:\dev\go
 # Install system Python 3 (to use invoke).
 # We always install the 64 bit version because vcredist140 won't work otherwise
 COPY ./windows/install_python.ps1 install_python.ps1
-COPY ./requirements.txt /requirements.txt
+COPY ./requirements.txt ./requirements-py2.txt /
 RUN powershell -C .\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
 
 # Install 64-bit ruby and bundler (for omnibus builds)
