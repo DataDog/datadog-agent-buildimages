@@ -1,3 +1,4 @@
+from ast import Not
 import string
 import sys
 import getopt
@@ -101,7 +102,7 @@ def parseParams(argv):
       elif opt == '-a':
          # Split and validate
          nameValue = arg.split('=')
-         if len(nameValue) !=2 or len(nameValue[0].strip()) == 0 or len(nameValue[1].strip()) == 0:
+         if len(nameValue) != 2 or len(nameValue[0].strip()) == 0 or len(nameValue[1].strip()) == 0:
             print('invalid docker argument "{}"'.format(arg))
             sys.exit(2)
 
@@ -205,10 +206,13 @@ def replaceArgOrEnv(dockerArgs, value):
 def lineGenerator_ARG(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
 
+   # Check for default value ARG
    nameValue = dockerLine['value'].split('=')
    if len(nameValue) == 2:
-      # Replace provided argument (it is hardcoded)
-      dockerArgs[nameValue[0].strip().upper()] = nameValue[1].strip()
+      # Add default argument as if it was not provided
+      argValueNorm = nameValue[0].strip().upper()
+      if not argValueNorm in dockerArgs:
+         dockerArgs[argValueNorm] = nameValue[1].strip()
    elif len(nameValue) == 1:
       # Get argument and print it as a comment
       val = dockerArgs.get(nameValue[0].strip())
@@ -229,8 +233,6 @@ def lineGenerator_FROM(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
 
    value = dockerLine['value']
-   if value[0] == '$':
-      value = dockerArgs[value.strip()[2:-1].strip().upper()]
 
    powershellFile.write('# Base Image: {}\n\n'.format(value))
 
@@ -301,46 +303,59 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
 
    # There are two forms of RUN but we are using only one currently
-   runRaw = dockerLine['value']
-   run = runRaw.replace("\\\"", "\"")
+   runRaw = dockerLine['content'][4:]
+   runNoEscapedQuotes = runRaw.replace("\\\"", "\"")
+   runLines = runNoEscapedQuotes.split('\\\n')
 
+   firstRunLine = runLines[0]
    shell = dockerArgs['SHELL']
    powershellC = 'powershell -c '
-   powershellCIdx = run.lower().find(powershellC)
+   powershellCIdx = firstRunLine.lower().find(powershellC)
    powershellCommand = 'powershell -command '
-   powershellCommandIdx = run.lower().find(powershellCommand)
-   shellIsPowershell = True if shell.lower() == 'powershell -command' else False
+   powershellCommandIdx = firstRunLine.lower().find(powershellCommand)
+   shellIsPowershell = True if shell.lower().find('powershell -command') == 0 else False
 
    # Replace powershell script invokation with simple "Call operator &"
-   cmd = ''
+   firstLineCmd = ''
    if shellIsPowershell:
       if powershellCIdx == 0:
-         cmd = '{}'.format(run[len(powershellC):])
+         firstLineCmd = '{}'.format(firstRunLine[len(powershellC):])
       elif powershellCommandIdx == 0:
-         cmd = '{}'.format(run[len(powershellCommand):])
+         firstLineCmd = '{}'.format(firstRunLine[len(powershellCommand):])
       else:
-         cmd = '{}'.format(run)
+         firstLineCmd = '{}'.format(firstRunLine)
    else:
-      cmd = '{} {}'.format(dockerArgs['SHELL'], run)
+      firstLineCmd = '{} {}'.format(dockerArgs['SHELL'], firstRunLine)
 
    # Start stopwatch
    powershellFile.write('$stopwatch = [system.diagnostics.stopwatch]::StartNew()\n')
 
    # Show step #
    context.currentTaskIndex += 1
-   generateProgress(context, powershellFile, cmd)
+   generateProgress(context, powershellFile, firstLineCmd)
 
    # This will run it
-   powershellFile.write('{}\n'.format(cmd))
+   if len(runLines) == 1:
+      powershellFile.write(firstLineCmd)
+   else:
+      powershellFile.write('{}`\n'.format(firstLineCmd))
+      for idx in range(1, len(runLines)):
+         if idx <  len(runLines) - 1:
+            powershellFile.write('{}`\n'.format(runLines[idx]))
+         else:
+            powershellFile.write('{}\n'.format(runLines[idx]))
+
 
    # Restore environment
-   powershellFile.write('# Restore location and reload environment in case if they were changed\n')
-   powershellFile.write('Set-Location \ \n')
-   powershellFile.write('Update-SessionEnvironment\n')   
-   powershellFile.write('# Measure taken time\n')
-   powershellFile.write('$stopwatch.Stop()\n')
-   powershellFile.write('$timeTaken = $stopwatch.Elapsed.ToString("dd\.hh\:mm\:ss")\n')
-   powershellFile.write('Write-Host "... this step executed in $timeTaken`n"\n\n')
+   powershellFile.write("""# Restore location and reload environment in case if they were changed
+Set-Location \ 
+Update-SessionEnvironment
+# Measure taken time
+$stopwatch.Stop()
+$timeTaken = $stopwatch.Elapsed.ToString("dd\.hh\:mm\:ss")
+Write-Host "... this step executed in $timeTaken`n"
+
+""")
  
 
 # ===========================================================
@@ -349,15 +364,15 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
 def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
 
-   nameValue = dockerLine['value'].split(' ')
+   nameValues = dockerLine['value'].split()
 
    context.currentTaskIndex += 1
 
-   dest = nameValue[len(nameValue) - 1].replace('/', '\\')
+   dest = nameValues[len(nameValues) - 1].replace('/', '\\')
 
    # Copy each of the few src
-   for srcIdx in range(len(nameValue) - 1):
-      src = nameValue[srcIdx].replace('/', '\\')
+   for srcIdx in range(len(nameValues) - 1):
+      src = nameValues[srcIdx].replace('/', '\\')
       cmd = 'copy $ImageRepoPath\{} {}'.format(src, dest)
       generateProgress(context, powershellFile, cmd)
       powershellFile.write('{}\n'.format(cmd))
@@ -372,6 +387,10 @@ def lineGenerator_ENTRYPOINT(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
    powershellFile.write('\n\n')
 
+def lineGenerator_CMD(context, powershellFile, dockerArgs, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine)
+   powershellFile.write('\n\n')
+
 def getLineGeneratorsMap():
    lineHandlersMap = {      
       'ARG': lineGenerator_ARG,
@@ -382,7 +401,8 @@ def getLineGeneratorsMap():
       'LABEL': lineGenerator_LABEL,
       'RUN': lineGenerator_RUN,
       'COPY': lineGenerator_COPY,
-      'ENTRYPOINT': lineGenerator_ENTRYPOINT
+      'ENTRYPOINT': lineGenerator_ENTRYPOINT,
+      'CMD': lineGenerator_CMD
    }
    return lineHandlersMap
 
@@ -396,7 +416,8 @@ def getTaskCountersMap():
       'LABEL': 0,
       'RUN': 1,
       'COPY': 1,
-      'ENTRYPOINT': 0
+      'ENTRYPOINT': 0,
+      'CMD': 0
    }
    return taskCountersMap
 
@@ -427,49 +448,49 @@ def generatePowershell(dockerParser, powershellFile, dockerArgs):
 def generatePowershellHeader(powershellFile):
    powershellFile.write('# Automatically generated by\n')
    powershellFile.write('#  {}\n'.format(getCommandLine()))
-   powershellFile.write('#  on {}\n\n'.format(datetime.now().strftime('%m/%d/%Y %H:%M:%S')))
+   powershellFile.write('#  on {}\n'.format(datetime.now().strftime('%m/%d/%Y %H:%M:%S')))
 
-   powershellFile.write('# WARNING!!!\n')
-   powershellFile.write('#  If this script had been generated from https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile\n')
-   powershellFile.write('#  you need to install .NET 4.8 before running it from one of three sources\n')
-   powershellFile.write('#     * https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48\n')
-   powershellFile.write('#     * https://support.microsoft.com/en-us/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0\n')
-   powershellFile.write('#     * https://github.com/microsoft/dotnet-framework-docker/blob/528e53c63f429860d99d55409b0018d225059f0c/src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile\n')
-   powershellFile.write('\n')
-   powershellFile.write('#  If you try to run this script more than once some commands may fail and break the script. It will be addressed better\n')
-   powershellFile.write('#  in the future but for now you may need to comment out offending commands\n')
-   powershellFile.write('\n')
-   powershellFile.write('# Usage: .\<this-script.ps1> -ImageReporPath <image repo path>\n')
-   powershellFile.write('#    -ImageReporPath is required parameter. You need to clone the\n')
-   powershellFile.write('#    same report as the one used for building Docker image.\n')
-   powershellFile.write('#    Specifically it is https://github.com/DataDog/datadog-agent-buildimages\n')
-   powershellFile.write('Param(\n')
-   powershellFile.write('    [Parameter(Mandatory)]\n')
-   powershellFile.write('    [string]\n')
-   powershellFile.write('    $ImageRepoPath\n')
-   powershellFile.write(')\n')
-   powershellFile.write('\n')
-   powershellFile.write('$ImageRepoExists = Test-Path $ImageRepoPath\n')
-   powershellFile.write('if (!$ImageRepoExists) {\n')
-   powershellFile.write('    Write-Host "Provided \'ImageRepoPath\' ($ImageRepoPath) path does not exist. Please provide valid argument"\n')
-   powershellFile.write('    Exit\n')
-   powershellFile.write('}\n\n')
+   powershellFile.write("""
+# WARNING!!!
+#  If this script had been generated from https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile
+#  you need to install .NET 4.8 before running it from one of three sources
+#     * https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
+#     * https://support.microsoft.com/en-us/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0
+#     * https://github.com/microsoft/dotnet-framework-docker/blob/528e53c63f429860d99d55409b0018d225059f0c/src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile
+
+#  If you try to run this script more than once some commands may fail and break the script. It will be addressed better
+#  in the future but for now you may need to comment out offending commands
+
+# Usage: .\<this-script.ps1> -ImageReporPath <image repo path>
+#    -ImageReporPath is required parameter. You need to clone the
+#    same report as the one used for building Docker image.
+#    Specifically it is https://github.com/DataDog/datadog-agent-buildimages
+Param(
+    [Parameter(Mandatory)]
+    [string]
+    $ImageRepoPath
+)
+$ImageRepoExists = Test-Path $ImageRepoPath
+if (!$ImageRepoExists) {
+    Write-Host "Provided \'ImageRepoPath\' ($ImageRepoPath) path does not exist. Please provide valid argument"
+    Exit
    
-   powershellFile.write('# Currently Docker run everything in the root. And we have to keep it this way\n')
-   powershellFile.write('Set-Location \ \n\n')
+# Currently Docker run everything in the root. And we have to keep it this way
+Set-Location \
 
-   powershellFile.write('$totalStopwatch = [system.diagnostics.stopwatch]::StartNew()\n\n')
+$totalStopwatch = [system.diagnostics.stopwatch]::StartNew()
 
-   powershellFile.write("function Update-SessionEnvironment {\n")
-   powershellFile.write("   foreach ($s in 'Machine','User') {\n")
-   powershellFile.write("      [Environment]::GetEnvironmentVariables($s).GetEnumerator().\n")
-   powershellFile.write("      Where({$_.Key -ne 'PATH'}) | ForEach-Object {\n")
-   powershellFile.write("      [Environment]::SetEnvironmentVariable($_.Key,$_.Value,'Process') }}\n")
-   powershellFile.write("\n")
-   powershellFile.write("   $env:PATH = ( ('Machine','User').ForEach({\n")
-   powershellFile.write("      [Environment]::GetEnvironmentVariable('PATH',$_)}).\n")
-   powershellFile.write("      Split(';').Where({$_}) | Select-Object -Unique ) -join ';'\n")
-   powershellFile.write("}\n\n")
+function Update-SessionEnvironment {
+   foreach ($s in 'Machine','User') {
+      [Environment]::GetEnvironmentVariables($s).GetEnumerator().
+      Where({$_.Key -ne 'PATH'}) | ForEach-Object {
+      [Environment]::SetEnvironmentVariable($_.Key,$_.Value,'Process') }}
+
+   $env:PATH = ( ('Machine','User').ForEach({
+      [Environment]::GetEnvironmentVariable('PATH',$_)}).
+      Split(';').Where({$_}) | Select-Object -Unique ) -join ';'
+}
+""")
 
 def generateProgress(context, powershellFile, cmd):
    powershellFile.write("Write-Host @'\n")
@@ -477,12 +498,17 @@ def generateProgress(context, powershellFile, cmd):
    powershellFile.write("'@\n")
 
 def generateFooter(powershellFile):
-   powershellFile.write('$totalStopwatch.Stop()\n')
-   powershellFile.write('$timeTaken = $totalStopwatch.Elapsed.ToString("dd\.hh\:mm\:ss")\n')
-   powershellFile.write('Write-Host "Script executed in $timeTaken"\n')
+   powershellFile.write("""$totalStopwatch.Stop()
+$timeTaken = $totalStopwatch.Elapsed.ToString("dd\.hh\:mm\:ss")
+Write-Host "Script executed in $timeTaken"
+""")
 
 def generateDockerfileReferenceComment(powershellFile, dockerLine):
-   powershellFile.write('# Line: {}, Content: {}'.format((dockerLine['startline'] + 1), dockerLine['content']))
+   lines = dockerLine['content'].split('\n')  
+   powershellFile.write('# Line: {}, Content: {}\n'.format((dockerLine['startline'] + 1), lines[0]))
+   if len(lines) > 1:
+      for lineIdx in range(1, len(lines) -1):
+         powershellFile.write('# {}\n'.format(lines[lineIdx]))
 
 # ===========================================================
 #
