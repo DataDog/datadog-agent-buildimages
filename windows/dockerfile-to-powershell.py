@@ -474,6 +474,7 @@ $ImageRepoExists = Test-Path $ImageRepoPath
 if (!$ImageRepoExists) {
     Write-Host "Provided \'ImageRepoPath\' ($ImageRepoPath) path does not exist. Please provide valid argument"
     Exit
+}
    
 # Currently Docker run everything in the root. And we have to keep it this way
 Set-Location \
