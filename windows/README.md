@@ -38,7 +38,21 @@ Prerequisites
 ```
 cd C:\
 Powershell
-.\dockerfile-to-powershell-generated-sample.ps1 -ImageRepoPath C:\datadog-agent-buildimages
+.\dockerfile-to-powershell-generated-sample.ps1 -DockerRepoPath C:\datadog-agent-buildimages
 ```
 
 *Note*: On the moderately beefy VM this Powershell script may take 30-40 minutes to complete.
+
+### Phase 3 (Optional): Build Agent
+
+Now we are ready to build Agent. We can run exactly the same commands as with the Docker-based Windows build
+
+**Example**
+```
+git clone https://github.com/DataDog/datadog-agent.git C:\mnt
+set OMNIBUS_TARGET=main&set RELEASE_VERSION=nightly&set MAJOR_VERSION=7&set PY_RUNTIMES=3&set TARGET_ARCH=x64&c:\mnt\tasks\winbuildscripts\buildwin.bat
+```
+Caveats:
+* C:\mnt will be checked by the script and is required directory containing Agent sources
+* Environment variables command line should not have spaces around "&"
+* We have seen cases when "ridk enable" commands had to run
