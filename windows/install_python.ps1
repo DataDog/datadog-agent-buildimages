@@ -27,4 +27,8 @@ setx PATH "$($Env:PATH);c:\program files\Python38;c:\Program files\python38\scri
 $Env:PATH="$($Env:PATH);c:\program files\Python38;c:\Program files\python38\scripts"
 Remove-Item $out
 
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
+python -m pip install awscli==1.22.57
+
 Write-Host -ForegroundColor Green Done with Python

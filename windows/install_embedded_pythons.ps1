@@ -77,8 +77,3 @@ cd $py3Target
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 .\python get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
 .\python -m pip install -r requirements.txt
-
-if ( $Env:TARGET_ARCH -eq "x86") {
-    $crt = "https://s3.amazonaws.com/dd-agent-omnibus/msvc_ucrt_runtime_x86.zip"
-    DownloadAndExpandTo -TargetDir $py3Target -SourceURL $crt
-}
