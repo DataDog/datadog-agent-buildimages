@@ -15,3 +15,5 @@
 
 /system-probe_arm64/    @DataDog/agent-network @DataDog/agent-platform
 /system-probe_x64/      @DataDog/agent-network @DataDog/agent-platform
+/omnibus-nikos_arm64/   @DataDog/agent-network @DataDog/agent-security @DataDog/agent-platform
+/omnibus-nikos_x64/     @DataDog/agent-network @DataDog/agent-security @DataDog/agent-platform
