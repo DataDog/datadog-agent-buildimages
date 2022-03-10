@@ -1,54 +1,75 @@
 from ast import Not
-import string
 import sys
 import getopt
+import re
 from datetime import datetime
 from dockerfile_parse import DockerfileParser
 
-# This script imports dockerfile-parse project (see https://github.com/containerbuildsystem/dockerfile-parse)
+# This script imports dockerfile-parse project
+#  https://github.com/containerbuildsystem/dockerfile-parse
 # Before running the script run: python3 -m pip install -r requirements.txt
 #
-# This python script generates Powershell script which when executed will perform the same
-# steps as the Docker when it builds an image from the same Dockerfile. This script runs
-# the same commands and effectively simulates Docker image build but without Docker. Accordingly
-# when generated Powershell script is run on a clean Windows machine or VM it should
-# produce the same final state as built Docker container. If, for example, the Dockerfile creates
-# Windows build-ready container then the generated powershell script when run should make Windows
-# machine or VM build-ready as well.
+# This python script generates Powershell script which when executed will perform the
+# same steps as the Docker when it builds an image from the same Dockerfile. This
+# script runs the same commands and effectively simulates Docker image build but
+# without Docker. Accordingly when generated Powershell script is run on a clean
+# Windows machine or VM it should produce the same final state as built Docker
+# container. If, for example, the Dockerfile creates Windows build-ready container
+# then the generated Powershell script when run should make Windows machine or VM
+# build-ready as well.
 #
-# This script processes only specified Dockerfile although in the future we can attempt to
-# process Dockerfile of the bases image as well (and may be recursively up as much as we can)
+# This script processes only specified Dockerfile although in the future we can
+# attempt to process Dockerfile of the bases image as well (and may be recursively up
+# as much as we can)
 #
-# This script in theory should work with any Windows Dockerfile. However it had been tested
-# only with https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile.
-# It is possible that the Dockerfile modification may break the this python script or the
-# generated powershell. We will try to address future issues as soon as we can.
+# This script in theory should work with any Windows Dockerfile. However it had been
+# tested mostly with 
+#     https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile.
+# It is possible that the Dockerfile modification may break the this python script or
+# the generated Powershell. We will try to address future issues as soon as we can.
 #
-# There are few nuances which you should be aware when looking on the Python or the generated
-# Powershell scripts:
-#   a) Currently Datadog environment makes the Docker to be executed in the C:\ directory.
-#      Accordingly Powershell script changes current location to C:\ in the beginning and after
-#      each command execution (in case command changed that location). You will see invocation
-#      of "Set-Location \" after each RUN command.
+# There are few nuances which you should be aware when looking on the Python or the
+# generated Powershell scripts:
+#   a) This script fasciliate two separate phases of running Dockerized Powershell
+#      script. n
+#   b) Generated Powershell script "memorizes" current Powershell directory and 
+#      restores it after each RUN command executed (in case it had been changed).
+#      It also means that before the script it run one need to make sure to set
+#      current directory to the one which would be expected by the Docker when
+#      it build images. E.g. for datadog-agent-buildimages repository current
+#      directory need to be seto to C:\ because that is where Docker build image
+#      will run. Note: Unfortunately it is not explicit information but implied
+#      by some of its RUN and COPY commands.
 #
-#   b) Simulation of Docker build image execution is not literal for RUN commands. Instead of
-#      spawning a shell or a process to execute run command generated script invokes these
-#      commands directly. The pros that it is simpler and faster but the cons that if the
-#      command failed it will break main script execution. In future we may either wrap it
-#      into error handling block or indeed spawn a separate process.
+#   b) Simulation of Docker build image execution is not literal for RUN commands.
+#      Instead of spawning a shell or a process to execute run command generated script
+#      invokes these commands directly. The pros that it is simpler and faster but the
+#      cons that if the command failed it will break main script execution. In future
+#      we may either wrap it into error handling block or indeed spawn a separate
+#      process.
 #
-#      In addition this approach will make impossible to run generated powershell more than
-#      once on the same machine because some commands refuse to run if certain directories
-#      already exist (but offending process can be commented out).    
+#      In addition this approach will make impossible to run generated Powershell
+#      more than once on the same machine because some commands refuse to run if
+#      certain directories already exist (but offending process can be commented out).    
 #
-#   c) Because a command may change an environment variable which can be used in subsequent
-#      RUN command we generate powershell call after each RUN command to update sessions'
-#      environment variables. You will see invocation of "Update-SessionEnvironment \" after
-#      each RUN command.
+#   d) Because a command may change an environment variable which can be used in
+#      subsequent RUN command we generate Powershell call after each RUN command to
+#      update sessions' environment variables. You will see invocation of
+#      "Update-SessionEnvironment \" after each RUN command.
 #
-#   d) In addition each command is echoed on the console and each command is measured. We also
-#      print a reference to the Dockerfile line number where powershell script line was
-#      derived from.
+#   e) In addition each command is echoed on the console and each command is
+#      measured. We also print a reference to the Dockerfile line number where
+#      Powershell script line was derived from.
+#
+#   f) If you already generated and run Powershell script and corresponding Dockerfile
+#      had been changed you can still re-generate newer version of the Powershell
+#      script and try to re-apply it again. However your mileage may vary (and it
+#      depends very much on the Dockerfile content) ...
+#         * It may actually just work.
+#         * You may need to comment out everything except the difference between old
+#           and new Powershell script.
+#         * You may need to explicitly uninstall or remove previously deployed
+#           applications, files or other artifacts
 
 
 # ===========================================================
@@ -72,16 +93,18 @@ class Context(object):
     pass
 
 def usage():
-   print('Usage: dockerfile-to-powershell.py <arguments>\n')
-   print('Example')
-   print('   dockerfile-to-powershell.py -d .\\Dockerfile -p .\\build.ps1 -a WINDOWS_VERSION=1809\n')
-   print('Required arguments')
-   print('  -d <Docker file path>     # INPUT')
-   print('  -p <Powershell file path> # OUTPUT>')
-   print('')
-   print('Optional arguments')
-   print('  -a dockerarg1=val1        # See Dockerfile ARG')
-   print('  -a dockerargN=valN')
+   print("""Usage: dockerfile-to-powershell.py <arguments>
+Example
+   dockerfile-to-powershell.py -d .\\Dockerfile -p .\\build.ps1 -a WINDOWS_VERSION=1809
+Required arguments
+  -d <Docker file path>     # INPUT
+  -p <Powershell file path> # OUTPUT>
+
+Optional arguments
+  -a dockerarg1=val1        # Used as Dockerfile ARG instruction
+  ...
+  -a dockerargN=valN
+  """)
 
 
 def parseParams(argv):
@@ -128,7 +151,12 @@ def parseDockerFile(dockerFilePath):
          dockerFileContent = dockerFile.read()
 
       dockerParser = DockerfileParser()
+
+      # If dockerFilePath is not "Dockerfile" then dockerParser.content will create "Dockerfile" file
+      # which is not desirable and have to be fixed in future. This behavior is part of the dockerfile
+      # parser sub-module
       dockerParser.content = dockerFileContent
+
       return dockerParser
    except Exception as inst:
       errMsg = 'Failed to open "{}" Dockerfile. Please validate that it is accessible'.format(dockerFilePath)
@@ -136,12 +164,12 @@ def parseDockerFile(dockerFilePath):
       sys.exit(1)
 
 
-# Open/Create powershell file for writing
+# Open/Create Powershell file for writing
 def createPowershellFile(powershellFilePath):
    try:
       return open(powershellFilePath, 'w')
    except Exception as inst:
-      print('Failed to create "{}" powershell file. Please validate that it is accessible'.format(powershellFile))
+      print('Failed to create "{}" Powershell file. Please validate that it is accessible'.format(powershellFile))
       sys.exit(1)
 
 
@@ -305,7 +333,9 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
    # There are two forms of RUN but we are using only one currently
    runRaw = dockerLine['content'][4:]
    runNoEscapedQuotes = runRaw.replace("\\\"", "\"")
-   runLines = runNoEscapedQuotes.split('\\\n')
+   runNoEscapedTick = runNoEscapedQuotes.replace("`", "")
+
+   runLines = runNoEscapedTick.split('\\\n')
 
    firstRunLine = runLines[0]
    shell = dockerArgs['SHELL']
@@ -315,7 +345,7 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
    powershellCommandIdx = firstRunLine.lower().find(powershellCommand)
    shellIsPowershell = True if shell.lower().find('powershell -command') == 0 else False
 
-   # Replace powershell script invokation with simple "Call operator &"
+   # Replace Powershell script invokation with simple "Call operator &"
    firstLineCmd = ''
    if shellIsPowershell:
       if powershellCIdx == 0:
@@ -348,7 +378,8 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
 
    # Restore environment
    powershellFile.write("""# Restore location and reload environment in case if they were changed
-Set-Location \ 
+Set-Location $origLocation
+# [Environment]::CurrentDirectory = $origLocation ## In some future cases this line may need to be executed
 Update-SessionEnvironment
 # Measure taken time
 $stopwatch.Stop()
@@ -363,8 +394,12 @@ Write-Host "... this step executed in $timeTaken`n"
 #
 def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
    generateDockerfileReferenceComment(powershellFile, dockerLine)
-
-   nameValues = dockerLine['value'].split()
+   
+   # Remove Dockerfile based specific "--from=xxx" construct. We can do it
+   # because Docker base image should be accessible in file system during
+   # Powershell script run
+   copyNoFrom = re.sub('--from=\S+',  '', dockerLine['value']).strip()
+   nameValues = copyNoFrom.split()
 
    context.currentTaskIndex += 1
 
@@ -373,7 +408,13 @@ def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
    # Copy each of the few src
    for srcIdx in range(len(nameValues) - 1):
       src = nameValues[srcIdx].replace('/', '\\')
-      cmd = 'copy $ImageRepoPath\{} {}'.format(src, dest)
+
+      # Absolute path will copy AS IS (it usually part of "--from=xxx")
+      srcPath = src if len(src) > 2 and src[1] == ':' else '$DockerRepoPath\{}'.format(src)
+      
+      # Need to dynamically detect if the source is directory and copy as directory
+      # currently copy is good only for files
+      cmd = 'copy {} {}'.format(srcPath, dest)
       generateProgress(context, powershellFile, cmd)
       powershellFile.write('{}\n'.format(cmd))
 
@@ -423,7 +464,7 @@ def getTaskCountersMap():
 
 def generatePowershell(dockerParser, powershellFile, dockerArgs):
 
-   # Add header to the powershell file
+   # Add header to the Powershell file
    generatePowershellHeader(powershellFile)
 
    # Calculate counters
@@ -452,32 +493,52 @@ def generatePowershellHeader(powershellFile):
 
    powershellFile.write("""
 # WARNING!!!
-#  If this script had been generated from https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile
-#  you need to install .NET 4.8 before running it from one of three sources
+#  If this script had been generated from ...
+#      https://github.com/DataDog/datadog-agent-buildimages/blob/main/windows/Dockerfile
+#  ... which is currently based ...
+#      on mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
+#  ... image, then you will need to install .NET 4.8 before running it from one of three sources
 #     * https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
 #     * https://support.microsoft.com/en-us/topic/microsoft-net-framework-4-8-offline-installer-for-windows-9d23f658-3b97-68ab-d013-aa3c3e7495e0
 #     * https://github.com/microsoft/dotnet-framework-docker/blob/528e53c63f429860d99d55409b0018d225059f0c/src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile
-
-#  If you try to run this script more than once some commands may fail and break the script. It will be addressed better
-#  in the future but for now you may need to comment out offending commands
-
-# Usage: .\<this-script.ps1> -ImageReporPath <image repo path>
-#    -ImageReporPath is required parameter. You need to clone the
-#    same report as the one used for building Docker image.
+#
+#  Similarly, for other Dockerfiles you need to make sure that you prepare Windows machine to
+#  be matching its Dockerfile's BASE image.
+#
+#  If you try to run this script more than once some commands may fail and break the script.
+#  It may be addressed better in the future but for now you may need to comment out offending
+#  commands. If after running generated from the Dockerfile Powershell script the Dockerfile
+#  had been modified and you wish to apply these changes, then in contrast to applying newly
+#  generated Powershell script your mileage may vary (and it depends very much on the Dockerfile
+#  content) ...
+#    * It may actually just work
+#    * You may need to comment out everything except the difference between old and new
+#      Powershell script
+#    * You may need to explicitly uninstall or remove previously deployed applications, files
+#      or other artifacts
+#
+# Usage: .\<this-script.ps1> -DockerRepoPath <repo path>
+#    -DockerRepoPath is required parameter. You need to clone the
+#    same repo as the one used for building Docker image.
 #    Specifically it is https://github.com/DataDog/datadog-agent-buildimages
 Param(
     [Parameter(Mandatory)]
     [string]
-    $ImageRepoPath
+    $DockerRepoPath
 )
-$ImageRepoExists = Test-Path $ImageRepoPath
-if (!$ImageRepoExists) {
-    Write-Host "Provided \'ImageRepoPath\' ($ImageRepoPath) path does not exist. Please provide valid argument"
+
+$DockerRepoPathExists = Test-Path $DockerRepoPath
+if (!$DockerRepoPathExists) {
+    Write-Host "Provided \'DockerRepoPath\' ($DockerRepoPath) path does not exist. Please provide valid argument"
     Exit
 }
    
+# Save current location and sync it to .NET current location (it is not automatic and needed in some cases)
+#    https://stackoverflow.com/questions/11246068/why-dont-net-objects-in-powershell-use-the-current-directory
+$origLocation = Get-Location
+[Environment]::CurrentDirectory = $origLocation
 # Currently Docker run everything in the root. And we have to keep it this way
-Set-Location \
+Set-Location $origLocation
 
 $totalStopwatch = [system.diagnostics.stopwatch]::StartNew()
 
@@ -523,7 +584,7 @@ def main(argv):
    # Parse Dockerfile
    dockerParser = parseDockerFile(args.dockerFilePath)
 
-   # Create powershell file
+   # Create Powershell file
    powershellFile = createPowershellFile(args.powershellFilePath)
 
    generatePowershell(dockerParser, powershellFile, args.dockerArgs)
