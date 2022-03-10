@@ -172,10 +172,6 @@ RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\")
 RUN C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c \"pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\"
 
-# Install aws cli
-COPY ./windows/install_awscli.ps1 install_awscli.ps1
-RUN powershell -C .\install_awscli.ps1
-
 # Install docker, manifest-tool and notary
 COPY ./windows/install_docker.ps1 install_docker.ps1
 RUN powershell -Command .\install_docker.ps1

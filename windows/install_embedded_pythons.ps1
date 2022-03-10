@@ -81,8 +81,3 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
 & "$py3Target\python" -m pip install -r ../requirements.txt
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-
-if ( $Env:TARGET_ARCH -eq "x86") {
-    $crt = "https://s3.amazonaws.com/dd-agent-omnibus/msvc_ucrt_runtime_x86.zip"
-    DownloadAndExpandTo -TargetDir $py3Target -SourceURL $crt
-}
