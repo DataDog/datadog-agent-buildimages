@@ -65,7 +65,7 @@ RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Use conda to install gcc5
 # Must be done after installing ruby with RVM, otherwise conda's gcc is used to build ruby and it doesn't work
-RUN conda install -c psi4 gcc-5
+RUN conda install -c psi4 gcc-5 isl=0.12.2
 
 # Install ssl in a custom location
 RUN curl -L -O http://www.openssl.org/source/openssl-1.1.1k.tar.gz
