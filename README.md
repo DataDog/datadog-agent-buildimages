@@ -31,3 +31,6 @@ new images ID should resemble something like
 
 Update the `.gitlab-ci.yml` file in the `datadog-agent` repo to use the new images,
 push a new PR and see if gitlab is still green.
+
+## Building on Windows
+See Building on Windows [README.md](windows/README.md)
