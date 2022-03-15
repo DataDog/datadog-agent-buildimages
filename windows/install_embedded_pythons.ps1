@@ -70,7 +70,7 @@ Get-Content .\python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } |
 
 # Python 2
 $py2getpip = "https://raw.githubusercontent.com/pypa/get-pip/38e54e5de07c66e875c11a1ebbdb938854625dd8/public/2.7/get-pip.py"
-$py2getpipsha256 = "e235c437e5c7d7524fbce3880ca39b917a73dc565e0c813465b7a7a329bb279a"
+$py2getpipsha256 = "40ee07eac6674b8d60fce2bbabc148cf0e2f1408c167683f110fd608b8d6f416"
 DownloadFile -TargetFile "get-pip.py" -SourceURL $py2getpip -Sha256 $py2getpipsha256
 & "$py2Target\python" get-pip.py pip==${Env:DD_PIP_VERSION}
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
