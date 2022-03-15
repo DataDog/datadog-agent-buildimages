@@ -51,10 +51,12 @@ case $DD_TARGET_ARCH in
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         echo "Installing system Python (rpm_armhf)"
         yum install -y python3-devel # This installs python 3.6 on arm32v7/centos:7
-        DD_GET_PIP_URL=https://bootstrap.pypa.io/pip/3.6/get-pip.py
+        curl -sSL https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
+        echo "0bd6aa5c457b84958cebfe1bd34aec9fa98212a65fe962dbed1195425aea58e1  get-pip.py" | sha256sum --check
+        python3 get-pip.py pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
+        rm get-pip.py
     fi
 
-    curl "${DD_PIP_GET_URL}" | python3 - pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
     python3 -m pip install distro==1.4.0
     python3 -m pip install -r requirements.txt
     exit 0
