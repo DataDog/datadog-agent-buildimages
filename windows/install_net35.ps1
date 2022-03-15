@@ -83,7 +83,7 @@ tar -zxf $out
 remove-item -force $out
 DISM /Online /Quiet /Add-Package /PackagePath:.\microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
 remove-item microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
-Remove-Item -Force -Recurse ${Env:TEMP}\*
+Remove-Item -Force -Recurse ${Env:TEMP}\* -ErrorAction SilentlyContinue
 
 
 $out = "patch.msu"
