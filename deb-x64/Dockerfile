@@ -23,14 +23,15 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # Ignore expired repos signature
-# Wheezy is EOL, security updates repo will not get any newer updates, or will do so
+# Jessie is EOL, security updates repo will not get any newer updates, or will do so
 # in arbitrary, unscheduled timeframes. At the time of this writing the repo has
 # expired making the following option necessary for apt to work.
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
 # NOTE: for some reason, ATM jessie-backports is only available at
 # archive.debian.org, while "debian-security jessie/updates" is only available
-# at deb.debian.org. I guess at some point it will move as well.
+# at deb.debian.org. I guess at some point it will move as well. For now,
+# we have to use combination of archive.debian.org and deb.debian.org.
 RUN echo "deb http://deb.debian.org/debian jessie main contrib non-free" > /etc/apt/sources.list && \
  echo "deb http://archive.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://deb.debian.org/debian-security jessie/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
@@ -78,10 +79,6 @@ RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
-
-# Docker
-# Pin docker to before they broke wheezy
-# TODO: RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
 
 # CMake
 RUN set -ex \
