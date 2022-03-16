@@ -2,6 +2,9 @@ FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v7.79.1/curl-amd64
 
+# NOTE: we can't upgrade to Debian Jessie, because that has glibc 2.19 and
+# we still need to support CentOS 7.6+ with nikos, which has glibc 2.17.
+# We can upgrade the base image once we drop support for CentOS 7.
 FROM debian:wheezy-backports
 
 # Build Args
