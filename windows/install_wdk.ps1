@@ -8,8 +8,11 @@ $wdk = 'https://go.microsoft.com/fwlink/?linkid=2085767' ## 1903 WDK link
 
 Write-Host -ForegroundColor Green Installing WDK
 $out = 'wdksetup.exe'
+$sha256 = "c35057cb294096c63bbea093e5024a5fb4120103b20c13fa755c92f227b644e5"
 Write-Host -ForegroundColor Green Downloading $wdk to $out
 (New-Object System.Net.WebClient).DownloadFile($wdk, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
+
 Get-ChildItem $out
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"

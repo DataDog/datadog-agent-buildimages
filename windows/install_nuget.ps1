@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$Sha256
 )
 
 # Enabled TLS12
@@ -16,6 +17,7 @@ $nugetexe="https://dist.nuget.org/win-x86-commandline/v$($Version)/nuget.exe"
 Write-Host -ForegroundColor Green "Downloading nuget"
 $out = "$($PSScriptRoot)\nuget.exe"
 (New-Object System.Net.WebClient).DownloadFile($nugetexe, $out)
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
 
 # just put it in it's own directory
 mkdir \nuget

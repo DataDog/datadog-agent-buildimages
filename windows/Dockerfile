@@ -24,21 +24,33 @@ ARG DD_TARGET_ARCH
 ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 
 ENV GIT_VERSION "2.26.2"
-ENV SEVENZIP_VERSION "19.0.0" # now needs all 3 digits
+ENV GIT_SHA256 "2dfbb1c46547c70179442a92b8593d592292b8bce2fd02ac4e0051a8072dde8f"
+ENV SEVENZIP_VERSION "19.0.0"
+ENV SEVENZIP_SHA256 "0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e"
 ENV VS2017BUILDTOOLS_VERSION "16.8.3.0"
+ENV VS2017BUILDTOOLS_SHA256 "ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0"
 #ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
 ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
-ENV VCPYTHON27_VERSION "9.0.0.30729"
 ENV GO_VERSION "1.17.6"
+ENV GO_SHA256 "5bf8f87aec7edfc08e6bc845f1c30dba6de32b863f89ae46553ff4bbcc1d4954"
 ENV RUBY_VERSION "2.6.6-1"
+ENV RUBY_SHA256 "fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492"
 ENV IBM_MQ_VERSION "9.2.2.0"
+ENV IBM_MQ_SHA256 "1cf718a4efc5d591452f1ebab5d880d9e52ef6447c5c8b098ccec2486bd74745"
 ENV PYTHON_VERSION "3.8.2"
+ENV PYTHON_SHA256 "8e400e3f32cdcb746e62e0db4d3ae4cba1f927141ebc4d0d5a4006b0daee8921"
 ENV WIX_VERSION "3.11.2"
+ENV WIX_SHA256 "32bb76c478fcb356671d4aaf006ad81ca93eea32c22a9401b168fc7471feccd2"
 ENV CMAKE_VERSION "3.17.2"
+ENV CMAKE_SHA256 "06e999be9e50f9d33945aeae698b9b83678c3f98cedb3139a84e19636d2f6433"
 ENV MSYS_VERSION "20210725"
+ENV MSYS_SHA256 "4013a9d5e51b448343efc24fc6a324cc999bb96b4c01b13a6bd3c661bb5c8a82"
 ENV NUGET_VERSION "5.8.0"
+ENV NUGET_SHA256 "5c5b9c96165d3283b2cb9e5b65825d343e0e7139b9e70a250b4bb24c2285f3ba"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
+ENV EMBEDDED_PYTHON_2_SHA256 "557ea6690c5927360656c003d3114b73adbd755b712a2911975dde813d6d7afb"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
+ENV EMBEDDED_PYTHON_3_SHA256 "58563ca60891025923572107e02b8f07439928eb5222dd10466cc92089072c2a"
 ENV EMBEDDED_PIP_VERSION "20.3.4"
 
 ENV CACERTS_HASH "1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb"
@@ -50,7 +62,6 @@ LABEL windows_version=${WINDOWS_VERSION}
 LABEL git_version=${GIT_VERSION}
 LABEL sevenzip_version=${SEVENZIP_VERSION}
 LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
-LABEL vcpython27_version=${VCPYTHON27_VERSION}
 LABEL go_version=${GO_VERSION}
 LABEL ruby_version=${RUBY_VERSION}
 LABEL wix_version=${WIX_VERSION}
@@ -64,7 +75,7 @@ LABEL nuget_version=${NUGET_VERSION}
 # We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
 # to be able to download some Python components during the Agent build.
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://curl.haxx.se/ca/cacert-${ENV:CACERTS_VERSION}.pem\", \"cacert.pem\")
-RUN if ((Get-FileHash .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
+RUN if ((Get-FileHash -Algorithm SHA256 .\cacert.pem).Hash -ne \"$ENV:CACERTS_HASH\") { Write-Host \"Wrong hashsum for cacert.pem: got '$((Get-FileHash -Algorithm SHA256 .\cacert.pem).Hash)', expected '$ENV:CACERTS_HASH'.\"; exit 1 }
 RUN setx SSL_CERT_FILE \"C:\cacert.pem\"
 
 ### Preliminary step: we need both the .NET 3.5 runtime and
@@ -86,11 +97,11 @@ RUN Powershell -C .\install_net35.ps1
 
 # Install 7-zip
 Copy ./windows/install_7zip.ps1 install_7zip.ps1
-RUN powershell -Command .\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION
+RUN powershell -Command .\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
 
 # Install git
 COPY ./windows/install_mingit.ps1 install_mingit.ps1
-RUN powershell -Command .\install_mingit.ps1 -Version $ENV:GIT_VERSION
+RUN powershell -Command .\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
 
 ### HACK: we disable symbolic links when cloning repositories
 ### to work around a symlink-related failure in the agent-binaries omnibus project
@@ -99,7 +110,7 @@ RUN git config --system core.symlinks false
 
 # Install VS2017
 COPY ./windows/install_vstudio.ps1 install_vstudio.ps1
-RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
+RUN powershell -Command .\install_vstudio.ps1 -Version $ENV:VS2017BUILDTOOLS_VERSION -Sha256 $ENV:VS2017BUILDTOOLS_SHA256 $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
 
 # If x64, install the WDK for driver development
 COPY ./windows/install_wdk.ps1 install_wdk.ps1
@@ -107,7 +118,7 @@ RUN if ($Env:TARGET_ARCH -eq 'x64') { powershell -Command .\install_wdk.ps1 }
 
 # Install Wix and update PATH to include it
 COPY ./windows/install_wix.ps1 install_wix.ps1
-RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION
+RUN powershell -Command .\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
 
 # Install dotnet core
 COPY ./windows/install_dotnetcore.ps1 install_dotnetcore.ps1
@@ -115,7 +126,7 @@ RUN powershell -Command .\install_dotnetcore.ps1
 
 # install nuget
 COPY ./windows/install_nuget.ps1 install_nuget.ps1
-RUN powershell -Command .\install_nuget.ps1 $ENV:NUGET_VERSION
+RUN powershell -Command .\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
 
 # Install VC compiler for Python 2.7
 COPY ./windows/install_vcpython.ps1 install_vcpython.ps1
@@ -123,12 +134,12 @@ RUN powershell -Command .\install_vcpython.ps1
 
 # Install IBM MQ
 COPY ./windows/install_ibm_mq.ps1 install_ibm_mq.ps1
-RUN Powershell -C .\install_ibm_mq.ps1 $ENV:IBM_MQ_VERSION
+RUN Powershell -C .\install_ibm_mq.ps1 -Version $ENV:IBM_MQ_VERSION -Sha256 $ENV:IBM_MQ_SHA256
 RUN setx MQ_FILE_PATH c:\ibm_mq
 
 # Install Cmake and update PATH to include it
 COPY ./windows/install_cmake.ps1 install_cmake.ps1
-RUN powershell -Command .\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Arch $ENV:TARGET_ARCH
+RUN powershell -Command .\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 # RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
@@ -143,15 +154,15 @@ RUN setx GOPATH C:\dev\go
 # We always install the 64 bit version because vcredist140 won't work otherwise
 COPY ./windows/install_python.ps1 install_python.ps1
 COPY ./requirements.txt ./requirements-py2.txt /
-RUN powershell -C .\install_python.ps1 -Version $ENV:PYTHON_VERSION
+RUN powershell -C .\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
 
 # Install 64-bit ruby and bundler (for omnibus builds)
 COPY ./windows/install_ruby.ps1 install_ruby.ps1
-RUN powershell -C .\install_ruby.ps1 -Version $ENV:RUBY_VERSION
+RUN powershell -C .\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
 
 # Install msys2 system & install 64-bit C/C++ compilation toolchain
 copy ./windows/install_msys.ps1 install_msys.ps1
-RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION
+RUN powershell -C .\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
 
 RUN ridk install 3
 
@@ -160,10 +171,6 @@ RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst\")
 RUN (New-Object System.Net.WebClient).DownloadFile(\"https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\", \"C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst\")
 RUN C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c \"pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst\"
-
-# Install aws cli
-COPY ./windows/install_awscli.ps1 install_awscli.ps1
-RUN powershell -C .\install_awscli.ps1
 
 # Install docker, manifest-tool and notary
 COPY ./windows/install_docker.ps1 install_docker.ps1
