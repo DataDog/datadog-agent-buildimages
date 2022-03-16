@@ -5,6 +5,9 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
 RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check
 
+# NOTE: we can't upgrade to Debian Jessie, because that has glibc 2.19 and
+# we still need to support CentOS 7.6+ with nikos, which has glibc 2.17.
+# We can upgrade the base image once we drop support for CentOS 7.
 FROM debian:wheezy-backports
 
 # Build Args

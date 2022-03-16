@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
 RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check
 
-FROM debian:wheezy-backports
+FROM debian:jessie-backports
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -16,7 +16,7 @@ ARG IBM_MQ_SHA256="aa619218371a3b27b94c7bbea4de57ed9651a4b8dd50a9525dabe8b9b3a64
 ARG CMAKE_VERSION=3.14.4
 ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f368"
 ARG CLANG_VERSION=8.0.0
-ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
+ARG CLANG_SHA256="9ef854b71949f825362a119bf2597f744836cb571131ae6b721cd102ffea8cd0"
 ARG DD_TARGET_ARCH=x64
 
 # Environment
@@ -36,21 +36,23 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # Ignore expired repos signature
-# Wheezy is EOL, security updates repo will not get any newer updates, or will do so
+# Jessie is EOL, security updates repo will not get any newer updates, or will do so
 # in arbitrary, unscheduled timeframes. At the time of this writing the repo has
 # expired making the following option necessary for apt to work.
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
-RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /etc/apt/sources.list && \
- echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
- echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
+# NOTE: for some reason, ATM jessie-backports is only available at
+# archive.debian.org, while "debian-security jessie/updates" is only available
+# at deb.debian.org. I guess at some point it will move as well. For now,
+# we have to use combination of archive.debian.org and deb.debian.org.
+RUN echo "deb http://deb.debian.org/debian jessie main contrib non-free" > /etc/apt/sources.list && \
+ echo "deb http://archive.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
+ echo "deb http://deb.debian.org/debian-security jessie/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-  rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics
-
-RUN apt-get install -y libsystemd-journal-dev/wheezy-backports
+  libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
+  selinux-basics libtool-bin
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
@@ -97,13 +99,6 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# Docker
-# Pin docker to before they broke wheezy
-RUN curl -fsSL https://raw.githubusercontent.com/docker/docker-install/a34555fc0214be705330911071a8c3357f26e40b/install.sh -o docker-install.sh
-RUN echo "68165ab5ce308d742b5e30f9e85f0a7e373fb6ba5990447143510dd92d384685  docker-install.sh" | sha256sum --check
-RUN cat docker-install.sh | sed -e 's/ftp\.debian\.org/archive.debian.org/g' | sh
-RUN rm -rf docker-install.sh
-
 # CMake
 RUN set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
@@ -114,11 +109,10 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install clang and llvm version 8
-# Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz \
-    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" | sha256sum --check \
-    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ \
-    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz" | sha256sum --check \
+    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz --no-same-owner --strip 1 -kC /usr/ \
+    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 
 # To build the EBPF code we need kernel headers for Linux 4.9
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz \
