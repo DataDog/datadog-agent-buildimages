@@ -88,7 +88,7 @@ build_rpm_arm64:
 build_rpm_armhf:
   extends: [ .build, .arm ]
   variables:
-    DOCKERFILE: rpm-arm/Dockerfile
+    DOCKERFILE: rpm-armhf/Dockerfile
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: armhf
