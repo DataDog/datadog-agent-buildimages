@@ -2,8 +2,8 @@ FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 ENV WGET_VERSION=7.79.1
 ENV WGET_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
-ENV CACERT_BUNDLE_VERSION=2022-02-01
-ENV CACERT_BUNDLE_SHA256="1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb"
+ENV CACERT_BUNDLE_VERSION=2022-03-29
+ENV CACERT_BUNDLE_SHA256="1979e7fe618c51ed1c9df43bba92f977a0d3fe7497ffa2a5e80dfc559a1e5a29"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
 RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check
