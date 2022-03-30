@@ -143,11 +143,11 @@ function Update-SessionEnvironment {
 # Line: 42, Content: ENV EMBEDDED_PIP_VERSION "20.3.4"
 [System.Environment]::SetEnvironmentVariable('EMBEDDED_PIP_VERSION','20.3.4')
 
-# Line: 44, Content: ENV CACERTS_HASH "1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb"
-[System.Environment]::SetEnvironmentVariable('CACERTS_HASH','1d9195b76d2ea25c2b5ae9bee52d05075244d78fcd9c58ee0b6fac47d395a5eb')
+# Line: 44, Content: ENV CACERTS_HASH "1979e7fe618c51ed1c9df43bba92f977a0d3fe7497ffa2a5e80dfc559a1e5a29"
+[System.Environment]::SetEnvironmentVariable('CACERTS_HASH','1979e7fe618c51ed1c9df43bba92f977a0d3fe7497ffa2a5e80dfc559a1e5a29')
 
-# Line: 45, Content: ENV CACERTS_VERSION "2022-02-01"
-[System.Environment]::SetEnvironmentVariable('CACERTS_VERSION','2022-02-01')
+# Line: 45, Content: ENV CACERTS_VERSION "2022-03-29"
+[System.Environment]::SetEnvironmentVariable('CACERTS_VERSION','2022-03-29')
 
 # Line: 47, Content: LABEL target_agent="Agent 6/7"
 # LABEL resolved: target_agent='Agent 6/7'
