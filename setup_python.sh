@@ -75,6 +75,10 @@ PATH="${CONDA_PATH}/bin:${PATH}"
 conda init bash
 source /root/.bashrc
 
+# Make sure requirements are installed also on the system python
+# This is needed because some tests jobs (py2 test jobs) run invoke using the system python
+python3 -m pip install -r requirements.txt
+
 # Setup pythons
 conda create -n ddpy2 python python=$PY2_VERSION
 conda create -n ddpy3 python python=$PY3_VERSION
