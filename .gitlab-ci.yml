@@ -129,6 +129,18 @@ build_dd_agent_testing:
     DOCKERFILE: dd-agent-testing/Dockerfile
     IMAGE: dd-agent-testing
 
+build_docker_arm64:
+  extends: [ .build, .arm ]
+  variables:
+    DOCKERFILE: docker-arm64/Dockerfile
+    IMAGE: docker_arm64
+
+build_docker_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: docker-x64/Dockerfile
+    IMAGE: docker_x64
+
 .test:
   stage: test
   except: [ tags, schedules ]
