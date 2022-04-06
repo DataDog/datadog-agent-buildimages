@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 # Do not use '--depth 1' since vcpkg needs to browse its git history for dependency retrieval
-git clone --branch 2021.05.12 https://github.com/microsoft/vcpkg
+git clone --branch 2022.03.10 https://github.com/microsoft/vcpkg
 
 git clone https://github.com/microsoft/vcpkg-tool --branch 2022-01-19 C:\vcpkg-tool
 
