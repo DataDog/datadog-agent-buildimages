@@ -13,22 +13,35 @@ FROM arm64v8/ubuntu:16.04
 
 # Build Args
 ARG GIMME_GO_VERSION=1.17.6
+ARG CMAKE_VERSION=3.23.0
+ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV CMAKE_VERSION $CMAKE_VERSION
+ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
 ENV CLANG_SHA256 $CLANG_SHA256
 
-RUN apt-get update && apt-get install -y fakeroot cmake curl bzip2 g++ gcc git \
+RUN apt-get update && apt-get install -y fakeroot procps bzip2 g++ gcc git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config xz-utils zlib1g-dev
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl
 RUN chmod +x /usr/local/bin/curl
+
+# CMake
+RUN set -ex \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && rm cmake.sh
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
