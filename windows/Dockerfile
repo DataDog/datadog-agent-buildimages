@@ -71,6 +71,9 @@ LABEL system_python_version=${PYTHON_VERSION}
 LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 LABEL nuget_version=${NUGET_VERSION}
+
+RUN Get-DnsClientServerAddress | Select-Object –ExpandProperty ServerAddresses
+
 # Add certificates needed for build & check certificates file hash
 # We need to trust the DigiCert High Assurance EV Root CA certificate, which signs python.org,
 # to be able to download some Python components during the Agent build.
