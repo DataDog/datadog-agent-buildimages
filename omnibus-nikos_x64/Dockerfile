@@ -64,7 +64,6 @@ RUN curl -fsL -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py3
 RUN echo "${CONDA_SHA256}  miniconda.sh" | sha256sum --check
 RUN bash miniconda.sh -b -p $CONDA_PATH
 RUN rm miniconda.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
