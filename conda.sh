@@ -1,1 +1,1 @@
-export PATH=$CONDA_PATH/bin:$PATH
+export PATH=$CONDA_PATH/condabin:$PATH
