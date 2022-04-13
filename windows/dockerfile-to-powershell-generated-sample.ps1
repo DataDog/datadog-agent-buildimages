@@ -125,8 +125,8 @@ function Update-SessionEnvironment {
 # Line: 36, Content: ENV WIX_VERSION "3.11.2"
 [System.Environment]::SetEnvironmentVariable('WIX_VERSION','3.11.2')
 
-# Line: 37, Content: ENV CMAKE_VERSION "3.17.2"
-[System.Environment]::SetEnvironmentVariable('CMAKE_VERSION','3.17.2')
+# Line: 37, Content: ENV CMAKE_VERSION "3.23.0"
+[System.Environment]::SetEnvironmentVariable('CMAKE_VERSION','3.23.0')
 
 # Line: 38, Content: ENV MSYS_VERSION "20210725"
 [System.Environment]::SetEnvironmentVariable('MSYS_VERSION','20210725')

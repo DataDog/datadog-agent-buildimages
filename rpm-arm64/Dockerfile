@@ -11,8 +11,8 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIMME_GO_VERSION=1.17.6
-ARG CMAKE_VERSION=3.14.4
-ARG CMAKE_SHA256="3f692c33483d27a9722211eb0bcd8fe1dc6cb8753f5a9d4a66dc08ce6eda33e5"
+ARG CMAKE_VERSION=3.23.0
+ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
@@ -62,8 +62,7 @@ COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # RVM
@@ -86,12 +85,14 @@ RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 COPY ./gobin.sh /etc/profile.d/
 
-# CMake. Pre-built using the build-cmake.sh script, to speed-up docker build.
-RUN curl -sL -O https://dd-agent-omnibus.s3.amazonaws.com/cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz \
-    && echo "${CMAKE_SHA256}  cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz" | sha256sum --check \
-    && tar xf cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz --no-same-owner -kC / \
-    && rm cmake-${CMAKE_VERSION}-amzn-aarch64.tar.xz
-ENV PATH="/opt/cmake/bin:$PATH"
+# CMake
+RUN set -ex \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && rm cmake.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
