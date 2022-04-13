@@ -14,8 +14,8 @@ $shortenedver = $Version.Replace('.','')
 $splitver = $Version.split(".")
 $majmin = "$($splitver[0])$($splitver[1])" 
 
-# https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1-win64-x64.msi
-$cmakeurl = "https://github.com/Kitware/CMake/releases/download/v$($Version)/cmake-$($Version)-win64-x64.msi"
+# https://github.com/Kitware/CMake/releases/download/v3.23.0/cmake-3.23.0-windows-x86_64.msi
+$cmakeurl = "https://github.com/Kitware/CMake/releases/download/v$($Version)/cmake-$($Version)-windows-x86_64.msi"
 
 Write-Host  -ForegroundColor Green starting with CMake
 $out = "$($PSScriptRoot)\cmake.msi"

@@ -12,8 +12,8 @@ FROM debian:wheezy-backports
 
 # Build Args
 ARG GIMME_GO_VERSION=1.17.6
-ARG CMAKE_VERSION=3.14.4
-ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f368"
+ARG CMAKE_VERSION=3.23.0
+ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG CONDA_VERSION=4.9.2
@@ -42,7 +42,7 @@ RUN echo "deb http://archive.debian.org/debian wheezy main contrib non-free" > /
  echo "deb http://archive.debian.org/debian wheezy-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
  echo "deb http://archive.debian.org/debian-security wheezy/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
 
-RUN apt-get update && apt-get install -y fakeroot cmake bzip2 g++ git \
+RUN apt-get update && apt-get install -y fakeroot procps bzip2 g++ gcc git \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libz-dev \
   tar pkg-config xz-utils zlib1g-dev
 
@@ -52,7 +52,7 @@ RUN chmod +x /usr/local/bin/curl
 
 # CMake
 RUN set -ex \
-    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \
     && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
@@ -64,8 +64,7 @@ RUN curl -fsL -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py3
 RUN echo "${CONDA_SHA256}  miniconda.sh" | sha256sum --check
 RUN bash miniconda.sh -b -p $CONDA_PATH
 RUN rm miniconda.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # RVM

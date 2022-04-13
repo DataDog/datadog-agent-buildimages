@@ -13,12 +13,11 @@ ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2
 ARG GIMME_GO_VERSION=1.17.6
 ARG IBM_MQ_VERSION=9.2.2.0
 ARG IBM_MQ_SHA256="aa619218371a3b27b94c7bbea4de57ed9651a4b8dd50a9525dabe8b9b3a64d61"
-ARG CMAKE_VERSION=3.14.4
-ARG CMAKE_SHA256="3337a648a3ac97b5e6a05f8a08ae97b71d37af48465dae4736932f8a3e85f368"
+ARG CMAKE_VERSION=3.23.0
+ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-
 # Environment
 ENV GOPATH /go
 ENV GIT_VERSION $GIT_VERSION
@@ -109,8 +108,7 @@ COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./setup_python.sh /setup_python.sh
 COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
-COPY ./conda.sh /etc/profile.d/conda.sh
-ENV PATH "${CONDA_PATH}/bin:${PATH}"
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # RVM
@@ -146,7 +144,7 @@ COPY ./rpm-headers/systemd /usr/include/systemd
 
 # CMake
 RUN set -ex \
-    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \
     && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \

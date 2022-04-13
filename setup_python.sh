@@ -71,7 +71,7 @@ echo "${DD_CONDA_SHA256}  miniconda.sh" | sha256sum --check
 bash miniconda.sh -b
 rm miniconda.sh
 
-PATH="${CONDA_PATH}/bin:${PATH}"
+PATH="${CONDA_PATH}/condabin:${PATH}"
 conda init bash
 source /root/.bashrc
 
