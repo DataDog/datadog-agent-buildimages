@@ -22,6 +22,8 @@ ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa7
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
+ARG RUST_VERSION=1.60.0
+ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 
 # Environment
 ENV GOPATH /go
@@ -34,6 +36,9 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV RUST_VERSION $RUST_VERSION
+ENV RUSTC_SHA256 $RUSTC_SHA256
+
 ENV PATH="/opt/datadog/bin:${PATH}"
 
 # Add our profile to the image that adds RVM and Conda to environment
@@ -127,12 +132,11 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm
     && echo "1657ffa995654bc96405d4dbce0b17a55cd1eabd19479bc1611b0cb4f3c01fcc  kernel-4.9-headers-rpm-x64.tgz" | sha256sum --check \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Rust is needed to compile the cryptography python lib
-RUN curl -sSL -O https://static.rust-lang.org/rustup/archive/1.24.3/x86_64-unknown-linux-gnu/rustup-init \
-    && echo "3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338  rustup-init" | sha256sum --check \
-    && chmod +x rustup-init \
-    && ./rustup-init -y --default-toolchain 1.41.0 \
-    && rm rustup-init
+# Rust is needed to compile some python libs
+RUN curl -sSL -o rustup-init.sh https://raw.githubusercontent.com/rust-lang/rustup/1.24.3/rustup-init.sh \
+    && echo "a3cb081f88a6789d104518b30d4aa410009cd08c3822a1226991d6cf0442a0f8  rustup-init.sh" | sha256sum --check \
+    && sh rustup-init.sh -y --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Entrypoint
