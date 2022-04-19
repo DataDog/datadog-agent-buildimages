@@ -100,3 +100,6 @@ if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
     # Conda creates "lib" but on Amazon Linux, the embedded Python2 we use in unit tests will look in "lib64" instead
     ln -s "${CONDA_PATH}/envs/ddpy2/lib" "${CONDA_PATH}/envs/ddpy2/lib64"
 fi
+
+# Add python3's invoke to the PATH even when ddpy3 is not active, since we want to use python3 invoke to run python2 tests
+ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
