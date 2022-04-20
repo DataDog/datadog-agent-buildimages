@@ -110,11 +110,12 @@ Optional arguments
 def parseParams(argv):
    dockerFilePath = ''
    powershellFilePath = ''
+   verbose = False
    dockerArgs = {}
    try:
-      opts, args = getopt.getopt(argv,'d:p:a:')
+      opts, args = getopt.getopt(argv,'d:p:a:-v')
    except getopt.GetoptError:
-      print('dockerfile-to-powershell.py -d <Docker file path> -p <Powershell file path> [-a dockerarg1=val1 ...]')
+      print('dockerfile-to-powershell.py -d <Docker file path> -p <Powershell file path> [-a dockerarg1=val1 ...][-v]')
       sys.exit(1)
 
    for opt, arg in opts:
@@ -130,6 +131,8 @@ def parseParams(argv):
             sys.exit(2)
 
          dockerArgs[nameValue[0].strip().upper()] = nameValue[1].strip()
+      elif opt == '-v':
+         verbose = True
 
    # Validate that both required parameters are provided
    if (len(dockerFilePath) == 0 or len(powershellFilePath) == 0):
@@ -140,6 +143,7 @@ def parseParams(argv):
    retArgs.dockerFilePath = dockerFilePath
    retArgs.powershellFilePath = powershellFilePath
    retArgs.dockerArgs = dockerArgs
+   retArgs.verbose = verbose
 
    return retArgs
 
@@ -231,19 +235,19 @@ def replaceArgOrEnv(dockerArgs, value):
 # ===========================================================
 # ARG
 #
-def lineGenerator_ARG(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_ARG(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    # Check for default value ARG
    nameValue = dockerLine['value'].split('=')
    if len(nameValue) == 2:
       # Add default argument as if it was not provided
       argValueNorm = nameValue[0].strip().upper()
-      if not argValueNorm in dockerArgs:
-         dockerArgs[argValueNorm] = nameValue[1].strip()
+      if not argValueNorm in args.dockerArgs:
+         args.dockerArgs[argValueNorm] = nameValue[1].strip()
    elif len(nameValue) == 1:
       # Get argument and print it as a comment
-      val = dockerArgs.get(nameValue[0].strip())
+      val = args.dockerArgs.get(nameValue[0].strip())
       if val != None:
          powershellFile.write('# ARG={}\n'.format(val))
       else:
@@ -257,8 +261,8 @@ def lineGenerator_ARG(context, powershellFile, dockerArgs, dockerLine):
 # ===========================================================
 # FROM
 #
-def lineGenerator_FROM(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_FROM(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    value = dockerLine['value']
 
@@ -269,8 +273,8 @@ def lineGenerator_FROM(context, powershellFile, dockerArgs, dockerLine):
 # ===========================================================
 # SHELL
 #
-def lineGenerator_SHELL(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_SHELL(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    # Parse and concatenate to sting string a value like this
    #    ["powershell", "-Command"]
@@ -279,20 +283,20 @@ def lineGenerator_SHELL(context, powershellFile, dockerArgs, dockerLine):
       shellValue = shellValue.strip()[1:-1].strip()
       shell = shell + ' ' + shellValue if len(shell) > 0 else shellValue
 
-   dockerArgs['SHELL'] = shell
+   args.dockerArgs['SHELL'] = shell
    powershellFile.write('# SHELL="{}"\n\n'.format(shell))
 
 # ===========================================================
 # COMMENT
 #
-def lineGenerator_COMMENT(context, powershellFile, dockerArgs, dockerLine):
+def lineGenerator_COMMENT(context, powershellFile, args, dockerLine):
    powershellFile.write(dockerLine['content'])
 
 # ===========================================================
 # ENV
 #
-def lineGenerator_ENV(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_ENV(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    nameValue = dockerLine['value'].split(' ')
    if len(nameValue) == 1:
@@ -300,18 +304,18 @@ def lineGenerator_ENV(context, powershellFile, dockerArgs, dockerLine):
    
    envName = nameValue[0].strip()
    value = nameValue[1].strip()
-   envValue = replaceArgOrEnv(dockerArgs, value) if value[0] != '"' else value[1:-1]
+   envValue = replaceArgOrEnv(args.dockerArgs, value) if value[0] != '"' else value[1:-1]
 
    powershellFile.write("[System.Environment]::SetEnvironmentVariable('{}','{}')\n\n".format(envName, envValue))
 
    # add ENV to dockerArgs (because ${xxx} replacement looks similar)
-   dockerArgs[envName.upper()] = envValue
+   args.dockerArgs[envName.upper()] = envValue
 
 # ===========================================================
 # LABEL
 #
-def lineGenerator_LABEL(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_LABEL(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    nameValue = dockerLine['value'].split('=')
    if len(nameValue) != 2:
@@ -320,15 +324,15 @@ def lineGenerator_LABEL(context, powershellFile, dockerArgs, dockerLine):
 
    label = nameValue[0].strip()
    valueRaw = nameValue[1].strip()
-   value = replaceArgOrEnv(dockerArgs, valueRaw) if valueRaw[0] != '"' else valueRaw[1:-1]
+   value = replaceArgOrEnv(args.dockerArgs, valueRaw) if valueRaw[0] != '"' else valueRaw[1:-1]
 
    powershellFile.write("# LABEL resolved: {}='{}'\n\n".format(label, value))
 
 # ===========================================================
 # RUN
 #
-def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_RUN(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
 
    # There are two forms of RUN but we are using only one currently
    runRaw = dockerLine['content'][4:]
@@ -338,7 +342,7 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
    runLines = runNoEscapedTick.split('\\\n')
 
    firstRunLine = runLines[0]
-   shell = dockerArgs['SHELL']
+   shell = args.dockerArgs['SHELL']
    powershellC = 'powershell -c '
    powershellCIdx = firstRunLine.lower().find(powershellC)
    powershellCommand = 'powershell -command '
@@ -355,14 +359,14 @@ def lineGenerator_RUN(context, powershellFile, dockerArgs, dockerLine):
       else:
          firstLineCmd = '{}'.format(firstRunLine)
    else:
-      firstLineCmd = '{} {}'.format(dockerArgs['SHELL'], firstRunLine)
+      firstLineCmd = '{} {}'.format(args.dockerArgs['SHELL'], firstRunLine)
 
    # Start stopwatch
    powershellFile.write('$stopwatch = [system.diagnostics.stopwatch]::StartNew()\n')
 
    # Show step #
    context.currentTaskIndex += 1
-   generateProgress(context, powershellFile, firstLineCmd)
+   generateProgress(context, powershellFile, args.verbose, firstLineCmd)
 
    # This will run it
    if len(runLines) == 1:
@@ -392,8 +396,8 @@ Write-Host "... this step executed in $timeTaken`n"
 # ===========================================================
 # COPY
 #
-def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_COPY(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
    
    # Remove Dockerfile based specific "--from=xxx" construct. We can do it
    # because Docker base image should be accessible in file system during
@@ -415,7 +419,7 @@ def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
       # Need to dynamically detect if the source is directory and copy as directory
       # currently copy is good only for files
       cmd = 'copy {} {}'.format(srcPath, dest)
-      generateProgress(context, powershellFile, cmd)
+      generateProgress(context, powershellFile, args.verbose, cmd)
       powershellFile.write('{}\n'.format(cmd))
 
    powershellFile.write('Write-Host\n\n')
@@ -424,12 +428,12 @@ def lineGenerator_COPY(context, powershellFile, dockerArgs, dockerLine):
 # ===========================================================
 # ENTRYPOINT
 #
-def lineGenerator_ENTRYPOINT(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_ENTRYPOINT(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
    powershellFile.write('\n\n')
 
-def lineGenerator_CMD(context, powershellFile, dockerArgs, dockerLine):
-   generateDockerfileReferenceComment(powershellFile, dockerLine)
+def lineGenerator_CMD(context, powershellFile, args, dockerLine):
+   generateDockerfileReferenceComment(powershellFile, dockerLine, args.verbose)
    powershellFile.write('\n\n')
 
 def getLineGeneratorsMap():
@@ -462,7 +466,7 @@ def getTaskCountersMap():
    }
    return taskCountersMap
 
-def generatePowershell(dockerParser, powershellFile, dockerArgs):
+def generatePowershell(dockerParser, powershellFile, args):
 
    # Add header to the Powershell file
    generatePowershellHeader(powershellFile)
@@ -478,7 +482,7 @@ def generatePowershell(dockerParser, powershellFile, dockerArgs):
    # Process Dockerfile line by line
    lineHandlersMap = getLineGeneratorsMap()
    for dockerLine in dockerParser.structure:      
-      lineHandlersMap[dockerLine['instruction']](context, powershellFile, dockerArgs, dockerLine)
+      lineHandlersMap[dockerLine['instruction']](context, powershellFile, args, dockerLine)
 
    # Generate footer
    generateFooter(powershellFile)
@@ -554,9 +558,13 @@ function Update-SessionEnvironment {
 }
 """)
 
-def generateProgress(context, powershellFile, cmd):
+def generateProgress(context, powershellFile, verbose, cmd):
    powershellFile.write("Write-Host @'\n")
-   powershellFile.write('[{}/{}] Starting to {} ...\n'.format(context.currentTaskIndex, context.totalTask, cmd))
+   if verbose:
+      powershellFile.write('[{}/{}] Starting to {} ...\n'.format(context.currentTaskIndex, context.totalTask, cmd))
+   else:
+      powershellFile.write('Starting to {} ...\n'.format(cmd))
+
    powershellFile.write("'@\n")
 
 def generateFooter(powershellFile):
@@ -565,9 +573,13 @@ $timeTaken = $totalStopwatch.Elapsed.ToString("dd\.hh\:mm\:ss")
 Write-Host "Script executed in $timeTaken"
 """)
 
-def generateDockerfileReferenceComment(powershellFile, dockerLine):
-   lines = dockerLine['content'].split('\n')  
-   powershellFile.write('# Line: {}, Content: {}\n'.format((dockerLine['startline'] + 1), lines[0]))
+def generateDockerfileReferenceComment(powershellFile, dockerLine, verbose):
+   lines = dockerLine['content'].split('\n')
+   if verbose:
+      powershellFile.write('# Line: {}, Content: {}\n'.format((dockerLine['startline'] + 1), lines[0]))
+   else:
+      powershellFile.write('# Content: {}\n'.format(lines[0]))
+
    if len(lines) > 1:
       for lineIdx in range(1, len(lines) -1):
          powershellFile.write('# {}\n'.format(lines[lineIdx]))
@@ -587,7 +599,7 @@ def main(argv):
    # Create Powershell file
    powershellFile = createPowershellFile(args.powershellFilePath)
 
-   generatePowershell(dockerParser, powershellFile, args.dockerArgs)
+   generatePowershell(dockerParser, powershellFile, args)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
