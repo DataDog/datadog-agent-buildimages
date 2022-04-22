@@ -16,7 +16,7 @@ group :test do
 end
 
 group :azure do
-  gem "kitchen-azurerm", '~> 1.10.2'
+  gem "kitchen-azurerm", '~> 1.10.5'
 end
 
 group :ec2 do

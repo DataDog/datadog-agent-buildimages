@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ENV RUBY_VERSION=2.7.5
+ENV RUBY_VERSION=3.1.2
 ENV BUNDLER_VERSION=2.3.10
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
