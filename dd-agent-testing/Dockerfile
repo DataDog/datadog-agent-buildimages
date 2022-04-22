@@ -4,16 +4,16 @@ ENV RUBY_VERSION=2.7.5
 ENV BUNDLER_VERSION=2.3.10
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  apt-transport-https autoconf automake bison curl \
-  g++ gawk gcc git jq \
-  libc6-dev libffi-dev libssl-dev libgdbm-dev libgmp-dev libncurses5-dev \
-  libreadline6-dev libsqlite3-dev libtool libyaml-dev \
-  make openssh-client pkg-config python3 python3-pip rsync sqlite3 zlib1g-dev \
-  && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" | \
-      tee /etc/apt/sources.list.d/azure-cli.list && \
-      curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-  && apt-get update && apt-get install -y azure-cli \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-transport-https autoconf automake bison curl \
+    g++ gawk gcc git jq \
+    libc6-dev libffi-dev libssl-dev libgdbm-dev libgmp-dev libncurses5-dev \
+    libreadline6-dev libsqlite3-dev libtool libyaml-dev \
+    make openssh-client pkg-config python3 python3-pip rsync sqlite3 zlib1g-dev \
+    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ focal main" | \
+    tee /etc/apt/sources.list.d/azure-cli.list && \
+    curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && apt-get update && apt-get install -y azure-cli \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Python
 COPY ./requirements.txt /requirements.txt
