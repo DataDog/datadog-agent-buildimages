@@ -47,6 +47,8 @@ ENV MSYS_VERSION "20210725"
 ENV MSYS_SHA256 "4013a9d5e51b448343efc24fc6a324cc999bb96b4c01b13a6bd3c661bb5c8a82"
 ENV NUGET_VERSION "5.8.0"
 ENV NUGET_SHA256 "5c5b9c96165d3283b2cb9e5b65825d343e0e7139b9e70a250b4bb24c2285f3ba"
+ENV WINGET_VERSION "0.4.0.3-preview"
+ENV WINGET_SHA256 "977363979f0616b11cdea94cf9474b590b489fc3769168a3a7a66e83e0be817d"
 ENV EMBEDDED_PYTHON_2_VERSION "2.7.17"
 ENV EMBEDDED_PYTHON_2_SHA256 "557ea6690c5927360656c003d3114b73adbd755b712a2911975dde813d6d7afb"
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
@@ -140,6 +142,10 @@ RUN setx MQ_FILE_PATH c:\ibm_mq
 # Install Cmake and update PATH to include it
 COPY ./windows/install_cmake.ps1 install_cmake.ps1
 RUN powershell -Command .\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
+
+# Install Winget and update PATH to include it
+COPY ./windows/install_winget.ps1 install_winget.ps1
+RUN powershell -Command .\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
 
 # Install golang and set GOPATH to the dev path used in builds & tests
 # RUN cinst -y --no-progress golang $ENV:CHOCO_ARCH_FLAG --version $ENV:GO_VERSION
