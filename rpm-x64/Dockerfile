@@ -1,4 +1,4 @@
-FROM ubuntu as CERT_GETTER
+FROM ubuntu:21.10 as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2022-03-29
 ENV CACERT_BUNDLE_SHA256="1979e7fe618c51ed1c9df43bba92f977a0d3fe7497ffa2a5e80dfc559a1e5a29"
 RUN apt-get update && apt-get install -y wget

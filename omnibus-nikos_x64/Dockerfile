@@ -1,4 +1,4 @@
-FROM ubuntu as CURL_GETTER
+FROM ubuntu:21.10 as CURL_GETTER
 ENV WGET_VERSION=7.79.1
 ENV WGET_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
 RUN apt-get update && apt-get install -y wget
