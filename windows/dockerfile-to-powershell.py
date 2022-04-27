@@ -2,6 +2,7 @@ from ast import Not
 import sys
 import getopt
 import re
+import io
 from datetime import datetime
 from dockerfile_parse import DockerfileParser
 
@@ -171,7 +172,7 @@ def parseDockerFile(dockerFilePath):
 # Open/Create Powershell file for writing
 def createPowershellFile(powershellFilePath):
    try:
-      return open(powershellFilePath, 'w')
+      return io.open(powershellFilePath, 'w', newline="\r\n")
    except Exception as inst:
       print('Failed to create "{}" Powershell file. Please validate that it is accessible'.format(powershellFile))
       sys.exit(1)
