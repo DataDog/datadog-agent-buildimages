@@ -10,7 +10,6 @@ $ErrorActionPreference = 'Stop'
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# https://github.com/microsoft/winget-create/releases/download/v0.4.0.3-preview/wingetcreate.exe
 
 $wingetexe="https://github.com/microsoft/winget-create/releases/download/v$($Version)/wingetcreate.exe"
 
