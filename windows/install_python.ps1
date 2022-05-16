@@ -34,6 +34,6 @@ curl $getpipurl -o $target
 if ((Get-FileHash -Algorithm SHA256 $target).Hash -ne "$getpipsha256") { Write-Host \"Wrong hashsum for ${target}: got '$((Get-FileHash -Algorithm SHA256 $target).Hash)', expected '$getpipsha256'.\"; exit 1 }
 
 python get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
-python -m pip install ../requirements.txt
+python -m pip install -r ../requirements.txt
 
 Write-Host -ForegroundColor Green Done with Python
