@@ -34,7 +34,8 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel \
+    lz4
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 

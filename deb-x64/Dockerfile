@@ -56,7 +56,8 @@ RUN echo "deb http://deb.debian.org/debian jessie main contrib non-free" > /etc/
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool-bin
+  selinux-basics libtool-bin \
+  liblz4-tool
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
