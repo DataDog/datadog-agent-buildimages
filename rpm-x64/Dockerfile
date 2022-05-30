@@ -50,7 +50,8 @@ RUN yum -y install \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
-  libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel
+  libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel \
+  && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
@@ -177,7 +178,7 @@ RUN rm -r /usr/src/kernels/* \
 COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
 RUN curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
 RUN echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check
-RUN yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
+RUN yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all
 
 ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
 ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp

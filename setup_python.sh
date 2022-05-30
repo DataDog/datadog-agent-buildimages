@@ -50,7 +50,7 @@ case $DD_TARGET_ARCH in
         ln -sf /usr/bin/python3.9 /usr/bin/python3
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         echo "Installing system Python (rpm_armhf)"
-        yum install -y python3-devel # This installs python 3.6 on arm32v7/centos:7
+        yum install -y python3-devel && yum clean all # This installs python 3.6 on arm32v7/centos:7
         curl -sSL https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
         echo "0bd6aa5c457b84958cebfe1bd34aec9fa98212a65fe962dbed1195425aea58e1  get-pip.py" | sha256sum --check
         python3 get-pip.py pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
