@@ -141,6 +141,12 @@ build_docker_x64:
     DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
 
+build_fips_proxy_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: fips-proxy-x64/Dockerfile
+    IMAGE: fips_proxy_x64
+
 .test:
   stage: test
   except: [ tags, schedules ]
