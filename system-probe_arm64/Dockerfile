@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libtinfo5 \
         libxml2-dev \
         libzip-dev \
-        linux-headers-arm64 \
         $(apt-cache search --names-only linux-headers-5.* | \
           cut -d " " -f 1 | \
           grep "\-common$" | \
