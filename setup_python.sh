@@ -11,9 +11,9 @@ function detect_distro(){
 
 case $DD_TARGET_ARCH in
 "x64")
-    DD_CONDA_VERSION=4.9.2
-    DD_CONDA_SHA256="536817d1b14cb1ada88900f5be51ce0a5e042bae178b5550e62f61e223deae7c"
-    CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
+    DD_CONDA_VERSION=4.12.0
+    DD_CONDA_SHA256="3190da6626f86eee8abf1b2fd7a5af492994eb2667357ee4243975cdbb175d7a"
+    CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py38_${DD_CONDA_VERSION}-Linux-x86_64.sh
     # FIXME: Pinning specific zlib version as the latest one doesn't work in our old builders:
     # version GLIBC_2.14 not found (required by /root/miniconda3/envs/ddpy2/lib/python2.7/lib-dynload/../../libz.so.1)
     PY2_VERSION="2 zlib=1.2.11=h7b6447c_3"
@@ -22,7 +22,7 @@ case $DD_TARGET_ARCH in
     PY3_VERSION="3.8.10=hdb3f193_7 openssl=1.1.1k=h27cfd23_0 zlib=1.2.11=h7b6447c_3"
     ;;
 "aarch64")
-    DD_CONDA_VERSION=4.9.2-7
+    DD_CONDA_VERSION=4.12.0-1
     DD_CONDA_SHA256="ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
     PY2_VERSION=2
