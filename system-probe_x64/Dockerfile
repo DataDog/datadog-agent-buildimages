@@ -6,6 +6,9 @@ ARG GIMME_GO_VERSION=1.17.11
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
 
+# We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
+RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
+
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
         cmake \
@@ -24,7 +27,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libtinfo5 \
         libxml2-dev \
         libzip-dev \
-        linux-headers-amd64 \
+        $(apt-cache search --names-only linux-headers-5.* | \
+          cut -d " " -f 1 | \
+          grep "\-common$" | \
+          sed -rn 's/(.*bpo\.)([0-9]+)-common/\2 \0 \1\2-amd64/p' | \
+          sort -gr | \
+          head -n 1 | \
+          cut -f 2-3 -d " ") \
         linux-libc-dev \
         make \
         ninja-build \
