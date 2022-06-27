@@ -39,7 +39,7 @@ function DownloadAndExpandTo{
     Remove-Item $tmpOutFile
 }
 
-$source = "https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/$($Version)-IBM-MQC-Redist-Win64.zip"
+$source = "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/$($Version)-IBM-MQC-Redist-Win64.zip"
 $target = "c:\ibm_mq"
 
 DownloadAndExpandTo -TargetDir $target -SourceURL $source -Sha256 $Sha256
