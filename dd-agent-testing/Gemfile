@@ -16,10 +16,6 @@ group :test do
   gem "foodcritic", '~> 15.1.0' # Lint testing
 end
 
-group :digitalocean do
-  gem "kitchen-digitalocean", '~> 0.12.0'
-end
-
 group :azure do
   gem "kitchen-azurerm", '~> 1.10.5'
 end
