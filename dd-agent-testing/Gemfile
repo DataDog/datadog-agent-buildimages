@@ -21,13 +21,13 @@ group :digitalocean do
 end
 
 group :azure do
-  gem "kitchen-azurerm", '~> 1.6.0'
+  gem "kitchen-azurerm", '~> 1.10.5'
 end
 
 group :ec2 do
-  gem "kitchen-ec2", '~> 3.8.0'
+  gem "kitchen-ec2", '~> 3.13.0'
 end
 
 group :kitchen do
-  gem "test-kitchen", '~> 2.3.4'
+  gem "test-kitchen", '~> 3.3.1'
 end
