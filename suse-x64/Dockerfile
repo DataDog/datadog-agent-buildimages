@@ -53,7 +53,7 @@ RUN rm /etc/zypp/repos.d/*non*
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
       bison bzip2 curl gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
-      gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
+      gettext-runtime less libffi-devel libtool libcurl-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel
