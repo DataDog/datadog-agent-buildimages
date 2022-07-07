@@ -62,6 +62,7 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
+COPY ./Gemfile /Gemfile
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
@@ -76,6 +77,7 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN /bin/bash -l -c "bundle install"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme

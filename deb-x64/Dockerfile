@@ -91,6 +91,7 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
+COPY ./Gemfile /Gemfile
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
@@ -101,6 +102,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN /bin/bash -l -c "bundle install"
 
 # CMake
 RUN set -ex \

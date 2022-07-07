@@ -71,6 +71,7 @@ RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
+COPY ./Gemfile /Gemfile
 RUN gpg --import /gpg-keys/*
 RUN rm -rf /gpg-keys
 RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
@@ -81,6 +82,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN /bin/bash -l -c "bundle install"
 
 # Pip & Invoke
 COPY ./python-packages-versions.txt /python-packages-versions.txt
