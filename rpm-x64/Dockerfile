@@ -20,6 +20,8 @@ ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4
 ARG DD_TARGET_ARCH=x64
 ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 
 # Environment
 ENV GOPATH /go
@@ -192,9 +194,10 @@ RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/gol
     && rm golangci-lint-install.sh
 
 # Rust is needed to compile some python libs
-RUN curl -sSL -o rustup-init.sh https://raw.githubusercontent.com/rust-lang/rustup/1.24.3/rustup-init.sh \
-    && echo "a3cb081f88a6789d104518b30d4aa410009cd08c3822a1226991d6cf0442a0f8  rustup-init.sh" | sha256sum --check \
-    && sh rustup-init.sh -y --default-toolchain ${RUST_VERSION} \
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check
 ENV PATH "~/.cargo/bin:${PATH}"
 
