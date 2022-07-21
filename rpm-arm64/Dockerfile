@@ -2,7 +2,7 @@ ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
 FROM ubuntu as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2022-07-19
-ENV CACERT_BUNDLE_SHA256="2e6381065877c8ba5ae863552f15da6ba8b49f71704b4f92896f4fd0138a1b7c"
+ENV CACERT_BUNDLE_SHA256="6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check

@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y wget
 ENV WGET_VERSION=7.79.1
 ENV WGET_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
 ENV CACERT_BUNDLE_VERSION=2022-07-19
-ENV CACERT_BUNDLE_SHA256="2e6381065877c8ba5ae863552f15da6ba8b49f71704b4f92896f4fd0138a1b7c"
+ENV CACERT_BUNDLE_SHA256="6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${WGET_VERSION}/curl-amd64
 RUN echo "${WGET_SHA256}  curl-amd64" | sha256sum --check

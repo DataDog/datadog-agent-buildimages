@@ -185,8 +185,8 @@ function Update-SessionEnvironment {
 # Content: ENV EMBEDDED_PIP_VERSION "20.3.4"
 [System.Environment]::SetEnvironmentVariable('EMBEDDED_PIP_VERSION','20.3.4')
 
-# Content: ENV CACERTS_HASH "2e6381065877c8ba5ae863552f15da6ba8b49f71704b4f92896f4fd0138a1b7c"
-[System.Environment]::SetEnvironmentVariable('CACERTS_HASH','2e6381065877c8ba5ae863552f15da6ba8b49f71704b4f92896f4fd0138a1b7c')
+# Content: ENV CACERTS_HASH "6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77"
+[System.Environment]::SetEnvironmentVariable('CACERTS_HASH','6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77')
 
 # Content: ENV CACERTS_VERSION "2022-04-26"
 [System.Environment]::SetEnvironmentVariable('CACERTS_VERSION','2022-04-26')
