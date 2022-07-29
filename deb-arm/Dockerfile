@@ -6,7 +6,7 @@ ENV CURL_AARCH64_SHA256="234cc67f7caae0a0e1222bd70b513c78f65e058397bc271191ede66
 ENV CURL_ARMV7_VERSION=7.79.1
 ENV CURL_ARMV7_SHA256="db08ec3a16ce0a8db0ce512a55adb619f6fbc6005f151abb4a31333f26780cc3"
 RUN apt-get update && apt-get install -y wget
-RUN wget https://github.com/moparisthebest/static-curl/releases/download/v{CURL_ARMV7_VERSION}/curl-armv7
+RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_ARMV7_VERSION}/curl-armv7
 RUN echo "${CURL_ARMV7_SHA256}  curl-armv7" | sha256sum --check
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_AARCH64_VERSION}/curl-aarch64
 RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
