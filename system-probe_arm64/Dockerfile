@@ -48,7 +48,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         default-jre \
         wget \
         xsltproc \
-        xz-utils
+        xz-utils \
+        zstd
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go

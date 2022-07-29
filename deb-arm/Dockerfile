@@ -40,7 +40,7 @@ ENV GCC_VERSION $GCC_VERSION
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
-    build-essential pkg-config tar libsystemd-dev libkrb5-dev \
+    build-essential pkg-config tar zstd libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
     selinux-basics default-jre flex
 

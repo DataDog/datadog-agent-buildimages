@@ -173,5 +173,12 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
 
+# zstd
+RUN git clone https://github.com/facebook/zstd --branch v1.5.2 --depth 1 \
+    && pushd zstd \
+    && make install \
+    && popd \
+    && rm -r zstd
+
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
