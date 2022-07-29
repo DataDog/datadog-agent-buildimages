@@ -201,7 +201,8 @@ RUN chmod +x /build-gcc.sh \
 # zstd
 RUN git clone https://github.com/facebook/zstd --branch v1.5.2 --depth 1 \
     && cd zstd \
-    && make check
+    && make install \
+    && rm -r zstd
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
