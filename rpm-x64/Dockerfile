@@ -71,7 +71,7 @@ RUN yum -y install \
   which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar zstd libtool \
+  glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
   texinfo \
@@ -280,6 +280,13 @@ COPY ./build-gcc.sh /build-gcc.sh
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
+
+# zstd
+RUN git clone https://github.com/facebook/zstd --branch v1.5.2 --depth 1 \
+    && cd zstd \
+    && make install \
+    && cd .. \
+    && rm -r zstd
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
