@@ -165,6 +165,6 @@ RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 RUN echo "umask 0022" >> /root/.bashrc
 
 RUN du -cks * | sort -rn | head
-RUN du -cks /usr | sort -rn | head
+RUN du -cks /usr/* | sort -rn | head
 
 ENTRYPOINT ["/entrypoint.sh"]
