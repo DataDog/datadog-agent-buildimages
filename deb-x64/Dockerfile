@@ -163,4 +163,6 @@ RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 
+RUN du -cks * | sort -rn | head
+
 ENTRYPOINT ["/entrypoint.sh"]
