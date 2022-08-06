@@ -65,13 +65,13 @@ COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
 RUN chmod +x /usr/local/bin/curl
 
 # Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
-RUN echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check
-# --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs.
-RUN tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner
-RUN cd git-${GIT_VERSION} && make prefix=/usr/local all
-RUN cd git-${GIT_VERSION} && make prefix=/usr/local install
-RUN rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
+    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check
+    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
+    && RUN tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
+    && cd git-${GIT_VERSION} && make prefix=/usr/local all \
+    && cd git-${GIT_VERSION} && make prefix=/usr/local install \
+    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
