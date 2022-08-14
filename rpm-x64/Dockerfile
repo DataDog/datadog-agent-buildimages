@@ -22,6 +22,9 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG PERLBREW_VERSION=0.96
+ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
+ARG PERL_VERSION=5.36.0
 
 # Environment
 ENV GOPATH /go
@@ -38,6 +41,9 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV PERLBREW_VERSION $PERLBREW_VERSION
+ENV PERLBREW_SHA256 $PERLBREW_SHA256
+ENV PERL_VERSION $PERL_VERSION
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
 RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
@@ -47,7 +53,7 @@ RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
 # The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
   @development \
-  which perl-ExtUtils-MakeMaker \
+  which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
@@ -200,6 +206,16 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Perl >= 5.14 is needed to compile the libxcrypt project
+RUN curl -sSL -o perlbrew-install.sh https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install \
+    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
+    && bash ./perlbrew-install.sh \
+    && source /root/perl5/perlbrew/etc/bashrc \
+    && perlbrew install perl-${PERL_VERSION} \
+    && perlbrew switch ${PERL_VERSION} \
+    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
+    && rm perlbrew-install.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
