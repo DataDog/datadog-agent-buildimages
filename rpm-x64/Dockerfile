@@ -192,6 +192,17 @@ ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
 ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 
+# Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
+# an old mirror copy.
+# Copy (and import through the repo file) the CERN signing key:
+# pub   rsa2048 2015-05-21 [SCEA] [expired: 2020-05-19]
+#       143E840EC0D0AD21E646CDD8FBCE6502094D442C
+# uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
+COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
+RUN curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
+RUN echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check
+RUN yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all
+
 # Download and install golangci-lint
 RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
     && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
