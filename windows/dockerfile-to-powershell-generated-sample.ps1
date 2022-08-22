@@ -119,8 +119,8 @@ function Update-SessionEnvironment {
 # Content: ENV GO_VERSION "1.18.5"
 [System.Environment]::SetEnvironmentVariable('GO_VERSION','1.18.5')
 
-# Content: ENV GO_SHA256 "88e60b92069d8e0932ca5d8bd8227d1693b9570fa2afbedadcc680749c428d54"
-[System.Environment]::SetEnvironmentVariable('GO_SHA256','88e60b92069d8e0932ca5d8bd8227d1693b9570fa2afbedadcc680749c428d54')
+# Content: ENV GO_SHA256 "73753620602D4B4469770040C53DB55E5DD6AF2AD07ECC18F71F164C3224EAAD"
+[System.Environment]::SetEnvironmentVariable('GO_SHA256','73753620602D4B4469770040C53DB55E5DD6AF2AD07ECC18F71F164C3224EAAD')
 
 # Content: ENV RUBY_VERSION "2.6.6-1"
 [System.Environment]::SetEnvironmentVariable('RUBY_VERSION','2.6.6-1')
