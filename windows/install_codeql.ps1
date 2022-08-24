@@ -21,4 +21,4 @@ Remove-Item $out
 setx PATH "$Env:Path;c:\CodeQL;"
 $Env:Path="$Env:Path;c:\CodeQL;"
 
-Write-Host -ForegroundColor Green "Installed go $ENV:GO_VERSION"
+Write-Host -ForegroundColor Green "Installed CodeQL $ENV:CODEQL_VERSION"
