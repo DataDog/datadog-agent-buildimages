@@ -149,4 +149,7 @@ RUN chmod +x /entrypoint.sh
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
+# Force umask to 0022
+RUN echo "umask 0022" >> /root/.bashrc
+
 ENTRYPOINT ["/entrypoint.sh"]
