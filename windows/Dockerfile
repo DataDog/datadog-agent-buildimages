@@ -54,6 +54,8 @@ ENV EMBEDDED_PYTHON_2_SHA256 "557ea6690c5927360656c003d3114b73adbd755b712a291197
 ENV EMBEDDED_PYTHON_3_VERSION "3.8.1"
 ENV EMBEDDED_PYTHON_3_SHA256 "58563ca60891025923572107e02b8f07439928eb5222dd10466cc92089072c2a"
 ENV EMBEDDED_PIP_VERSION "20.3.4"
+ENV NINJA_VERSION "1.11.0"
+ENV NINJA_SHA256 "d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b"
 
 ENV CACERTS_HASH "6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77"
 ENV CACERTS_VERSION "2022-07-19"
@@ -194,6 +196,10 @@ RUN powershell -C .\install_embedded_pythons.ps1
 # install vcpkg
 COPY ./windows/install_vcpkg.ps1 install_vcpkg.ps1
 RUN powershell -Command .\install_vcpkg.ps1
+
+# install ninja
+COPY ./windows/install_ninja.ps1 install_ninja.ps1
+RUN powershell -C .\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)
