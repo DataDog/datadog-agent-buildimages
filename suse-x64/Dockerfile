@@ -14,7 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GIMME_GO_VERSION=1.17.11
+ARG GIMME_GO_VERSION=1.18.5
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -148,5 +148,8 @@ RUN chmod +x /entrypoint.sh
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
+
+# Force umask to 0022
+RUN echo "umask 0022" >> /root/.bashrc
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -31,8 +31,8 @@ ENV VS2017BUILDTOOLS_VERSION "16.8.3.0"
 ENV VS2017BUILDTOOLS_SHA256 "ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0"
 #ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/d0eac510-174b-4241-b73b-93dc7cc1fbf7/9822b4c851e14d9658babd1533f66f518c6169196e985fe5713b2774128832ae/vs_BuildTools.exe"
 ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
-ENV GO_VERSION "1.17.11"
-ENV GO_SHA256 "88e60b92069d8e0932ca5d8bd8227d1693b9570fa2afbedadcc680749c428d54"
+ENV GO_VERSION "1.18.5"
+ENV GO_SHA256 "73753620602D4B4469770040C53DB55E5DD6AF2AD07ECC18F71F164C3224EAAD"
 ENV RUBY_VERSION "2.6.6-1"
 ENV RUBY_SHA256 "fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492"
 ENV IBM_MQ_VERSION "9.2.4.0"
@@ -56,6 +56,8 @@ ENV EMBEDDED_PYTHON_3_SHA256 "58563ca60891025923572107e02b8f07439928eb5222dd1046
 ENV EMBEDDED_PIP_VERSION "20.3.4"
 ENV CODEQL_VERSION "2.10.3"
 ENV CODEQL_HASH "46f64e21c74f41210ea3f2c433d1dc622e3eb0690b42373a73fba82122b929a1"
+ENV NINJA_VERSION "1.11.0"
+ENV NINJA_SHA256 "d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b"
 
 ENV CACERTS_HASH "6ed95025fba2aef0ce7b647607225745624497f876d74ef6ec22b26e73e9de77"
 ENV CACERTS_VERSION "2022-07-19"
@@ -201,6 +203,10 @@ RUN powershell -Command .\install_vcpkg.ps1
 # Install CodeQL for CI execution of CodeQL
 COPY ./windows/install_codeql.ps1 install_codeql.ps1
 RUN powershell -C .\install_codeql.ps1
+
+# install ninja
+COPY ./windows/install_ninja.ps1 install_ninja.ps1
+RUN powershell -C .\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
 
 # Add signtool to path
 RUN [Environment]::SetEnvironmentVariable(\"Path\", [Environment]::GetEnvironmentVariable(\"Path\", [EnvironmentVariableTarget]::Machine) + \";${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\", [System.EnvironmentVariableTarget]::Machine)

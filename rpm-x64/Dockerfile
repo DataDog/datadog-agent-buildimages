@@ -10,7 +10,7 @@ FROM centos:6
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GIMME_GO_VERSION=1.17.11
+ARG GIMME_GO_VERSION=1.18.5
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -22,6 +22,9 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG PERLBREW_VERSION=0.96
+ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
+ARG PERL_VERSION=5.36.0
 
 # Environment
 ENV GOPATH /go
@@ -38,6 +41,9 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV PERLBREW_VERSION $PERLBREW_VERSION
+ENV PERLBREW_SHA256 $PERLBREW_SHA256
+ENV PERL_VERSION $PERL_VERSION
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
 RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
@@ -47,7 +53,7 @@ RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
 # The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
   @development \
-  which perl-ExtUtils-MakeMaker \
+  which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
@@ -186,6 +192,17 @@ ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
 ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
 ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 
+# Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
+# an old mirror copy.
+# Copy (and import through the repo file) the CERN signing key:
+# pub   rsa2048 2015-05-21 [SCEA] [expired: 2020-05-19]
+#       143E840EC0D0AD21E646CDD8FBCE6502094D442C
+# uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
+COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
+RUN curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
+RUN echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check
+RUN yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all
+
 # Download and install golangci-lint
 RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
     && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
@@ -200,6 +217,16 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Perl >= 5.14 is needed to compile the libxcrypt project
+RUN curl -sSL -o perlbrew-install.sh https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install \
+    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
+    && bash ./perlbrew-install.sh \
+    && source /root/perl5/perlbrew/etc/bashrc \
+    && perlbrew install perl-${PERL_VERSION} \
+    && perlbrew switch ${PERL_VERSION} \
+    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
+    && rm perlbrew-install.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
