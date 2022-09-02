@@ -52,9 +52,11 @@ if($TargetContainer){
 .\install_docker.ps1
 .\install_gcloud_sdk.ps1
 .\install_embedded_pythons.ps1
-#.\install_vcpkg.ps1
-#.\install_codeql.ps1
-#.\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
+.\install_vcpkg.ps1
+.\install_codeql.ps1
+.\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
 ## # Add signtool to path
-#Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
-#& .\set_cpython_compiler.cmd
+Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
+& .\set_cpython_compiler.cmd
+Remove-Item -Recurse -Force c:\tmp\*
+Remove-Item -Recurse -Force $Env:TEMP\*

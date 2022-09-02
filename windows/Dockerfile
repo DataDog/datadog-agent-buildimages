@@ -68,7 +68,7 @@ COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 RUN .\master.ps1 -TargetContainer
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
-COPY ./windows/scripts/aws_networking.ps1 /aws_networking.ps1
+COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
 
 
 ENTRYPOINT ["/entrypoint.bat"]
