@@ -16,5 +16,5 @@ Remove-Item -Recurse -Force C:\vcpkg-tool
 Remove-Item -Recurse -Force C:\vcpkg-build
 
 Add-ToPath -NewPath "C:\vcpkg" -Global
-.\vcpkg\vcpkg.exe --version
-.\vcpkg\vcpkg.exe integrate install
+c:\vcpkg\vcpkg.exe --version
+c:\vcpkg\vcpkg.exe integrate install
