@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-
+. .\windows\versions.ps1
 $BaseTable = @{
     1809 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019";
     1909 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909";
@@ -26,15 +26,26 @@ if ($build -ge 20348) {
 
 Write-Host -ForegroundColor Green "Using base image $($BaseTable[$kernelver])"
 
+$arglist = @()
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"
 }
-$buildcommandparams = "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
-if( -not $Cache) {
-    $buildcommandparams = "--no-cache $buildcommandparams"
+$arglist += "build"
+
+foreach ($h in $SoftwareTable.GetEnumerator()){
+    if( -not ($($h.Key) -like "*SHA256")){
+        $arglist += "--build-arg"
+        $arglist += "$($h.Key)=$($h.Value)"
+    }
 }
-$buildcommand = "build $buildcommandparams"
+
+if( -not $Cache) {
+    $arglist += "--no-cache"
+}
+
+$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ." 
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
 filter timestamp {"$(Get-Date -Format o): $_"}
-& docker $buildcommand.split() | timestamp
+& docker $arglist | timestamp
+

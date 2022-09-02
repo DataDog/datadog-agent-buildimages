@@ -92,9 +92,10 @@ Write-Host curl.exe -fSLo $out $UpgradeTable[$kernelver]["patch"]
 curl.exe -fSLo $out $UpgradeTable[$kernelver]["patch"]
 if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
 
+
 mkdir patch
 expand patch.msu patch -F:*
 remove-item -force patch.msu
-Write-Host DISM /Online /Quiet /Add-Package /PackagePath:C:\patch\$($UpgradeTable[$kernelver]["expandedpatch"])
-DISM /Online /Quiet /Add-Package /PackagePath:C:\patch\$($UpgradeTable[$kernelver]["expandedpatch"])
+Write-Host DISM /Online /Quiet /Add-Package /PackagePath:$($PSScriptRoot)\$($UpgradeTable[$kernelver]["expandedpatch"])
+DISM /Online /Quiet /Add-Package /PackagePath:$($PSScriptRoot)\$($UpgradeTable[$kernelver]["expandedpatch"])
 remove-item -force -recurse patch

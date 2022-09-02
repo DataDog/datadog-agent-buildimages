@@ -3,12 +3,7 @@ param (
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
-# Enabled TLS12
-$ErrorActionPreference = 'Stop'
-
 # Script directory is $PSScriptRoot
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $shortenedver = $Version.Replace('.','')
 $splitver = $Version.split(".")
@@ -19,11 +14,11 @@ $cmakeurl = "https://github.com/Kitware/CMake/releases/download/v$($Version)/cma
 
 Write-Host  -ForegroundColor Green starting with CMake
 $out = "$($PSScriptRoot)\cmake.msi"
-(New-Object System.Net.WebClient).DownloadFile($cmakeurl, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
+
+Get-RemoteFile -RemoteFile $cmakeurl -LocalFile $out -VerifyHash $Sha256
 
 Start-Process msiexec -ArgumentList "/q /i $($out) ADD_CMAKE_TO_PATH=System" -Wait
 
 Remove-Item $out
-
+Reload-Path
 Write-Host -ForegroundColor Green Done with CMake

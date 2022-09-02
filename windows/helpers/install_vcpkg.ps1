@@ -15,6 +15,6 @@ Pop-Location
 Remove-Item -Recurse -Force C:\vcpkg-tool
 Remove-Item -Recurse -Force C:\vcpkg-build
 
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\vcpkg\", [System.EnvironmentVariableTarget]::Machine)
+Add-ToPath -NewPath "C:\vcpkg" -Global
 .\vcpkg\vcpkg.exe --version
 .\vcpkg\vcpkg.exe integrate install

@@ -6,20 +6,13 @@ param (
     [Parameter(Mandatory=$false)][switch]$NoQuiet
 )
 
-# Enabled TLS12
-$ErrorActionPreference = 'Stop'
-
-# Script directory is $PSScriptRoot
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host -ForegroundColor Green "Installing Visual Studio $($Version) from $($Url)"
 
 $out = "$($PSScriptRoot)\vs_buildtools.exe"
 
 Write-Host -ForegroundColor Green Downloading $Url to $out
-(New-Object System.Net.WebClient).DownloadFile($Url, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
+Get-RemoteFile -RemoteFile $Url -LocalFile $out -VerifyHash $Sha256
 
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
@@ -60,16 +53,9 @@ $processparams = @{
 }
 Start-Process @processparams
 
+Add-EnvironmentVariable -Variable VSTUDIO_ROOT -Value $InstallRoot -Global -Local
 
-setx VSTUDIO_ROOT "$InstallRoot"
-
-# add SDK added above to path for signtool
-# C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64", [System.EnvironmentVariableTarget]::Machine)
-
-# add SDK added above to path for signtool
-# C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64", [System.EnvironmentVariableTarget]::Machine)
+Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64" -Global
 
 Remove-Item $out
 Write-Host -ForegroundColor Green Done with Visual Studio

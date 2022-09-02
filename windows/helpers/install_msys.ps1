@@ -24,20 +24,14 @@ function Invoke-Msys2Shell($Arguments) {
     Write-Host "Invoking msys2 shell command:" $params.ArgumentList
     Start-Process @params
 }
-# Enabled TLS12
-$ErrorActionPreference = 'Stop'
-
-# Script directory is $PSScriptRoot
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
 $msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
 Write-Host  -ForegroundColor Green starting with MSYS
 $out = "$($PSScriptRoot)\msys.tar.xz"
-(New-Object System.Net.WebClient).DownloadFile($msyszip, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
+
+Get-RemoteFile -RemoteFile $msyszip -LocalFile $out -VerifyHash $Sha256
 
 # uncompress the tar-xz into a tar
 $msystar = "msys.tar"
@@ -49,5 +43,12 @@ Remove-Item $msystar
 
 ## invoke the first-run shell
 Invoke-Msys2Shell
+
+ridk install 3
+# Downgrade gcc and binutils due to https://github.com/golang/go/issues/46099
+Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
+Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst"
+Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst"
+& C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c "pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
 
 Write-Host -ForegroundColor Green Done with MSYS

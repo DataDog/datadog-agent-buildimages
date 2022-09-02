@@ -8,12 +8,7 @@ $out = 'codeql.zip'
 
 Write-Host -ForegroundColor Green "Downloading $codeqlzip to $out"
 
-(New-Object System.Net.WebClient).DownloadFile($codeqlzip, $out)
-
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$ENV:CODEQL_HASH") { 
-    Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$ENV:CODEQL_HASH'.\"; 
-    exit 1 
-}
+Get-RemoteFile -RemoteFile $codeqlzip -LocalFile $out -VerifyHash $ENV:CODEQL_HASH
 
 Write-Host -ForegroundColor Green "Extracting $out to c:\"
 
@@ -23,7 +18,6 @@ Write-Host -ForegroundColor Green "Removing temporary file $out"
 
 Remove-Item $out
 
-setx PATH "$Env:Path;c:\CodeQL;"
-$Env:Path="$Env:Path;c:\CodeQL;"
+Add-ToPath -NewPath "c:\CodeQL" -Global
 
 Write-Host -ForegroundColor Green "Installed CodeQL $ENV:CODEQL_VERSION"
