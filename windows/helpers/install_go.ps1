@@ -21,7 +21,7 @@ Remove-Item $out
 
 Add-EnvironmentVariable -Variable GOROOT -VALUE "c:\go" -Local -Global
 Add-EnvironmentVariable -Variable GOPATH -VALUE "c:\dev\go" -Global
-Add-ToPath -NewPath "c:\go" -Local -Global
+Add-ToPath -NewPath "c:\go\bin" -Local -Global
 
 Write-Host -ForegroundColor Green "Installed go $ENV:GO_VERSION"
 
