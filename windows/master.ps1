@@ -46,16 +46,15 @@ if($TargetContainer){
 .\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
 .\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
 .\install_go.ps1
-$Env:PATH -split ";"
 .\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
 .\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
 .\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
 .\install_docker.ps1
 .\install_gcloud_sdk.ps1
 .\install_embedded_pythons.ps1
-.\install_vcpkg.ps1
-.\install_codeql.ps1
-.\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
+#.\install_vcpkg.ps1
+#.\install_codeql.ps1
+#.\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
 ## # Add signtool to path
-Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
-& .\set_cpython_compiler.cmd
+#Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
+#& .\set_cpython_compiler.cmd
