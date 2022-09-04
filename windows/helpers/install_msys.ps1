@@ -24,7 +24,15 @@ function Invoke-Msys2Shell($Arguments) {
     Write-Host "Invoking msys2 shell command:" $params.ArgumentList
     Start-Process @params
 }
-
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "msys" -Keyname "version" -TargetValue $Version
+if($isInstalled -and $isCurrent) {
+    Write-Host -ForegroundColor Green "MSys up to date"
+    return
+}
+if($isInstalled -and -not $isCurrent) {
+    Write-Host -ForegroundColor Yellow "upgrading MSYS"
+    Remove-Item -Recurse -Force "$($InstallPath)\msys64"
+}
 # https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
 $msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
@@ -52,5 +60,6 @@ Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-
 & C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c "pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
 
 Remove-Item c:\*.zst
-
+ridk enable
+Set-InstalledVersionKey -Component "msys" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with MSYS

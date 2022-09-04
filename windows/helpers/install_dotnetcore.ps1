@@ -1,6 +1,16 @@
 . .\helpers.ps1
 $Version = "6.0.100"
 $url = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe"
+
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $url
+if($isInstalled -and $isCurrent){
+    Write-Host -ForegroundColor Green ".NET Core Up to date"
+    return
+}
+if(-not $isCurrent){
+    Write-Host -ForegroundColor Yellow "Attempting to update .NET Core"
+    ## presumably executable knows how to handle upgrade
+}
 Write-Host -ForegroundColor Green "Installing dotnetcore from $($Url)"
 
 $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
@@ -21,5 +31,5 @@ Remove-Item $out
 Reload-Path
 # Trigger first run experience by running arbitrary cmd
 dotnet help
-
+Set-InstalledVersionKey -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $url
 Write-Host -ForegroundColor Green Done with DotNet Core SDK $Version

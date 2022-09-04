@@ -5,6 +5,53 @@ param(
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $ErrorActionPreference = 'Stop'
 
+$RegRootPath = "HKLM:\SOFTWARE\DatadogDeveloper"
+
+function Get-VersionKey() {
+    param(
+        [Parameter(Mandatory = $true)][string] $Component,
+        [Parameter(Mandatory = $true)][string] $Keyname
+    )
+    $keypath = $RegRootPath + "\$($Component)"
+    $value = Get-ItemPropertyValue -path $keypath -name $Keyname -ErrorAction SilentlyContinue
+    if($? -eq $false){
+        # key not present
+        return $null
+    }
+    return $value
+}
+# returns two booleans; first is whether currently installed, second
+# is whether targetvalue == current value
+function Get-InstallUpgradeStatus() {
+    param(
+        [Parameter(Mandatory = $true)][string] $Component,
+        [Parameter(Mandatory = $true)][string] $Keyname,
+        [Parameter(Mandatory = $true)][string] $TargetValue
+    )
+    $v = Get-VersionKey -Component $Component -Keyname $Keyname
+    if($null -eq $v){
+        Write-Host -ForegroundColor DarkMagenta "Component $Component $Keyname not found"
+        return $false, $false
+    }
+    if($v -eq $TargetValue){
+        return $true, $true
+    }
+    Write-Host -ForegroundColor DarkMagenta "Component found, but $v not equal $TargetValue"
+    return $true, $false
+}
+
+function Set-InstalledVersionKey() {
+    param(
+        [Parameter(Mandatory = $true)][string] $Component,
+        [Parameter(Mandatory = $true)][string] $Keyname,
+        [Parameter(Mandatory = $true)][string] $TargetValue
+    )
+    $keypath = $RegRootPath + "\$($Component)"
+    if(!(test-path $keypath)){
+        New-Item $keypath -Force
+    }
+    New-ItemProperty -Path $keypath -Name $Keyname -Value $TargetValue -PropertyType String -Force 
+}
 # Define get-remotefile so that it can be used throughout
 function Get-RemoteFile() {
     param(
