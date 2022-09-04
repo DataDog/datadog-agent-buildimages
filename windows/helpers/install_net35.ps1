@@ -4,6 +4,13 @@
 $ErrorActionPreference = "Stop"
 
 $UpgradeTable = @{
+    1607 = @{
+        netfxzip = "https://dotnetbinaries.blob.core.windows.net/dockerassets/microsoft-windows-netfx3-ltsc2016.zip";
+        netfxsha256 = "303866ec4f396fda465d5c8c563d44b4aa884c60dbe6b20d3ee755b604c4b8cb";
+        patch="http://download.windowsupdate.com/d/msdownload/update/software/secu/2020/02/windows10.0-kb4537764-x64_93e41ada5a984e3749ecd87bc5515bdc48cefb4d.msu";
+        patchsha256="b94ef8fa977c6e8255d8b50a19ac6512de725da5eae2f3ba96db6ace1a64e244";
+        expandedpatch="windows10.0-kb4537764-x64.cab"
+    };
     1809 = @{
         ## Taken from the mcr.microsoft.com/dotnet/framework/runtime:3.5 Dockerfile:
         ## https://github.com/microsoft/dotnet-framework-docker/blob/26597e42d157cc1e09d1e0dc8f23c32e6c3d1467/3.5/runtime/windowsservercore-ltsc2019/Dockerfile
@@ -62,6 +69,18 @@ $UpgradeTable = @{
         expandedpatch = "windows10.0-kb5005538-x64-ndp48.cab"
     }
 }
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "netfx35" -Keyname "version" -TargetValue "1"
+if($isInstalled){
+    Write-Host -ForegroundColor Green "NetFX 3.51 already installed"
+    return
+}
+if($Env:DD_DEV_TARGET -ne "Container") {
+    $osInfo = Get-CimInstance -classname win32_operatingsystem
+    if($osinfo.ProductType -eq "1"){
+        Write-Host -ForegroundColor Green "Skipping .NET35 on local workstation install"
+        return
+    }
+}
 $kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
 $build = [System.Environment]::OSVersion.version.build
 $productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
@@ -73,29 +92,33 @@ if ($build -ge 20348) {
 
 $Env:DOTNET_RUNNING_IN_CONTAINER="true"
 
-$out = "microsoft-windows-netfx3.zip"
+$out = "$($PSScriptRoot)\microsoft-windows-netfx3.zip"
 $sha256 = $UpgradeTable[$kernelver]["netfxsha256"]
 Write-Host curl -fSLo $out $UpgradeTable[$kernelver]["netfxzip"]
-curl.exe -fSLo $out $UpgradeTable[$kernelver]["netfxzip"]
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
+Get-RemoteFile -RemoteFile $UpgradeTable[$kernelver]["netfxzip"] -LocalFile $out -VerifyHash $sha256
 
-tar -zxf $out
+expand-archive -Path $out -DestinationPath .
 remove-item -force $out
-DISM /Online /Quiet /Add-Package /PackagePath:.\microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
-remove-item microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab
+$cabfile = "microsoft-windows-netfx3-ondemand-package~31bf3856ad364e35~amd64~~.cab"
+if($kernelver -eq 1607){
+    $cabfile = "microsoft-windows-netfx3-ondemand-package.cab"
+}
+DISM /Online /Quiet /Add-Package /PackagePath:$($cabfile)
+remove-item $cabfile
 Remove-Item -Force -Recurse ${Env:TEMP}\* -ErrorAction SilentlyContinue
 
 
-$out = "patch.msu"
+$out = "$($PSScriptRoot)\patch.msu"
 $sha256 = $UpgradeTable[$kernelver]["patchsha256"]
 Write-Host curl.exe -fSLo $out $UpgradeTable[$kernelver]["patch"]
-curl.exe -fSLo $out $UpgradeTable[$kernelver]["patch"]
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$sha256'.\"; exit 1 }
+Get-RemoteFile -RemoteFile $UpgradeTable[$kernelver]["patch"] -LocalFile $out -VerifyHash $sha256
 
 
 mkdir patch
-expand patch.msu patch -F:*
-remove-item -force patch.msu
-Write-Host DISM /Online /Quiet /Add-Package /PackagePath:$($PSScriptRoot)\$($UpgradeTable[$kernelver]["expandedpatch"])
-DISM /Online /Quiet /Add-Package /PackagePath:$($PSScriptRoot)\$($UpgradeTable[$kernelver]["expandedpatch"])
+expand "$($PSScriptRoot)\patch.msu" patch -F:*
+remove-item -force "$($PSScriptRoot)\patch.msu"
+Write-Host DISM /Online /Quiet /Add-Package /PackagePath:$($UpgradeTable[$kernelver]["expandedpatch"])
+DISM /Online /Quiet /Add-Package /PackagePath:$($UpgradeTable[$kernelver]["expandedpatch"])
 remove-item -force -recurse patch
+
+Set-InstalledVersionKey -Component "netfx35" -Keyname "version" -TargetValue "1"

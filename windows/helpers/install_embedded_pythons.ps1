@@ -15,6 +15,13 @@
 
 $ErrorActionPreference = 'Stop'
 
+if($Env:DD_DEV_TARGET -ne "Container") {
+   # I think this is actually necessary on server OSes.  Come back to this 
+   # on server OSes.
+   Write-Host -ForegroundColor Green "Skipping embedded pythons on local install"
+   return
+}
+
 $py2 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_2_VERSION}-amd64.zip"
 $py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-amd64.zip"
 

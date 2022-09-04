@@ -59,7 +59,7 @@ WORKDIR c:/scripts
 COPY ./windows/versions.ps1 versions.ps1
 COPY ./windows/master.ps1 master.ps1
 COPY ./windows/helpers.ps1 helpers.ps1
-COPY ./windows/helpers/*.ps1 c:/scripts/
+COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
 COPY ./requirements.txt ./requirements-py2.txt /
 COPY ./python-packages-versions.txt /python-packages-versions.txt

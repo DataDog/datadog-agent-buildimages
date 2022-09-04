@@ -6,6 +6,15 @@ param (
 
 # https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.7.4-1/rubyinstaller-2.7.4-1-x64.exe
 
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "ruby" -Keyname "version" -TargetValue $Version
+if($isInstalled -and $isCurrent) {
+    Write-Host -ForegroundColor Green "Ruby up to date"
+    return
+}
+if($isInstalled -and -not $isCurrent) {
+    Write-Host -ForegroundColor Yellow "Ruby out of date, but not upgrading (yet)"
+    return
+}
 $rubyexe = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-$($Version)/rubyinstaller-$($Version)-x64.exe"
 
 Write-Host  -ForegroundColor Green starting with Ruby
@@ -23,5 +32,5 @@ Start-Process gem -ArgumentList  'install bundler -v 2.3.22' -Wait
 
 
 Remove-Item $out
-
+Set-InstalledVersionKey -Component "ruby" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with Ruby

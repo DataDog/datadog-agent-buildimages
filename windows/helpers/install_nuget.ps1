@@ -7,6 +7,14 @@ param (
 
 $nugetexe="https://dist.nuget.org/win-x86-commandline/v$($Version)/nuget.exe"
 
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "NuGet" -Keyname "version" -TargetValue $Version
+if($isInstalled -and $isCurrent) {
+    Write-Host -ForegroundColor Green "NuGet up to date"
+    return
+}
+if(-not $isInstalled) {
+    Remove-Item -Force "c:\nuget\nuget.exe" -ErrorAction SilentlyContinue
+}
 Write-Host -ForegroundColor Green "Downloading nuget"
 $out = "$($PSScriptRoot)\nuget.exe"
 
@@ -19,3 +27,4 @@ Remove-Item $out
 Add-ToPath -NewPath "c:\nuget" -Local -Global
 
 Write-Host -ForegroundColor Green Done with Nuget
+Set-InstalledVersionKey -Component "NuGet" -Keyname "version" -TargetValue $Version

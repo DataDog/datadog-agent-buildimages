@@ -11,6 +11,15 @@ $majmin = "$($splitver[0])$($splitver[1])"
 # https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311.exe
 $wixzip = "https://github.com/wixtoolset/wix3/releases/download/wix$($shortenedver)rtm/wix$($majmin).exe"
 
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "wix" -Keyname "DownloadFile" -TargetValue $wixzip
+if($isInstalled) {
+    if(-not $isCurrent){
+        Write-Host -ForegroundColor Yellow "Not attempting to upgrade WiX"
+    }
+    return
+}
+
+
 Write-Host  -ForegroundColor Green starting with WiX
 $out = "$($PSScriptRoot)\wix.exe"
 
@@ -24,5 +33,5 @@ Add-ToPath -NewPath "${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\" -Global
 Add-EnvironmentVariable -Variable "WIX" -Value "C:\Program Files (x86)\WiX Toolset v3.11\" -Global
 
 Remove-Item $out
-
+Set-InstalledVersionKey -Component "wix" -Keyname "DownloadFile" -TargetValue $wixzip
 Write-Host -ForegroundColor Green Done with WiX
