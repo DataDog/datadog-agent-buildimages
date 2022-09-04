@@ -25,7 +25,7 @@ Get-ChildItem $out
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 
-Expand-Archive $out -DestinationPath C:\ -ProgressPreference Silen
+Expand-Archive $out -DestinationPath C:\ 
 Remove-Item $out
 
 # add to path
