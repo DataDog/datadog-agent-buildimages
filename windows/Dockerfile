@@ -57,7 +57,7 @@ LABEL codeql_version=${CODEQL_VERSION}
 ## WORKDIR should automatically create the directory
 WORKDIR c:/scripts
 COPY ./windows/versions.ps1 versions.ps1
-COPY ./windows/master.ps1 master.ps1
+COPY ./windows/install-all.ps1 install-all.ps1
 COPY ./windows/helpers.ps1 helpers.ps1
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
@@ -65,7 +65,7 @@ COPY ./requirements.txt ./requirements-py2.txt /
 COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 
-RUN .\master.ps1 -TargetContainer
+RUN .\install-all.ps1 -TargetContainer
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
