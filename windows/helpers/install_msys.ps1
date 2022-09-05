@@ -19,10 +19,12 @@ function Invoke-Msys2Shell($Arguments) {
         FilePath     = Join-Path $basepath msys2_shell.cmd
         NoNewWindow  = $true
         Wait         = $true
+#        PassThru     = $true
         ArgumentList = "-defterm", "-no-start", "-c", "`"$Arguments`""
     }
     Write-Host "Invoking msys2 shell command:" $params.ArgumentList
-    Start-Process @params
+    $p = Start-Process @params
+    return $lastExitCode
 }
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "msys" -Keyname "version" -TargetValue $Version
 if($isInstalled -and $isCurrent) {
@@ -50,9 +52,16 @@ Remove-Item $out
 Remove-Item $msystar
 
 ## invoke the first-run shell
-Invoke-Msys2Shell
+$mshell = Invoke-Msys2Shell
+Write-Host -ForegroundColor Yellow "Invoke-Msys2Shell return code $mshell"
+if ( $mshell -ne "0") {
+    throw "Invoke MSYS returned $mshell"
+}
 
 ridk install 3
+If ($lastExitCode -ne "0") { 
+    throw "ridk install 3 returned $lastExitCode" 
+}
 # Downgrade gcc and binutils due to https://github.com/golang/go/issues/46099
 Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
 Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst"

@@ -98,7 +98,11 @@ function Add-ToPath() {
         [Parameter(Mandatory = $false)][switch] $Global
     )
     if($Local) {
-        $Env:Path="$Env:Path;$NewPath"
+        if( $NewPath -like "*python*"){
+            $Env:Path="$NewPath;$Env:PATH"
+        } else {
+            $Env:Path="$Env:Path;$NewPath"
+        }
     }
     if($Global){
         if($TargetContainer){

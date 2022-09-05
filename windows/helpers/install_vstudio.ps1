@@ -72,7 +72,10 @@ $processparams = @{
     Wait = $true
     ArgumentList = $ArgList
 }
+$st = get-date
+Write-Host "Calling Start-Process $st"
 Start-Process @processparams
+Write-Host "start-process done $st $(get-date)"
 
 Add-EnvironmentVariable -Variable VSTUDIO_ROOT -Value $InstallRoot -Global -Local
 

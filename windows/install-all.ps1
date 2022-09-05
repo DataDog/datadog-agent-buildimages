@@ -40,13 +40,9 @@ if($TargetContainer){
 try {
     .\helpers\install_net35.ps1
     .\helpers\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
+    .\helpers\install_vstudio.ps1 #-Version $ENV:VS2017BUILDTOOLS_VERSION -Sha256 $ENV:VS2017BUILDTOOLS_SHA256 $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
     .\helpers\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
 
-    ### HACK: we disable symbolic links when cloning repositories
-    ### to work around a symlink-related failure in the agent-binaries omnibus project
-    ### when copying the datadog-agent project twice.
-    & git config --system core.symlinks false
-    .\helpers\install_vstudio.ps1 #-Version $ENV:VS2017BUILDTOOLS_VERSION -Sha256 $ENV:VS2017BUILDTOOLS_SHA256 $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
     .\helpers\install_wdk.ps1
     .\helpers\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
     .\helpers\install_dotnetcore.ps1
