@@ -16,7 +16,9 @@ function InstallMinGit() {
     $out = "$($PSScriptRoot)\mingit.zip"
     Get-RemoteFile -RemoteFile $mingit -LocalFile $out -VerifyHash $Sha256
 
-    md c:\devtools\git
+    if(! (test-path "c:\devtools\git")){
+        md c:\devtools\git
+    }
     & '7z' x -oc:\devtools\git $out
 
     Remove-Item $out
@@ -26,6 +28,7 @@ function InstallMinGit() {
     & 'git.exe' config --global user.email "croissant@datadoghq.com"
 
     Write-Host -ForegroundColor Green Done with Git
+    return $true
 }
 
 function InstallWinGit() {
@@ -35,7 +38,7 @@ function InstallWinGit() {
     $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "git" -Keyname "version" -TargetValue $wingit
     if($isInstalled -and $isCurrent){
         Write-Host -ForegroundColor Green "WinGit already installed"
-        return
+        return $false
     }
     Write-Host -ForegroundColor Green "Installing WinGit"
     $out = "$($PSScriptRoot)\wingit.exe"
@@ -47,13 +50,20 @@ function InstallWinGit() {
     Reload-Path
     Set-InstalledVersionKey -Component "git" -Keyname "Version" -TargetValue $wingit
     Write-Host -ForegroundColor Green Done with Git
+    return $true
 }
-
+$installed = $false
 if($Env:DD_DEV_TARGET -eq "Container") {
-    InstallMinGit
-    return
+    $installed = InstallMinGit
+    
 } else {
-    InstallWinGit
-    return
+    $installed = InstallWinGit
+}
+if($installed){
+    ### HACK: we disable symbolic links when cloning repositories
+    ### to work around a symlink-related failure in the agent-binaries omnibus project
+    ### when copying the datadog-agent project twice.
+    & git config --system core.symlinks false
+
 }
 return

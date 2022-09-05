@@ -24,6 +24,7 @@ Write-Host -ForegroundColor Green Done downloading Python, installing
 Start-Process $out -ArgumentList '/quiet InstallAllUsers=1' -Wait
 
 Add-ToPath "c:\program files\Python38;c:\Program files\python38\scripts" -Global -Local
+
 Remove-Item $out
 
 $getpipurl = "https://raw.githubusercontent.com/pypa/get-pip/38e54e5de07c66e875c11a1ebbdb938854625dd8/public/get-pip.py"
