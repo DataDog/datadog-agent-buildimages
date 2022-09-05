@@ -83,7 +83,11 @@ function Add-EnvironmentVariable() {
         [Environment]::SetEnvironmentVariable($Variable, $Value, [System.EnvironmentVariableTarget]::Process)
     }
     if($Global){
-        [Environment]::SetEnvironmentVariable($Variable, $Value, [System.EnvironmentVariableTarget]::Machine)
+        if($TargetContainer){
+            [Environment]::SetEnvironmentVariable($Variable, $Value, [System.EnvironmentVariableTarget]::Machine)
+        } else {
+            $GlobalEnvVariables.EnvironmentVars[$($Variable)] = $Value
+        }
     }
 }
 
@@ -97,9 +101,15 @@ function Add-ToPath() {
         $Env:Path="$Env:Path;$NewPath"
     }
     if($Global){
-        $oldPath=[Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
-        $target="$oldPath;$NewPath"
-        [Environment]::SetEnvironmentVariable("Path", $target, [System.EnvironmentVariableTarget]::Machine)
+        if($TargetContainer){
+            $oldPath=[Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
+            $target="$oldPath;$NewPath"
+            [Environment]::SetEnvironmentVariable("Path", $target, [System.EnvironmentVariableTarget]::Machine)
+        } else {
+            if ($GlobalEnvVariables.PathEntries -notcontains $NewPath){
+                $GlobalEnvVariables.PathEntries += $NewPath
+            }
+        }
     }
 }
 
@@ -137,4 +147,42 @@ function Reload-Path() {
         }
     }
     $Env:PATH=$newpath -join ";"
+}
+
+function Get-VariableFile {
+    $targetdir = "$($Env:USERPROFILE)\.ddbuild"
+    if(!(test-path $targetdir)){
+        $null = New-Item -path $targetdir -ItemType Directory
+    }
+    
+    $targetfile = "$targetdir\environment.json"
+    return $targetfile
+}
+function Read-Variables() {
+    $varfile = Get-VariableFile
+    Write-Host -ForegroundColor Magenta "varfile [$varfile]"
+    if(! (test-path $varfile -PathType Leaf)){
+        Write-Host -ForegroundColor Yellow "$varfile does not exist"
+        return
+    }
+    $fromfile = Get-content $varfile | ConvertFrom-Json
+
+    $GlobalEnvVariables.PathEntries = $fromfile.PathEntries
+    ## add to the local path in case we need things for adding/upgrading
+    foreach ($e in $GlobalEnvVariables.PathEntries) {
+        Add-ToPath -NewPath $e -Local
+    }
+    # need to walk the hash table manually.
+    $fromfile.EnvironmentVars.psobject.properties | foreach {
+        $GlobalEnvVariables.EnvironmentVars[$_.Name] = $_.Value
+
+        ## set the variable for this shell so that anything that's required
+        ## for update/upgrade is in place
+        Add-EnvironmentVariable -Variable $_.Name -Value $_.Value -Local
+    }
+}
+function Write-Variables() {
+    $targetfile = Get-VariableFile
+    $GlobalEnvVariables | convertto-json | set-content -path $targetfile
+
 }

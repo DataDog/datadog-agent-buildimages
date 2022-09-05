@@ -21,8 +21,10 @@ $out = "$($PSScriptRoot)\wingetcreate.exe"
 Get-RemoteFile -RemoteFile $wingetexe -LocalFile $out -VerifyHash $Sha256
 
 # just put it in it's own directory
-mkdir \winget
-Copy-Item $out \winget\wingetcreate.exe
+if(! (test-path c:\winget)){
+    mkdir c:\winget
+}
+Copy-Item $out c:\winget\wingetcreate.exe
 Remove-Item $out
 Add-ToPath -NewPath "c:\winget" -Local -Global
 Set-InstalledVersionKey -Component "winget" -Keyname "version" -TargetValue $Version

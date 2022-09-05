@@ -21,8 +21,10 @@ $out = "$($PSScriptRoot)\nuget.exe"
 Get-RemoteFile -RemoteFile $nugetexe -LocalFile $out -VerifyHash $Sha256
 
 # just put it in it's own directory
-mkdir \nuget
-Copy-Item $out \nuget\nuget.exe
+if(! (test-path "c:\nuget")){
+    mkdir c:\nuget
+}
+Copy-Item $out c:\nuget\nuget.exe
 Remove-Item $out
 Add-ToPath -NewPath "c:\nuget" -Local -Global
 

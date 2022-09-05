@@ -77,7 +77,7 @@ if($isInstalled){
 if($Env:DD_DEV_TARGET -ne "Container") {
     $osInfo = Get-CimInstance -classname win32_operatingsystem
     if($osinfo.ProductType -eq "1"){
-        Write-Host -ForegroundColor Green "Skipping .NET35 on local workstation install"
+        & dism /online /enable-feature /FeatureName:Netfx3 /all
         return
     }
 }
