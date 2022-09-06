@@ -3,26 +3,30 @@ param (
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
-# Enabled TLS12
-$ErrorActionPreference = 'Stop'
-
-# Script directory is $PSScriptRoot
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
 # https://dist.nuget.org/win-x86-commandline/v5.7.0/nuget.exe
 
 $nugetexe="https://dist.nuget.org/win-x86-commandline/v$($Version)/nuget.exe"
 
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "NuGet" -Keyname "version" -TargetValue $Version
+if($isInstalled -and $isCurrent) {
+    Write-Host -ForegroundColor Green "NuGet up to date"
+    return
+}
+if(-not $isInstalled) {
+    Remove-Item -Force "c:\nuget\nuget.exe" -ErrorAction SilentlyContinue
+}
 Write-Host -ForegroundColor Green "Downloading nuget"
 $out = "$($PSScriptRoot)\nuget.exe"
-(New-Object System.Net.WebClient).DownloadFile($nugetexe, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
+
+Get-RemoteFile -RemoteFile $nugetexe -LocalFile $out -VerifyHash $Sha256
 
 # just put it in it's own directory
-mkdir \nuget
-Copy-Item $out \nuget\nuget.exe
+if(! (test-path "c:\nuget")){
+    mkdir c:\nuget
+}
+Copy-Item $out c:\nuget\nuget.exe
 Remove-Item $out
-setx PATH "$Env:Path;c:\nuget"
-$Env:Path="$Env:Path;c:\nuget"
+Add-ToPath -NewPath "c:\nuget" -Local -Global
+
 Write-Host -ForegroundColor Green Done with Nuget
+Set-InstalledVersionKey -Component "NuGet" -Keyname "version" -TargetValue $Version

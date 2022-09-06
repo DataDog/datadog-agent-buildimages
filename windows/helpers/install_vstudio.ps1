@@ -1,28 +1,8 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version,
-    [Parameter(Mandatory=$true)][string]$Sha256,
-    [Parameter(Mandatory=$true)][string]$Url,
     [Parameter(Mandatory=$false)][string]$InstallRoot="c:\devtools\vstudio",
     [Parameter(Mandatory=$false)][switch]$NoQuiet
 )
 
-# Enabled TLS12
-$ErrorActionPreference = 'Stop'
-
-# Script directory is $PSScriptRoot
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-Write-Host -ForegroundColor Green "Installing Visual Studio $($Version) from $($Url)"
-
-$out = "$($PSScriptRoot)\vs_buildtools.exe"
-
-Write-Host -ForegroundColor Green Downloading $Url to $out
-(New-Object System.Net.WebClient).DownloadFile($Url, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$Sha256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$Sha256'.\"; exit 1 }
-
-# write file size to make sure it worked
-Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 
 $VSPackages = @(
     "Microsoft.VisualStudio.Workload.ManagedDesktop",
@@ -47,6 +27,40 @@ $VSPackages = @(
 #    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
 )
 
+$VSPackagesDesktop = @(
+    "Microsoft.VisualStudio.Workload.CoreEditor",
+    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core",
+    "Microsoft.VisualStudio.Component.IntelliCode"
+)
+
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "vstudio" -Keyname "DownloadFile" -TargetValue $Env:VS2019INSTALLER_DOWNLOAD_URL
+
+if($isInstalled){
+    if(-not $isCurrent){
+        Write-Host -ForegroundColor Yellow "Not attempting to upgrade Visual Studio"
+    } else {
+        Write-Host -ForegroundColor Green "Visual Studio already installed"
+    }
+    return
+}
+
+if($Env:DD_DEV_TARGET -eq "Container") {
+    $Sha256 = $Env:VS2017BUILDTOOLS_SHA256
+    $Url = $Env:VS2017BUILDTOOLS_DOWNLOAD_URL
+} else {
+    $Sha256 = $Env:VS2019INSTALLER_SHA256
+    $Url = $Env:VS2019INSTALLER_DOWNLOAD_URL
+    $VSPackages += $VSPackagesDesktop
+}
+Write-Host -ForegroundColor Green "Installing Visual Studio from $($Url)"
+
+$out = "$($PSScriptRoot)\vs_buildtools.exe"
+
+Write-Host -ForegroundColor Green Downloading $Url to $out
+Get-RemoteFile -RemoteFile $Url -LocalFile $out -VerifyHash $Sha256
+
+# write file size to make sure it worked
+Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 $VSPackageListParam = $VSPackages -join " --add "
 $ArgList = "--wait --norestart --nocache --installPath `"$($InstallRoot)`" --add $VSPackageListParam"
 if(-not $NoQuiet){
@@ -60,16 +74,10 @@ $processparams = @{
 }
 Start-Process @processparams
 
+Add-EnvironmentVariable -Variable VSTUDIO_ROOT -Value $InstallRoot -Global -Local
 
-setx VSTUDIO_ROOT "$InstallRoot"
-
-# add SDK added above to path for signtool
-# C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64", [System.EnvironmentVariableTarget]::Machine)
-
-# add SDK added above to path for signtool
-# C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64", [System.EnvironmentVariableTarget]::Machine)
+Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64" -Global
 
 Remove-Item $out
+Set-InstalledVersionKey -Component vstudio -KeyName "DownloadFile" -TargetValue $Url
 Write-Host -ForegroundColor Green Done with Visual Studio
