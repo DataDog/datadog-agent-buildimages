@@ -30,32 +30,28 @@ case $DD_TARGET_ARCH in
     ;;
 "armhf")
     detect_distro
+    echo "Installing Python from source (deb_armhf)"
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
-        echo "Installing Python from source (deb_armhf)"
         DEBIAN_FRONTEND=noninteractive apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y \
         zip wget build-essential checkinstall libreadline-gplv2-dev \
         libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
         libc6-dev libbz2-dev libffi-dev zlib1g-dev
-        wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
-        echo "2cc7b67c1f3f66c571acc42479cdf691d8ed6b47bee12c9b68430413a17a44ea  Python-3.9.9.tgz" | sha256sum --check
-        tar xzf Python-3.9.9.tgz
-        pushd /Python-3.9.9
-           ./configure
-           make -j 8
-           make install
-        popd
-        rm -rf Python-3.9.9
-        rm Python-3.9.9.tgz
-        ln -sf /usr/bin/python3.9 /usr/bin/python3
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
-        echo "Installing system Python (rpm_armhf)"
-        yum install -y python3-devel && yum clean all # This installs python 3.6 on arm32v7/centos:7
-        curl -sSL https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
-        echo "0bd6aa5c457b84958cebfe1bd34aec9fa98212a65fe962dbed1195425aea58e1  get-pip.py" | sha256sum --check
-        python3 get-pip.py pip==${DD_PIP_VERSION_PY3} setuptools==${DD_SETUPTOOLS_VERSION_PY3}
-        rm get-pip.py
+        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make
     fi
+
+    wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
+    echo "2cc7b67c1f3f66c571acc42479cdf691d8ed6b47bee12c9b68430413a17a44ea  Python-3.9.9.tgz" | sha256sum --check
+    tar xzf Python-3.9.9.tgz
+    pushd /Python-3.9.9
+        ./configure
+        make -j 8
+        make install
+    popd
+    rm -rf Python-3.9.9
+    rm Python-3.9.9.tgz
+    ln -sf /usr/bin/python3.9 /usr/bin/python3
 
     python3 -m pip install distro==1.4.0
     python3 -m pip install -r requirements.txt
