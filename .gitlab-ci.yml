@@ -19,13 +19,13 @@ variables:
 
 .x64:
   tags: [ "runner:docker" ]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-py3
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: x64
 
 .arm:
   tags: ["runner:docker-arm", "platform:arm64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.09.6-arm64-py3
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: aarch64
 
