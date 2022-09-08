@@ -30,7 +30,7 @@ case $DD_TARGET_ARCH in
     ;;
 "armhf")
     detect_distro
-    echo "Installing Python from source (deb_armhf)"
+    echo "Installing Python from source (armhf)"
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
         DEBIAN_FRONTEND=noninteractive apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y \
