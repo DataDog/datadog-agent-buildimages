@@ -54,7 +54,7 @@ RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin
 RUN chmod +x /bin/gimme
 RUN gimme $GIMME_GO_VERSION
 
-COPY ./gobin.sh /etc/profile.d/
+ENV PATH "${GOPATH}/bin:${PATH}"
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
