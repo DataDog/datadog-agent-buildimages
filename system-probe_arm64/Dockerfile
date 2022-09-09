@@ -47,7 +47,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-pyroute2 \
         python3-dev \
         wget \
-        xz-utils
+        xz-utils \
+        lsb-release \
+        software-properties-common \
+        gnupg 
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
 RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
@@ -60,10 +63,15 @@ ENV PATH "${GOPATH}/bin:${PATH}"
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
-RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.1/clang+llvm-11.0.1-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
-RUN echo "39b3d3e3b534e327d90c77045058e5fc924b1a81d349eac2be6fb80f4a0e40d4  /tmp/clang.tar.xz" | sha256sum --check
-RUN mkdir -p /opt/clang
-RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
+RUN wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
+RUN chmod +x /tmp/llvm.sh
+RUN /tmp/llvm.sh 14
+
+RUN echo "03df4868ce12b0a24435322dac054711426bac41d22f972f77bdb066310cf3e5  /usr/bin/clang-14" | sha256sum --check
+RUN echo "7f52e6b5fbc5fc7f8aadca1cff31113e85ad14136759d4c165670858be6a74d0  /usr/bin/llc-14" | sha256sum --check
+RUN mkdir -p /opt/clang/bin
+RUN ln -s /usr/bin/clang-14 /opt/clang/bin/clang
+RUN ln -s /usr/bin/llc-14 /opt/clang/bin/llc
 ENV PATH "/opt/clang/bin:${PATH}"
 
 COPY ./requirements.txt ./requirements-py2.txt /
