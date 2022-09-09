@@ -72,6 +72,7 @@ RUN echo "7f52e6b5fbc5fc7f8aadca1cff31113e85ad14136759d4c165670858be6a74d0  /usr
 RUN mkdir -p /opt/clang/bin
 RUN ln -s /usr/bin/clang-14 /opt/clang/bin/clang
 RUN ln -s /usr/bin/llc-14 /opt/clang/bin/llc
+RUN ln -s /usr/bin/llvm-strip-14 /opt/clang/bin/llvm-strip
 ENV PATH "/opt/clang/bin:${PATH}"
 
 COPY ./requirements.txt ./requirements-py2.txt /
