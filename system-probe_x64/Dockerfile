@@ -65,6 +65,7 @@ RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
 RUN wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
+RUN echo "994ca71a8ec363a4925c82c8f54ece50521f201edaef09c962f8aad22070bb35  /tmp/llvm.sh" | sha256sum --check
 RUN chmod +x /tmp/llvm.sh
 RUN /tmp/llvm.sh 14
 
