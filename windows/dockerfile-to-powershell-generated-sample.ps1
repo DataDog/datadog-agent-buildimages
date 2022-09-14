@@ -116,8 +116,8 @@ function Update-SessionEnvironment {
 # Content: ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
 [System.Environment]::SetEnvironmentVariable('VS2017BUILDTOOLS_DOWNLOAD_URL','https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe')
 
-# Content: ENV GO_VERSION "1.18.5"
-[System.Environment]::SetEnvironmentVariable('GO_VERSION','1.18.5')
+# Content: ENV GO_VERSION "1.18.6"
+[System.Environment]::SetEnvironmentVariable('GO_VERSION','1.18.6')
 
 # Content: ENV GO_SHA256 "73753620602D4B4469770040C53DB55E5DD6AF2AD07ECC18F71F164C3224EAAD"
 [System.Environment]::SetEnvironmentVariable('GO_SHA256','73753620602D4B4469770040C53DB55E5DD6AF2AD07ECC18F71F164C3224EAAD')
@@ -216,7 +216,7 @@ function Update-SessionEnvironment {
 # LABEL resolved: vs2017buildtools_version='16.8.3.0'
 
 # Content: LABEL go_version=${GO_VERSION}
-# LABEL resolved: go_version='1.18.5'
+# LABEL resolved: go_version='1.18.6'
 
 # Content: LABEL ruby_version=${RUBY_VERSION}
 # LABEL resolved: ruby_version='2.6.6-1'
