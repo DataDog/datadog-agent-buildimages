@@ -16,6 +16,8 @@ variables:
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
+  S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
+  S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
 
 .x64:
   tags: [ "runner:docker" ]
@@ -277,7 +279,7 @@ build_windows_ltsc2022_x64:
     - git clone https://github.com/DataDog/datadog-agent datadog-agent
     - cd datadog-agent
     - $VERSION="nightly"
-    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
+    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true -e S3_OMNIBUS_CACHE_BUCKET="${S3_OMNIBUS_CACHE_BUCKET}" -e S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS="${S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
