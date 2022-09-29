@@ -77,7 +77,7 @@ RUN ln -s /usr/bin/llc-14 /opt/clang/bin/llc
 RUN ln -s /usr/bin/llvm-strip-14 /opt/clang/bin/llvm-strip
 ENV PATH "/opt/clang/bin:${PATH}"
 
-COPY ./requirements.txt ./requirements-py2.txt /
+COPY ./requirements.txt /
 RUN python3 -m pip install wheel
 RUN python3 -m pip install -r requirements.txt
 
