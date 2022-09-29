@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         $(apt-cache search --names-only linux-headers-5.* | \
           cut -d " " -f 1 | \
           grep "\-common$" | \
-          sed -rn 's/(.*bpo\.)([0-9]+)-common/\2 \0 \1\2-arm64/p' | \
+          sed -rn 's/(.*deb10\.)([0-9]+)-common/\2 \0 \1\2-arm64/p' | \
           sort -gr | \
           head -n 1 | \
           cut -f 2-3 -d " ") \
