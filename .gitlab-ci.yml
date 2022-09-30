@@ -190,6 +190,7 @@ test_suse_x64:
 .test_system_probe:
   extends: .test
   before_script:
+    - rm -r /go/src/github.com/DataDog/datadog-agent || true
     - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - inv -e deps
