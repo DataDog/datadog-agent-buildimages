@@ -427,7 +427,7 @@ release_datadog-ci-uploader:
 
 release_windows_1809_x64:
   extends: .winrelease
-  needs: [ "test_windows_1809_x64" ]
+  needs: [ "build_windows_ltsc2022_x64", "test_windows_1809_x64" ]
   variables:
     IMAGE: windows_1809_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -435,7 +435,7 @@ release_windows_1809_x64:
 
 release_windows_1909_x64:
   extends: .winrelease
-  needs: [ "test_windows_1909_x64" ]
+  needs: [ "build_windows_ltsc2022_x64", "test_windows_1909_x64" ]
   variables:
     IMAGE: windows_1909_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -443,7 +443,7 @@ release_windows_1909_x64:
 
 release_windows_2004_x64:
   extends: .winrelease
-  needs: [ "test_windows_2004_x64" ]
+  needs: [ "build_windows_ltsc2022_x64", "test_windows_2004_x64" ]
   variables:
     IMAGE: windows_2004_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -451,7 +451,7 @@ release_windows_2004_x64:
 
 release_windows_20h2_x64:
   extends: .winrelease
-  needs: [ "test_windows_20h2_x64" ]
+  needs: [ "build_windows_ltsc2022_x64", "test_windows_20h2_x64" ]
   variables:
     IMAGE: windows_20h2_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -459,7 +459,7 @@ release_windows_20h2_x64:
 
 release_windows_ltsc2022_x64:
   extends: .winrelease
-  needs: [ "test_windows_ltsc2022_x64" ]
+  needs: [ "build_windows_ltsc2022_x64", "test_windows_ltsc2022_x64" ]
   variables:
     IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
