@@ -12,7 +12,7 @@ variables:
   # Thus, to release buildimages, we do the same thing as what we do in the Agent: we run the Docker publish script in
   # the buildimage for the highest Windows version supported.
   # This image must use the same Windows version as the Windows version of the Gitlab runner used in .winrelease
-  WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v6165899-6f80cc5
+  WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v10180886-a9a8910
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
