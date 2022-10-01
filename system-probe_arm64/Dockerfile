@@ -48,11 +48,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         xz-utils
 
 ENV GO_VERSION $GIMME_GO_VERSION
-ENV GOPATH=/usr/local/go
+ENV GOPATH=/go
 
-RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go1.18.6.linux-arm64.tar.gz
+RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz
 RUN echo "838ffa94158125f16e4aa667ee4f6b499ea57e3e35a7e2517ad357ea06714691 /tmp/golang.tar.gz" | sha256sum --check
 RUN tar -C /usr/local -xzf /tmp/golang.tar.gz
+ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 
 # install clang from the website since the package manager can change at any time
