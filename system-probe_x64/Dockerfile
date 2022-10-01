@@ -66,8 +66,3 @@ ENV PATH "/opt/clang/bin:${PATH}"
 COPY ./requirements.txt /
 RUN python3 -m pip install wheel
 RUN python3 -m pip install -r requirements.txt
-
-COPY ./entrypoint-sysprobe.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
