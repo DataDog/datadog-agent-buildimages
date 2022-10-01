@@ -3,9 +3,6 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GIMME_GO_VERSION=1.19.5
 
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
-ENV GOPATH=/go
-
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
 
@@ -51,15 +48,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         wget \
         xz-utils
 
-RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
+ENV GO_VERSION $GIMME_GO_VERSION
+ENV GOPATH=/usr/local/go
 
+RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go1.18.6.linux-amd64.tar.gz
+RUN echo "bb05f179a773fed60c6a454a24141aaa7e71edfd0f2d465ad610a3b8f1dc7fe8 /tmp/golang.tar.gz" | sha256sum --check
+RUN tar -C /usr/local -xzf /tmp/golang.tar.gz
 ENV PATH "${GOPATH}/bin:${PATH}"
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
