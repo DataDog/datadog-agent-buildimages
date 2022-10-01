@@ -6,7 +6,7 @@ ARG GIMME_GO_VERSION=1.19.5
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
 
-# We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs
+# We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
