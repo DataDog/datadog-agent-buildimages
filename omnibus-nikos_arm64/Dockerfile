@@ -20,7 +20,7 @@ ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51
 
 # Environment
 ENV GOPATH /go
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GIMME_GO_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
@@ -75,12 +75,13 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
+# Install go
+RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+  && echo "838ffa94158125f16e4aa667ee4f6b499ea57e3e35a7e2517ad357ea06714691 /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH "/usr/local/go/bin:${PATH}"
+ENV PATH "${GOPATH}/bin:${PATH}"
 
 # Automake
 RUN curl -OL https://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz
@@ -90,8 +91,3 @@ COPY ./omnibus-nikos_x64/automake.patch automake-1.16/automake.patch
 RUN cd automake-1.16 && patch -p1 < automake.patch
 RUN cd automake-1.16 && ./bootstrap && ./configure --prefix=/usr/local && make -j 5 && make install
 RUN rm -rf automake-1.16 automake-1.16.tar.gz
-
-COPY ./entrypoint-sysprobe.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
