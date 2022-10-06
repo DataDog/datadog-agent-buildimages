@@ -18,5 +18,5 @@
 /omnibus-nikos_arm64/   @DataDog/ebpf-platform @DataDog/agent-security @DataDog/agent-platform
 /omnibus-nikos_x64/     @DataDog/ebpf-platform @DataDog/agent-security @DataDog/agent-platform
 
-/windows/               @DataDog/windows-agent
-/build-container.ps1    @DataDog/windows-agent
+/windows/               @DataDog/windows-agent @DataDog/agent-platform
+/build-container.ps1    @DataDog/windows-agent @DataDog/agent-platform
