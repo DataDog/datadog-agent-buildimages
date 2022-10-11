@@ -23,7 +23,7 @@ Write-Host -ForegroundColor Green Done downloading Ruby, installing
 Start-Process $out -ArgumentList '/verysilent /dir="c:\tools\ruby" /tasks="assocfiles,noridkinstall,modpath"' -Wait
 $Env:PATH="$Env:PATH;c:\tools\ruby\bin"
 setx RIDK ((Get-Command ridk).Path)
-Start-Process gem -ArgumentList  'install bundler -v 2.3.22' -Wait
+Start-Process gem -ArgumentList  'install bundler' -Wait
 
 
 Remove-Item $out
