@@ -48,10 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-pyroute2 \
         python3-dev \
         wget \
-        xz-utils \
-        lsb-release \
-        software-properties-common \
-        gnupg 
+        xz-utils
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
 RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
@@ -64,17 +61,10 @@ ENV PATH "${GOPATH}/bin:${PATH}"
 RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
-RUN wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
-RUN echo "994ca71a8ec363a4925c82c8f54ece50521f201edaef09c962f8aad22070bb35  /tmp/llvm.sh" | sha256sum --check
-RUN chmod +x /tmp/llvm.sh
-RUN /tmp/llvm.sh 14
-
-RUN echo "cc9d76d605e991f509768ccab9be2a542e826fd44478f816258c4f17f6d6d465  /usr/bin/clang-14" | sha256sum --check
-RUN echo "7fd52a71613f0b37966b0878b3a2763ed9a5e252c3b962730ed42f5b86f12c8a  /usr/bin/llc-14" | sha256sum --check
-RUN mkdir -p /opt/clang/bin
-RUN ln -s /usr/bin/clang-14 /opt/clang/bin/clang
-RUN ln -s /usr/bin/llc-14 /opt/clang/bin/llc
-RUN ln -s /usr/bin/llvm-strip-14 /opt/clang/bin/llvm-strip
+RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
+RUN echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp/clang.tar.xz" | sha256sum --check
+RUN mkdir -p /opt/clang
+RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
 COPY ./requirements.txt /
