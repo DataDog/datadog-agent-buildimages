@@ -25,5 +25,5 @@ group :ec2 do
 end
 
 group :kitchen do
-  gem "test-kitchen", '~> 3.3.1'
+  gem "test-kitchen", '~> 3.3.2'
 end
