@@ -143,6 +143,12 @@ build_docker_x64:
     DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
 
+build_btf_gen:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: btf-gen/Dockerfile
+    IMAGE: btf-gen
+
 .test:
   stage: test
   except: [ tags, schedules ]
