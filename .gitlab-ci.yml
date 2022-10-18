@@ -153,7 +153,9 @@ build_docker_x64:
 .test_agent6:
   extends: .test
   before_script:
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - rm -r /go/src/github.com/DataDog/datadog-agent || true
+    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+    - cd /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
     - source /root/.bashrc && conda activate ddpy3
     - inv -e deps
