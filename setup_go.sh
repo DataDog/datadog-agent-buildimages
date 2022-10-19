@@ -20,3 +20,7 @@ git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goro
 
 # Update PATH to include the built go binaries
 echo 'export PATH="/goroot/bin:$PATH"' >> /root/.bashrc
+
+# Remove gimme
+rm -rf $HOME/.gimme
+rm /bin/gimme

@@ -106,13 +106,15 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && /usr/local/bin/rpm --rebuilddb
 
 # Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
-RUN echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check
-# --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs.
-RUN tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner
-RUN cd git-${GIT_VERSION} && make prefix=/usr/local all
-RUN cd git-${GIT_VERSION} && make prefix=/usr/local install
-RUN rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
+    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
+    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
+    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
+    && cd git-${GIT_VERSION} \
+    && make prefix=/usr/local all \
+    && make prefix=/usr/local install \
+    && cd .. \
+    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -214,8 +216,9 @@ RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/gol
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
-    && ./rustup-init -y --default-toolchain ${RUST_VERSION} \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Perl >= 5.14 is needed to compile the libxcrypt project
