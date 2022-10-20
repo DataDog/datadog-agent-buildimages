@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	curl \
 	git \
 	python3 \
-	python3-pip
+	python3-pip \
+	xz-utils
 
 RUN pip install awscli==${AWSCLI_VERSION} invoke==${INVOKE_VERSION}
