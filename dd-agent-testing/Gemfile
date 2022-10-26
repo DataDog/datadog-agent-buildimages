@@ -25,5 +25,7 @@ group :ec2 do
 end
 
 group :kitchen do
-  gem "test-kitchen", '~> 3.3.2'
+  # test-kitchen 2.7.1 slows down kitchen tests considerably due to
+  # https://github.com/test-kitchen/test-kitchen/pull/1683
+  gem "test-kitchen", '= 2.7.0'
 end
