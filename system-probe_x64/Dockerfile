@@ -65,12 +65,12 @@ RUN mkdir -p $GOPATH/src/github.com/DataDog/datadog-agent
 
 # install clang from the website since the package manager can change at any time
 RUN wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
-RUN echo "994ca71a8ec363a4925c82c8f54ece50521f201edaef09c962f8aad22070bb35  /tmp/llvm.sh" | sha256sum --check
+RUN echo "417d84fce3e1820775598b1c3c33185bb36becf64ad744bf8b97b80128dc9649  /tmp/llvm.sh" | sha256sum --check
 RUN chmod +x /tmp/llvm.sh
 RUN /tmp/llvm.sh 14
 
-RUN echo "cc9d76d605e991f509768ccab9be2a542e826fd44478f816258c4f17f6d6d465  /usr/bin/clang-14" | sha256sum --check
-RUN echo "7fd52a71613f0b37966b0878b3a2763ed9a5e252c3b962730ed42f5b86f12c8a  /usr/bin/llc-14" | sha256sum --check
+RUN echo "141d7956bbec3aad276d9f99304bcc910226ea5678d16cc3c78ca8b4bc85279c  /usr/bin/clang-14" | sha256sum --check
+RUN echo "1f2f4d7a3dda9dbfe45880289c1bb2a86aa50211823b6877b89bd33c62162fde  /usr/bin/llc-14" | sha256sum --check
 RUN mkdir -p /opt/clang/bin
 RUN ln -s /usr/bin/clang-14 /opt/clang/bin/clang
 RUN ln -s /usr/bin/llc-14 /opt/clang/bin/llc
