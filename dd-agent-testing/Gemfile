@@ -24,6 +24,10 @@ group :ec2 do
   gem "kitchen-ec2", '~> 3.13.0'
 end
 
+group :vagrant do
+  gem "kitchen-vagrant", '~> 1.12.1'
+end
+
 group :kitchen do
   # test-kitchen 2.7.1 slows down kitchen tests considerably due to
   # https://github.com/test-kitchen/test-kitchen/pull/1683
