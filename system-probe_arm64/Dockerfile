@@ -2,6 +2,10 @@ FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GIMME_GO_VERSION=1.18.8
+ARG RUST_VERSION=1.62.0
+ARG RUSTC_SHA256="32a1532f7cef072a667bac53f1a5542c99666c4071af0c9549795bbdb2069ec1"
+ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_SHA256="32a1532f7cef072a667bac53f1a5542c99666c4071af0c9549795bbdb2069ec1"
 
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
@@ -65,6 +69,15 @@ RUN echo "3d4ad804b7c85007686548cbc917ab067bf17eaedeab43d9eb83d3a683d8e9d4  /tmp
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
+
+
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/aarch64-unknown-linux-gnu/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
 
 COPY ./requirements.txt /
 RUN python3 -m pip install wheel
