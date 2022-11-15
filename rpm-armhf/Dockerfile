@@ -12,6 +12,10 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GIMME_GO_VERSION=1.18.8
 ARG DD_TARGET_ARCH=armhf
+ARG RUST_VERSION=1.62.0
+ARG RUSTC_SHA256="32a1532f7cef072a667bac53f1a5542c99666c4071af0c9549795bbdb2069ec1"
+ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_SHA256="32a1532f7cef072a667bac53f1a5542c99666c4071af0c9549795bbdb2069ec1"
 
 # Environment
 ENV GOPATH /go
@@ -99,6 +103,16 @@ RUN chmod +x /bin/gimme
 RUN GIMME_ARCH=arm gimme $GIMME_GO_VERSION
 
 COPY ./gobin.sh /etc/profile.d/
+
+
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/aarch64-unknown-linux-gnu/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
+
 
 # Entrypoint
 COPY ./entrypoint.sh /
