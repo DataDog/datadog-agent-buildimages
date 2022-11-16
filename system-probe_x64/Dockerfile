@@ -71,7 +71,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
+ENV PATH "/root/.cargo/bin:${PATH}"
 
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
