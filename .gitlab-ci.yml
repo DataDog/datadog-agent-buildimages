@@ -248,30 +248,6 @@ build_windows_1809_x64:
     IMAGE: windows_1809_x64
     DD_TARGET_ARCH: x64
 
-build_windows_1909_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1909_x64
-    DD_TARGET_ARCH: x64
-
-build_windows_2004_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_2004_x64
-    DD_TARGET_ARCH: x64
-
-build_windows_20h2_x64:
-  extends: .winbuild
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_20h2_x64
-    DD_TARGET_ARCH: x64
-
 build_windows_ltsc2022_x64:
   extends: .winbuild
   tags: [ "runner:windows-docker", "windowsversion:2022" ]
@@ -302,30 +278,6 @@ test_windows_1809_x64:
   variables:
     ARCH: x64
     IMAGE: windows_1809_x64
-
-test_windows_1909_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:1909" ]
-  needs: [ "build_windows_1909_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_1909_x64
-
-test_windows_2004_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:2004" ]
-  needs: [ "build_windows_2004_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_2004_x64
-
-test_windows_20h2_x64:
-  extends: .test_windows
-  tags: [ "runner:windows-docker", "windowsversion:20h2" ]
-  needs: [ "build_windows_20h2_x64" ]
-  variables:
-    ARCH: x64
-    IMAGE: windows_20h2_x64
 
 test_windows_ltsc2022_x64:
   extends: .test_windows
@@ -444,30 +396,6 @@ release_windows_1809_x64:
     IMAGE: windows_1809_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "1809"
-
-release_windows_1909_x64:
-  extends: .winrelease
-  needs: [ "build_windows_ltsc2022_x64", "test_windows_1909_x64" ]
-  variables:
-    IMAGE: windows_1909_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "1909"
-
-release_windows_2004_x64:
-  extends: .winrelease
-  needs: [ "build_windows_ltsc2022_x64", "test_windows_2004_x64" ]
-  variables:
-    IMAGE: windows_2004_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "2004"
-
-release_windows_20h2_x64:
-  extends: .winrelease
-  needs: [ "build_windows_ltsc2022_x64", "test_windows_20h2_x64" ]
-  variables:
-    IMAGE: windows_20h2_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "20h2"
 
 release_windows_ltsc2022_x64:
   extends: .winrelease
