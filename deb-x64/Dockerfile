@@ -39,6 +39,11 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
 
+# The Debian Jessie GPG key expired on Sat Nov 19 2022 21:01:13 GMT+0000.
+# Use gpgv wrapper that ignores key expiration date but checks package signatures.
+COPY gpgvnoexpkeysig /usr/local/sbin
+RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
+
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # Ignore expired repos signature
