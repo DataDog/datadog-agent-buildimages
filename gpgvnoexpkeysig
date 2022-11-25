@@ -15,9 +15,13 @@
 #     W: GPG error: http://snapshot.debian.org/archive/debian/20150106T000000Z unstable InRelease: The following signatures were invalid: EXPKEYSIG 8B48AD6246925553 Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>
 #     E: The repository 'http://snapshot.debian.org/archive/debian/20150106T000000Z unstable InRelease' is not signed.
 #
-# To use this script, call apt with
+# How to use this script depends on the APT version, in particular of whether your version has this patch https://salsa.debian.org/apt-team/apt/-/commit/12841e8320aa499554ac50b102b222900bb1b879:
 #
+# 1. On apt 1.0 or lower, call apt with
 #    -o Apt::Key::gpgvcommand=/usr/libexec/mmdebstrap/gpgvnoexpkeysig
+#
+# 2. On apt 1.1 or higher, call apt with
+#    -o Dir::Bin::gpg=/usr/libexec/mmdebstrap/gpgvnoexpkeysig
 #
 # Scripts doing similar things can be found here:
 #
