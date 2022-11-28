@@ -30,6 +30,11 @@ ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_VERSION $CONDA_VERSION
 ENV CONDA_SHA256 $CONDA_SHA256
 
+# The Debian Wheezy GPG key expired on Sat Nov 19 2022 21:01:13 GMT+0000.
+# Use gpgv wrapper that ignores key expiration date but checks package signatures.
+COPY gpgvnoexpkeysig /usr/local/sbin
+RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
+
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # Ignore expired repos signature
