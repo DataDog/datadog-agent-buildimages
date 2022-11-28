@@ -299,6 +299,7 @@ test_system-probe_arm64:
 
 test-full-agent:
   extends: .test
+  when: manual
   variables:
     RUN_ALL_BUILDS: "true"
     RUN_KITCHEN_TESTS: "true"
