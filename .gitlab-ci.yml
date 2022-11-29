@@ -297,14 +297,13 @@ test_system-probe_arm64:
   variables:
     ARCH: arm64
 
-test-full-agent:
+test-full-agent-linux:
   extends: .test
   when: manual
   variables:
     RUN_ALL_BUILDS: "true"
     RUN_KITCHEN_TESTS: "true"
     DATADOG_AGENT_BUILDIMAGES: v$CI_PIPELINE_ID
-    DATADOG_AGENT_WINBUILDIMAGES: v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     DATADOG_AGENT_ARMBUILDIMAGES: v$CI_PIPELINE_ID
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES: v$CI_PIPELINE_ID
     DATADOG_AGENT_NIKOS_BUILDIMAGES: v$CI_PIPELINE_ID
