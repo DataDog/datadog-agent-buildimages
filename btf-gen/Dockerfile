@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	bpftool \
 	curl \
 	git \
+	ninja-build \
 	python3 \
 	python3-pip \
 	xz-utils
