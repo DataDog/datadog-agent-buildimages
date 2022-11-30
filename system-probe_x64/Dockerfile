@@ -52,7 +52,7 @@ ENV GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "bb05f179a773fed60c6a454a24141aaa7e71edfd0f2d465ad610a3b8f1dc7fe8 /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "4d854c7bad52d53470cf32f1b287a5c0c441dc6b98306dea27358e099698142a  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"
