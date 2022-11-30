@@ -66,7 +66,7 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
 # it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
-    && apt-get install -y gcc-4.9 \
+    && apt-get install -y gcc-4.9 g++-4.9\
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 0
 
 # Update curl with a statically linked binary
