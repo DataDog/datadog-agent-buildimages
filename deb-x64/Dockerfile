@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
-FROM debian:jessie-backports
+FROM ubuntu:14.04
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -39,10 +39,14 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
 
-# The Debian Jessie GPG key expired on Sat Nov 19 2022 21:01:13 GMT+0000.
-# Use gpgv wrapper that ignores key expiration date but checks package signatures.
-COPY gpgvnoexpkeysig /usr/local/sbin
-RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
+# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
+
+# Uncommenting the two lines below makes APT use a gpgv wrapper that ignores key expiration
+# date but checks package signatures. Useful when the base distro is unsupported for
+# a long time and its repodata signatures expire.
+#COPY gpgvnoexpkeysig /usr/local/sbin
+#RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -52,18 +56,18 @@ RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # expired making the following option necessary for apt to work.
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
-# NOTE: for some reason, ATM jessie-backports is only available at
-# archive.debian.org, while "debian-security jessie/updates" is only available
-# at deb.debian.org. I guess at some point it will move as well. For now,
-# we have to use combination of archive.debian.org and deb.debian.org.
-RUN echo "deb http://deb.debian.org/debian jessie main contrib non-free" > /etc/apt/sources.list && \
- echo "deb http://archive.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
- echo "deb http://deb.debian.org/debian-security jessie/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
-
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool-bin
+  selinux-basics libtool software-properties-common
+
+# Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
+# NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
+# it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN apt-get update \
+    && apt-get install -y gcc-4.9 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 0
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
