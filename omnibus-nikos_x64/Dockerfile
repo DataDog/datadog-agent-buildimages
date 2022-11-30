@@ -22,7 +22,7 @@ ARG CONDA_SHA256="536817d1b14cb1ada88900f5be51ce0a5e042bae178b5550e62f61e223deae
 # Environment
 ENV GOPATH /go
 ENV CONDA_PATH /root/miniconda3
-ENV GO_VERSION $GIMME_GO_VERSION
+ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
@@ -127,13 +127,12 @@ RUN curl -LO https://ftp.gnu.org/gnu/glibc/glibc-2.16.0.tar.gz \
   && make -j 8 \
   && make install
 
-# Install go
-RUN curl -sSL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "bb05f179a773fed60c6a454a24141aaa7e71edfd0f2d465ad610a3b8f1dc7fe8  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
-ENV PATH "/usr/local/go/bin:${PATH}"
-ENV PATH "${GOPATH}/bin:${PATH}"
+# Gimme
+RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
+RUN chmod +x /bin/gimme
+RUN gimme $GIMME_GO_VERSION
+COPY ./gobin.sh /etc/profile.d/
 
 # Automake
 RUN curl -OL https://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz
@@ -144,3 +143,8 @@ COPY ./omnibus-nikos_x64/automake.patch automake-1.16/automake.patch
 RUN cd automake-1.16 && patch -p1 < automake.patch
 RUN cd automake-1.16 && ./bootstrap && ./configure --prefix=/usr/local && make -j 5 && make install
 RUN rm -rf automake-1.16 automake-1.16.tar.gz
+
+COPY ./entrypoint-sysprobe.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
