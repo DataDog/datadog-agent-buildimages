@@ -31,7 +31,7 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
-    libtool autoconf policycoreutils-python \
+    libtool autoconf policycoreutils-python libunwind-devel lz4-devel \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel \
     && yum clean all
