@@ -44,7 +44,7 @@ $VSPackages = @(
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
 #    "Microsoft.VisualStudio.Component.Windows10SDK.17763",
     "Microsoft.VisualStudio.Component.Windows10SDK.18362"
-#    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
+    "Microsoft.VisualStudio.Component.Windows10SDK.19041"
 )
 
 $VSPackageListParam = $VSPackages -join " --add "
