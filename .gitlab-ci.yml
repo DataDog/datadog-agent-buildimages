@@ -56,6 +56,12 @@ build_deb_x64:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
+build_ubuntu_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: ubuntu-x64/Dockerfile
+    IMAGE: ubuntu_x64
+
 build_rpm_x64:
   extends: [ .build, .x64 ]
   variables:
@@ -179,6 +185,12 @@ test_deb_arm64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
   needs: [ "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
+
+test_ubuntu_x64:
+  extends: .test_agent6
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/ubuntu_x64:v$CI_PIPELINE_ID
+  needs: [ "build_ubuntu_x64" ]
+  tags: [ "runner:main" ]
 
 test_rpm_x64:
   extends: .test_agent6
