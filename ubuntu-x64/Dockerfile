@@ -39,12 +39,17 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
 
+SHELL ["/bin/bash", "-c"]
+
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 
 # Setup APT to always use backports
-RUN echo -e 'Package: *\nPin: release a=trusty-backports\nPin-Priority: 500' > /etc/apt/preferences
+RUN echo $'Package: *\n\
+Pin: release a=trusty-backports\n\
+Pin-Priority: 500' > /etc/apt/preferences
 
+RUN cat /etc/apt/preferences
 
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
