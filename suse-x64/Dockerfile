@@ -58,7 +58,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel
+      tar xz which zlib-devel java
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
