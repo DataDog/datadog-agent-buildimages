@@ -152,6 +152,18 @@ build_btf_gen:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
 
+build_kernel_version_testing_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_kernel_version_testing_arm64:
+  extends: [ .build, .arm ]
+  variables:
+    DOCKERFILE: kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
+
 .test:
   stage: test
   except: [ tags, schedules ]
