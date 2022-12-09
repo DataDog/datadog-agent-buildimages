@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
 
