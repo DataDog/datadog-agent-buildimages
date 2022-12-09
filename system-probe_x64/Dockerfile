@@ -49,7 +49,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-dev \
         default-jre \
         wget \
-        xz-utils
+        xz-utils \
+    build-essential \
+    libssl-dev \
+    bc \
+    debootstrap \
+    qemu-utils
+
 
 RUN wget -O /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
 RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
