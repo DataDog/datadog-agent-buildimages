@@ -14,4 +14,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	xz-utils \
     debootstrap \
     wget \
-    qemu-utils
+    qemu-utils \
+    fakeroot

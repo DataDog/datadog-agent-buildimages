@@ -9,9 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libelf-dev \
     bc \
-	curl \
-	git \
-	xz-utils \
+    curl \
+    git \
+    xz-utils \
     debootstrap \
     wget \
-    qemu-utils
+    qemu-utils \
+    fakeroot
