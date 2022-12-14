@@ -22,8 +22,8 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG PATCHELF_VERSION=0.17.0
-ARG PATCHELF_SHA256="f569b8d5868a5968012d7ff80eb5ca496d6308c481089e6b103855f162080164"
+ARG PATCHELF_VERSION=0.13.1
+ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
@@ -166,12 +166,17 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Setup patchelf 
-RUN curl -L -O https://github.com/NixOS/patchelf/releases/download/${PATCHELF_VERSION}/patchelf-${PATCHELF_VERSION}-x86_64.tar.gz \
-    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}-x86_64.tar.gz" | sha256sum --check \
-    && tar xvzf patchelf-0.17.0-x86_64.tar.gz \
-    && cp -r bin /usr/local \
-    && cp -r share /usr/local \
-    && rm patchelf-${PATCHELF_VERSION}-x86_64.tar.gz
+RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
+    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
+    && cd patchelf-${PATCHELF_VERSION}  \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make \
+    && make install \
+    && cd - \
+    && rm -rf patchelf-${PATCHELF_VERSION} \
+    && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
 # Entrypoint
 COPY ./entrypoint.sh /
