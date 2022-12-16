@@ -15,4 +15,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     debootstrap \
     wget \
     qemu-utils \
-    fakeroot
+    fakeroot \
+    rsync
