@@ -48,6 +48,9 @@ COPY ./suse-x64/ddprofile.sh /etc/profile.d/
 # Add /etc/profile to the image (taken from 42.3 image) -- it is missing from 42.1 the image
 COPY ./suse-x64/profile /etc/profile
 
+# fixup as OpenSUSE 42.1 is EOL
+RUN perl -i -pe 's|update/42.1/|update/leap/42.1/oss/|g' /etc/zypp/repos.d/oss-update.repo
+
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
 
