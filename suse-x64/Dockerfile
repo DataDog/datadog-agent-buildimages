@@ -172,6 +172,11 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
+
+# triehash
+COPY ./triehash.pl /usr/local/bin/triehash
+RUN chmod +x /usr/local/bin/triehash
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
