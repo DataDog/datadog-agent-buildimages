@@ -103,6 +103,10 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
 
+# triehash
+COPY ./triehash.pl /usr/local/bin/triehash
+RUN chmod +x /usr/local/bin/triehash
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh

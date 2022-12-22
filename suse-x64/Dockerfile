@@ -156,6 +156,10 @@ RUN chmod +x /build-gcc.sh \
     && PREFIX=/opt/gcc-${GCC_VERSION} /build-gcc.sh \
     && rm /build-gcc.sh
 
+# triehash
+COPY ./triehash.pl /usr/local/bin/triehash
+RUN chmod +x /usr/local/bin/triehash
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
