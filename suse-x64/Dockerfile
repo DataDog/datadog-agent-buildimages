@@ -61,7 +61,7 @@ RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=htt
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
-      bison bzip2 curl gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
+      bison bzip2 curl flex gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
