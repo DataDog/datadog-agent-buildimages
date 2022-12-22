@@ -1,6 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bison \
@@ -37,6 +38,11 @@ RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel
 WORKDIR "/root"
 RUN tar -xzf kernel-custom-repo.tar.gz
 RUN rm kernel-custom-repo.tar.gz
+RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/configs/extra.config-$KERNEL_EXTRA_CONFIG_VERSION
+RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/tags-commits -O /root/tags-commits
+
+# This is used to synchronize the expected config version
+RUN echo $KERNEL_EXTRA_CONFIG_VERSION > /root/config.version
 
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
