@@ -119,7 +119,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && make \
     && make install \
     && cd / \
-    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
+    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1 /usr/local/include/rpm; fi
 
 # Rebuild RPM database with the new rpm
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
