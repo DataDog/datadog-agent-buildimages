@@ -11,6 +11,7 @@ RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
+        busybox \
         cmake \
         curl \
         flex \
