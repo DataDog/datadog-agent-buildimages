@@ -40,7 +40,6 @@ RUN wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/ker
 RUN tar -xzf kernel-custom-repo.tar.gz -C /root
 RUN rm kernel-custom-repo.tar.gz
 WORKDIR "/root"
-RUN chown -R root:root linux-stable
 COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
 COPY ./kernel-version-testing/tags-commits ./
 # This is used to synchronize the expected config version
