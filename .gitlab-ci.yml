@@ -244,8 +244,8 @@ upload_kernel_packages:
   tags: [ "runner:main" ]
   needs: [ "build_kernels_x64" ]
   script:
-    - file kernel-v5.0.21.x86.pkg.tar.gz
-    - file kernel-v5.1.21.x86.pkg.tar.gz
+    - ls -la kernel-v5.0.21.x86.pkg.tar.gz
+    - ls -la kernel-v5.1.21.x86.pkg.tar.gz
 
 
 .test:
