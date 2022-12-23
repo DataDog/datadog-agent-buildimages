@@ -210,12 +210,12 @@ build_kernel_version_testing_arm64:
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
     - popd
   variables:
-    - LINUX_SRC_DIR: /root/linux-stable
-    - CONFIG_VERSION: 0.1
-    - CONFIG_VERSION_FILE: /root/config.version
-    - TAGS_COMMITS_FILE: /root/tags-commits
+    LINUX_SRC_DIR: /root/linux-stable
+    CONFIG_VERSION: "0.1"
+    CONFIG_VERSION_FILE: /root/config.version
+    TAGS_COMMITS_FILE: /root/tags-commits
   artifacts:
-    path:
+    paths:
       - /kernel-$TARGET_TAG.pkg.tar.gz
 
 build_kernels_x64:
@@ -223,12 +223,10 @@ build_kernels_x64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$CI_PIPELINE_ID
   needs: [ "build_kernel_version_testing_x64" ]
   tags: [ "runner:main" ]
-  variables:
-    ARCH: x86
   parallel:
     matrix:
-      TARGET_TAG: [v5.0.21,v5.1.21,v5.2.21,v5.3.18,v5.4.227,v5.5.19,v5.6.19,v5.7.19,v5.8.18,v5.9.16,v5.10.159,v5.11.22,v5.12.19,v5.13.19,v5.14.21,v5.15.83,v5.16.20,v5.17.15,v5.18.19,v5.19.17,v4.0.9,v4.1.52,v4.2.8,v4.3.6,v4.4.302,v4.5.7,v4.6.7,v4.7.10,v4.8.17,v4.9.336,v4.10.17,v4.11.12,v4.12.14,v4.13.16,v4.14.302,v4.15.18,v4.16.18,v4.17.19,v4.18.20,v4.19.269,v4.20.17]
-
+      - ARCH: x86
+        TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
 
 upload_kernel_packages:
   stage: build_kernels
