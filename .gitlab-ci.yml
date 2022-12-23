@@ -42,7 +42,7 @@ variables:
     # ECR login
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For size debug purposes
     - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
@@ -156,12 +156,14 @@ build_btf_gen:
 build_kernel_version_testing_x64:
   extends: [ .build, .x64 ]
   variables:
+    CUSTOM_BUILD_ARGS: --build-args KERNEL_EXTRA_CONFIG_VERSION=0.1
     DOCKERFILE: kernel-version-testing_x64/Dockerfile
     IMAGE: kernel-version-testing_x64
 
 build_kernel_version_testing_arm64:
   extends: [ .build, .arm ]
   variables:
+    CUSTOM_BUILD_ARGS: --build-args KERNEL_EXTRA_CONFIG_VERSION=0.1
     DOCKERFILE: kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 

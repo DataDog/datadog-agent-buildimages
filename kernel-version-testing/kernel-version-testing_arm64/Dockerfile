@@ -1,7 +1,7 @@
 FROM debian:buster
 
+ARG KERNEL_EXTRA_CONFIG_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
-ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bison \
@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake
 
 # Install pahole
-RUN mkdir /dwarves
-RUN git clone https://github.com/acmel/dwarves.git -O /dwarves
+RUN mkdir /dwarve
+RUN git clone https://github.com/acmel/dwarves.git /dwarves
 WORKDIR "/dwarves"
 RUN git checkout v1.22
 RUN mkdir build
@@ -33,16 +33,16 @@ RUN cmake -D__LIB=lib -DCMAKE_INSTALL_PREFIX=/usr/ ..
 RUN make install
 
 # Prepare environement for kernel compilation
-RUN mkdir /kernel-packages
-RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O /root/kernel-custom-repo.tar.gz
 WORKDIR "/root"
+RUN mkdir kernel-packages
+RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
 RUN tar -xzf kernel-custom-repo.tar.gz
 RUN rm kernel-custom-repo.tar.gz
-RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/configs/extra.config-$KERNEL_EXTRA_CONFIG_VERSION
-RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/tags-commits -O /root/tags-commits
+COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
+COPY ./kernel-version-testing/tags-commits ./
 
 # This is used to synchronize the expected config version
-RUN echo $KERNEL_EXTRA_CONFIG_VERSION > /root/config.version
+RUN echo $KERNEL_EXTRA_CONFIG_VERSION > config.version
 
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

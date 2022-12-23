@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install pahole
 RUN mkdir /dwarves
-RUN git clone https://github.com/acmel/dwarves.git -O /dwarves
+RUN git clone https://github.com/acmel/dwarves.git /dwarves
 WORKDIR "/dwarves"
 RUN git checkout v1.22
 RUN mkdir build
@@ -38,8 +38,8 @@ RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel
 WORKDIR "/root"
 RUN tar -xzf kernel-custom-repo.tar.gz
 RUN rm kernel-custom-repo.tar.gz
-RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/configs/extra.config-$KERNEL_EXTRA_CONFIG_VERSION
-RUN wget RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/tags-commits -O /root/tags-commits
+COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
+COPY ./kernel-version-testing/tags-commits ./
 
 # This is used to synchronize the expected config version
 RUN echo $KERNEL_EXTRA_CONFIG_VERSION > /root/config.version
