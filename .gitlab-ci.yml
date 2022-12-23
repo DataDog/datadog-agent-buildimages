@@ -192,25 +192,23 @@ build_kernel_version_testing_arm64:
     - grep -Fxq "$CONFIG_VERSION" $CONFIG_VERSION_FILE
     # make sure that pahole is available
     - pahole --version
-    - cd /root
-    - cp extra.config-$CONFIG_VERSION $LINUX_SRC_DIR/extra.config
+    - cp /root/extra.config-$CONFIG_VERSION $LINUX_SRC_DIR/extra.config
     - make -C $LINUX_SRC_DIR clean
     - make -C $LINUX_SRC_DIR/tools clean
     - pushd $LINUX_SRC_DIR
+    - git config --global --add safe.directory $LINUX_SRC_DIR
     - git checkout $(cat $TAGS_COMMITS_FILE | grep -F $TARGET_TAG | cut -d ' ' -f 2)
     - popd
     - make -C $LINUX_SRC_DIR defconfig
     - make -C $LINUX_SRC_DIR kvm_guest.config
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
     - make -C $LINUX_SRC_DIR olddefconfig
-    - make -j$(nproc) -C $LINUX_SRC_DIR bindep-pkg LOCALVERSION=-custom
-    - pushd /
+    - make -j$(nproc) -C $LINUX_SRC_DIR bindeb-pkg LOCALVERSION=-ddvm
     - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$ARCH/boot/bzImage kernel-$TARGET_TAG.$ARCH.pkg/
-    - find /root -name linux-headers-$TARGET_TAG* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
-    - find /root -name linux-image-$TARGET_TAG* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - find /root -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - find /root -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
-    - popd
   variables:
     LINUX_SRC_DIR: /root/linux-stable
     CONFIG_VERSION: "0.1"
@@ -247,6 +245,7 @@ upload_kernel_packages:
   tags: [ "runner:main" ]
   dependencies:
     - build_kernels_x64
+    - build_kernels_arm64
   script:
     - ls -la /
 
