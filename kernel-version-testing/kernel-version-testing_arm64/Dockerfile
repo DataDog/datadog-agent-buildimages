@@ -1,7 +1,7 @@
 FROM debian:buster
 
-ARG KERNEL_EXTRA_CONFIG_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
+ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bison \
@@ -20,26 +20,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rsync \
     python3 \
     libdw-dev \
-    cmake
+    cmake \
+    kmod \
+    cpio
 
 # Install pahole
-RUN wget --no-check-certificate https://github.com/acmel/dwarves/archive/refs/tags/v1.22.tar.gz -O /dwarves.tar.gz
-RUN tar xzf dwarves.tar.gz
+RUN git -c http.sslVerify=false clone --recurse-submodules https://github.com/acmel/dwarves.git /dwarves
 WORKDIR "/dwarves"
+RUN git config http.sslVerify "false"
+RUN git checkout v1.22
 RUN mkdir build
 WORKDIR "/dwarves/build"
 RUN cmake -D__LIB=lib -DCMAKE_INSTALL_PREFIX=/usr/ ..
 RUN make install
 
 # Prepare environement for kernel compilation
-WORKDIR "/root"
-RUN mkdir kernel-packages
-RUN wget --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
-RUN tar -xzf kernel-custom-repo.tar.gz
+WORKDIR "/"
+RUN wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
+RUN tar -xzf kernel-custom-repo.tar.gz -C /root
 RUN rm kernel-custom-repo.tar.gz
+WORKDIR "/root"
+RUN chown -R root:root linux-stable
 COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
 COPY ./kernel-version-testing/tags-commits ./
-
 # This is used to synchronize the expected config version
 RUN echo $KERNEL_EXTRA_CONFIG_VERSION > config.version
 
