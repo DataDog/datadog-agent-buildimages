@@ -168,21 +168,6 @@ build_kernel_version_testing_arm64:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
-
-.test:
-  stage: test
-  except: [ tags, schedules ]
-
-.test_system_probe:
-  extends: .test
-  before_script:
-    - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
-    - cd /go/src/github.com/DataDog/datadog-agent
-    - inv -e deps
-  script:
-    - inv -e system-probe.build
-
 trigger_build_kernels:
   stage: build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
@@ -261,6 +246,7 @@ upload_kernel_packages:
     - build_kernels_arm64
   script:
     - ls -la $CI_BUILDS_DIR
+
 
 .test:
   stage: test
