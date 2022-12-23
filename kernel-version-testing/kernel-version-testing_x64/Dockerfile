@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install pahole
 RUN mkdir /dwarve
-RUN wget https://github.com/acmel/dwarves/archive/refs/tags/v1.22.tar.gz -O /dwarves.tar.gz
+RUN curl --insecure https://github.com/acmel/dwarves/archive/refs/tags/v1.22.tar.gz --output /dwarves.tar.gz
 RUN tar xzf dwarves.tar.gz
 WORKDIR "/dwarves"
 RUN mkdir build
@@ -34,7 +34,7 @@ RUN make install
 
 # Prepare environement for kernel compilation
 RUN mkdir /kernel-packages
-RUN wget https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O /root/kernel-custom-repo.tar.gz
+RUN curl --insecure https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz --output kernel-custom-repo.tar.gz
 WORKDIR "/root"
 RUN tar -xzf kernel-custom-repo.tar.gz
 RUN rm kernel-custom-repo.tar.gz
