@@ -19,6 +19,8 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
+  EXTRA_KCONFIG_VERSION: "0.1"
+  LINUX_SRC_DIR: /kernel-src
 
 .x64:
   tags: [ "runner:docker" ]
@@ -156,14 +158,14 @@ build_btf_gen:
 build_kernel_version_testing_x64:
   extends: [ .build, .x64 ]
   variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=0.1
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
     IMAGE: kernel-version-testing_x64
 
 build_kernel_version_testing_arm64:
   extends: [ .build, .arm ]
   variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=0.1
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
@@ -184,15 +186,11 @@ build_kernel_version_testing_arm64:
 .build_kernels:
   stage: build_kernels
   rules:
-    - when: manual
-      allow_failure: true
+    - allow_failure: false
   script:
-    # Make sure we are working with the expected extra
-    # configuration version
-    - grep -Fxq "$CONFIG_VERSION" $CONFIG_VERSION_FILE
     # make sure that pahole is available
     - pahole --version
-    - cp /root/extra.config-$CONFIG_VERSION $LINUX_SRC_DIR/extra.config
+    - cp /extra.config-$EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     - make -C $LINUX_SRC_DIR clean
     - make -C $LINUX_SRC_DIR/tools clean
     - pushd $LINUX_SRC_DIR
@@ -210,34 +208,60 @@ build_kernel_version_testing_arm64:
     - find /root -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
   variables:
-    LINUX_SRC_DIR: /root/linux-stable
-    CONFIG_VERSION: "0.1"
-    CONFIG_VERSION_FILE: /root/config.version
     TAGS_COMMITS_FILE: /root/tags-commits
   artifacts:
     paths:
       - /kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
 
+.prepare_for_build_kernels:
+  stage: build_kernels
+  rules:
+    - when: manual
+      allow_failure: false
+  script:
+    - wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
+    - mkdir $LINUX_SRC_DIR
+    - tar -xzf kernel-custom-repo.tar.gz --strip-components=1 -C /kernel-src
+    - rm kernel-custom-repo.tar.gz
+  artifacts:
+    paths:
+      - $LINUX_SRC_DIR
+
+prepare_for_build_kernels_x64:
+  extends: .prepare_for_build_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$CI_PIPELINE_ID
+  needs: [ "build_kernel_version_testing_x64" ]
+  tags: [ "runner:main" ]
+
+prepare_for_build_kernels_arm64:
+  extends: .prepare_for_build_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$CI_PIPELINE_ID
+  needs: [ "build_kernel_version_testing_arm64" ]
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+
+
 build_kernels_x64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$CI_PIPELINE_ID
-  needs: [ "build_kernel_version_testing_x64" ]
+  needs: [ "build_kernel_version_testing_x64", "prepare_for_build_kernels_x64" ]
   tags: [ "runner:main" ]
   parallel:
     matrix:
       - ARCH: x86
-        TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
+        TARGET_TAGS: ["v5.0.21","v5.1.21"]
+#TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
 
 build_kernels_arm64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$CI_PIPELINE_ID
-  needs: [ "build_kernel_version_testing_arm64" ]
+  needs: [ "build_kernel_version_testing_arm64", "prepare_for_build_kernels_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
   parallel:
     matrix:
       - ARCH: arm64
-        TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
+        TARGET_TAGS: ["v5.0.21","v5.1.21"]
 
+          #TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
 
 upload_kernel_packages:
   stage: build_kernels
