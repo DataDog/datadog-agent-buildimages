@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install pahole
 RUN mkdir /dwarves
+RUN git config --global http.sslverify false
 RUN git clone https://github.com/acmel/dwarves.git /dwarves
 WORKDIR "/dwarves"
 RUN git checkout v1.22
