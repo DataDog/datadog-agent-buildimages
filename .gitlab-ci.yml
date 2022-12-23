@@ -157,14 +157,14 @@ build_kernel_version_testing_x64:
   extends: [ .build, .x64 ]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=0.1
-    DOCKERFILE: kernel-version-testing_x64/Dockerfile
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
     IMAGE: kernel-version-testing_x64
 
 build_kernel_version_testing_arm64:
   extends: [ .build, .arm ]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=0.1
-    DOCKERFILE: kernel-version-testing_arm64/Dockerfile
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
 .test:
