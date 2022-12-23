@@ -20,7 +20,7 @@ variables:
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
-  LINUX_SRC_DIR: /kernel-src
+  LINUX_SRC_DIR: $CI_BUILDS_DIR/kernel-src
 
 .x64:
   tags: [ "runner:docker" ]
@@ -204,14 +204,14 @@ build_kernel_version_testing_arm64:
     - make -j$(nproc) -C $LINUX_SRC_DIR bindeb-pkg LOCALVERSION=-ddvm
     - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$ARCH/boot/bzImage kernel-$TARGET_TAG.$ARCH.pkg/
-    - find /root -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
-    - find /root -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - find ../$LINUX_SRC_DIR -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - find ../$LINUX_SRC_DIR -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
   variables:
     TAGS_COMMITS_FILE: /root/tags-commits
   artifacts:
     paths:
-      - /kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
+      - $CI_BUILDS_DIR/kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
 
 .prepare_for_build_kernels:
   stage: build_kernels
@@ -221,7 +221,7 @@ build_kernel_version_testing_arm64:
   script:
     - wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
     - mkdir $LINUX_SRC_DIR
-    - tar -xzf kernel-custom-repo.tar.gz --strip-components=1 -C /kernel-src
+    - tar -xzf kernel-custom-repo.tar.gz --strip-components=1 -C $LINUX_SRC_DIR
     - rm kernel-custom-repo.tar.gz
   artifacts:
     paths:
@@ -271,7 +271,7 @@ upload_kernel_packages:
     - build_kernels_x64
     - build_kernels_arm64
   script:
-    - ls -la /
+    - ls -la $CI_BUILDS_DIR
 
 .test:
   stage: test
