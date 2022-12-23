@@ -43,11 +43,11 @@ RUN rm -r dwarves
 #RUN tar -xzf kernel-custom-repo.tar.gz -C /root
 #RUN rm kernel-custom-repo.tar.gz
 #WORKDIR "/root"
-#COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
-#COPY ./kernel-version-testing/tags-commits ./
 ## This is used to synchronize the expected config version
 #RUN echo $KERNEL_EXTRA_CONFIG_VERSION > config.version
 
+COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION /
+COPY ./kernel-version-testing/tags-commits /
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
