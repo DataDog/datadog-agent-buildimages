@@ -186,6 +186,7 @@ build_kernel_version_testing_arm64:
 trigger_build_kernels:
   stage: build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  needs: [ "build_kernel_version_testing_x64" , "build_kernel_version_testing_arm64" ]
   rules:
     - when: manual
       allow_failure: false
