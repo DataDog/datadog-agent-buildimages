@@ -189,6 +189,8 @@ trigger_build_kernels:
   rules:
     - when: manual
       allow_failure: false
+  script:
+    - echo "Lets goooo!!!!"
 
 .build_kernels:
   stage: build_kernels
