@@ -224,7 +224,7 @@ trigger_build_kernels:
     - find ../$LINUX_SRC_DIR -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
   variables:
-    TAGS_COMMITS_FILE: /root/tags-commits
+    TAGS_COMMITS_FILE: /tags-commits
   artifacts:
     paths:
       - $CI_BUILDS_DIR/kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
@@ -232,7 +232,7 @@ trigger_build_kernels:
 build_kernels_x64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$CI_PIPELINE_ID
-  needs: [ "build_kernel_version_testing_x64", "trigger_build_kernels" ]
+  needs: [ "trigger_build_kernels" ]
   tags: [ "runner:main" ]
   parallel:
     matrix:
@@ -243,7 +243,7 @@ build_kernels_x64:
 build_kernels_arm64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$CI_PIPELINE_ID
-  needs: [ "build_kernel_version_testing_arm64", "trigger_build_kernels" ]
+  needs: [ "trigger_build_kernels" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
   parallel:
     matrix:
