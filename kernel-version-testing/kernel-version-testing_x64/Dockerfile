@@ -34,17 +34,19 @@ WORKDIR "/dwarves/build"
 RUN cmake -D__LIB=lib -DCMAKE_INSTALL_PREFIX=/usr/ ..
 RUN make install
 
+WORKDIR "/"
+RUN rm -r dwarves
+
 # Prepare environement for kernel compilation
 #WORKDIR "/"
 #RUN wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
 #RUN tar -xzf kernel-custom-repo.tar.gz -C /root
 #RUN rm kernel-custom-repo.tar.gz
 #WORKDIR "/root"
+#COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION ./
+#COPY ./kernel-version-testing/tags-commits ./
 ## This is used to synchronize the expected config version
 #RUN echo $KERNEL_EXTRA_CONFIG_VERSION > config.version
-
-COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION /root/
-COPY ./kernel-version-testing/tags-commits /root
 
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

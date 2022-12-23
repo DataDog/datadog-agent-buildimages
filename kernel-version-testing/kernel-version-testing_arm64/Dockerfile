@@ -33,6 +33,8 @@ RUN mkdir build
 WORKDIR "/dwarves/build"
 RUN cmake -D__LIB=lib -DCMAKE_INSTALL_PREFIX=/usr/ ..
 RUN make install
+
+WORKDIR "/"
 RUN rm -r dwarves
 
 # Prepare environement for kernel compilation
