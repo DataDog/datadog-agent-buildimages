@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake
 
 # Install pahole
-RUN mkdir /dwarve
 RUN wget --no-check-certificate https://github.com/acmel/dwarves/archive/refs/tags/v1.22.tar.gz -O /dwarves.tar.gz
 RUN tar xzf dwarves.tar.gz
 WORKDIR "/dwarves"
