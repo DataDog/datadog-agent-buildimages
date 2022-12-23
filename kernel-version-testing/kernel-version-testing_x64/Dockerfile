@@ -23,11 +23,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake
 
 # Install pahole
-RUN mkdir /dwarves
-RUN git config --global http.sslverify false
-RUN git clone https://github.com/acmel/dwarves.git /dwarves
+RUN mkdir /dwarve
+RUN wget https://github.com/acmel/dwarves/archive/refs/tags/v1.22.tar.gz -O /dwarves.tar.gz
+RUN tar xzf dwarves.tar.gz
 WORKDIR "/dwarves"
-RUN git checkout v1.22
 RUN mkdir build
 WORKDIR "/dwarves/build"
 RUN cmake -D__LIB=lib -DCMAKE_INSTALL_PREFIX=/usr/ ..
