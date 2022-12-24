@@ -241,10 +241,22 @@ build_kernels_x64:
 
 upload_kernel_packages:
   stage: upload_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   tags: [ "runner:main" ]
   needs: [ "build_kernels_x64" ]
   script:
-    - find . -name 'kernel-*.x86.pkg.tar.gz'
+    - ls -la kernel-v5.0.21.x86.pkg.tar.gz
+    - ls -la kernel-v5.1.21.x86.pkg.tar.gz
+    - find . -name 'kernel-*-x86.pkg.tar.gz' -type f > packages.txt
+    - cat packages.txt
+    - DIR=$(dirname $(head -n 1 packages.txt))
+    - echo $DIR
+    - FILES=$(cat packages.txt | rev | cut -d '/' -f 1 | rev)
+    - echo $FILES
+    - cd $DIR; tar -cf kernel-packges-$ARCH.tar $FILES
+    - $S3_CP_CMD kernel-packages-$ARCH.tar $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
+  variables:
+    ARCH: x86_64
 
 .test:
   stage: test
