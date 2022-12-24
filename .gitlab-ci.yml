@@ -247,7 +247,7 @@ upload_kernel_packages:
   script:
     - ls -la kernel-v5.0.21.x86.pkg.tar.gz
     - ls -la kernel-v5.1.21.x86.pkg.tar.gz
-    - find . -name 'kernel-*-x86.pkg.tar.gz' -type f > packages.txt
+    - find . -name 'kernel-*.x86.pkg.tar.gz' -type f > packages.txt
     - cat packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
     - echo $DIR
