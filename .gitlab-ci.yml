@@ -21,6 +21,7 @@ variables:
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
+  S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI: s3://dd-agent-omnibus/kernel-version-testing
   LINUX_SRC_DIR: $CI_BUILDS_DIR/kernel-src
 
 .x64:
@@ -254,6 +255,10 @@ upload_kernel_packages:
     - FILES=$(cat packages.txt | rev | cut -d '/' -f 1 | rev)
     - echo $FILES
     - cd $DIR; tar -cf kernel-packges-$ARCH.tar $FILES
+    - pwd
+    - ls -la
+    - echo $S3_CP_CMD
+    - echo $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI
     - $S3_CP_CMD kernel-packages-$ARCH.tar $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   variables:
     ARCH: x86_64
