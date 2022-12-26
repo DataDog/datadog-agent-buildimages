@@ -246,14 +246,17 @@ upload_kernel_packages:
   tags: [ "runner:main" ]
   needs: [ "build_kernels_x64" ]
   script:
-    - find . -name 'kernel-*-x86.pkg.tar.gz' -type f > packages.txt
+    - KARCH=$(echo $ARCH | cut -d '_' -f 1)
+    - find . -name 'kernel-*.${KARCH}.pkg.tar.gz' -type f > packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
     - FILES=$(cat packages.txt | rev | cut -d '/' -f 1 | rev)
-    - cd $DIR; tar -cf kernel-packges-$ARCH.tar $FILES
-    - $S3_CP_CMD kernel-packages-$ARCH.tar $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
+    - cd $DIR; tar -cf $KERNEL_PKG_NAME $FILES
+    - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   parallel:
     matrix:
       - ARCH: [ "x86_64" ]
+  variables:
+    KERNEL_PKG_NAME: kernel-packages-$ARCH.tar
 
 .test:
   stage: test
