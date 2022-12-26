@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM debian:stretch
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
@@ -22,7 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdw-dev \
     cmake \
     kmod \
-    cpio
+    cpio \
+    zlib1g-dev
 
 # Install pahole
 RUN git -c http.sslVerify=false clone --recurse-submodules https://github.com/acmel/dwarves.git /dwarves
