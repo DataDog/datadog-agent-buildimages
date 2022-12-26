@@ -190,7 +190,6 @@ trigger_build_kernels:
     # make sure that pahole is available
     - pahole --version
     # Fetch relevant kernel commit
-    - rm -rf $LINUX_SRC_DIR
     - git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git $LINUX_SRC_DIR
     - pushd $LINUX_SRC_DIR
     - TARGET_COMMIT=$(cat $TAGS_COMMITS_FILE | grep -F $TARGET_TAG | cut -d ' ' -f 2)
