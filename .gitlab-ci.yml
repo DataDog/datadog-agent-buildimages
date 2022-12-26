@@ -225,20 +225,7 @@ build_kernels_x64:
   parallel:
     matrix:
       - ARCH: x86
-        TARGET_TAG: ["v5.0.21","v5.1.21"]
-#TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
-
-          #build_kernels_arm64:
-          #  extends: .build_kernels
-          #  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$CI_PIPELINE_ID
-          #  needs: [ "trigger_build_kernels" ]
-          #  tags: [ "runner:docker-arm", "platform:arm64" ]
-          #  parallel:
-          #    matrix:
-          #      - ARCH: arm
-          #        TARGET_TAG: ["v5.0.21","v5.1.21"]
-
-          #TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.0.9","v4.1.52","v4.2.8","v4.3.6","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
+        TARGET_TAGS: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
 
 upload_kernel_packages_x64:
   stage: upload_kernels
@@ -250,6 +237,7 @@ upload_kernel_packages_x64:
     - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f > packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
     - FILES=$(cat packages.txt | rev | cut -d '/' -f 1 | rev)
+    - echo "Uploaded: ${FILES}"
     - cd $DIR; tar -cf $KERNEL_PKG_NAME $FILES
     - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   variables:
