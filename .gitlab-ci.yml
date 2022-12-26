@@ -22,7 +22,7 @@ variables:
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI: s3://dd-agent-omnibus/kernel-version-testing
   EXTRA_KCONFIG_VERSION: "0.1"
-  LINUX_SRC_DIR: $CI_BUILDS_DIR/kernel-src
+  LINUX_SRC_DIR: /tmp/kernel-src
 
 .x64:
   tags: [ "runner:docker" ]
