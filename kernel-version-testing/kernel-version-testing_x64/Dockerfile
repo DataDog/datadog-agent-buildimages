@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM ubuntu:xenial
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
@@ -36,15 +36,6 @@ RUN make install
 
 WORKDIR "/"
 RUN rm -r dwarves
-
-# Prepare environement for kernel compilation
-#WORKDIR "/"
-#RUN wget -q --no-check-certificate https://dd-agent-omnibus.s3.amazonaws.com/kernel-version-testing/kernel-custom-repo.tar.gz -O kernel-custom-repo.tar.gz
-#RUN tar -xzf kernel-custom-repo.tar.gz -C /root
-#RUN rm kernel-custom-repo.tar.gz
-#WORKDIR "/root"
-## This is used to synchronize the expected config version
-#RUN echo $KERNEL_EXTRA_CONFIG_VERSION > config.version
 
 COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION /
 COPY ./kernel-version-testing/tags-commits /
