@@ -200,7 +200,7 @@ trigger_build_kernels:
     - cp /extra.config-$EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
-    - make -C $LINUX_SRC_DIR/tools clean
+      #    - make -C $LINUX_SRC_DIR/tools clean
     - make -C $LINUX_SRC_DIR defconfig
     - make -C $LINUX_SRC_DIR kvm_guest.config
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
