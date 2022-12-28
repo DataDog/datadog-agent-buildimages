@@ -39,7 +39,6 @@ WORKDIR "/"
 RUN rm -r dwarves
 
 COPY ./kernel-version-testing/extra.config-$KERNEL_EXTRA_CONFIG_VERSION /
-COPY ./kernel-version-testing/tags-commits /
 COPY ./entrypoint-sysprobe.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
