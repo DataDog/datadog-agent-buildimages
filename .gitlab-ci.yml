@@ -194,9 +194,9 @@ trigger_build_kernels:
     - pushd $(dirname $LINUX_SRC_DIR)
     - MAJOR=$(echo $TARGET_TAG | cut -d '.' -f 1)
     - VERSION=$(echo $TARGET_TAG | cut -d 'v' -f 2)
-    - TARGET_ARCHIVE=kernel-src.tar.gz
-    - wget -q -c "https://mirrors.edge.kernel.org/pub/linux/kernel/$MAJOR.x/linux-$VERSION.tar.gz" -O $TARGET_ARCHIVE
     - TARGET_DIR=$(echo $LINUX_SRC_DIR | rev | cut -d '/' -f 1 | rev)
+    - TARGET_ARCHIVE=$TARGET_DIR.tar.gz
+    - wget -q -c "https://mirrors.edge.kernel.org/pub/linux/kernel/$MAJOR.x/linux-$VERSION.tar.gz" -O $TARGET_ARCHIVE
     - tar -xf $TARGET_ARCHIVE -C $TARGET_DIR --strip-components=1
     - popd
     # Copy extra config to source directory
@@ -236,11 +236,10 @@ upload_kernel_packages_x64:
   needs: [ "build_kernels_x64" ]
   script:
     - KARCH=$(echo $ARCH | cut -d '_' -f 1)
-    - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f > packages.txt
+    - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
-    - FILES=$(cat packages.txt | rev | cut -d '/' -f 1 | rev)
-    - echo "Uploading ${FILES}"
-    - cd $DIR; tar -cf $KERNEL_PKG_NAME $FILES
+    - cat packages.txt
+    - cd $DIR; tar -cf $KERNEL_PKG_NAME -T packages.txt
     - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   variables:
     KERNEL_PKG_NAME: kernel-packages-$ARCH.tar
