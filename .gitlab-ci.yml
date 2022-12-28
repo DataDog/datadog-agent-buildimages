@@ -190,17 +190,19 @@ trigger_build_kernels:
     # make sure that pahole is available
     - pahole --version
     # Fetch relevant kernel commit
-    - git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git $LINUX_SRC_DIR
-    - pushd $LINUX_SRC_DIR
-    - TARGET_COMMIT=$(cat $TAGS_COMMITS_FILE | grep -F $TARGET_TAG | cut -d ' ' -f 2)
-    - git fetch origin --depth=1 $TARGET_COMMIT
-    - git checkout $TARGET_COMMIT
+    - mkdir $LINUX_SRC_DIR
+    - pushd $(dirname $LINUX_SRC_DIR)
+    - MAJOR=$(echo $TARGET_TAG | cut -d '.' -f 1)
+    - VERSION=$(echo $TARGET_TAG | cut -d 'v' -f 2)
+    - TARGET_ARCHIVE=kernel-src.tar.gz
+    - wget -q -c "https://mirrors.edge.kernel.org/pub/linux/kernel/$MAJOR.x/linux-$VERSION.tar.gz" -O $TARGET_ARCHIVE
+    - TARGET_DIR=$(echo $LINUX_SRC_DIR | rev | cut -d '/' -f 1 | rev)
+    - tar -xf $TARGET_ARCHIVE -C $TARGET_DIR --strip-components=1
     - popd
     # Copy extra config to source directory
     - cp /extra.config-$EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
-      #    - make -C $LINUX_SRC_DIR/tools clean
     - make -C $LINUX_SRC_DIR defconfig
     - make -C $LINUX_SRC_DIR kvm_guest.config
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
@@ -213,6 +215,7 @@ trigger_build_kernels:
     - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
   variables:
     TAGS_COMMITS_FILE: /tags-commits
+    ARCH: x86
   artifacts:
     paths:
       - kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
@@ -224,7 +227,7 @@ build_kernels_x64:
   tags: [ "runner:main" ]
   parallel:
     matrix:
-      - TARGET_TAG: ["v5.0.21","v5.1.21","v5.2.21","v5.3.18","v5.4.227","v5.5.19","v5.6.19","v5.7.19","v5.8.18","v5.9.16","v5.10.159","v5.11.22","v5.12.19","v5.13.19","v5.14.21","v5.15.83","v5.16.20","v5.17.15","v5.18.19","v5.19.17","v4.4.302","v4.5.7","v4.6.7","v4.7.10","v4.8.17","v4.9.336","v4.10.17","v4.11.12","v4.12.14","v4.13.16","v4.14.302","v4.15.18","v4.16.18","v4.17.19","v4.18.20","v4.19.269","v4.20.17"]
+      - TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
 
 upload_kernel_packages_x64:
   stage: upload_kernels
