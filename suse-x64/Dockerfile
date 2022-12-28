@@ -51,6 +51,11 @@ COPY ./suse-x64/profile /etc/profile
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
 
+# Change location of the OSS-Update repo
+# Its former location was http://download.opensuse.org/update/42.1/,
+# its new location is http://download.opensuse.org/update/leap/42.1/oss/
+RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=http:\/\/download.opensuse.org\/update\/leap\/42.1\/oss\//" /etc/zypp/repos.d/oss-update.repo
+
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
