@@ -240,6 +240,7 @@ upload_kernel_packages_x64:
     - DIR=$(dirname $(head -n 1 packages.txt))
     - cat packages.txt
     - cd $DIR; tar -cf $KERNEL_PKG_NAME -T packages.txt
+    - sha256sum $KERNEL_PKG_NAME
     - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   variables:
     KERNEL_PKG_NAME: kernel-packages-$ARCH.tar
