@@ -2,6 +2,8 @@ include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 stages:
   - build
+  - build_kernels
+  - upload_kernels
   - test
   - release
   - notify
@@ -18,6 +20,9 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
+  S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI: s3://dd-agent-omnibus/kernel-version-testing
+  EXTRA_KCONFIG_VERSION: "0.1"
+  LINUX_SRC_DIR: /tmp/kernel-src
 
 default:
   retry:
@@ -50,7 +55,7 @@ default:
     # ECR login
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For size debug purposes
     - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
@@ -160,6 +165,94 @@ build_btf_gen:
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
+
+build_kernel_version_testing_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_kernel_version_testing_arm64:
+  extends: [ .build, .arm ]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
+
+trigger_build_kernels:
+  stage: build_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  tags: [ "runner:main" ]
+  needs: [ "build_kernel_version_testing_x64" , "build_kernel_version_testing_arm64" ]
+  rules:
+    - when: manual
+      allow_failure: false
+  script:
+    - echo "Lets goooo!!!!"
+
+.build_kernels:
+  stage: build_kernels
+  rules:
+    - allow_failure: false
+  script:
+    # make sure that pahole is available
+    - pahole --version
+    # Fetch relevant kernel commit
+    - mkdir $LINUX_SRC_DIR
+    - pushd $(dirname $LINUX_SRC_DIR)
+    - MAJOR=$(echo $TARGET_TAG | cut -d '.' -f 1)
+    - VERSION=$(echo $TARGET_TAG | cut -d 'v' -f 2)
+    - TARGET_DIR=$(echo $LINUX_SRC_DIR | rev | cut -d '/' -f 1 | rev)
+    - TARGET_ARCHIVE=$TARGET_DIR.tar.gz
+    - wget -q -c "https://mirrors.edge.kernel.org/pub/linux/kernel/$MAJOR.x/linux-$VERSION.tar.gz" -O $TARGET_ARCHIVE
+    - tar -xf $TARGET_ARCHIVE -C $TARGET_DIR --strip-components=1
+    - popd
+    # Copy extra config to source directory
+    - cp /extra.config-$EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
+    # Build kernel
+    - make -C $LINUX_SRC_DIR clean
+    - make -C $LINUX_SRC_DIR defconfig
+    - make -C $LINUX_SRC_DIR kvm_guest.config
+    - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
+    - make -C $LINUX_SRC_DIR olddefconfig
+    - make -j$(nproc) -C $LINUX_SRC_DIR bindeb-pkg LOCALVERSION=-ddvm
+    - mkdir kernel-$TARGET_TAG.$ARCH.pkg
+    - cp $LINUX_SRC_DIR/arch/$ARCH/boot/bzImage kernel-$TARGET_TAG.$ARCH.pkg/
+    - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - find $LINUX_SRC_DIR/.. -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
+    - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
+  variables:
+    TAGS_COMMITS_FILE: /tags-commits
+    ARCH: x86
+  artifacts:
+    paths:
+      - kernel-$TARGET_TAG.$ARCH.pkg.tar.gz
+
+build_kernels_x64:
+  extends: .build_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$CI_PIPELINE_ID
+  needs: [ "trigger_build_kernels" ]
+  tags: [ "runner:main" ]
+  parallel:
+    matrix:
+      - TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
+
+upload_kernel_packages_x64:
+  stage: upload_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  tags: [ "runner:main" ]
+  needs: [ "build_kernels_x64" ]
+  script:
+    - KARCH=$(echo $ARCH | cut -d '_' -f 1)
+    - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
+    - DIR=$(dirname $(head -n 1 packages.txt))
+    - cat packages.txt
+    - cd $DIR; tar -cf $KERNEL_PKG_NAME -T packages.txt
+    - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
+  variables:
+    KERNEL_PKG_NAME: kernel-packages-$ARCH.tar
+    ARCH: "x86_64"
 
 .test:
   stage: test
