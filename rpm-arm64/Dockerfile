@@ -10,7 +10,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.18.8
+ARG GIMME_GO_VERSION=1.18.9
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -33,7 +33,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel \
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt

@@ -16,7 +16,7 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.18.8
+ARG GIMME_GO_VERSION=1.18.9
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -40,7 +40,7 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics
+    selinux-basics default-jre
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64

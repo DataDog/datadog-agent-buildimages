@@ -14,7 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GIMME_GO_VERSION=1.18.8
+ARG GIMME_GO_VERSION=1.18.9
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -51,6 +51,11 @@ COPY ./suse-x64/profile /etc/profile
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
 
+# Change location of the OSS-Update repo
+# Its former location was http://download.opensuse.org/update/42.1/,
+# its new location is http://download.opensuse.org/update/leap/42.1/oss/
+RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=http:\/\/download.opensuse.org\/update\/leap\/42.1\/oss\//" /etc/zypp/repos.d/oss-update.repo
+
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
@@ -58,7 +63,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel
+      tar xz which zlib-devel java
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,

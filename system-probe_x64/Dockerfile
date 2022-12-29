@@ -1,7 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GIMME_GO_VERSION=1.18.8
+ARG GIMME_GO_VERSION=1.18.9
 
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GOPATH=/go
@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-pip \
         python3-pyroute2 \
         python3-dev \
+        default-jre \
         wget \
         xz-utils
 

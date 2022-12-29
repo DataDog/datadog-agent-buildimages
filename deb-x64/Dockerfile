@@ -10,7 +10,7 @@ FROM ubuntu:14.04
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GO_VERSION=1.18.8
+ARG GO_VERSION=1.18.9
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -61,14 +61,14 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common
+  selinux-basics libtool software-properties-common default-jre
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
 # it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
-    && apt-get install -y gcc-4.9 g++-4.9\
+    && apt-get install -y gcc-4.9 g++-4.9 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 0
 
 # Update curl with a statically linked binary
