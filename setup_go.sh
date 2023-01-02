@@ -7,6 +7,16 @@ set -ex
 # Note: the official go build uses the fourth option (bootstrap the build using go1.4), but according to the documentation
 # this shouldn't make a difference.
 
+# Upgrade binutils
+curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz
+echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check
+tar -zxvf ./binutils-${BINUTILS_VERSION}.tar.gz
+cd binutils-${BINUTILS_VERSION}
+./configure --prefix=/usr/local/binutils && make && make install
+cd -
+
+export PATH=/usr/local/binutils/bin:$PATH
+
 # Install gimme to get go1.15.11
 curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.5/gimme
 # Check sha256sum, fail otherwise

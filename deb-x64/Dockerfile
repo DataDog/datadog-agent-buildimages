@@ -24,6 +24,8 @@ ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG BINUTILS_VERSION="2.39"
+ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 
 # Environment
 ENV GOPATH /go
@@ -40,6 +42,8 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV BINUTILS_VERSION $BINUTILS_VERSION
+ENV BINUTILS_SHA256 $BINUTILS_SHA256
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
