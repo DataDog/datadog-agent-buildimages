@@ -8,14 +8,11 @@ set -ex
 # this shouldn't make a difference.
 
 # Install gimme to get go1.15.11
-curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
+curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.5/gimme
 # Check sha256sum, fail otherwise
-echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
+echo "3d565d57ec28edb14be9e540cd3e628607ec5b791e78224c47250d36ce4aedf2  /bin/gimme" | sha256sum --check
 chmod +x /bin/gimme
-eval "$(gimme 1.15.11)"
-
-# clear cache
-rm -rf $(go env | grep -i gocache | cut -f2 -d=)
+eval "$(gimme 1.18.9)"
 
 git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot/src
 
