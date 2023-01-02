@@ -14,6 +14,9 @@ echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gim
 chmod +x /bin/gimme
 eval "$(gimme 1.15.11)"
 
+# clear cache
+rm -rf $(go env | grep -i gocache | cut -f2 -d=)
+
 git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot/src
 
 ./all.bash
