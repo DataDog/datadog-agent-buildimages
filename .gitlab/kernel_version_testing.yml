@@ -53,6 +53,15 @@ build_kernels_x64:
     matrix:
       - TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
 
+build_kernels_arm64:
+  extends: .build_kernels
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$PARENT_PIPELINE_ID
+  tags: [ "runner:docker-arm", "platform:arm64" ]
+  parallel:
+    matrix:
+      - TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
+
+
 upload_kernel_packages_x64:
   stage: upload_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
