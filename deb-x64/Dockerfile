@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
-FROM debian:jessie-backports
+FROM ubuntu:14.04
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -22,6 +22,8 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG PATCHELF_VERSION=0.13.1
+ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
@@ -39,10 +41,14 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
 
-# The Debian Jessie GPG key expired on Sat Nov 19 2022 21:01:13 GMT+0000.
-# Use gpgv wrapper that ignores key expiration date but checks package signatures.
-COPY gpgvnoexpkeysig /usr/local/sbin
-RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
+# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
+
+# Uncommenting the two lines below makes APT use a gpgv wrapper that ignores key expiration
+# date but checks package signatures. Useful when the base distro is unsupported for
+# a long time and its repodata signatures expire.
+#COPY gpgvnoexpkeysig /usr/local/sbin
+#RUN echo 'Dir::Bin::gpg "/usr/local/sbin/gpgvnoexpkeysig";' >> /etc/apt/apt.conf.d/20datadog
 
 # Mitigation for CVE-2019-3462
 RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
@@ -52,18 +58,18 @@ RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 # expired making the following option necessary for apt to work.
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
-# NOTE: for some reason, ATM jessie-backports is only available at
-# archive.debian.org, while "debian-security jessie/updates" is only available
-# at deb.debian.org. I guess at some point it will move as well. For now,
-# we have to use combination of archive.debian.org and deb.debian.org.
-RUN echo "deb http://deb.debian.org/debian jessie main contrib non-free" > /etc/apt/sources.list && \
- echo "deb http://archive.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && \
- echo "deb http://deb.debian.org/debian-security jessie/updates main contrib non-free" > /etc/apt/sources.list.d/security.list
-
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool-bin default-jre
+  selinux-basics libtool software-properties-common default-jre
+
+# Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
+# NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
+# it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN apt-get update \
+    && apt-get install -y gcc-4.9 g++-4.9 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 0
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
@@ -158,6 +164,19 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Setup patchelf 
+RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
+    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
+    && cd patchelf-${PATCHELF_VERSION}  \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make \
+    && make install \
+    && cd - \
+    && rm -rf patchelf-${PATCHELF_VERSION} \
+    && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
 # Entrypoint
 COPY ./entrypoint.sh /
