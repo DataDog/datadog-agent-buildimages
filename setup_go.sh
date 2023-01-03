@@ -25,8 +25,6 @@ cd binutils-${BINUTILS_VERSION}
 ./configure --prefix=/usr/local/binutils && make && make install
 cd -
 
-export PATH=/usr/local/binutils/bin:$PATH
-
 # Install gimme to get go1.15.11
 curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.5/gimme
 # Check sha256sum, fail otherwise
@@ -35,6 +33,13 @@ chmod +x /bin/gimme
 eval "$(gimme 1.18.9)"
 
 git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot/src
+
+# we want the `ld` from binutils to take precedence
+export PATH=/usr/local/binutils/bin:$PATH
+
+ld -version
+/usr/local/binutils/bin/ld -version
+which ld
 
 ./all.bash
 
