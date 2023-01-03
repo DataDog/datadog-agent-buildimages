@@ -37,14 +37,18 @@ git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goro
 # we want the `ld` from binutils to take precedence
 export PATH=/usr/local/binutils/bin:$PATH
 
-ld -version
-/usr/local/binutils/bin/ld -version
-which ld
-
 ./all.bash
 
 # Update PATH to include the built go binaries
 echo 'export PATH="/goroot/bin:$PATH"' >> /root/.bashrc
+
+# Remove bison sources
+rm -rf bison-${BISON_VERSION}
+rm -rf bison-${BISON_VERSION}.tar.gz
+
+# Remove binutils sources
+rm -rf binutils-${BINUTILS_VERSION}
+rm -rf binutils-${BINUTILS_VERSION}.tar.gz
 
 # Remove gimme
 rm -rf $HOME/.gimme
