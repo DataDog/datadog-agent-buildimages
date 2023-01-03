@@ -29,7 +29,7 @@ variables:
     - cp /extra.config-$PARENT_EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
-    - make -C $LINUX_SRC_DIR defconfig
+    - make -C $LINUX_SRC_DIR ARCH=$TARGET_ARCH defconfig
     - if [[ "$ARCH" == "arm" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $ARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
       #- make -C $LINUX_SRC_DIR olddefconfig
