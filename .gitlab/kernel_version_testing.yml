@@ -29,10 +29,10 @@ variables:
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
     - make -C $LINUX_SRC_DIR defconfig
-    - make -C $LINUX_SRC_DIR kvm_guest.config
+    - if [[ "$ARCH" == "arm" && $(echo "$TARGET_TAG" | cut -d '.' -f 2) -gt 8 ]]; then make -C $LINUX_SRC_DIR kvm_guest.config; fi
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
     - make -C $LINUX_SRC_DIR olddefconfig
-    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$ARCH bindeb-pkg LOCALVERSION=-ddvm
+    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$TARGET_ARCH bindeb-pkg LOCALVERSION=-ddvm
     - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$ARCH/boot/bzImage kernel-$TARGET_TAG.$ARCH.pkg/
     - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
@@ -48,18 +48,22 @@ build_kernels_x64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$PARENT_PIPELINE_ID
   tags: [ "runner:main" ]
+  variables:
+    - ARCH: x86
   parallel:
     matrix:
-      - ARCH: x86
+      - TARGET_ARCH: x86
         TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
 
 build_kernels_arm64:
   extends: .build_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$PARENT_PIPELINE_ID
   tags: [ "runner:docker-arm", "platform:arm64" ]
+  variables:
+    - ARCH: arm
   parallel:
     matrix:
-      - ARCH: arm64
+      - TARGET_ARCH: arm64
         TARGET_TAG: ["v5.0","v5.1","v5.2","v5.3","v5.4","v5.5","v5.6","v5.7","v5.8","v5.9","v5.10","v5.11","v5.12","v5.13","v5.14","v5.15","v5.16","v5.17","v5.18","v5.19","v4.4","v4.5","v4.6","v4.7","v4.8","v4.9","v4.10","v4.11","v4.12","v4.13","v4.14","v4.15","v4.16","v4.17","v4.18","v4.19","v4.20"]
 
 
