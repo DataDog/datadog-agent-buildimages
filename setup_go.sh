@@ -22,7 +22,7 @@ curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz
 echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check
 tar -zxvf ./binutils-${BINUTILS_VERSION}.tar.gz
 cd binutils-${BINUTILS_VERSION}
-./configure --prefix=/usr/local/binutils && make && make install
+./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install
 cd -
 
 # Install gimme to get go1.15.11
