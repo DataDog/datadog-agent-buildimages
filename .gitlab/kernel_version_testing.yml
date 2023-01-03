@@ -32,7 +32,7 @@ variables:
     - make -C $LINUX_SRC_DIR defconfig
     - if [[ "$ARCH" == "arm" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $ARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/.config
-    - make -C $LINUX_SRC_DIR olddefconfig
+      #- make -C $LINUX_SRC_DIR olddefconfig
     - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$TARGET_ARCH bindeb-pkg LOCALVERSION=-ddvm
     - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$ARCH/boot/bzImage kernel-$TARGET_TAG.$ARCH.pkg/
