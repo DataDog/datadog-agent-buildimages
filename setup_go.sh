@@ -34,8 +34,9 @@ eval "$(gimme 1.18.9)"
 
 git clone --branch "go$GO_VERSION" --depth 1 https://go.googlesource.com/go goroot && cd goroot/src
 
-# we want the `ld` from binutils to take precedence
+# we want tooling from binutils to take precedence, also override ld symlink
 export PATH=/usr/local/binutils/bin:$PATH
+ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 ./all.bash
 

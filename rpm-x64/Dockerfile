@@ -25,6 +25,8 @@ ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4
 ARG PERLBREW_VERSION=0.96
 ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
 ARG PERL_VERSION=5.36.0
+ARG BINUTILS_VERSION="2.39"
+ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 
 # Environment
 ENV GOPATH /go
@@ -59,6 +61,7 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
+  texinfo \
   && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -139,6 +142,17 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+
+# Upgrade binutils
+RUN curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz \
+    && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
+    && tar -zxvf ./binutils-${BINUTILS_VERSION}.tar.gz \
+    && cd binutils-${BINUTILS_VERSION} \
+    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install \
+    && cd - \
+    && rm -rf binutils-${BINUTILS_VERSION} \
+    && rm -rf binutils-${BINUTILS_VERSION}.tar.gz
+RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
