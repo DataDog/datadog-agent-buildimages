@@ -29,11 +29,11 @@ variables:
     - cp /extra.config-$PARENT_EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
-    - make -C $LINUX_SRC_DIR ARCH=$TARGET_ARCH KCONFIG_CONFIG=start.config defconfig
+    - make -C $LINUX_SRC_DIR ARCH=$ARCH KCONFIG_CONFIG=start.config defconfig
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/start.config
     - make -C $LINUX_SRC_DIR allnoconfig KCONFIG_ALLCONFIG=start.config
     - if [[ "$ARCH" == "arm" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $ARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
-    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$TARGET_ARCH bindeb-pkg LOCALVERSION=-ddvm
+    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$ARCH bindeb-pkg LOCALVERSION=-ddvm
     - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$ARCH/boot/$BZ_IMAGE kernel-$TARGET_TAG.$ARCH.pkg/bzImage
     - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
@@ -51,7 +51,6 @@ build_kernels_x64:
   tags: [ "runner:main" ]
   variables:
     ARCH: x86
-    TARGET_ARCH: x86
     BZ_IMAGE: bzImage
   parallel:
     matrix:
@@ -62,8 +61,7 @@ build_kernels_arm64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$PARENT_PIPELINE_ID
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
-    ARCH: arm
-    TARGET_ARCH: arm64
+    ARCH: arm64
     BZ_IMAGE: Image.gz
   parallel:
     matrix:
