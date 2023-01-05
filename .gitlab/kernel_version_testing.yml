@@ -72,7 +72,7 @@ upload_kernel_packages:
   stage: upload_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   tags: [ "runner:main" ]
-  needs: [ "build_kernels_x64" ]
+  needs: [ "build_kernels_x64", "build_kernels_arm64" ]
   script:
     - KARCH=$(echo $ARCH | cut -d '_' -f 1)
     - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
@@ -83,6 +83,6 @@ upload_kernel_packages:
     - $S3_CP_CMD $KERNEL_PKG_NAME $S3_DD_AGENT_OMNIBUS_KERNEL_VERSION_TESTING_URI/kernel-packages-$ARCH.tar --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
   variables:
     KERNEL_PKG_NAME: kernel-packages-$ARCH.tar
-  parrallel:
+  parallel:
     matrix:
       - ARCH: ["x86_64", "arm64"]
