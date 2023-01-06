@@ -28,6 +28,7 @@ ARG BISON_VERSION="3.8"
 ARG BISON_SHA256="d5d184d421aee15603939973a6b0f372f908edfb24c5bc740697497021ad9458"
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG GCC_VERSION=8.4.0
 
 # Environment
 ENV GOPATH /go
@@ -48,6 +49,7 @@ ENV BISON_VERSION $BISON_VERSION
 ENV BISON_SHA256 $BISON_SHA256
 ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
+ENV GCC_VERSION $GCC_VERSION
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -185,6 +187,12 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
+# gcc
+COPY ./build-gcc.sh /build-gcc.sh
+RUN chmod +x /build-gcc.sh \
+    && PREFIX=/opt/gcc-${GCC_VERSION} /build-gcc.sh \
+    && rm /build-gcc.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
