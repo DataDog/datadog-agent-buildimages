@@ -25,6 +25,7 @@ ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4
 ARG PERLBREW_VERSION=0.96
 ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
 ARG PERL_VERSION=5.36.0
+ARG GCC_VERSION=8.4.0
 
 # Environment
 ENV GOPATH /go
@@ -230,6 +231,12 @@ RUN curl -sSL -o perlbrew-install.sh https://raw.githubusercontent.com/gugod/App
     && perlbrew switch ${PERL_VERSION} \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
+
+# gcc
+COPY ./build-gcc.sh /build-gcc.sh
+RUN chmod +x /build-gcc.sh \
+    && PREFIX=/opt/gcc-${GCC_VERSION} /build-gcc.sh \
+    && rm /build-gcc.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
