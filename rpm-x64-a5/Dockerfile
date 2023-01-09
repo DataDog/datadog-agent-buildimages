@@ -63,7 +63,7 @@ RUN yum  --disableplugin=fastestmirror -y install \
 RUN set -ex; \
     cd /usr/local/src; \
     curl --insecure http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.gz -LO; \
-    tar -xf perl-$PERL_VERSION.tar.gz; \
+    tar -xf perl-$PERL_VERSION.tar.gz --no-same-owner ; \
     rm -f perl-$PERL_VERSION.tar.gz; \
     cd perl-$PERL_VERSION; \
     ./Configure -des; \
@@ -75,7 +75,7 @@ RUN set -ex; \
 ENV OPENSSL_DIR /usr/local/ssl
 
 RUN curl -o /tmp/openssl-$OPENSSL_VERSION_ARG.tar.gz http://artfiles.org/openssl.org/source/old/$(echo $OPENSSL_VERSION_ARG | awk '{print substr($0,0, length($0)-1)}')/openssl-$OPENSSL_VERSION_ARG.tar.gz && \
-    cd /tmp && tar -xzf /tmp/openssl-$OPENSSL_VERSION_ARG.tar.gz && \
+    cd /tmp && tar -xzf /tmp/openssl-$OPENSSL_VERSION_ARG.tar.gz --no-same-owner && \
     cd /tmp/openssl-$OPENSSL_VERSION_ARG && ./Configure linux-x86_64 no-shared --prefix=${OPENSSL_DIR} --openssldir=${OPENSSL_DIR} -fPIC && make && make install && \
     echo "${OPENSSL_DIR}/lib" >> /etc/ld.so.conf && ldconfig && \
     cd - && rm -rf /tmp/openssl-$OPENSSL_VERSION_ARG && rm /tmp/openssl-$OPENSSL_VERSION_ARG.tar.gz
@@ -85,7 +85,7 @@ RUN mkdir -p /etc/ssl/certs/ && curl --insecure -sSL -o /etc/ssl/certs/ca-certif
 
 # Install tar >> 1.23 so that Omnibus can use the -J option
 RUN curl -o /tmp/tar-$TAR_VERSION_ARG.tar.gz -L http://ftp.gnu.org/gnu/tar/tar-$TAR_VERSION_ARG.tar.gz
-RUN cd /tmp && tar -xzf /tmp/tar-$TAR_VERSION_ARG.tar.gz && \
+RUN cd /tmp && tar -xzf /tmp/tar-$TAR_VERSION_ARG.tar.gz --no-same-owner && \
     rm -f /bin/tar /bin/gtar && \
     cd /tmp/tar-$TAR_VERSION_ARG && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/ && make && make install && \
     ln -sf /bin/tar /bin/gtar && \
@@ -94,7 +94,7 @@ RUN cd /tmp && tar -xzf /tmp/tar-$TAR_VERSION_ARG.tar.gz && \
 ENV CURL_DIR /opt/curl
 
 RUN curl -L -o /tmp/curl-${CURL_VERSION}.tar.gz https://curl.haxx.se/download/curl-$CURL_VERSION.tar.gz
-RUN cd /tmp && tar -xzf /tmp/curl-${CURL_VERSION}.tar.gz && \
+RUN cd /tmp && tar -xzf /tmp/curl-${CURL_VERSION}.tar.gz --no-same-owner && \
     cd /tmp/curl-${CURL_VERSION} && \
     LIBS="-ldl" ./configure --enable-static --prefix=${CURL_DIR} --with-ssl=${OPENSSL_DIR} && \
     make all && \
@@ -116,7 +116,7 @@ RUN yum -y install \
     zlib-devel
 
 RUN curl -o /tmp/git-$GIT_VERSION_ARG.tar.gz -L https://www.kernel.org/pub/software/scm/git/git-$GIT_VERSION_ARG.tar.gz && \
-    cd /tmp && tar -xzf /tmp/git-$GIT_VERSION_ARG.tar.gz && \
+    cd /tmp && tar -xzf /tmp/git-$GIT_VERSION_ARG.tar.gz --no-same-owner && \
     cd /tmp/git-$GIT_VERSION_ARG && make configure && ./configure --with-ssl --prefix=/usr \
        OPENSSLDIR=${OPENSSL_DIR} \
        CURLDIR=${CURL_DIR} \
@@ -145,7 +145,7 @@ RUN unset CPPFLAGS
 # Install go (required by to build gohai)
 # Update go to 1.10.3
 RUN curl -o /tmp/go$GOLANG_VERSION_ARG.linux-amd64.tar.gz https://dl.google.com/go/go$GOLANG_VERSION_ARG.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf /tmp/go$GOLANG_VERSION_ARG.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf /tmp/go$GOLANG_VERSION_ARG.linux-amd64.tar.gz --no-same-owner && \
     echo "PATH=$PATH:/usr/local/go/bin" | tee /etc/profile.d/go.sh
 
 
