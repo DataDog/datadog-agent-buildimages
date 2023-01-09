@@ -71,6 +71,12 @@ build_rpm_x64:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
 
+build_rpm_x64_a5:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: rpm-x64-a5/Dockerfile
+    IMAGE: rpm_x64_a5
+
 build_suse_x64:
   extends: [ .build, .x64 ]
   variables:
