@@ -20,8 +20,8 @@ ARG OPENSSL_VERSION_ARG=1.1.0j
 
 RUN rm -f /etc/yum.repos.d/*
 
-COPY ./CentOS-Base.repo \
-     ./libselinux.repo /etc/yum.repos.d/
+COPY ./agent5/rpm/CentOS-Base.repo \
+     ./agent5/rpm/libselinux.repo /etc/yum.repos.d/
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
