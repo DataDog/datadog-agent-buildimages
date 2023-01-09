@@ -162,7 +162,7 @@ RUN git clone --progress https://github.com/DataDog/integrations-core.git
 
 RUN echo -e '[datadog]\nname = Datadog, Inc.\nbaseurl = http://yum.datadoghq.com/rpm/x86_64/\nenabled=1\ngpgcheck=1\npriority=1\ngpgkey=http://yum.datadoghq.com/DATADOG_RPM_KEY.public' > /etc/yum.repos.d/datadog.repo
 
-ADD checkout_omnibus_branch.sh /
+ADD ./agent5/rpm/checkout_omnibus_branch.sh /
 
 VOLUME ["/dd-agent-omnibus/pkg"]
 
