@@ -77,6 +77,7 @@ try {
         .\helpers\phase3\install_go.ps1
         .\helpers\phase3\install_codeql.ps1
         .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
+        .\helpers\phase3\install_java.ps1
         ## # Add signtool to path
         Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
         & .\set_cpython_compiler.cmd
