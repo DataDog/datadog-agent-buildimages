@@ -70,12 +70,20 @@ build_rpm_x64:
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
+    BASE_IMAGE: centos:6
 
 build_suse_x64:
   extends: [ .build, .x64 ]
   variables:
     DOCKERFILE: suse-x64/Dockerfile
     IMAGE: suse_x64
+
+build_rpm_x64_testing:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: rpm-x64/Dockerfile
+    IMAGE: rpm_x64_testing
+    BASE_IMAGE: centos:7
 
 build_deb_arm64:
   extends: [ .build, .arm ]
@@ -193,6 +201,12 @@ test_rpm_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
+  tags: [ "runner:main" ]
+
+test_rpm_x64_testing:
+  extends: .test_agent6
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing:v$CI_PIPELINE_ID
+  needs: [ "build_rpm_x64_testing" ]
   tags: [ "runner:main" ]
 
 test_rpm_arm64:

@@ -1,3 +1,5 @@
+ARG BASE_IMAGE=centos:6
+
 FROM ubuntu as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2022-10-11
 ENV CACERT_BUNDLE_SHA256="2cff03f9efdaf52626bd1b451d700605dc1ea000c5da56bd0fc59f8f43071040"
@@ -5,7 +7,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM centos:6
+FROM $BASE_IMAGE
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -46,6 +48,8 @@ ENV RUSTC_SHA256 $RUSTC_SHA256
 ENV PERLBREW_VERSION $PERLBREW_VERSION
 ENV PERLBREW_SHA256 $PERLBREW_SHA256
 ENV PERL_VERSION $PERL_VERSION
+ENV BINUTILS_VERSION $BINUTILS_VERSION
+ENV BINUTILS_SHA256 $BINUTILS_SHA256
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
 RUN sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
@@ -152,6 +156,8 @@ RUN curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.ta
     && cd - \
     && rm -rf binutils-${BINUTILS_VERSION} \
     && rm -rf binutils-${BINUTILS_VERSION}.tar.gz
+
+# Override updated linker system-wide
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Gimme
