@@ -232,9 +232,11 @@ ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
 #       143E840EC0D0AD21E646CDD8FBCE6502094D442C
 # uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
-RUN curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
-RUN echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check
-RUN yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all
+
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+      curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
+      && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
+      && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
 
 # Download and install golangci-lint
 RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
