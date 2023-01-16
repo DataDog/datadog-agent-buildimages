@@ -8,6 +8,7 @@ RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
 FROM $BASE_IMAGE
+ARG BASE_IMAGE
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -29,8 +30,6 @@ ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518
 ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
-# weirdly, without this the argument is unavailable in subsequent layers 
-ARG BASE_IMAGE_TAG=$BASE_IMAGE  
 
 # Environment
 ENV GOPATH /go
@@ -52,11 +51,14 @@ ENV PERLBREW_SHA256 $PERLBREW_SHA256
 ENV PERL_VERSION $PERL_VERSION
 ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
-ENV BASE_IMAGE_TAG $BASE_IMAGE_TAG
+ENV BASE_IMAGE $BASE_IMAGE
 
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+      echo "VICTORY"; fi
+
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
     sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     rm /etc/yum.repos.d/CentOS-Base.repo; fi
@@ -80,7 +82,7 @@ RUN yum remove -y ruby
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
-RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
     curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
     && echo "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969  /tmp/autoconf-2.69.tar.gz" | sha256sum --check \
     && cd /tmp \
@@ -92,7 +94,7 @@ RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
 
 # New libarchive is required for the new rpm version
-RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
     curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
     && echo "9584008f5afe3fc18351c40c2cb627193f1d7c92480dea0161f11f6b63e575d2  /tmp/libarchive-3.1.2-12.el7.src.rpm" | sha256sum --check \
     && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
@@ -102,7 +104,7 @@ RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
     curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
@@ -116,7 +118,7 @@ RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
 
 # Rebuild RPM database with the new rpm
-RUN if [[ $(echo $BASE_IMAGE_TAG | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
     mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb; fi
