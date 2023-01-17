@@ -22,7 +22,7 @@ variables:
   AGENT_TESTING_BRANCH: "jaime/gobump"
   EXTRA_KCONFIG_VERSION: "0.1"
 
-  default:
+default:
   retry:
     max: 2
     when:
