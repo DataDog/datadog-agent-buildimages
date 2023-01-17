@@ -217,13 +217,17 @@ RUN rm -r /usr/src/kernels/* \
 # pub   1024D/1D1E034B 2005-06-27
 # uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
 COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
-RUN curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
-RUN echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check
-RUN yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+      curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
+      && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
+      && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
 
-ENV CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc
-ENV CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp
-ENV CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++
+# HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
+#       on the centos version; only required for centos 6 based images.
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
+      echo "CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
+      && echo "CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
+      && echo "CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
 
 # Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
 # an old mirror copy.
