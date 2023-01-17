@@ -14,3 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	xz-utils
 
 RUN pip install awscli==${AWSCLI_VERSION} invoke==${INVOKE_VERSION}
+
+COPY ./entrypoint-sysprobe.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

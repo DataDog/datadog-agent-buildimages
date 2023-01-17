@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
-eval "$(gimme)"
+if [ -n "$GIMME_GO_VERSION" ] ; then
+    eval "$(gimme)"
+fi
 
 exec "$@"
