@@ -225,9 +225,9 @@ RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \
 # HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
 #       on the centos version; only required for centos 6 based images.
 RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) == 6 ]]; then \ 
-      echo "CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
-      && echo "CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
+      echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
+      && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
+      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
 
 # Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
 # an old mirror copy.
