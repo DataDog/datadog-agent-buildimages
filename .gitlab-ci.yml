@@ -2,6 +2,7 @@ include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 stages:
   - build
+  - trigger_build_kernels
   - test
   - release
   - notify
@@ -19,8 +20,9 @@ variables:
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   AGENT_TESTING_BRANCH: "jaime/gobump"
+  EXTRA_KCONFIG_VERSION: "0.1"
 
-default:
+  default:
   retry:
     max: 2
     when:
@@ -51,7 +53,7 @@ default:
     # ECR login
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For size debug purposes
     - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
@@ -169,6 +171,35 @@ build_btf_gen:
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
+
+build_kernel_version_testing_x64:
+  extends: [ .build, .x64 ]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_kernel_version_testing_arm64:
+  extends: [ .build, .arm ]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
+
+trigger_build_kernels:
+  stage: trigger_build_kernels
+  needs: [ "build_kernel_version_testing_x64" , "build_kernel_version_testing_arm64" ]
+  rules:
+    - when: manual
+      allow_failure: true
+  # Pass variables to the child pipeline
+  variables:
+    PARENT_EXTRA_KCONFIG_VERSION: $EXTRA_KCONFIG_VERSION
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger:
+    include:
+      - local: .gitlab/kernel_version_testing.yml
+    strategy: depend
 
 .test:
   stage: test
