@@ -75,6 +75,10 @@ RUN yum -y install \
   texinfo \
   && yum clean all
 
+RUN if [[ $(echo $BASE_IMAGE | cut -f2 -d: | head -c1) != 6 ]]; then \ 
+     yum -y install policycoreutils-python; \ 
+    fi
+
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
