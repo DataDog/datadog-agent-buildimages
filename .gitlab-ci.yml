@@ -18,6 +18,7 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
+  AGENT_TESTING_BRANCH: "jaime/gobump"
 
 default:
   retry:
@@ -177,7 +178,7 @@ build_btf_gen:
   extends: .test
   before_script:
     - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - git clone https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+    - git clone -b $AGENT_TESTING_BRANCH https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
     - source /root/.bashrc && conda activate ddpy3
