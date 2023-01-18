@@ -8,22 +8,24 @@ set -ex
 # this shouldn't make a difference.
 
 # Upgrade bison 
-curl -sL -O https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz
+curl -sL -O "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz"
 echo "${BISON_SHA256}  ./bison-${BISON_VERSION}.tar.gz" | sha256sum --check
-tar -zxvf ./bison-${BISON_VERSION}.tar.gz
-cd bison-${BISON_VERSION}
+tar -zxvf "./bison-${BISON_VERSION}.tar.gz"
+cd "bison-${BISON_VERSION}"
 ./configure --prefix=/usr/local/bison && make && make install
 cd -
+rm -rf "bison-${BISON_VERSION}" "bison-${BISON_VERSION}.tar.gz"
 
 export PATH=/usr/local/bison/bin:$PATH
 
 # Upgrade binutils
-curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz
+curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz"
 echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check
-tar -zxvf ./binutils-${BINUTILS_VERSION}.tar.gz
-cd binutils-${BINUTILS_VERSION}
+tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz"
+cd "binutils-${BINUTILS_VERSION}"
 ./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install
 cd -
+rm -rf "binutils-${BINUTILS_VERSION}" "binutils-${BINUTILS_VERSION}.tar.gz"
 
 # Install gimme to get go1.15.11
 curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.5/gimme
@@ -42,14 +44,6 @@ ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Update PATH to include the built go binaries
 echo 'export PATH="/goroot/bin:$PATH"' >> /root/.bashrc
-
-# Remove bison sources
-rm -rf bison-${BISON_VERSION}
-rm -rf bison-${BISON_VERSION}.tar.gz
-
-# Remove binutils sources
-rm -rf binutils-${BINUTILS_VERSION}
-rm -rf binutils-${BINUTILS_VERSION}.tar.gz
 
 # Remove gimme
 rm -rf $HOME/.gimme

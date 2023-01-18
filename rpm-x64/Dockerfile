@@ -4,7 +4,7 @@ FROM ubuntu as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2023-01-10
 ENV CACERT_BUNDLE_SHA256="fb1ecd641d0a02c01bc9036d513cb658bbda62a75e246bedbc01764560a639f0"
 RUN apt-get update && apt-get install -y wget
-RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
+RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
 FROM $BASE_IMAGE
@@ -85,7 +85,7 @@ RUN yum remove -y ruby
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
     curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
     && echo "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969  /tmp/autoconf-2.69.tar.gz" | sha256sum --check \
     && cd /tmp \
@@ -97,7 +97,7 @@ RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
 
 # New libarchive is required for the new rpm version
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
     curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
     && echo "9584008f5afe3fc18351c40c2cb627193f1d7c92480dea0161f11f6b63e575d2  /tmp/libarchive-3.1.2-12.el7.src.rpm" | sha256sum --check \
     && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
@@ -107,7 +107,7 @@ RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
     curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
@@ -121,21 +121,21 @@ RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
 
 # Rebuild RPM database with the new rpm
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
     mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb; fi
 
 # Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
+RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
     && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
-    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
-    && cd git-${GIT_VERSION} \
+    && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
+    && cd "git-${GIT_VERSION}" \
     && make prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
-    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
+    && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -162,14 +162,14 @@ RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cle
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # Upgrade binutils
-RUN curl -sL -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz \
+RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
-    && tar -zxvf ./binutils-${BINUTILS_VERSION}.tar.gz \
-    && cd binutils-${BINUTILS_VERSION} \
+    && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
+    && cd "binutils-${BINUTILS_VERSION}" \
     && ./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install \
     && cd - \
-    && rm -rf binutils-${BINUTILS_VERSION} \
-    && rm -rf binutils-${BINUTILS_VERSION}.tar.gz
+    && rm -rf "binutils-${BINUTILS_VERSION}" \
+    && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
 
 # Override updated linker system-wide
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
@@ -194,7 +194,7 @@ COPY ./rpm-headers/systemd /usr/include/systemd
 
 # CMake
 RUN set -ex \
-    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \
+    && curl -sL -o cmake.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh" \
     && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
@@ -203,10 +203,10 @@ RUN set -ex \
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz \
+RUN curl -LO "https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" \
     && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" | sha256sum --check \
-    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --no-same-owner --strip 1 -kC /usr/ \
-    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
+    && tar -xf "clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
+    && rm "clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz"
 
 # To build the EBPF code we need kernel headers for Linux 4.9
 RUN rm -r /usr/src/kernels/* \
@@ -220,14 +220,14 @@ RUN rm -r /usr/src/kernels/* \
 # pub   1024D/1D1E034B 2005-06-27
 # uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
 COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
       curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
       && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
       && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
 
 # HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
 #       on the centos version; only required for centos 6 based images.
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
       echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
       && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
       && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
@@ -240,7 +240,7 @@ RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
 # uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
       curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
       && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
       && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
@@ -253,21 +253,21 @@ RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/gol
     && rm golangci-lint-install.sh
 
 # Rust is needed to compile some python libs
-RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
+RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Perl >= 5.14 is needed to compile the libxcrypt project
-RUN curl -sSL -o perlbrew-install.sh https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install \
+RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
     && bash ./perlbrew-install.sh \
     && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install perl-${PERL_VERSION} \
-    && perlbrew switch ${PERL_VERSION} \
+    && perlbrew install "perl-${PERL_VERSION}" \
+    && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
 
