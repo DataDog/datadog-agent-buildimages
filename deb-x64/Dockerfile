@@ -10,7 +10,7 @@ FROM ubuntu:14.04
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GO_VERSION=1.18.9
+ARG GO_VERSION=1.19.4
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -24,6 +24,10 @@ ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG BISON_VERSION="3.8"
+ARG BISON_SHA256="d5d184d421aee15603939973a6b0f372f908edfb24c5bc740697497021ad9458"
+ARG BINUTILS_VERSION="2.39"
+ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 
 # Environment
 ENV GOPATH /go
@@ -40,6 +44,10 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV BISON_VERSION $BISON_VERSION
+ENV BISON_SHA256 $BISON_SHA256
+ENV BINUTILS_VERSION $BINUTILS_VERSION
+ENV BINUTILS_SHA256 $BINUTILS_SHA256
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -61,7 +69,7 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre
+  selinux-basics libtool software-properties-common default-jre texinfo
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
