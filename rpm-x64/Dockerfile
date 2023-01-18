@@ -74,7 +74,7 @@ RUN yum -y install \
   texinfo \
   && yum clean all
 
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \ 
      yum -y install policycoreutils-python; \ 
     fi
 
