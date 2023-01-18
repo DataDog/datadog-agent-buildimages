@@ -19,7 +19,7 @@ variables:
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
-  AGENT_TESTING_BRANCH: "jaime/gobump"
+  AGENT_TESTING_BRANCH: "main"
   EXTRA_KCONFIG_VERSION: "0.1"
 
 default:
