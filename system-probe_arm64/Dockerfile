@@ -45,7 +45,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-dev \
         default-jre \
         wget \
-        xz-utils
+        xz-utils \
+        openssh-client
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
@@ -67,3 +68,14 @@ ENV PATH "/opt/clang/bin:${PATH}"
 COPY ./requirements.txt /
 RUN python3 -m pip install wheel
 RUN python3 -m pip install -r requirements.txt
+
+# Install pulumi
+RUN curl -fsSL https://get.pulumi.com | sh    
+ENV PATH "/root/.pulumi/bin:${PATH}"
+ENV PULUMI_CONFIG_PASSPHRASE "1234"
+RUN pulumi login --local
+
+COPY ./entrypoint-sysprobe.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
