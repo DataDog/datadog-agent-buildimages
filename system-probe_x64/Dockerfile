@@ -47,7 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         default-jre \
         wget \
         xz-utils \
-        openssh-client
+        openssh-client \
+        xsltproc
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
