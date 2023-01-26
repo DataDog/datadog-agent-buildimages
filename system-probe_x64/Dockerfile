@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         linux-libc-dev \
         make \
         ninja-build \
+        openssh-client \
         patch \
         pkg-config \
         python \
@@ -46,9 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-dev \
         default-jre \
         wget \
-        xz-utils \
-        openssh-client \
-        xsltproc
+        xsltproc \
+        xz-utils
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
