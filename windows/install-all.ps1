@@ -1,5 +1,6 @@
 param(
-    [Parameter(Mandatory = $false)][switch] $TargetContainer
+    [Parameter(Mandatory = $false)][switch] $TargetContainer,
+    [Parameter(Mandatory = $false)][string] $Phase = "0"
 )
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -38,32 +39,51 @@ if($TargetContainer){
 }
 
 try {
-    .\helpers\install_net35.ps1
-    .\helpers\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
-    .\helpers\install_vstudio.ps1 #-Version $ENV:VS2017BUILDTOOLS_VERSION -Sha256 $ENV:VS2017BUILDTOOLS_SHA256 $ENV:VS2017BUILDTOOLS_DOWNLOAD_URL
-    .\helpers\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
+    # Each phase is its own layer in the Dockerfile, to make it easier to iterate on changes
+    # by making use of Docker's layer cache. The phases are roughly organized by dependencies,
+    # install time, and frequency of updates, with longer install times and less frequently
+    # changed items in the earlier phases.
+    #
+    # Phase 4 is empty by default. Before starting work on updating an item move the script to Phase 4.
+    #
+    if ($Phase -eq 0 -or $Phase -eq 1) {
+        .\helpers\phase1\install_net35.ps1
+        .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
+        .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
+        .\helpers\phase1\install_vstudio.ps1
+        .\helpers\phase1\install_wdk.ps1
+        .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
+        .\helpers\phase1\install_dotnetcore.ps1
+        .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
+        .\helpers\phase1\install_vcpython.ps1
+        .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
+        # # vcpkg depends on cmake
+        .\helpers\phase1\install_vcpkg.ps1
+    }
 
-    .\helpers\install_wdk.ps1
-    .\helpers\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
-    .\helpers\install_dotnetcore.ps1
-    .\helpers\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
-    .\helpers\install_vcpython.ps1
-    .\helpers\install_ibm_mq.ps1 -Version $ENV:IBM_MQ_VERSION -Sha256 $ENV:IBM_MQ_SHA256
-    .\helpers\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
-    .\helpers\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
-    .\helpers\install_go.ps1
-    .\helpers\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
-    .\helpers\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
-    .\helpers\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
-    .\helpers\install_docker.ps1
-    .\helpers\install_gcloud_sdk.ps1
-    .\helpers\install_embedded_pythons.ps1
-    .\helpers\install_vcpkg.ps1
-    .\helpers\install_codeql.ps1
-    .\helpers\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
-    ## # Add signtool to path
-    Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
-    & .\set_cpython_compiler.cmd
+    if ($Phase -eq 0 -or $Phase -eq 2) {
+        .\helpers\phase2\install_docker.ps1
+        .\helpers\phase2\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
+        # msys depends on ruby
+        .\helpers\phase2\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
+        .\helpers\phase2\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
+        .\helpers\phase2\install_gcloud_sdk.ps1
+        .\helpers\phase2\install_embedded_pythons.ps1
+    }
+
+    if ($Phase -eq 0 -or $Phase -eq 3) {
+        .\helpers\phase3\install_ibm_mq.ps1 -Version $ENV:IBM_MQ_VERSION -Sha256 $ENV:IBM_MQ_SHA256
+        .\helpers\phase3\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
+        .\helpers\phase3\install_go.ps1
+        .\helpers\phase3\install_codeql.ps1
+        .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
+        ## # Add signtool to path
+        Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
+        & .\set_cpython_compiler.cmd
+    }
+
+    if ($Phase -eq 0 -or $Phase -eq 4) {
+    }
 }
 catch {
     Write-Host -ForegroundColor Red "Error installing software"
