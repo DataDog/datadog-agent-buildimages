@@ -65,7 +65,14 @@ COPY ./requirements.txt ./requirements-py2.txt /
 COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 
-RUN .\install-all.ps1 -TargetContainer
+COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
+RUN .\install-all.ps1 -TargetContainer -Phase 1
+COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
+RUN .\install-all.ps1 -TargetContainer -Phase 2
+COPY ./windows/helpers/phase3/*.ps1 c:/scripts/helpers/phase3/
+RUN .\install-all.ps1 -TargetContainer -Phase 3
+COPY ./windows/helpers/phase4/*.ps1 c:/scripts/helpers/phase4/
+RUN .\install-all.ps1 -TargetContainer -Phase 4
 
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
