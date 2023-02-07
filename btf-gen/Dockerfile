@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV AWSCLI_VERSION=1.25.55
