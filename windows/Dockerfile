@@ -56,9 +56,7 @@ LABEL codeql_version=${CODEQL_VERSION}
 
 ## WORKDIR should automatically create the directory
 WORKDIR c:/scripts
-COPY ./windows/versions.ps1 versions.ps1
-COPY ./windows/install-all.ps1 install-all.ps1
-COPY ./windows/helpers.ps1 helpers.ps1
+COPY ./windows/*.ps1 .
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
 COPY ./requirements.txt ./requirements-py2.txt /
