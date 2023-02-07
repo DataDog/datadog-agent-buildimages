@@ -13,4 +13,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	python3-pip \
 	xz-utils
 
+RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/a08318c86abe0ebb68e0301e5d6861a860b8c765/bin/pyenv-installer > pyenv-installer.sh
+RUN echo "33ba007f17d31215349fd0a693a77fd3d332063fb3a44b8994dfde87728b94e1  pyenv-installer.sh" | sha256sum --check
+RUN bash pyenv-installer.sh
+
+ENV PYENV_ROOT="$HOME/.pyenv"
+ENV PATH="$PYENV_ROOT/bin:$PATH"
+
+RUN pyenv global pypy-3.7.9
+RUN python --version
+
 RUN pip install awscli==${AWSCLI_VERSION} invoke==${INVOKE_VERSION}
