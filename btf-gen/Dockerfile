@@ -17,8 +17,7 @@ RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/a08318
 RUN echo "33ba007f17d31215349fd0a693a77fd3d332063fb3a44b8994dfde87728b94e1  pyenv-installer.sh" | sha256sum --check
 RUN bash pyenv-installer.sh
 
-ENV PYENV_ROOT="$HOME/.pyenv"
-ENV PATH="$PYENV_ROOT/bin:$PATH"
+RUN exec "$SHELL"
 
 RUN pyenv global pypy-3.7.9
 RUN python --version
