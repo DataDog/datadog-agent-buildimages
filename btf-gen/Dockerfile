@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	curl \
 	git \
 	ninja-build \
+    patch \
 	python3 \
 	python3-pip \
 	xz-utils
@@ -17,7 +18,7 @@ RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/a08318
 RUN echo "33ba007f17d31215349fd0a693a77fd3d332063fb3a44b8994dfde87728b94e1  pyenv-installer.sh" | sha256sum --check
 RUN bash pyenv-installer.sh
 
-RUN ~/.pyenv/bin/pyenv install -s 3.7.9
+RUN ~/.pyenv/bin/pyenv install 3.7.9
 RUN ~/.pyenv/bin/pyenv global 3.7.9
 RUN python --version
 
