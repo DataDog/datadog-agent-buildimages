@@ -30,6 +30,8 @@ ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518
 ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG GCC_VERSION=10.4.0
+ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 
 # Environment
 ENV GOPATH /go
@@ -52,6 +54,7 @@ ENV PERL_VERSION $PERL_VERSION
 ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
 ENV BASE_IMAGE $BASE_IMAGE
+ENV GCC_VERSION $GCC_VERSION
 
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
@@ -270,6 +273,12 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
+
+# gcc
+COPY ./build-gcc.sh /build-gcc.sh
+RUN chmod +x /build-gcc.sh \
+    && /build-gcc.sh \
+    && rm /build-gcc.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
