@@ -5,16 +5,16 @@ ENV AWSCLI_VERSION=1.25.55
 ENV INVOKE_VERSION=1.6.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	bpftool \
+    bpftool \
     build-essential \
-	curl \
-	git \
+    curl \
+    git \
     libssl-dev \
     zlib1g-dev \
-	ninja-build \
+    ninja-build \
     patch \
-	python3-pip \
-	xz-utils
+    python3-pip \
+    xz-utils
 
 ENV PYENV_ROOT="${HOME}/.pyenv"
 ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
