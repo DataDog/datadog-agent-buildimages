@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
 RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff
-COPY Makefile.patch ./
+COPY btf-gen/Makefile.patch ./
 RUN git apply Makefile.patch
 
 RUN make -C src/ V=1 install
