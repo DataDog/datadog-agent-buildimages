@@ -7,18 +7,18 @@ ENV INVOKE_VERSION=1.6.0
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang \
-	curl \
-	git \
+    curl \
+    git \
     libcap-dev \
     libelf-dev \
     libz-dev \
     llvm \
     llvm-dev \
     lld \
-	ninja-build \
-	python3 \
-	python3-pip \
-	xz-utils
+    ninja-build \
+    python3 \
+    python3-pip \
+    xz-utils
 
 RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
