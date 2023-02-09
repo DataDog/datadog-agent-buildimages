@@ -9,15 +9,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \
 	curl \
 	git \
+    libcap-dev \
     libelf-dev \
+    libz-dev \
     llvm \
+    llvm-dev \
+    lld \
 	ninja-build \
 	python3 \
 	python3-pip \
-	xz-utils \
-    zlib1g-dev
+	xz-utils
 
 RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
-RUN make -C bpftool/src V=1 install
+WORKDIR bpftool
+RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff
+COPY Makefile.patch ./
+RUN git apply Makefile.patch
+
+RUN make -C src/ V=1 install
 
 RUN pip install awscli==${AWSCLI_VERSION} invoke==${INVOKE_VERSION}
