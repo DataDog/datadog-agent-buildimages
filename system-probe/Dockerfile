@@ -2,6 +2,7 @@ FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION=1.19.5
+ARG DD_TARGET_ARCH
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
@@ -13,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         flex \
         g++ \
         gcc \
+        $(if [ "$DD_TARGET_ARCH" = "x64" ]; then echo "gcc-multilib"; fi) \
         git \
         libbpf-dev \
         libedit-dev \
@@ -26,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         $(apt-cache search --names-only linux-headers-5.* | \
           cut -d " " -f 1 | \
           grep "\-common$" | \
-          sed -rn 's/(.*deb10\.)([0-9]+)-common/\2 \0 \1\2-arm64/p' | \
+          sed -rn 's/(.*deb10\.)([0-9]+)-common/\2 \0 \1\2-$(dpkg --print-architecture)/p' | \
           sort -gr | \
           head -n 1 | \
           cut -f 2-3 -d " ") \
@@ -52,18 +54,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
 
-RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+RUN if [ "$DD_TARGET_ARCH" = "x64"]; then \
+  wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "36519702ae2fd573c9869461990ae550c8c0d955cd28d2827a6b159fda81ff95  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz; fi
+
+RUN if [ "$DD_TARGET_ARCH" = "aarch64"]; then \
+  wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
   && echo "fc0aa29c933cec8d76f5435d859aaf42249aa08c74eb2d154689ae44c08d23b3  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+  && rm -f /tmp/golang.tar.gz; fi
+
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 
 # install clang from the website since the package manager can change at any time
-RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
-RUN echo "3d4ad804b7c85007686548cbc917ab067bf17eaedeab43d9eb83d3a683d8e9d4  /tmp/clang.tar.xz" | sha256sum --check
-RUN mkdir -p /opt/clang
-RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
+RUN if [ "$DD_TARGET_ARCH" = "x64"]; then \
+  wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \
+  && echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp/clang.tar.xz" | sha256sum --check \
+  && mkdir -p /opt/clang \
+  && tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1; fi
+
+RUN if [ "$DD_TARGET_ARCH" = "aarch64"]; then \
+  wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \
+  & &echo "3d4ad804b7c85007686548cbc917ab067bf17eaedeab43d9eb83d3a683d8e9d4  /tmp/clang.tar.xz" | sha256sum --check \
+  && mkdir -p /opt/clang \
+  && tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1; fi
+
 ENV PATH "/opt/clang/bin:${PATH}"
 
 COPY ./requirements.txt /
