@@ -121,13 +121,13 @@ build_rpm_armhf:
 build_system-probe_x64:
   extends: [ .build, .x64 ]
   variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
+    DOCKERFILE: system-probe/Dockerfile
     IMAGE: system-probe_x64
 
 build_system-probe_arm64:
   extends: [ .build, .arm ]
   variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
+    DOCKERFILE: system-probe/Dockerfile
     IMAGE: system-probe_arm64
 
 build_omnibus-nikos_x64:
