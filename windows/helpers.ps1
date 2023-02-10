@@ -62,7 +62,7 @@ function Get-RemoteFile() {
     Write-Host -ForegroundColor Green "Downloading: $RemoteFile"
     Write-Host -ForegroundColor Green "         To: $LocalFile"
     (New-Object System.Net.WebClient).DownloadFile($RemoteFile, $LocalFile)
-    if ($VerifyHash){
+    if ($PSBoundParameters.ContainsKey("VerifyHash")){
         $dlhash = (Get-FileHash -Algorithm SHA256 $LocalFile).hash.ToLower()
         if($dlhash -ne $VerifyHash){
             Write-Host -ForegroundColor Red "Unexpected file hash downloading $LocalFile from $RemoteFile"
