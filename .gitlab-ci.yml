@@ -290,6 +290,7 @@ test_windows_ltsc2022_x64:
 .release:
   stage: release
   except: [ tags, schedules ]
+  only: [ master, main ]
   tags: [ "runner:docker" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
