@@ -172,6 +172,12 @@ build_btf_gen:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
 
+build_e2e_test_runner:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: e2e-test-runner/Dockerfile
+    IMAGE: e2e-test-runner
+
 build_kernel_version_testing_x64:
   extends: [ .build, .x64 ]
   variables:
