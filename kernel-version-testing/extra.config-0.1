@@ -1125,6 +1125,10 @@ CONFIG_VMXNET3=m
 CONFIG_FUJITSU_ES=m
 CONFIG_NETDEVSIM=m
 CONFIG_NET_FAILOVER=m
+# CONFIG_CONNECTOR is required for the driver
+# enabling kernel-space <-> userspace comm.
+# On ARM kernels this is not present in defaultconfig
+CONFIG_CONNECTOR=y
 
 # Docker
 CONFIG_DM_THIN_PROVISIONING=m
