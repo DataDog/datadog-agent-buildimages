@@ -46,3 +46,13 @@ if(-Not (test-path $jsignjardir)){
 }
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
 setx JARSIGN_JAR "$($jsignout)"
+
+## need to have more rigorous download at some point, but
+$jsignjarsrc = "https://drive.google.com/file/d/1UEU58AkjJAe1fSnuN1WsAx4xZiWWG7PX/view?usp=sharing"
+$jsignjardir = "c:\devtools\jsign"
+$jsignout = "$($jsignjardir)\jsign-4.2.jar"
+if(-Not (test-path $jsignjardir)){
+    mkdir $jsignjardir
+}
+(New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
+setx JARSIGN_JAR "$($jsignout)"
