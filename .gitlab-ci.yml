@@ -225,37 +225,37 @@ trigger_build_kernels:
 
 test_deb_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_deb_x64" ]
   tags: [ "runner:main" ]
 
 test_deb_arm64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_rpm_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
   tags: [ "runner:main" ]
 
 test_rpm_x64_testing:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64_testing" ]
   tags: [ "runner:main" ]
 
 test_rpm_arm64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_suse_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_suse_x64" ]
   tags: [ "runner:main" ]
 
@@ -271,7 +271,7 @@ test_suse_x64:
 
 test_system-probe_x64:
   extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
   tags: [ "runner:main" ]
   variables:
@@ -279,7 +279,7 @@ test_system-probe_x64:
 
 test_system-probe_arm64:
   extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
