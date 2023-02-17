@@ -46,8 +46,9 @@ default:
 
 .build:
   stage: build
-  except: [ tags ]
   rules:
+    - if: '$CI_COMMIT_TAG != null'
+      when: never
     # If the commit was made on main then use the classic ECR
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
