@@ -48,7 +48,7 @@ variables:
 
 build_kernels_x64:
   extends: .build_kernels
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64:v$PARENT_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64${ECR_TEST_ONLY}:v$PARENT_PIPELINE_ID
   tags: [ "runner:main" ]
   variables:
     ARCH: x86
@@ -59,7 +59,7 @@ build_kernels_x64:
 
 build_kernels_arm64:
   extends: .build_kernels
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64:v$PARENT_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64${ECR_TEST_ONLY}:v$PARENT_PIPELINE_ID
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
     ARCH: arm64
