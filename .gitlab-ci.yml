@@ -32,8 +32,12 @@ workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
-        # Don't use the `*_test_only` ECR for images built from main's commits
+        # Don't use the `*_test_only` ECR for images built from commits that are on main
         ECR_TEST_ONLY: ""
+    - if: '$CI_COMMIT_BRANCH != "main"'
+      variables:
+        # Use the `*_test_only` ECR for images built from commits that are not on main
+        ECR_TEST_ONLY: "_test_only"
 
 
 default:
