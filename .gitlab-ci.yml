@@ -23,6 +23,19 @@ variables:
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
 
+#
+# Workflow rules
+# Rules used to define whether a pipeline should run, and with which variables
+#
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      variables:
+        # Don't use the `*_test_only` ECR for images build from main's commits
+        ECR_TEST_ONLY: ""
+
+
 default:
   retry:
     max: 2
@@ -46,12 +59,7 @@ default:
 
 .build:
   stage: build
-  rules:
-    - if: '$CI_COMMIT_TAG == null'
-    # If the commit was made on main then use the classic ECR
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      variables:
-        ECR_TEST_ONLY: ""
+  except: [ tags ]
   script:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
@@ -287,12 +295,7 @@ test_system-probe_arm64:
 
 .winbuild: &winbuild
   stage: build
-  rules:
-    - if: '$CI_COMMIT_TAG == null'
-    # If the commit was made on main then use the classic ECR
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      variables:
-        ECR_TEST_ONLY: ""
+  except: [ tags ]
   timeout: 2h 00m
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
