@@ -22,7 +22,8 @@ ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df1
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
-
+ARG LIBRDKAFKA_VERSION=2.0.2
+ARG LIBRDKAFKA_SHA256="f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"
 
 # Environment
 ENV GOPATH /go
@@ -33,14 +34,17 @@ ENV CLANG_VERSION $CLANG_VERSION
 ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV LIBRDKAFKA_VERSION $LIBRDKAFKA_VERSION
+ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre
+    selinux-basics default-jre libsasl2-dev libssl-dev libcurl4-openssl-dev \
+    zlib1g-dev libsasl2-modules-gssapi-mit krb5-user
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64
@@ -109,6 +113,18 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz ht
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
+
+# librdkafka
+RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
+    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
+    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
+    && cd librdkafka-${LIBRDKAFKA_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /

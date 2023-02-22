@@ -83,6 +83,7 @@ try {
     }
 
     if ($Phase -eq 0 -or $Phase -eq 4) {
+        .\helpers\phase4\install_librdkafka.ps1 -Version $ENV:LIBRDKAFKA_VERSION
     }
 }
 catch {

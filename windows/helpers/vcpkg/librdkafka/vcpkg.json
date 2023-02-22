@@ -1,0 +1,13 @@
+{
+  "name": "buildimage-librdkafka",
+  "version": "1.0.0",
+  "dependencies": [
+    "librdkafka"
+  ],
+  "overrides": [
+    {
+      "name": "librdkafka", "version": "2.0.2"
+    }
+  ],
+  "builtin-baseline": "f14984af3738e69f197bf0e647a8dca12de92996"
+}

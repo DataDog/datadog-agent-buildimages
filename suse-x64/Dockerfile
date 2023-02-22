@@ -26,6 +26,8 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG LIBRDKAFKA_VERSION=2.0.2
+ARG LIBRDKAFKA_SHA256="f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"
 
 # Environment
 ENV GOPATH /go
@@ -40,6 +42,8 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV LIBRDKAFKA_VERSION $LIBRDKAFKA_VERSION
+ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
@@ -147,6 +151,18 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# librdkafka
+RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
+    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
+    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
+    && cd librdkafka-${LIBRDKAFKA_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /

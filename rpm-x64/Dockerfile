@@ -30,6 +30,8 @@ ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518
 ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG LIBRDKAFKA_VERSION=2.0.2
+ARG LIBRDKAFKA_SHA256="f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"
 
 # Environment
 ENV GOPATH /go
@@ -52,6 +54,8 @@ ENV PERL_VERSION $PERL_VERSION
 ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
 ENV BASE_IMAGE $BASE_IMAGE
+ENV LIBRDKAFKA_VERSION $LIBRDKAFKA_VERSION
+ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
@@ -68,7 +72,7 @@ RUN yum -y install \
   which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar libtool \
+  glibc-static tar libtool cyrus-sasl-devel curl-devel openldap-devel cyrus-sasl-gssapi krb5-workstation \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
   texinfo \
@@ -270,6 +274,18 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
+
+# librdkafka
+RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
+    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
+    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
+    && cd librdkafka-${LIBRDKAFKA_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /
