@@ -1,7 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_VERSION=1.19.5
+ARG GO_VERSION=1.19.6
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
