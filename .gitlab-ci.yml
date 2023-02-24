@@ -21,6 +21,24 @@ variables:
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   AGENT_TESTING_BRANCH: "main"
   EXTRA_KCONFIG_VERSION: "0.1"
+  ECR_TEST_ONLY: "_test_only"
+
+#
+# Workflow rules
+# Rules used to define whether a pipeline should run, and with which variables
+#
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      variables:
+        # Don't use the `*_test_only` ECR for images built from commits that are on main
+        ECR_TEST_ONLY: ""
+    - if: '$CI_COMMIT_BRANCH != "main"'
+      variables:
+        # Use the `*_test_only` ECR for images built from commits that are not on main
+        ECR_TEST_ONLY: "_test_only"
+
 
 default:
   retry:
@@ -53,14 +71,14 @@ default:
     # ECR login
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For size debug purposes
-    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
     # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID
-    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID; fi
+    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID; fi
 
 build_deb_x64:
   extends: [ .build, .x64 ]
@@ -219,37 +237,37 @@ trigger_build_kernels:
 
 test_deb_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_deb_x64" ]
   tags: [ "runner:main" ]
 
 test_deb_arm64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_rpm_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64" ]
   tags: [ "runner:main" ]
 
 test_rpm_x64_testing:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_x64_testing" ]
   tags: [ "runner:main" ]
 
 test_rpm_arm64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_rpm_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_suse_x64:
   extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_suse_x64" ]
   tags: [ "runner:main" ]
 
@@ -265,7 +283,7 @@ test_suse_x64:
 
 test_system-probe_x64:
   extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_x64" ]
   tags: [ "runner:main" ]
   variables:
@@ -273,7 +291,7 @@ test_system-probe_x64:
 
 test_system-probe_arm64:
   extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64:v$CI_PIPELINE_ID
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
   needs: [ "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
@@ -287,13 +305,13 @@ test_system-probe_arm64:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
 build_windows_1809_x64:
   extends: .winbuild
@@ -320,11 +338,11 @@ build_windows_ltsc2022_x64:
     - git clone https://github.com/DataDog/datadog-agent datadog-agent
     - cd datadog-agent
     - $VERSION="nightly"
-    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true -e S3_OMNIBUS_CACHE_BUCKET="${S3_OMNIBUS_CACHE_BUCKET}" -e S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS="${S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
+    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true -e S3_OMNIBUS_CACHE_BUCKET="${S3_OMNIBUS_CACHE_BUCKET}" -e S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS="${S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
 test_windows_1809_x64:
   extends: .test_windows
