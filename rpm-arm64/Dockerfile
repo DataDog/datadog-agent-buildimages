@@ -106,18 +106,6 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
 
-# librdkafka
-RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
-    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
-    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
-    && cd librdkafka-${LIBRDKAFKA_VERSION} \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
-
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh

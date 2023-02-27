@@ -12,15 +12,11 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GIMME_GO_VERSION=1.19.5
 ARG DD_TARGET_ARCH=armhf
-ARG LIBRDKAFKA_VERSION=2.0.2
-ARG LIBRDKAFKA_SHA256="f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"
 
 # Environment
 ENV GOPATH /go
 ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV LIBRDKAFKA_VERSION $LIBRDKAFKA_VERSION
-ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 
 # configure yum and rpm for running on non-armv7l architectures
 RUN echo "armhfp" > /etc/yum/vars/basearch && \
@@ -101,18 +97,6 @@ RUN chmod +x /bin/gimme
 # https://github.com/golang/go/blob/master/src/go/build/syslist.go
 # Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
 RUN GIMME_ARCH=arm gimme $GIMME_GO_VERSION
-
-# librdkafka
-RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
-    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
-    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
-    && cd librdkafka-${LIBRDKAFKA_VERSION} \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 COPY ./gobin.sh /etc/profile.d/
 

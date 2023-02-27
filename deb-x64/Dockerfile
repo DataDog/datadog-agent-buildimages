@@ -28,8 +28,6 @@ ARG BISON_VERSION="3.8"
 ARG BISON_SHA256="d5d184d421aee15603939973a6b0f372f908edfb24c5bc740697497021ad9458"
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
-ARG LIBRDKAFKA_VERSION=2.0.2
-ARG LIBRDKAFKA_SHA256="f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"
 
 # Environment
 ENV GOPATH /go
@@ -50,8 +48,6 @@ ENV BISON_VERSION $BISON_VERSION
 ENV BISON_SHA256 $BISON_SHA256
 ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
-ENV LIBRDKAFKA_VERSION $LIBRDKAFKA_VERSION
-ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -190,18 +186,6 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
-
-# librdkafka
-RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
-    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
-    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
-    && cd librdkafka-${LIBRDKAFKA_VERSION} \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /
