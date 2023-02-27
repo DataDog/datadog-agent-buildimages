@@ -234,8 +234,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
       && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc \
-      && source /root/.bashrc; fi
+      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
 
 # Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
 # an old mirror copy.
@@ -266,16 +265,6 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
-# Perl >= 5.14 is needed to compile the libxcrypt project
-RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
-    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
-    && bash ./perlbrew-install.sh \
-    && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install "perl-${PERL_VERSION}" \
-    && perlbrew switch "${PERL_VERSION}" \
-    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
-    && rm perlbrew-install.sh
-
 # librdkafka
 RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
     && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
@@ -287,6 +276,16 @@ RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIB
     && make install \
     && cd .. \
     && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
+
+# Perl >= 5.14 is needed to compile the libxcrypt project
+RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
+    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
+    && bash ./perlbrew-install.sh \
+    && source /root/perl5/perlbrew/etc/bashrc \
+    && perlbrew install "perl-${PERL_VERSION}" \
+    && perlbrew switch "${PERL_VERSION}" \
+    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
+    && rm perlbrew-install.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
