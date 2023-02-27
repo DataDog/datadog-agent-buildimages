@@ -265,18 +265,6 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
-# librdkafka
-RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
-    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
-    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
-    && cd librdkafka-${LIBRDKAFKA_VERSION} \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
-
 # Perl >= 5.14 is needed to compile the libxcrypt project
 RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
@@ -286,6 +274,19 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
+
+# librdkafka
+RUN source /root/.bashrc \
+    && curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
+    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
+    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
+    && cd librdkafka-${LIBRDKAFKA_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /
