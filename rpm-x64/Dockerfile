@@ -61,7 +61,7 @@ ENV LIBRDKAFKA_SHA256 $LIBRDKAFKA_SHA256
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
 # Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \ 
+RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
     sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
     rm /etc/yum.repos.d/CentOS-Base.repo; fi
@@ -111,7 +111,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
