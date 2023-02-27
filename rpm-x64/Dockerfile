@@ -234,7 +234,8 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
       && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
+      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc \
+      && source /root/.bashrc; fi
 
 # Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
 # an old mirror copy.
