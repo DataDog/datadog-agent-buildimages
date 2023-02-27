@@ -78,8 +78,8 @@ RUN yum -y install \
   texinfo \
   && yum clean all
 
-RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \ 
-     yum -y install policycoreutils-python; \ 
+RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \
+     yum -y install policycoreutils-python; \
     fi
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -89,7 +89,7 @@ RUN yum remove -y ruby
 
 # Autoconf
 # We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
     && echo "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969  /tmp/autoconf-2.69.tar.gz" | sha256sum --check \
     && cd /tmp \
@@ -101,7 +101,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
 
 # New libarchive is required for the new rpm version
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
     && echo "9584008f5afe3fc18351c40c2cb627193f1d7c92480dea0161f11f6b63e575d2  /tmp/libarchive-3.1.2-12.el7.src.rpm" | sha256sum --check \
     && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
@@ -125,7 +125,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
 
 # Rebuild RPM database with the new rpm
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb; fi
@@ -151,6 +151,18 @@ COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
+# librdkafka
+RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
+    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
+    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
+    && cd librdkafka-${LIBRDKAFKA_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -224,14 +236,14 @@ RUN rm -r /usr/src/kernels/* \
 # pub   1024D/1D1E034B 2005-06-27
 # uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
 COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
       && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
       && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
 
 # HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
 #       on the centos version; only required for centos 6 based images.
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
       && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
       && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
@@ -244,7 +256,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 # uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
       && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
       && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
@@ -274,18 +286,6 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
-
-# librdkafka
-RUN curl -LO https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VERSION}.tar.gz \
-    && echo "${LIBRDKAFKA_SHA256}  v${LIBRDKAFKA_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xf "v${LIBRDKAFKA_VERSION}.tar.gz" --no-same-owner \
-    && rm "v${LIBRDKAFKA_VERSION}.tar.gz" \
-    && cd librdkafka-${LIBRDKAFKA_VERSION} \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf librdkafka-${LIBRDKAFKA_VERSION}
 
 # Entrypoint
 COPY ./entrypoint.sh /
