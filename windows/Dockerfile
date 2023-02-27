@@ -58,7 +58,6 @@ LABEL codeql_version=${CODEQL_VERSION}
 WORKDIR c:/scripts
 COPY ./windows/*.ps1 ./
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
-COPY ./windows/helpers/vcpkg/* c:/scripts/helpers/vcpkg
 
 COPY ./requirements.txt ./requirements-py2.txt /
 COPY ./python-packages-versions.txt /python-packages-versions.txt
