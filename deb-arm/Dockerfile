@@ -78,6 +78,7 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
