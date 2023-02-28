@@ -297,6 +297,18 @@ test_system-probe_arm64:
   variables:
     ARCH: arm64
 
+test-regular-agent-linux:
+  extends: .test
+  when: manual
+  variables:
+    DATADOG_AGENT_BUILDIMAGES: v$CI_PIPELINE_ID
+    DATADOG_AGENT_ARMBUILDIMAGES: v$CI_PIPELINE_ID
+    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: v$CI_PIPELINE_ID
+    DATADOG_AGENT_NIKOS_BUILDIMAGES: v$CI_PIPELINE_ID
+  trigger:
+    project: DataDog/datadog-agent
+    strategy: depend
+
 test-full-agent-linux:
   extends: .test
   when: manual
