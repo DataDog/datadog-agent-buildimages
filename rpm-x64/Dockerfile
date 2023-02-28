@@ -249,13 +249,6 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
       && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
 
-# Download and install golangci-lint
-RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
-    && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
-    && sh ./golangci-lint-install.sh -b $GOPATH/bin v1.21.0 \
-    && echo "942efc00799b83aebaf6628c34e1151467b7fa21f0cfd78554279dc73f8c8ef3  $GOPATH/bin/golangci-lint" | sha256sum --check \
-    && rm golangci-lint-install.sh
-
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
