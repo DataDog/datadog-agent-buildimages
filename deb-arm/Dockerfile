@@ -16,7 +16,7 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.19.7
+ARG GO_VERSION=1.19.7
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -79,21 +79,21 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-
-# GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
-# https://github.com/golang/go/blob/master/src/go/build/syslist.go
-# Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
+# Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-        GIMME_ARCH=arm64 gimme $GIMME_GO_VERSION ; \
-    else \
-        GIMME_ARCH=arm gimme $GIMME_GO_VERSION ; \
-    fi
+    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+    && echo "071ea7bf386fdd08df524859b878d99fc359e491e7ad65c1c1cc55b67972c882  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz ; fi
 
-COPY ./gobin.sh /etc/profile.d/
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
+    && echo "93b1f621ddfc2c2b4e383e185fa7801e80f8b546918cb96afea2723677928312  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz ; fi
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # CMake
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
@@ -119,14 +119,5 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && /build-gcc.sh \
     && rm /build-gcc.sh ; fi
 
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
-
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
-
-ENTRYPOINT ["/entrypoint.sh"]
