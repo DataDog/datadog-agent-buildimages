@@ -116,11 +116,11 @@ function Update-SessionEnvironment {
 # Content: ENV VS2017BUILDTOOLS_DOWNLOAD_URL "https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe"
 [System.Environment]::SetEnvironmentVariable('VS2017BUILDTOOLS_DOWNLOAD_URL','https://download.visualstudio.microsoft.com/download/pr/9b3476ff-6d0a-4ff8-956d-270147f21cd4/ccfb9355f4f753315455542f966025f96de734292d3908c8c3717e9685b709f0/vs_BuildTools.exe')
 
-# Content: ENV GO_VERSION "1.19.5"
-[System.Environment]::SetEnvironmentVariable('GO_VERSION','1.19.5')
+# Content: ENV GO_VERSION "1.19.6"
+[System.Environment]::SetEnvironmentVariable('GO_VERSION','1.19.6')
 
 # Content: ENV GO_SHA256 "167db91a2e40aeb453d3e59d213ecab06f62e1c4a84d13a06ccda1d999961caa"
-[System.Environment]::SetEnvironmentVariable('GO_SHA256','167db91a2e40aeb453d3e59d213ecab06f62e1c4a84d13a06ccda1d999961caa')
+[System.Environment]::SetEnvironmentVariable('GO_SHA256','8d84af29e46c38b1eec77f9310310517c9e394ac7489e1c7329a94b443b0388d')
 
 # Content: ENV RUBY_VERSION "2.6.6-1"
 [System.Environment]::SetEnvironmentVariable('RUBY_VERSION','2.6.6-1')
