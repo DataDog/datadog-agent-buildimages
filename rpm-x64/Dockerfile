@@ -68,7 +68,7 @@ RUN yum -y install \
   which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar libtool cyrus-sasl-devel curl-devel openldap-devel cyrus-sasl-gssapi krb5-workstation \
+  glibc-static tar libtool krb5-workstation \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
   texinfo \

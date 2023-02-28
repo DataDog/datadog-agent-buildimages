@@ -39,8 +39,7 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre libsasl2-dev libssl-dev libcurl4-openssl-dev \
-    zlib1g-dev libsasl2-modules-gssapi-mit krb5-user
+    selinux-basics default-jre krb5-user
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64

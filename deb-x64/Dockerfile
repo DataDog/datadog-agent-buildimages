@@ -69,8 +69,7 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre texinfo libsasl2-dev \
-  zlib1g-dev libsasl2-modules-gssapi-mit krb5-user
+  selinux-basics libtool software-properties-common default-jre texinfo krb5-user
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
