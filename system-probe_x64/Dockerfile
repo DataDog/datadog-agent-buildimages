@@ -77,8 +77,3 @@ RUN echo "060d39770476f7d11de7c75dc1e1780f6492455555b36f4d3ff18f89752ebfc6  inst
 RUN bash install-pulumi.sh --version 3.48.0
 ENV PATH "/root/.pulumi/bin:${PATH}"
 ENV PULUMI_CONFIG_PASSPHRASE "1234"
-
-COPY ./entrypoint-sysprobe.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
