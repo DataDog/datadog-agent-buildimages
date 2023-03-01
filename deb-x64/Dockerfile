@@ -160,6 +160,9 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 COPY ./setup_go.sh /setup_go.sh
 RUN ./setup_go.sh
 
+ENV PATH="/goroot/bin:$PATH"
+ENV PATH="/go/bin:$PATH"
+
 # Download and install golangci-lint
 RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
     && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \

@@ -42,9 +42,6 @@ ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 ./all.bash
 
-# Update PATH to include the built go binaries
-echo 'export PATH="/goroot/bin:$PATH"' >> /root/.bashrc
-
 # Remove gimme
 rm -rf $HOME/.gimme
 rm /bin/gimme
