@@ -4,7 +4,11 @@ $ProgressPreference = 'SilentlyContinue'
 Write-Host -ForegroundColor Green "Installing Java $ENV:JAVA_VERSION"
 
 #$javazip= "https://download.java.net/java/early_access/jdk21/12/GPL/openjdk-21-ea+12_windows-x64_bin.zip"
-$javazip = "https://download.java.net/java/early_access/jdk21/12/GPL/openjdk-$($ENV:JAVA_VERSION)_windows-x64_bin.zip"
+
+## this is a bit fragile, and assumes the version will always be 
+## NN-ea+VV.
+$subver = ($ENV:JAVA_VERSION -split '\+')[1]
+$javazip = "https://download.java.net/java/early_access/jdk21/$($subver)/GPL/openjdk-$($ENV:JAVA_VERSION)_windows-x64_bin.zip"
 
 $out = 'java.zip'
 
@@ -45,5 +49,5 @@ if(-Not (test-path $jsignjardir)){
 }
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
 
-Add-EnvironmentVariable -Varable JARSIGN_JAR -Value $jsignout -Global
+Add-EnvironmentVariable -Variable JARSIGN_JAR -Value $jsignout -Global
 
