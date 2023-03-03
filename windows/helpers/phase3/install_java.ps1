@@ -22,37 +22,27 @@ Write-Host -ForegroundColor Green "Removing temporary file $out"
 
 Remove-Item $out
 
-setx JAVA_HOME c:\openjdk-21
-$Env:JAVA_HOME="c:\openjdk-21"
+Add-EnvironmentVariable -Variable JAVA_HOME -Value "c:\openjdk-21" -Global -Local
 
 ## move expanded file from tmp dir to final resting place
 ## note must be after env variable set above.
 
 Move-Item -Path c:\tmp\java\* -Destination $Env:JAVA_HOME
 
-setx PATH "$Env:Path;$Env:JAVA_HOME\bin;"
-$Env:Path="$Env:Path;$Env:JAVA_HOME\bin;"
+Add-ToPath -NewPath "$($Env:JAVA_HOME)\bin" -Local -Global
 
-Write-Host -ForegroundColor Green "Installed go $ENV:JAVA_VERSION"
+Write-Host -ForegroundColor Green "Installed java $ENV:JAVA_VERSION"
 Write-Host -ForegroundColor Green 'javac --version'; javac --version
 Write-Host -ForegroundColor Green 'java --version'; java --version
 
 ## need to have more rigorous download at some point, but
-$jsignjarsrc = "https://drive.google.com/file/d/1UEU58AkjJAe1fSnuN1WsAx4xZiWWG7PX/view?usp=sharing"
+$jsignjarsrc = "https://s3.amazonaws.com/dd-agent-omnibus/jsign/jsign-4.2.jar"
 $jsignjardir = "c:\devtools\jsign"
 $jsignout = "$($jsignjardir)\jsign-4.2.jar"
 if(-Not (test-path $jsignjardir)){
     mkdir $jsignjardir
 }
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
-setx JARSIGN_JAR "$($jsignout)"
 
-## need to have more rigorous download at some point, but
-$jsignjarsrc = "https://drive.google.com/file/d/1UEU58AkjJAe1fSnuN1WsAx4xZiWWG7PX/view?usp=sharing"
-$jsignjardir = "c:\devtools\jsign"
-$jsignout = "$($jsignjardir)\jsign-4.2.jar"
-if(-Not (test-path $jsignjardir)){
-    mkdir $jsignjardir
-}
-(New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
-setx JARSIGN_JAR "$($jsignout)"
+Add-EnvironmentVariable -Varable JARSIGN_JAR -Value $jsignout -Global
+
