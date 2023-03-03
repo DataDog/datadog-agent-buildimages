@@ -3,7 +3,8 @@ $ProgressPreference = 'SilentlyContinue'
 
 Write-Host -ForegroundColor Green "Installing Java $ENV:JAVA_VERSION"
 
-$javazip = "https://download.java.net/java/early_access/jdk21/4/GPL/openjdk-$($ENV:JAVA_VERSION)_windows-x64_bin.zip"
+#$javazip= "https://download.java.net/java/early_access/jdk21/12/GPL/openjdk-21-ea+12_windows-x64_bin.zip"
+$javazip = "https://download.java.net/java/early_access/jdk21/12/GPL/openjdk-$($ENV:JAVA_VERSION)_windows-x64_bin.zip"
 
 $out = 'java.zip'
 
