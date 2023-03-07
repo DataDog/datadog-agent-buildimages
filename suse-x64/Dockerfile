@@ -26,6 +26,8 @@ ARG RUST_VERSION=1.60.0
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG GCC_VERSION=10.4.0
+ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 
 # Environment
 ENV GOPATH /go
@@ -40,6 +42,7 @@ ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
+ENV GCC_VERSION $GCC_VERSION
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
@@ -147,6 +150,12 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# gcc
+COPY ./build-gcc.sh /build-gcc.sh
+RUN chmod +x /build-gcc.sh \
+    && /build-gcc.sh \
+    && rm /build-gcc.sh
 
 # Entrypoint
 COPY ./entrypoint.sh /
