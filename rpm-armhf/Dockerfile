@@ -70,18 +70,10 @@ RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
         rm -rf ./fakearmv7l ; \
         export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so"
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
-    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version 1.29.12 \
-    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm autolibs read-fail" # do not try to fetch requirements from system repos
-RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
+# Ruby
+COPY ./setup_ruby.sh /setup_ruby.sh
+RUN RUBY_WITH_ARCH="armv7-a" RUBY_BUILD_ARCH="arm-linux-gnueabihf" ./setup_ruby.sh
+RUN gem install bundler --no-document
 
 # Pip & Invoke
 COPY ./python-packages-versions.txt /python-packages-versions.txt

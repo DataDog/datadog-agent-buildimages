@@ -14,7 +14,15 @@ rm -rf ruby-$RUBY_VERSION.tar.gz
 CONFIGURE_ARGS=""
 
 if [[ -z "$SKIP_CONDA_SSL" ]]; then
-    CONFIGURE_ARGS="$CONFIGURE_ARGS --with-openssl-dir=$CONDA_PATH"
+    CONFIGURE_ARGS="$CONFIGURE_ARGS --with-openssl-dir='$CONDA_PATH'"
+fi
+
+if [[ -n "$RUBY_WITH_ARCH" ]]; then
+    CONFIGURE_ARGS="$CONFIGURE_ARGS --with-arch='$RUBY_WITH_ARCH'"
+fi
+
+if [[ -n "$RUBY_BUILD_ARCH" ]]; then
+    CONFIGURE_ARGS="$CONFIGURE_ARGS -C '--build' -C '$RUBY_BUILD_ARCH'"
 fi
 
 mkdir -p ruby-$RUBY_VERSION/build
