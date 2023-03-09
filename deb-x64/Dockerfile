@@ -116,10 +116,9 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-# RVM
+# Ruby
 COPY ./setup_ruby.sh /setup_ruby.sh
 RUN ./setup_ruby.sh
-RUN ruby --version
 RUN gem install bundler --no-document
 
 # CMake

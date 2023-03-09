@@ -69,18 +69,10 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
-    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version 1.29.12 \
-    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm autolibs read-fail" # do not try to fetch requirements from system repos
-RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
+# Ruby
+COPY ./setup_ruby.sh /setup_ruby.sh
+RUN ./setup_ruby.sh
+RUN gem install bundler --no-document
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
