@@ -42,7 +42,9 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre flex
+    selinux-basics default-jre flex bison libffi-dev libgdbm-dev \
+    libncurses5-dev libsqlite3-dev libyaml-dev sqlite3 zlib1g-dev \
+    libgmp-dev libreadline6-dev libssl-dev
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64
@@ -71,7 +73,8 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
+
+RUN /bin/bash -l -c "rvm autolibs read-fail" # do not try to fetch requirements from system repos
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} 2.7 && rvm cleanup all" ; \
     else \

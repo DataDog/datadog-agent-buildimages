@@ -72,7 +72,8 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre texinfo
+  selinux-basics libtool software-properties-common default-jre texinfo \
+  gawk bison libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libyaml-dev sqlite3 libgmp-dev libreadline6-dev
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
@@ -124,7 +125,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm autolibs read-fail" # do not try to fetch requirements from system repos
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 

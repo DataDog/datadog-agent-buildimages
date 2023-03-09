@@ -66,7 +66,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel java
+      tar xz which zlib-devel java libyaml-devel gcc-c++
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
@@ -117,7 +117,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
-RUN bash -l -c "rvm autolibs disable" # do not try to fetch requirements from system repos
+RUN bash -l -c "rvm autolibs read-fail" # do not try to fetch requirements from system repos
 RUN bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN bash -l -c "gem install bundler --no-document"
 
