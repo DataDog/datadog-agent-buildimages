@@ -63,6 +63,7 @@ COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${CONDA_PATH}/lib/"
 
 # Ruby
 COPY ./setup_ruby.sh /setup_ruby.sh
