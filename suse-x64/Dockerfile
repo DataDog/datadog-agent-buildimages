@@ -169,12 +169,11 @@ RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/r
     && ./configure --without-lua --without-audit \
     && make \
     && make install \
-    && cd / \
+    && cd /
 
 # Rebuild RPM database with the new rpm
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
-    mkdir -p /usr/local/var/lib/rpm \
-    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
+RUN mkdir -p /usr/local/var/lib/rpm \
+    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages
 
 # Entrypoint
 COPY ./entrypoint.sh /
