@@ -148,7 +148,7 @@ COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${CONDA_PATH}/lib/"
+RUN echo "${CONDA_PATH}/lib" >> /etc/ld.so.conf.d/conda-ld.conf
 
 # Ruby
 COPY ./setup_ruby.sh /setup_ruby.sh
