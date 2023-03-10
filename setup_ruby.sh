@@ -33,4 +33,9 @@ CFLAGS="$CFLAGS" CCFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" ../configure $CONFIGURE_AR
 make install
 popd
 
+git clone https://github.com/rubygems/rubygems.git ruby-$RUBY_VERSION/build-gems
+pushd ruby-$RUBY_VERSION/build-gems
+ruby setup.rb
+popd
+
 rm -rf ruby-$RUBY_VERSION
