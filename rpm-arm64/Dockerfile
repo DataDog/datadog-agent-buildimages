@@ -69,6 +69,7 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 RUN echo "${CONDA_PATH}/lib" >> /etc/ld.so.conf.d/conda-ld.conf
+RUN ldconfig
 
 # Ruby
 COPY ./setup_ruby.sh /setup_ruby.sh
