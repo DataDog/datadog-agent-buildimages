@@ -1,7 +1,8 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_VERSION=1.19.6
+ARG GO_VERSION=1.19.7
+ARG GO_SHA256=071ea7bf386fdd08df524859b878d99fc359e491e7ad65c1c1cc55b67972c882
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
@@ -53,7 +54,7 @@ ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "e4d63c933a68e5fad07cab9d12c5c1610ce4810832d47c44314c3246f511ac4f  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"
