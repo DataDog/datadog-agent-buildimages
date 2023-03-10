@@ -71,7 +71,6 @@ RUN bash miniconda.sh -b -p $CONDA_PATH
 RUN rm miniconda.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${CONDA_PATH}/lib/"
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
