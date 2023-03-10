@@ -11,7 +11,7 @@ echo "$RUBY_SHA256  ruby-$RUBY_VERSION.tar.gz" | sha256sum --check
 tar -xzf ruby-$RUBY_VERSION.tar.gz
 rm -rf ruby-$RUBY_VERSION.tar.gz
 
-CONFIGURE_ARGS="--disable-install-doc --enable-shared"
+CONFIGURE_ARGS="--disable-install-doc --enable-shared --with-baseruby=no"
 CFLAGS="-O3"
 
 if [[ -z "$SKIP_CONDA_SSL" ]]; then
