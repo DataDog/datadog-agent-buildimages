@@ -66,7 +66,8 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel java
+      tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \ 
+      libbeecrypt-devel file-magic libarchive-devel libdb-4_8 libdb-4_8-devel
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
@@ -155,21 +156,26 @@ ENV PATH "~/.cargo/bin:${PATH}"
 COPY ./build-gcc.sh /build-gcc.sh
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
-    && rm /build-gcc.sh
+    && rm /build-gcc.s
 
-# Actually build new rpm
-COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
-# Cannot use HTTPS here: cert name is invalid
-RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
-    && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
+RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
+    && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
+    && cp /usr/include/linux/magic.h /usr/include/magic.h \
+    && cp /usr/include/db4/db.h /usr/include/db.h \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
     && cd rpm-4.15.1 \
-    && cat /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch | patch -p1 \
-    && ./configure --without-lua --without-audit \
+    && curl -sL -o db-4.5.20.tar.gz http://download.oracle.com/berkeley-db/db-4.5.20.tar.gz \
+    && echo "f52cd5cea899823dd200d56556f70b33c55e48a33bb7b65ee128968dc10ca82d  db-4.5.20.tar.gz" | sha256sum --check \
+    && tar xzf db-4.5.20.tar.gz \
+    && ln -s db-4.5.20 db \
+    && cd db/build_unix/ \
+    && ./configure --with-posixmutexes  --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4/"\
     && make \
     && make install \
-    && cd /
+    && cd / \
+    && echo "/usr/local/lib/" >> /etc/ld.so.conf \
+    && ldconfig
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
