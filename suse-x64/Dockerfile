@@ -156,7 +156,7 @@ ENV PATH "~/.cargo/bin:${PATH}"
 COPY ./build-gcc.sh /build-gcc.sh
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
-    && rm /build-gcc.s
+    && rm /build-gcc.sh
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
