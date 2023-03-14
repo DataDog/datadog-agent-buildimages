@@ -170,7 +170,7 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && tar xzf db-4.5.20.tar.gz \
     && ln -s db-4.5.20 db \
     && cd db/build_unix/ \
-    && ./configure --with-posixmutexes  --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4/"\
+    && ../../configure --with-posixmutexes  --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4/"\
     && make \
     && make install \
     && cd / \
