@@ -161,7 +161,6 @@ RUN chmod +x /build-gcc.sh \
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \
     && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
-    && cp /usr/include/linux/magic.h /usr/include/magic.h \
     && cp /usr/include/db4/db.h /usr/include/db.h \
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
     && cd rpm-4.14.3 \
