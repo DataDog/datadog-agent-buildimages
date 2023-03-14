@@ -163,8 +163,8 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
     && cp /usr/include/linux/magic.h /usr/include/magic.h \
     && cp /usr/include/db4/db.h /usr/include/db.h \
-    && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
-    && cd rpm-4.15.1 \
+    && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
+    && cd rpm-4.14.3 \
     && curl -sL -o db-4.5.20.tar.gz http://download.oracle.com/berkeley-db/db-4.5.20.tar.gz \
     && echo "f52cd5cea899823dd200d56556f70b33c55e48a33bb7b65ee128968dc10ca82d  db-4.5.20.tar.gz" | sha256sum --check \
     && tar xzf db-4.5.20.tar.gz \
