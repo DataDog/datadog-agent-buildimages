@@ -167,7 +167,6 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && make \
     && make install \
     && cd / \
-    && echo "/usr/local/lib/" >> /etc/ld.so.conf \
     && ldconfig
 
 # Rebuild RPM database with the new rpm
