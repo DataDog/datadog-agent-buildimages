@@ -161,19 +161,14 @@ RUN chmod +x /build-gcc.sh \
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \
     && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
-    && cp /usr/include/db4/db.h /usr/include/db.h \
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
-    && cd rpm-4.14.3 \
-    && curl -sL -o db-4.5.20.tar.gz http://download.oracle.com/berkeley-db/db-4.5.20.tar.gz \
-    && echo "f52cd5cea899823dd200d56556f70b33c55e48a33bb7b65ee128968dc10ca82d  db-4.5.20.tar.gz" | sha256sum --check \
-    && tar xzf db-4.5.20.tar.gz \
-    && ln -s db-4.5.20 db \
-    && cd db/build_unix/ \
-    && ../../configure --with-posixmutexes  --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3"\
+    && cd rpm-4.14.3/db/build_unix/ \
+    && ../../configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
     && make \
     && make install \
     && cd / \
-    && rpm --version
+    && echo "/usr/local/lib/" >> /etc/ld.so.conf \
+    && ldconfig
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
