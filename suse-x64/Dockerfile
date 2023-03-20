@@ -162,8 +162,8 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && cd /tmp \
     && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
-    && cd rpm-4.14.3/db/build_unix/ \
-    && ../../configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
+    && cd rpm-4.14.3/ \
+    && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
     && make \
     && make install \
     && cd / \
