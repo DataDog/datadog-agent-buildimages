@@ -66,7 +66,8 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel java
+      tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \ 
+      libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
@@ -157,6 +158,20 @@ RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
 
+RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
+    && cd /tmp \
+    && echo "13711268181a6e201eb9d4eb06384a7fcc42dcc6c9057a62c53472cfc5ba44b5  rpm-4.14.3.tar.bz2" | sha256sum --check \
+    && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
+    && cd rpm-4.14.3/ \
+    && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
+    && make \
+    && make install \
+    && ldconfig
+
+# Rebuild RPM database with the new rpm
+RUN mkdir -p /usr/local/var/lib/rpm \
+    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
+    && /usr/local/bin/rpm --rebuilddb
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
