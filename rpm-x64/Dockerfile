@@ -32,6 +32,8 @@ ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
+ARG JEMALLOC_VERSION="5.2.1"
+ARG JEMALLOC_SHA256="ed51b0b37098af4ca6ed31c22324635263f8ad6471889e0592a9c0dba9136aea"
 
 # Environment
 ENV GOPATH /go
@@ -80,6 +82,7 @@ RUN yum -y install \
 RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \ 
      yum -y install policycoreutils-python; \ 
     fi
+
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
@@ -273,6 +276,18 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
+
+# Setup jemalloc
+RUN curl -L -o jemalloc-${JEMALLOC_VERSION}.tar.gz  https://github.com/jemalloc/jemalloc/archive/refs/tags/${JEMALLOC_VERSION}.tar.gz \
+    && echo "${JEMALLOC_SHA256}  jemalloc-${JEMALLOC_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf jemalloc-${JEMALLOC_VERSION}.tar.gz \
+    && cd jemalloc-${JEMALLOC_VERSION}  \
+    && ./autogen.sh \
+    && make dist \
+    && make \
+    && make install \
+    && rm -rf jemalloc-${JEMALLOC_VERSION} \
+    && rm jemalloc-${JEMALLOC_VERSION}.tar.gz
 
 # gcc
 COPY ./build-gcc.sh /build-gcc.sh

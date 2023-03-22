@@ -18,6 +18,8 @@ ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51
 ARG DD_TARGET_ARCH=aarch64
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
+ARG JEMALLOC_VERSION="5.2.1"
+ARG JEMALLOC_SHA256="ed51b0b37098af4ca6ed31c22324635263f8ad6471889e0592a9c0dba9136aea"
 
 # Environment
 ENV GOPATH /go
@@ -39,6 +41,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
+
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
@@ -96,6 +99,18 @@ RUN set -ex \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
+
+# Setup jemalloc
+RUN curl -L -o jemalloc-${JEMALLOC_VERSION}.tar.gz  https://github.com/jemalloc/jemalloc/archive/refs/tags/${JEMALLOC_VERSION}.tar.gz \
+    && echo "${JEMALLOC_SHA256}  jemalloc-${JEMALLOC_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf jemalloc-${JEMALLOC_VERSION}.tar.gz \
+    && cd jemalloc-${JEMALLOC_VERSION}  \
+    && ./autogen.sh \
+    && make dist \
+    && make \
+    && make install \
+    && rm -rf jemalloc-${JEMALLOC_VERSION} \
+    && rm jemalloc-${JEMALLOC_VERSION}.tar.gz
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script

@@ -28,6 +28,8 @@ ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
+ARG JEMALLOC_VERSION="5.2.1"
+ARG JEMALLOC_SHA256="ed51b0b37098af4ca6ed31c22324635263f8ad6471889e0592a9c0dba9136aea"
 
 # Environment
 ENV GOPATH /go
@@ -151,6 +153,18 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Setup jemalloc
+RUN curl -L -o jemalloc-${JEMALLOC_VERSION}.tar.gz  https://github.com/jemalloc/jemalloc/archive/refs/tags/${JEMALLOC_VERSION}.tar.gz \
+    && echo "${JEMALLOC_SHA256}  jemalloc-${JEMALLOC_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf jemalloc-${JEMALLOC_VERSION}.tar.gz \
+    && cd jemalloc-${JEMALLOC_VERSION}  \
+    && ./autogen.sh \
+    && make dist \
+    && make \
+    && make install \
+    && rm -rf jemalloc-${JEMALLOC_VERSION} \
+    && rm jemalloc-${JEMALLOC_VERSION}.tar.gz
 
 # gcc
 COPY ./build-gcc.sh /build-gcc.sh
