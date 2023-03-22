@@ -52,6 +52,9 @@ ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
 ENV GCC_VERSION $GCC_VERSION
 
+# Store cpu core number
+RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
+
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
@@ -92,7 +95,7 @@ RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
     && cd git-${GIT_VERSION} \
-    && make prefix=/usr/local all \
+    && make -j ${cpu_count} prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
@@ -125,7 +128,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN /bin/bash -l -c "rvm -j ${cpu_count} install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
 
 # CMake
@@ -183,7 +186,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd patchelf-${PATCHELF_VERSION}  \
     && ./bootstrap.sh \
     && ./configure \
-    && make \
+    && make -j ${cpu_count} \
     && make install \
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \

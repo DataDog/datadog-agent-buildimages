@@ -51,6 +51,9 @@ COPY ./suse-x64/ddprofile.sh /etc/profile.d/
 # Add /etc/profile to the image (taken from 42.3 image) -- it is missing from 42.1 the image
 COPY ./suse-x64/profile /etc/profile
 
+# Store cpu core number
+RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
+
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
 
@@ -119,7 +122,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
     && rm get-rvm.sh
 RUN bash -l -c "rvm autolibs disable" # do not try to fetch requirements from system repos
-RUN bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
+RUN bash -l -c "rvm install -j ${cpu_count} 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN bash -l -c "gem install bundler --no-document"
 
 # CMake
@@ -164,7 +167,7 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
     && cd rpm-4.14.3/ \
     && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
-    && make \
+    && make -j ${cpu_count} \
     && make install \
     && ldconfig
 

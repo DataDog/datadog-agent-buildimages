@@ -36,6 +36,9 @@ ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV GCC_VERSION $GCC_VERSION
 
+# Store cpu core number
+RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
+
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
@@ -73,9 +76,9 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-        /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} 2.7 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install -j ${cpu_count} --with-openssl-dir=${CONDA_PATH} 2.7 && rvm cleanup all" ; \
     else \
-        /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
+        /bin/bash -l -c "rvm install -j ${cpu_count} --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
     fi
 RUN /bin/bash -l -c "gem install bundler --no-document"
 

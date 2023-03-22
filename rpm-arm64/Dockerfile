@@ -30,6 +30,9 @@ ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV GCC_VERSION $GCC_VERSION
 
+# Store cpu core number
+RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
+
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
@@ -50,7 +53,7 @@ RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/r
     && cd rpm-4.15.1 \
     && cat /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch | patch -p1 \
     && ./configure --without-lua --without-audit \
-    && make \
+    && make -j $cpu_count \
     && make install \
     && cd / \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
