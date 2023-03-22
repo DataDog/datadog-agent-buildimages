@@ -66,7 +66,7 @@ RUN mkdir -p /usr/local/var/lib/rpm \
 # The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
 RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
         cd fakearmv7l ; \
-        make ; \
+        make -j ${cpu_count} ; \
         make install ; \
         cd .. ; \
         rm -rf ./fakearmv7l ; \
