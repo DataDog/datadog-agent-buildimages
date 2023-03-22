@@ -163,6 +163,7 @@ RUN curl -L -o jemalloc-${JEMALLOC_VERSION}.tar.gz  https://github.com/jemalloc/
     && make dist \
     && make \
     && make install \
+    && cd - \
     && rm -rf jemalloc-${JEMALLOC_VERSION} \
     && rm jemalloc-${JEMALLOC_VERSION}.tar.gz
 
