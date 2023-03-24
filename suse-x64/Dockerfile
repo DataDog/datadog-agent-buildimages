@@ -51,10 +51,6 @@ COPY ./suse-x64/ddprofile.sh /etc/profile.d/
 # Add /etc/profile to the image (taken from 42.3 image) -- it is missing from 42.1 the image
 COPY ./suse-x64/profile /etc/profile
 
-# Store cpu core number
-RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
-
-RUN echo "${cpu_count} || $cpu_count"
 
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
@@ -88,6 +84,11 @@ RUN ln -sfn /usr/bin/g++-4.8 /usr/bin/g++
 COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY --from=CURL_GETTER /curl-amd64 /opt/datadog/bin/curl
 RUN chmod +x /opt/datadog/bin/curl
+
+# Store cpu core number
+RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
+
+RUN echo "${cpu_count} || $cpu_count"
 
 # Gimme
 RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
