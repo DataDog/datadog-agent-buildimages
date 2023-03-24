@@ -54,7 +54,7 @@ COPY ./suse-x64/profile /etc/profile
 # Store cpu core number
 RUN export cpu_count=$(grep process /proc/cpuinfo | wc -l)
 
-RUN echo ${cpu_count} $cpu_count
+RUN echo "${cpu_count} || $cpu_count"
 
 # Disable repositories with non-oss software
 RUN rm /etc/zypp/repos.d/*non*
