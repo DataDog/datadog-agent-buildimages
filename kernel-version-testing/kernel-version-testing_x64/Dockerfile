@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     kmod \
     cpio \
-    ca-certificates
+    ca-certificates \
+    openssh-client
 
 # Install pahole
 RUN git -c http.sslVerify=false clone --recurse-submodules https://github.com/acmel/dwarves.git /dwarves
