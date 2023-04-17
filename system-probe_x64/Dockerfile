@@ -1,8 +1,8 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_VERSION=1.19.7
-ARG GO_SHA256=7a75720c9b066ae1750f6bcc7052aba70fa3813f4223199ee2a2315fd3eb533d
+ARG GO_VERSION=1.19.8
+ARG GO_SHA256=e1a0bf0ab18c8218805a1003fd702a41e2e807710b770e787e5979d1cf947aba
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
