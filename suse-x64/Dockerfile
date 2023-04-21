@@ -109,6 +109,10 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
+# Hotfix for Git not working because of Github's expired TLSv1.2 cert
+RUN zypper --non-interactive remove git git-core
+RUN conda install -c anaconda git
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
