@@ -111,7 +111,7 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Hotfix for Git not working because of Github's expired TLSv1.2 cert
 RUN zypper --non-interactive remove git git-core
-RUN conda install -c anaconda git
+RUN conda install -y -c anaconda git=2.34.1
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
