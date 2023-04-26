@@ -12,7 +12,7 @@ $VSPackages = @(
     "Microsoft.NetCore.Component.SDK",
     "Microsoft.Net.Component.4.7.TargetingPack",
     "Microsoft.Net.Component.4.5.TargetingPack",
-    "Microsoft.Net.Component.4.6.1.TargetingPack",
+    "Microsoft.Net.Component.4.6.2.TargetingPack",
     "Microsoft.Net.Component.4.8.SDK",
     "Microsoft.VisualStudio.Component.FSharp",
     "Microsoft.VisualStudio.Component.FSharp.WebTemplates",
@@ -22,7 +22,13 @@ $VSPackages = @(
     "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
-    "Microsoft.VisualStudio.Component.Windows10SDK.18362"
+    "Microsoft.VisualStudio.Component.Windows10SDK.18362", 
+    "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
+    "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
+    "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre",
+    "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",
+    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64",
+    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64.Spectre"
 )
 
 $VSPackagesDesktop = @(
