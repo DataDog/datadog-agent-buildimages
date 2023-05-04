@@ -19,7 +19,7 @@ case $DD_TARGET_ARCH in
     PY2_VERSION="2 zlib=1.2.11=h7b6447c_3"
     # FIXME: Pinning specific build (zlib, xz) since the last versions don't seem to work with the glibc in the base image
     # FIXME: Pinning OpenSSL to a version that's compatible with the Python build we pin (we get `SSL module is not available` errors with OpenSSL 1.1.1l)
-    PY3_VERSION="3.9.16=h7a1cb2a_2 certifi=2021.10.8=py38h06a4308_2 ld_impl_linux-64=2.38=h1181459_0 libgcc-ng=9.1.0=hdf63c60_0 libstdcxx-ng=9.1.0=hdf63c60_0 openssl=1.1.1k=h27cfd23_0 xz=5.2.5=h7b6447c_0 zlib=1.2.11=h7b6447c_3"
+    PY3_VERSION="3.9.16=h7a1cb2a_2 certifi=2022.12.7=py39h06a4308_0 ld_impl_linux-64=2.38=h1181459_0 libgcc-ng=11.2.0=h1234567_1 libstdcxx-ng=11.2.0=h1234567_1 openssl=1.1.1t=h7f8727e_0 xz=5.2.10=h5eee18b_1 zlib=1.2.13=h5eee18b_0"
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
