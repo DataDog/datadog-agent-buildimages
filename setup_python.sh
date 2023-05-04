@@ -19,14 +19,14 @@ case $DD_TARGET_ARCH in
     PY2_VERSION="2 zlib=1.2.11=h7b6447c_3"
     # FIXME: Pinning specific build (zlib, xz) since the last versions don't seem to work with the glibc in the base image
     # FIXME: Pinning OpenSSL to a version that's compatible with the Python build we pin (we get `SSL module is not available` errors with OpenSSL 1.1.1l)
-    PY3_VERSION="3.8.10=hdb3f193_7 certifi=2021.10.8=py38h06a4308_2 ld_impl_linux-64=2.38=h1181459_0 libgcc-ng=9.1.0=hdf63c60_0 libstdcxx-ng=9.1.0=hdf63c60_0 openssl=1.1.1k=h27cfd23_0 xz=5.2.5=h7b6447c_0 zlib=1.2.11=h7b6447c_3"
+    PY3_VERSION="3.9.16=h7a1cb2a_2 certifi=2021.10.8=py38h06a4308_2 ld_impl_linux-64=2.38=h1181459_0 libgcc-ng=9.1.0=hdf63c60_0 libstdcxx-ng=9.1.0=hdf63c60_0 openssl=1.1.1k=h27cfd23_0 xz=5.2.5=h7b6447c_0 zlib=1.2.11=h7b6447c_3"
     ;;
 "aarch64")
     DD_CONDA_VERSION=4.9.2-7
     DD_CONDA_SHA256="ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
     PY2_VERSION=2
-    PY3_VERSION=3.8.10
+    PY3_VERSION=3.9.16
     ;;
 "armhf")
     detect_distro
@@ -41,16 +41,16 @@ case $DD_TARGET_ARCH in
         yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make
     fi
 
-    wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
-    echo "2cc7b67c1f3f66c571acc42479cdf691d8ed6b47bee12c9b68430413a17a44ea  Python-3.9.9.tgz" | sha256sum --check
-    tar xzf Python-3.9.9.tgz
-    pushd /Python-3.9.9
+    wget https://www.python.org/ftp/python/3.9.16/Python-3.9.16.tgz
+    echo "1ad539e9dbd2b42df714b69726e0693bc6b9d2d2c8e91c2e43204026605140c5 Python-3.9.16.tgz" | sha256sum --check
+    tar xzf Python-3.9.16.tgz
+    pushd /Python-3.9.16
         ./configure
         make -j 8
         make install
     popd
-    rm -rf Python-3.9.9
-    rm Python-3.9.9.tgz
+    rm -rf Python-3.9.16
+    rm Python-3.9.16.tgz
     ln -sf /usr/bin/python3.9 /usr/bin/python3
 
     python3 -m pip install distro==1.4.0
