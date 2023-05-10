@@ -31,7 +31,7 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV GCC_VERSION $GCC_VERSION
 
 # The last two lines contain dependencies for build of newer rpm
-RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
+RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
