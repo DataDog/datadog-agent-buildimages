@@ -35,7 +35,7 @@ if($isInstalled -and -not $isCurrent) {
     Write-Host -ForegroundColor Yellow "upgrading MSYS"
     Remove-Item -Recurse -Force "$($InstallPath)\msys64"
 }
-# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
+# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20230318.tar.xz
 $msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
 Write-Host  -ForegroundColor Green starting with MSYS
@@ -58,7 +58,9 @@ if ( $mshell -ne "0") {
     throw "Invoke MSYS returned $mshell"
 }
 
-ridk install 3
+# fails with autoconf errors
+# ridk install 3
+ridk exec pacman -S --needed --noconfirm autoconf autoconf2.13 autogen automake-wrapper automake1.11 automake1.12 automake1.13 automake1.14 automake1.15 diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-libs mingw-w64-x86_64-headers-git mingw-w64-x86_64-libmangle-git mingw-w64-x86_64-libwinpthread-git mingw-w64-x86_64-make mingw-w64-x86_64-pkg-config mingw-w64-x86_64-tools-git mingw-w64-x86_64-winpthreads-git
 If ($lastExitCode -ne "0") { 
     throw "ridk install 3 returned $lastExitCode" 
 }
