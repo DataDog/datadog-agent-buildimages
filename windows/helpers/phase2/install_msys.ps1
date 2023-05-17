@@ -62,11 +62,6 @@ ridk install 3
 If ($lastExitCode -ne "0") { 
     throw "ridk install 3 returned $lastExitCode" 
 }
-# Downgrade gcc and binutils due to https://github.com/golang/go/issues/46099
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst"
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst"
-& C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c "pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
 
 Remove-Item c:\*.zst
 Set-InstalledVersionKey -Component "msys" -Keyname "version" -TargetValue $Version
