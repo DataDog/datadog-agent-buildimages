@@ -207,6 +207,12 @@ build_kernel_version_testing_arm64:
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
+build_circleci_runner:
+  extends: [ .build, .x64 ]
+  variables:
+    DOCKERFILE: circleci/Dockerfile
+    IMAGE: circleci-runner
+
 trigger_build_kernels:
   stage: trigger_build_kernels
   needs: [ "build_kernel_version_testing_x64" , "build_kernel_version_testing_arm64" ]
@@ -483,6 +489,12 @@ release_windows_ltsc2022_x64:
     IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "ltsc2022"
+
+release_circleci_runner:
+  extends: .release
+  needs: [ "build_circleci_runner" ]
+  variables:
+    IMAGE: circleci-runner
 
 notify-on-failure:
   extends: .slack-notifier-base
