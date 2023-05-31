@@ -13,6 +13,7 @@ function Invoke-WithRetry {
      $c = 0
      while($c -lt $RetryCount){
         $result = & $Command
+        Write-Host "Result: $result, exitCode: $LASTEXITCODE, iteration: $c"
         if(& $BreakCondition){
             break
         }
