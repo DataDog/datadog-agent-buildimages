@@ -13,11 +13,9 @@ function Invoke-WithRetry {
      $c = 0
      while($c -lt $RetryCount){
         $result = & $Command
-        Write-Host "Result: $result, exitCode: $LASTEXITCODE, iteration: $c"
         if(& $BreakCondition){
             break
         }
-        Get-Content -Path "$env:TEMP\roots.sst"
         Start-Sleep $Sleep
         $c++
      }
@@ -26,12 +24,10 @@ function Invoke-WithRetry {
 
 function Import-SSTFromWU {
 
-    # Test network
-    Invoke-WithRetry { Test-Connection -ComputerName www.google.com } {$LASTEXITCODE -eq 0} 30
     # Serialized Certificate Store File
     $sstFile = "$env:TEMP\roots.sst"
     # Generate SST from Windows Update
-    $result = Invoke-WithRetry { certutil.exe -v -f -generateSSTFromWU $sstFile } {$LASTEXITCODE -eq 0} 30
+    $result = Invoke-WithRetry { certutil.exe -v -f -generateSSTFromWU $sstFile } {$LASTEXITCODE -eq 0} 10 60
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[Error]: failed to generate $sstFile sst file`n$result"
         exit $LASTEXITCODE
