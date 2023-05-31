@@ -27,7 +27,7 @@ function Invoke-WithRetry {
 function Import-SSTFromWU {
 
     # Test network
-    Invoke-WithRetry { Test-Connection -TargetName www.google.com } {$LASTEXITCODE -eq 0} 30
+    Invoke-WithRetry { Test-Connection -ComputerName www.google.com } {$LASTEXITCODE -eq 0} 30
     # Serialized Certificate Store File
     $sstFile = "$env:TEMP\roots.sst"
     # Generate SST from Windows Update
