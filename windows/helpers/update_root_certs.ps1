@@ -17,6 +17,7 @@ function Invoke-WithRetry {
         if(& $BreakCondition){
             break
         }
+        Get-Content -Path "$env:TEMP\roots.sst"
         Start-Sleep $Sleep
         $c++
      }
