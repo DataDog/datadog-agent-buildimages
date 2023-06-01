@@ -308,8 +308,6 @@ build_windows_1809_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_1809_x64
     DD_TARGET_ARCH: x64
-  retry: 1
-  # Network issues prevent root certificates update, it is more efficient to retry the job than to retry the certificate update function
 
 build_windows_ltsc2022_x64:
   extends: .winbuild
@@ -318,8 +316,6 @@ build_windows_ltsc2022_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
-  retry: 1
-  # Network issues prevent root certificates update, it is more efficient to retry the job than to retry the certificate update function
 
 .test_windows:
   extends: .test
