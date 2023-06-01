@@ -27,7 +27,7 @@ function Import-SSTFromWU {
     # Serialized Certificate Store File
     $sstFile = "$env:TEMP\roots.sst"
     # Generate SST from Windows Update
-    $result = Invoke-WithRetry { certutil.exe -v -f -generateSSTFromWU $sstFile } {$LASTEXITCODE -eq 0} 10 60
+    $result = Invoke-WithRetry { certutil.exe -v -f -generateSSTFromWU $sstFile } {$LASTEXITCODE -eq 0}
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[Error]: failed to generate $sstFile sst file`n$result"
         exit $LASTEXITCODE
