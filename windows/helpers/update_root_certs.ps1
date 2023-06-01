@@ -24,7 +24,6 @@ function Invoke-WithRetry {
 }
 
 function Import-SSTFromWU {
-
     # Serialized Certificate Store File
     $sstFile = "$env:TEMP\roots.sst"
     # Generate SST from Windows Update
