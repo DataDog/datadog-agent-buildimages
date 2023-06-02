@@ -8,7 +8,7 @@ function Invoke-WithRetry {
         Runs $command block until $BreakCondition or $RetryCount is reached.
      #>
 
-     param([ScriptBlock]$Command, [ScriptBlock] $BreakCondition, [int] $RetryCount=10, [int] $Sleep=60)
+     param([ScriptBlock]$Command, [ScriptBlock] $BreakCondition, [int] $RetryCount=20, [int] $Sleep=30)
 
      $c = 0
      while($c -lt $RetryCount){
