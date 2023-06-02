@@ -11,7 +11,8 @@ toml==0.10.2
 packaging==21.3
 # more recent boto3 has a bug which generates an import exception.
 # pin until this can be resolved.
-boto3==1.26.101
+boto3==1.22.4
+botocore==1.25.4 ## for awscli
 awscli==1.23.4
 # urllib3 major version 2, released on May 4th 2023, breaks botocore used
 # by awscli (removed DEFAULT_CIPHERS list from urllib3.util.ssl_)
