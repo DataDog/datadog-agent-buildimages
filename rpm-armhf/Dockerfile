@@ -100,6 +100,10 @@ RUN GIMME_ARCH=arm gimme $GIMME_GO_VERSION
 
 COPY ./gobin.sh /etc/profile.d/
 
+# triehash
+COPY ./triehash.pl /usr/local/bin/triehash
+RUN chmod +x /usr/local/bin/triehash
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh

@@ -280,6 +280,9 @@ RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
 
+# triehash
+COPY ./triehash.pl /usr/local/bin/triehash
+
 # Entrypoint
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
