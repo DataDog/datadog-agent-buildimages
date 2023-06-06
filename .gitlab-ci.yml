@@ -148,7 +148,7 @@ build_docker_x64:
 .test_agent6:
   extends: .test
   before_script:
-    - git clone -b 7.39.x https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - inv -e agent.clone /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
     - source /root/.bashrc && conda activate ddpy3
     - inv -e deps
@@ -188,7 +188,7 @@ test_suse_x64:
 .test_system_probe:
   extends: .test
   before_script:
-    - git clone -b 7.39.x https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent && cd /go/src/github.com/DataDog/datadog-agent
+    - inv -e agent.clone /go/src/github.com/DataDog/datadog-agent
     - inv -e deps
     - $S3_CP_CMD $S3_PERMANENT_ARTIFACTS_URI/clang-$ARCH-11.0.1.tar.xz /tmp/clang.tar.xz
     - mkdir -p $DATADOG_AGENT_EMBEDDED_PATH
@@ -274,7 +274,7 @@ build_windows_ltsc2022_x64:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - git clone -b 7.39.x https://github.com/DataDog/datadog-agent datadog-agent
+    - inv -e agent.clone datadog-agent
     - cd datadog-agent
     - $VERSION="nightly"
     - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
