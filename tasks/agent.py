@@ -1,6 +1,5 @@
 from invoke import task
 import json
-from collections import OrderedDict
 
 @task
 def get_agent_version(ctx):
