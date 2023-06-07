@@ -1,6 +1,7 @@
 include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 stages:
+  - setup
   - build
   - trigger_build_kernels
   - test
@@ -14,6 +15,7 @@ variables:
   # the buildimage for the highest Windows version supported.
   # This image must use the same Windows version as the Windows version of the Gitlab runner used in .winrelease
   WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+  SETUP_IMAGE_NAME: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v16026304-782441d # Image used during setup task, must contains pyinvoke
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
@@ -49,6 +51,17 @@ default:
       - unknown_failure
       - api_failure
 
+get_agent_version:
+  stage: setup
+  image: $SETUP_IMAGE_NAME
+  script:
+    - export VERSION=$(inv -e agent.version)
+    - echo "AGENT_VERSION=$VERSION" >> version.env
+  artifacts:
+    reports:
+      dotenv: version.env
+  tags: ["runner:main"]
+
 .x64:
   tags: [ "runner:docker" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
@@ -66,6 +79,7 @@ default:
   except: [ tags ]
   script:
     # Dockerhub login
+    - echo "TEEEEEEST ${AGENT_VERSION} HERE"
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # ECR login
@@ -290,6 +304,7 @@ test_system-probe_arm64:
   except: [ tags ]
   timeout: 2h 00m
   script:
+    - Write-Host "TEEEEEEEEEEEST $AGENT_VERSION"
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
