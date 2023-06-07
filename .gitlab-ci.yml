@@ -1,6 +1,7 @@
 include: 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 stages:
+  - setup
   - build
   - trigger_build_kernels
   - test
