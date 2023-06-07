@@ -228,6 +228,7 @@ trigger_build_kernels:
 .test:
   stage: test
   except: [ tags, schedules ]
+  dependencies: [ "get_agent_version"]
 
 .test_agent6:
   extends: .test
@@ -287,6 +288,7 @@ test_suse_x64:
     - inv -e deps
   script:
     - inv -e system-probe.build
+  dependencies: [ "get_agent_version"]
 
 test_system-probe_x64:
   extends: .test_system_probe
