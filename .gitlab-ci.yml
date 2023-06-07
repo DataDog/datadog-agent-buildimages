@@ -228,7 +228,6 @@ trigger_build_kernels:
 .test:
   stage: test
   except: [ tags, schedules ]
-  dependencies: [ "get_agent_version"]
 
 .test_agent6:
   extends: .test
@@ -246,37 +245,37 @@ trigger_build_kernels:
 test_deb_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_deb_x64" ]
+  needs: [ "get_agent_version", "build_deb_x64" ]
   tags: [ "runner:main" ]
 
 test_deb_arm64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_deb_arm64" ]
+  needs: [ "get_agent_version", "build_deb_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_rpm_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_rpm_x64" ]
+  needs: [ "get_agent_version", "build_rpm_x64" ]
   tags: [ "runner:main" ]
 
 test_rpm_x64_testing:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_rpm_x64_testing" ]
+  needs: [ "get_agent_version", "build_rpm_x64_testing" ]
   tags: [ "runner:main" ]
 
 test_rpm_arm64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_rpm_arm64" ]
+  needs: [ "get_agent_version", "build_rpm_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
 
 test_suse_x64:
   extends: .test_agent6
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_suse_x64" ]
+  needs: [ "get_agent_version", "build_suse_x64" ]
   tags: [ "runner:main" ]
 
 .test_system_probe:
@@ -288,12 +287,11 @@ test_suse_x64:
     - inv -e deps
   script:
     - inv -e system-probe.build
-  dependencies: [ "get_agent_version"]
 
 test_system-probe_x64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_system-probe_x64" ]
+  needs: [ "get_agent_version", "build_system-probe_x64" ]
   tags: [ "runner:main" ]
   variables:
     ARCH: amd64
@@ -301,7 +299,7 @@ test_system-probe_x64:
 test_system-probe_arm64:
   extends: .test_system_probe
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: [ "build_system-probe_arm64" ]
+  needs: [ "get_agent_version", "build_system-probe_arm64" ]
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
     ARCH: arm64
@@ -357,7 +355,7 @@ build_windows_ltsc2022_x64:
 test_windows_1809_x64:
   extends: .test_windows
   tags: [ "runner:windows-docker", "windowsversion:1809" ]
-  needs: [ "build_windows_1809_x64" ]
+  needs: [ "get_agent_version", "build_windows_1809_x64" ]
   variables:
     ARCH: x64
     IMAGE: windows_1809_x64
@@ -365,7 +363,7 @@ test_windows_1809_x64:
 test_windows_ltsc2022_x64:
   extends: .test_windows
   tags: [ "runner:windows-docker", "windowsversion:2022" ]
-  needs: [ "build_windows_ltsc2022_x64" ]
+  needs: [ "get_agent_version", "build_windows_ltsc2022_x64" ]
   variables:
     ARCH: x64
     IMAGE: windows_ltsc2022_x64
