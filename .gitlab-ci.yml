@@ -79,7 +79,6 @@ get_agent_version:
 .build:
   stage: build
   except: [ tags ]
-  before_script:
   script:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
