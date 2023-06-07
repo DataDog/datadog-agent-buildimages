@@ -282,6 +282,7 @@ test_suse_x64:
   extends: .test
   before_script:
     - rm -r /go/src/github.com/DataDog/datadog-agent || true
+    - echo "Cloning ${AGENT_VERSION} branch of datadog-agent repository"
     - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - inv -e deps
