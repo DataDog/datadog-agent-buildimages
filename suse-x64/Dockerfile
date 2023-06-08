@@ -174,7 +174,7 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && /usr/local/bin/rpm --rebuilddb
 
 # zstd
-RUN git clone https://github.com/facebook/zstd --branch v1.5.2 --depth 1 \
+RUN git clone https://github.com/facebook/zstd --branch v1.5.5 --depth 1 \
     && pushd zstd \
     && make install \
     && popd \
