@@ -284,7 +284,7 @@ RUN chmod +x /build-gcc.sh \
 # zstd
 RUN git clone https://github.com/facebook/zstd --branch v1.5.5 --depth 1 \
     && cd zstd \
-    && make install \
+    && LDLIBS=-lrt make install \
     && cd .. \
     && rm -r zstd
 
