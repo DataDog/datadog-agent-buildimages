@@ -30,6 +30,6 @@ Remove-Item $out
 Add-ToPath -NewPath "c:\program files\7-zip" -Local -Global
 
 ## Write the version key out to the registry
-Set-InstalledVersionKey -Component "sevenzip" -Keyname "Version" -TargetValue $Version
+Set-InstalledVersionKey -Component "sevenzip" -Keyname "version" -TargetValue $Version
 
 Write-Host -ForegroundColor Green Done with 7zip
