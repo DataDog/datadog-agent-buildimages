@@ -27,7 +27,7 @@ Get-RemoteFile -RemoteFile $sevenzip -LocalFile $out -VerifyHash $Sha256
 
 Start-Process $out -ArgumentList '/S' -Wait
 Remove-Item $out
-Add-ToPath -NewPath "c:\program files\7-zip" -Local -Global
+Add-ToPath -NewPath "c:\program files\7-zip-Zstandard" -Local -Global
 
 ## Write the version key out to the registry
 Set-InstalledVersionKey -Component "sevenzip" -Keyname "version" -TargetValue $Version
