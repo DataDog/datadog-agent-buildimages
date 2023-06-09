@@ -48,7 +48,7 @@ try {
     #
     if ($Phase -eq 0 -or $Phase -eq 1) {
         .\helpers\phase1\install_net35.ps1
-        .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
+        .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -ZstdVersion $ENV:SEVENZIP_ZSTD_VERSION -Sha256 $ENV:SEVENZIP_SHA256
         .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
         .\helpers\phase1\install_vstudio.ps1
         .\helpers\phase1\install_wdk.ps1

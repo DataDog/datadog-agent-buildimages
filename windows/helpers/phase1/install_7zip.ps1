@@ -1,5 +1,6 @@
 param (
     [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter(Mandatory=$true)][string]$ZstdVersion,
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
@@ -18,8 +19,7 @@ if($isInstalled -and $isCurrent){
 # so not installed is the same as not current
 
 # Script directory is $PSScriptRoot
-$shortenedver = $Version.Replace('.','')
-$sevenzip="https://www.7-zip.org/a/7z$($shortenedver)-x64.exe"
+$sevenzip="https://github.com/mcmilk/7-Zip-zstd/releases/download/v$($Version)-v$($ZstdVersion)-R2/7z$($Version)-zstd-x64.exe"
 
 Write-Host -ForegroundColor Green "Installing 7zip $sevenzip"
 $out = "$($PSScriptRoot)\7zip.exe"

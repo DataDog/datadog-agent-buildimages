@@ -7,4 +7,4 @@ foreach ($h in $SoftwareTable.GetEnumerator()){
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
 }
 
-.\helpers\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
+.\helpers\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -ZstdVersion $ENV:SEVENZIP_ZSTD_VERSION -Sha256 $ENV:SEVENZIP_SHA256
