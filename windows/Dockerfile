@@ -63,6 +63,8 @@ COPY ./requirements.txt ./requirements-py2.txt /
 COPY ./python-packages-versions.txt /python-packages-versions.txt
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 
+RUN .\helpers\update_root_certs.ps1
+
 COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
 RUN .\install-all.ps1 -TargetContainer -Phase 1
 COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
