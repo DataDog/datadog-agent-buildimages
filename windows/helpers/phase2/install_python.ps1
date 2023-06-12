@@ -23,7 +23,7 @@ Write-Host -ForegroundColor Green Done downloading Python, installing
 
 Start-Process $out -ArgumentList '/quiet InstallAllUsers=1' -Wait
 
-Add-ToPath "c:\program files\Python38;c:\Program files\python38\scripts" -Global -Local
+Add-ToPath "c:\program files\Python39;c:\Program files\python39\scripts" -Global -Local
 
 Remove-Item $out
 
