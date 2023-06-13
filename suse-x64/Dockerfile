@@ -14,7 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GIMME_GO_VERSION=1.19.9
+ARG GO_VERSION=1.19.9
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -31,7 +31,7 @@ ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 
 # Environment
 ENV GOPATH /go
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GO_VERSION
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV IBM_MQ_SHA256 $IBM_MQ_SHA256
 ENV CMAKE_VERSION $CMAKE_VERSION
@@ -46,8 +46,6 @@ ENV GCC_VERSION $GCC_VERSION
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
-# Add our profile to the image that adds RVM and Conda to environment
-COPY ./suse-x64/ddprofile.sh /etc/profile.d/
 # Add /etc/profile to the image (taken from 42.3 image) -- it is missing from 42.1 the image
 COPY ./suse-x64/profile /etc/profile
 
@@ -84,12 +82,13 @@ COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY --from=CURL_GETTER /curl-amd64 /opt/datadog/bin/curl
 RUN chmod +x /opt/datadog/bin/curl
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
+# Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
@@ -121,6 +120,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN bash -l -c "rvm autolibs disable" # do not try to fetch requirements from system repos
 RUN bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN bash -l -c "gem install bundler --no-document"
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # CMake
 RUN set -ex \
@@ -172,14 +172,6 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
-
-ENTRYPOINT ["/entrypoint.sh"]

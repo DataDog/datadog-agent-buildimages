@@ -13,7 +13,7 @@ ARG BASE_IMAGE
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GIMME_GO_VERSION=1.19.9
+ARG GO_VERSION=1.19.9
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -37,7 +37,7 @@ ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ENV GOPATH /go
 ENV GIT_VERSION $GIT_VERSION
 ENV GIT_SHA256 $GIT_SHA256
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GO_VERSION
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV IBM_MQ_SHA256 $IBM_MQ_SHA256
 ENV CMAKE_VERSION $CMAKE_VERSION
@@ -163,6 +163,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Upgrade binutils
 RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
@@ -177,13 +178,13 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 # Override updated linker system-wide
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
-
+# Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
@@ -280,14 +281,5 @@ RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
 
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
-
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
-
-ENTRYPOINT ["/entrypoint.sh"]

@@ -10,12 +10,12 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.19.9
+ARG GO_VERSION=1.19.9
 ARG DD_TARGET_ARCH=armhf
 
 # Environment
 ENV GOPATH /go
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GO_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # configure yum and rpm for running on non-armv7l architectures
@@ -81,6 +81,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Pip & Invoke
 COPY ./python-packages-versions.txt /python-packages-versions.txt
@@ -88,26 +89,13 @@ COPY ./setup_python.sh /setup_python.sh
 COPY ./requirements.txt ./requirements-py2.txt /
 RUN ./setup_python.sh
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-
-# GIMME_ARCH = GOARCH, so must be a valid entry from `goarchlist` here:
-# https://github.com/golang/go/blob/master/src/go/build/syslist.go
-# Also see https://github.com/travis-ci/gimme/blob/master/gimme#L880
-RUN GIMME_ARCH=arm gimme $GIMME_GO_VERSION
-
-COPY ./gobin.sh /etc/profile.d/
-
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
+# Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
+  && echo "4a613b3c9d74975470096c5323e54db0f5f0f56dd0471fc1a7ee04e559032dc4  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
-
-ENTRYPOINT ["/entrypoint.sh"]

@@ -10,7 +10,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.19.9
+ARG GO_VERSION=1.19.9
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -21,7 +21,7 @@ ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 
 # Environment
 ENV GOPATH /go
-ENV GIMME_GO_VERSION $GIMME_GO_VERSION
+ENV GO_VERSION $GO_VERSION
 ENV CMAKE_VERSION $CMAKE_VERSION
 ENV CMAKE_SHA256 $CMAKE_SHA256
 ENV CLANG_VERSION $CLANG_VERSION
@@ -80,13 +80,15 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
-# Gimme
-RUN curl -sL -o /bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/v1.5.4/gimme
-RUN echo "03b295636d4e22870b6f6e9bc06a71d65311ae90d3d48cbc7071f82dd5837fbc  /bin/gimme" | sha256sum --check
-RUN chmod +x /bin/gimme
-RUN gimme $GIMME_GO_VERSION
-COPY ./gobin.sh /etc/profile.d/
+# Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+  && echo "b947e457be9d7b52a082c68e42b6939f9cc151f1ad5b3d8fd646ca3352f6f2f1  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # CMake
 RUN set -ex \
@@ -111,14 +113,5 @@ RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
 
-# Entrypoint
-COPY ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-# create the agent build folder within $GOPATH
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
-
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
-
-ENTRYPOINT ["/entrypoint.sh"]

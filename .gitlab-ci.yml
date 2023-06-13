@@ -218,7 +218,7 @@ trigger_build_kernels:
     - git clone -b $AGENT_TESTING_BRANCH https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
-    - source /root/.bashrc && conda activate ddpy3
+    - source /root/.bashrc
     - inv -e deps
   script:
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
