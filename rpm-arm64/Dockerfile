@@ -84,7 +84,7 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "b947e457be9d7b52a082c68e42b6939f9cc151f1ad5b3d8fd646ca3352f6f2f1  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "df98698821211c819e8b2420c77a0f802d989e377718578a31b1f91f6be2c5b4  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"

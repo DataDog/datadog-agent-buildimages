@@ -83,13 +83,13 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 # Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
     curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-    && echo "b947e457be9d7b52a082c68e42b6939f9cc151f1ad5b3d8fd646ca3352f6f2f1  /tmp/golang.tar.gz" | sha256sum --check \
+    && echo "df98698821211c819e8b2420c77a0f802d989e377718578a31b1f91f6be2c5b4  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-    && echo "4a613b3c9d74975470096c5323e54db0f5f0f56dd0471fc1a7ee04e559032dc4  /tmp/golang.tar.gz" | sha256sum --check \
+    && echo "937f885c35f191be4c6a618868ae0dbbb15b0213925a1a104d122eba02622356  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 

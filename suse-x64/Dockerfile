@@ -84,7 +84,7 @@ RUN chmod +x /opt/datadog/bin/curl
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "8b045a483d3895c6edba2e90a9189262876190dbbd21756870cdd63821810677  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
