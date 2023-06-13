@@ -1,7 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_VERSION=1.19.9
+ARG GO_VERSION=1.19.10
 ARG GO_SHA256=e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
