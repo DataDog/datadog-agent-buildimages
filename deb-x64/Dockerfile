@@ -196,3 +196,9 @@ RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
+
+# Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
+COPY ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
