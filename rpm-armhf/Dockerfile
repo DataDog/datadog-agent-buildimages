@@ -10,7 +10,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GIMME_GO_VERSION=1.19.9
+ARG GIMME_GO_VERSION=1.19.10
 ARG DD_TARGET_ARCH=armhf
 
 # Environment
