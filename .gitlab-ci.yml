@@ -28,15 +28,21 @@ variables:
 # Rules used to define whether a pipeline should run, and with which variables
 #
 
+.if_release_or_main_branch: &if_release_or_main_branch
+  if: $CI_COMMIT_BRANCH =~ /^[0-9]+\.[0-9]+\.x$/ || $CI_COMMIT_BRANCH == "main"
+
+.if_not_release_nor_main_branch: &if_not_release_nor_main_branch
+  if: $CI_COMMIT_BRANCH !~ /^[0-9]+\.[0-9]+\.x$/ && $CI_COMMIT_BRANCH != "main"
+
 workflow:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - <<: *if_release_or_main_branch
       variables:
-        # Don't use the `*_test_only` ECR for images built from commits that are on main
+        # Don't use the `*_test_only` ECR for images built from commits that are on main or on a release branch
         ECR_TEST_ONLY: ""
-    - if: '$CI_COMMIT_BRANCH != "main"'
+    - <<: *if_not_release_nor_main_branch
       variables:
-        # Use the `*_test_only` ECR for images built from commits that are not on main
+        # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
         ECR_TEST_ONLY: "_test_only"
 
 
