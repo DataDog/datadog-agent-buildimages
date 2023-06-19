@@ -493,7 +493,7 @@ notify-on-failure:
   script: |
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     AUTHOR=$(git show -s --format="%an" HEAD)
-    MESSAGE_TEXT=":red-light: datadog-agent-buildimages build failed for $CI_COMMIT_TITLE (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>) by $AUTHOR"
+    MESSAGE_TEXT=":red-light: datadog-agent-buildimages build failed in pipeline <$CI_PIPELINE_URL|$CI_PIPELINE_ID> for $CI_COMMIT_TITLE (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>) by $AUTHOR"
     if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
       MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)"
     fi
