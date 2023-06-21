@@ -60,9 +60,16 @@ if ( $mshell -ne "0") {
 
 # fails with autoconf errors
 # ridk install 3
-ridk exec pacman -S --noconfirm autoconf autoconf2.13 autogen automake-wrapper automake1.11 automake1.12 automake1.13 automake1.14 automake1.15 diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-libs mingw-w64-x86_64-headers-git mingw-w64-x86_64-libmangle-git mingw-w64-x86_64-libwinpthread-git mingw-w64-x86_64-make mingw-w64-x86_64-pkg-config mingw-w64-x86_64-tools-git mingw-w64-x86_64-winpthreads-git
+Write-Host "Installing other build tools"
+ridk exec pacman -S --noconfirm autoconf autoconf2.13 autogen automake-wrapper automake1.11 automake1.12 automake1.13 automake1.14 automake1.15 diffutils file gawk grep libtool m4 pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-libs mingw-w64-x86_64-headers-git mingw-w64-x86_64-libmangle-git mingw-w64-x86_64-libwinpthread-git mingw-w64-x86_64-make mingw-w64-x86_64-pkg-config mingw-w64-x86_64-tools-git mingw-w64-x86_64-winpthreads-git
 If ($lastExitCode -ne "0") { 
-    throw "ridk install 3 returned $lastExitCode" 
+    throw "Installing build tools failed, pacman returned $lastExitCode" 
+}
+
+Write-Host "Installing make and patch"
+ridk exec pacman -S --noconfirm make patch
+If ($lastExitCode -ne "0") { 
+    throw "Installing make and patch failed, pacman returned $lastExitCode" 
 }
 
 Remove-Item c:\*.zst
