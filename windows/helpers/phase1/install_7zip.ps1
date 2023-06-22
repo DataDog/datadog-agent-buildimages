@@ -9,7 +9,9 @@ $ErrorActionPreference = 'Stop'
 
 ## check to see if this version is installed
 
-$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "sevenzip" -Keyname "version" -TargetValue $Version
+$combinedversion = "v$($Version)-v$($ZstdVersion)"
+
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "sevenzip" -Keyname "version" -TargetValue $combinedversion
 
 if($isInstalled -and $isCurrent){
     Write-Host "SevenZip already installed and current.  Skipping"
@@ -19,7 +21,7 @@ if($isInstalled -and $isCurrent){
 # so not installed is the same as not current
 
 # Script directory is $PSScriptRoot
-$sevenzip="https://github.com/mcmilk/7-Zip-zstd/releases/download/v$($Version)-v$($ZstdVersion)-R2/7z$($Version)-zstd-x64.exe"
+$sevenzip="https://github.com/mcmilk/7-Zip-zstd/releases/download/$($combinedversion)/7z$($Version)-zstd-x64.exe"
 
 Write-Host -ForegroundColor Green "Installing 7zip $sevenzip"
 $out = "$($PSScriptRoot)\7zip.exe"
@@ -30,6 +32,6 @@ Remove-Item $out
 Add-ToPath -NewPath "c:\program files\7-zip-Zstandard" -Local -Global
 
 ## Write the version key out to the registry
-Set-InstalledVersionKey -Component "sevenzip" -Keyname "version" -TargetValue $Version
+Set-InstalledVersionKey -Component "sevenzip" -Keyname "version" -TargetValue $combinedversion
 
 Write-Host -ForegroundColor Green Done with 7zip
