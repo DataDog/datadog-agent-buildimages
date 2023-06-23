@@ -219,8 +219,8 @@ build_circleci_runner:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}${ECR_TEST_ONLY} --file $DOCKERFILE .
-    - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}${ECR_TEST_ONLY}
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
 
 trigger_build_kernels:
   stage: trigger_build_kernels
