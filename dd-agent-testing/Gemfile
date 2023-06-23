@@ -31,5 +31,5 @@ end
 group :kitchen do
   # test-kitchen 2.7.1 slows down kitchen tests considerably due to
   # https://github.com/test-kitchen/test-kitchen/pull/1683
-  gem "test-kitchen", '= 2.7.0'
+  gem "test-kitchen", git: 'https://github.com/DataDog/test-kitchen.git', branch: 'main'
 end
