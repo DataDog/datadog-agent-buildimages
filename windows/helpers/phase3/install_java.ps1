@@ -41,10 +41,11 @@ Write-Host -ForegroundColor Green 'javac --version'; javac --version
 Write-Host -ForegroundColor Green 'java --version'; java --version
 
 ## need to have more rigorous download at some point, but
-$jsignjarsrc = "https://s3.amazonaws.com/dd-agent-omnibus/jsign/jsign-4.2.jar"
+$jsignfile = "jsign-$($ENV:JSIGN_VERSION).jar"
+$jsignjarsrc = "https://github.com/ebourg/jsign/releases/download/$($ENV:JSIGN_VERSION)/$($jsignfile)"
 $jsignjardir = "c:\devtools\jsign"
-$jsignout = "$($jsignjardir)\jsign-4.2.jar"
-if(-Not (test-path $jsignjardir)){
+$jsignout = "$($jsignjardir)\$($jsignfile)"
+if (-Not (test-path $jsignjardir)) {
     mkdir $jsignjardir
 }
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
