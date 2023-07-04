@@ -219,6 +219,7 @@ RUN rm -r /usr/src/kernels/* \
     && tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
+
 # Update GCC: CentOS6 gcc-4.4 is a little too far behind what we use with the debian builder
 # Copy (and import through the repo file) the CERN signing key:
 # pub   1024D/1D1E034B 2005-06-27
