@@ -38,10 +38,10 @@ RUN set -ex \
         xz-utils
 
 # Golang
-ENV GO_VERSION 1.19.9
+ENV GO_VERSION 1.20.5
 ENV GOPATH /go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "d7ec48cde0d3d2be2c69203bc3e0a44de8660b9c09a6e85c4732a3f7dc442612 /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
