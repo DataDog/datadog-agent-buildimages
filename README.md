@@ -19,8 +19,8 @@ of the [datadog-agent repository][agent] to use the newly created images.
 
 ## Upgrading Golang version
 
-Upgrade all `GIMME_GO_VERSION` in the Dockerfiles like in
-[this](https://github.com/DataDog/datadog-agent-buildimages/commit/812e0f81340d30bdcbf930399561f1209bb0e166) commit.
+Upgrade all `GIMME_GO_VERSION` and hashes in the Dockerfiles like in
+[this](https://github.com/DataDog/datadog-agent-buildimages/commit/4fdacd48725fdbab84d8fc0e27f9fc23ac5e7d9a) commit.
 
 Also upgrade the `GO_VERSION` in the Dockerfiles that build Go from source and in `windows/Dockerfile`.
 
