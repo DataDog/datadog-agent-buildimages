@@ -11,39 +11,39 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN set -ex \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-        curl \
-        default-jre \
-        doxygen \
-        file \
-        g++ \
-        gcc \
-        git \
-        gnupg ca-certificates \
-        graphviz \
-        libpq-dev \
-        libsnmp-base \
-        libsnmp-dev \
-        libssl-dev \
-        libsystemd-dev \
-        make \
-        pkg-config \
-        python3 \
-        python3-dev \
-        python3-distutils \
-        python3-pip \
-        python3-setuptools \
-        python3-yaml \
-        snmp-mibs-downloader \
-        ssh \
-        xz-utils
+    curl \
+    default-jre \
+    doxygen \
+    file \
+    g++ \
+    gcc \
+    git \
+    gnupg ca-certificates \
+    graphviz \
+    libpq-dev \
+    libsnmp-base \
+    libsnmp-dev \
+    libssl-dev \
+    libsystemd-dev \
+    make \
+    pkg-config \
+    python3 \
+    python3-dev \
+    python3-distutils \
+    python3-pip \
+    python3-setuptools \
+    python3-yaml \
+    snmp-mibs-downloader \
+    ssh \
+    xz-utils
 
 # Golang
-ENV GO_VERSION 1.20.5
+ENV GO_VERSION 1.20.6
 ENV GOPATH /go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "d7ec48cde0d3d2be2c69203bc3e0a44de8660b9c09a6e85c4732a3f7dc442612 /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+    && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
@@ -78,7 +78,7 @@ RUN set -ex \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && apt-get update \
     && apt-get -t llvm-toolchain-focal install -y --no-install-recommends \
-        clang-format
+    clang-format
 
 # Python
 COPY ./requirements.txt /
