@@ -53,7 +53,7 @@ case $DD_TARGET_ARCH in
     rm Python-3.9.5.tgz
     ln -sf /usr/bin/python3.9 /usr/bin/python3
 
-    python3 -m pip install distro==1.4.0
+    python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
     python3 -m pip install -r requirements.txt
     exit 0
