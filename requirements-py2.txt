@@ -1,2 +1,4 @@
+# Old os which cannot use recent wheel use pip install from source that fails with cython 3.0.0
+cython<3.0.0
 requests==2.27.1
 PyYAML==5.4.1

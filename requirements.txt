@@ -1,3 +1,5 @@
+# Old os which cannot use recent wheel use pip install from source that fails with cython 3.0.0
+cython<3.0.0
 # python development requirements for the Datadog Agent
 invoke==1.7.3
 reno==3.5.0
