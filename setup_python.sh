@@ -87,6 +87,7 @@ pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
 pip install setuptools==${DD_SETUPTOOLS_VERSION}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install -r requirements-py2.txt
+pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
@@ -94,6 +95,7 @@ pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install -r requirements.txt
+pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 
 if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
