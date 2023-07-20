@@ -60,7 +60,7 @@ RUN set -ex \
     && rm $CMAKE_ARCHIVE
 
 # Codecov
-ENV CODECOV_VERSION=0.4.1
+ENV CODECOV_VERSION=0.6.1
 RUN curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import \
     && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov \
     && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov.SHA256SUM \
