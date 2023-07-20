@@ -6,7 +6,6 @@ docker==5.0.3; python_version < '3.7'
 docker-squash==1.0.9
 dulwich==0.20.45
 requests==2.27.1
-PyYAML==5.4.1
 toml==0.10.2
 packaging==21.3
 # more recent boto3 has a bug which generates an import exception.
