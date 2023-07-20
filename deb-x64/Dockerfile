@@ -10,7 +10,7 @@ FROM ubuntu:14.04
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GO_VERSION=1.19.10
+ARG GO_VERSION=1.20.6
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -162,13 +162,6 @@ RUN ./setup_go.sh
 
 ENV PATH="/goroot/bin:$PATH"
 ENV PATH="/go/bin:$PATH"
-
-# Download and install golangci-lint
-RUN curl -sSfL -o golangci-lint-install.sh https://raw.githubusercontent.com/golangci/golangci-lint/v1.44.2/install.sh \
-    && echo "1c2edb726aad6bf7d260d95c370bd9ec0fb1a8651e6db6f77f250dd66067de0c  golangci-lint-install.sh" | sha256sum --check \
-    && sh ./golangci-lint-install.sh -b $GOPATH/bin v1.21.0 \
-    && echo "942efc00799b83aebaf6628c34e1151467b7fa21f0cfd78554279dc73f8c8ef3  $GOPATH/bin/golangci-lint" | sha256sum --check \
-    && rm golangci-lint-install.sh
 
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \

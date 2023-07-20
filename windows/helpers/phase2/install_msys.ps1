@@ -35,7 +35,7 @@ if($isInstalled -and -not $isCurrent) {
     Write-Host -ForegroundColor Yellow "upgrading MSYS"
     Remove-Item -Recurse -Force "$($InstallPath)\msys64"
 }
-# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20200629.tar.xz
+# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20230318.tar.xz
 $msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 
 Write-Host  -ForegroundColor Green starting with MSYS
@@ -58,15 +58,13 @@ if ( $mshell -ne "0") {
     throw "Invoke MSYS returned $mshell"
 }
 
-ridk install 3
+# fails with autoconf errors
+# ridk install 3
+ridk enable
+pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc
 If ($lastExitCode -ne "0") { 
     throw "ridk install 3 returned $lastExitCode" 
 }
-# Downgrade gcc and binutils due to https://github.com/golang/go/issues/46099
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst"
-Get-RemoteFile -RemoteFile "https://s3.amazonaws.com/dd-agent-omnibus/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst" -LocalFile "C:/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst"
-& C:\tools\msys64\msys2_shell.cmd -defterm -no-start -c "pacman --noconfirm -U /c/mingw-w64-x86_64-binutils-2.35.1-2-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-libs-10.2.0-11-any.pkg.tar.zst /c/mingw-w64-x86_64-gcc-10.2.0-11-any.pkg.tar.zst"
 
 Remove-Item c:\*.zst
 Set-InstalledVersionKey -Component "msys" -Keyname "version" -TargetValue $Version

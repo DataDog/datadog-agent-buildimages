@@ -16,7 +16,7 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GO_VERSION=1.19.10
+ARG GO_VERSION=1.20.6
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -83,13 +83,13 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 # Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
     curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-    && echo "df98698821211c819e8b2420c77a0f802d989e377718578a31b1f91f6be2c5b4  /tmp/golang.tar.gz" | sha256sum --check \
+    && echo "4e15ab37556e979181a1a1cc60f6d796932223a0f5351d7c83768b356f84429b  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-    && echo "937f885c35f191be4c6a618868ae0dbbb15b0213925a1a104d122eba02622356  /tmp/golang.tar.gz" | sha256sum --check \
+    && echo "669902f5c8efefbd5d5fd078db01e34355af3693e48659b89593da7db367c488 /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 

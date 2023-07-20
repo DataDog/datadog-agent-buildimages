@@ -53,7 +53,8 @@ case $DD_TARGET_ARCH in
     rm Python-3.9.5.tgz
     ln -sf /usr/bin/python3.9 /usr/bin/python3
 
-    python3 -m pip install distro==1.4.0
+    python3 -m pip install distro==1.4.0 wheel==0.40.0
+    python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
     python3 -m pip install -r requirements.txt
     exit 0
     ;;
@@ -73,6 +74,7 @@ source /root/.bashrc
 
 # Make sure requirements are installed also on the system python
 # This is needed because some tests jobs (py2 test jobs) run invoke using the system python
+python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 python3 -m pip install -r requirements.txt
 
 # Setup pythons
@@ -83,13 +85,17 @@ conda create -n ddpy3 python python=$PY3_VERSION
 conda activate ddpy2
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
 pip install setuptools==${DD_SETUPTOOLS_VERSION}
+pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install -r requirements-py2.txt
+pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
+pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install -r requirements.txt
+pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 
 if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
