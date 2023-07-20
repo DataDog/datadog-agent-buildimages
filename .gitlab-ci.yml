@@ -207,6 +207,21 @@ build_kernel_version_testing_arm64:
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
+build_circleci_runner:
+  extends: [ .x64 ]
+  stage: build
+  except: [ tags ]
+  variables:
+    DOCKERFILE: circleci/Dockerfile
+    IMAGE: circleci-runner
+  script:
+    # Dockerhub login
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # Build
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
+    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+
 trigger_build_kernels:
   stage: trigger_build_kernels
   needs: [ "build_kernel_version_testing_x64" , "build_kernel_version_testing_arm64" ]
@@ -483,6 +498,25 @@ release_windows_ltsc2022_x64:
     IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
     DOCKERHUB_TAG_PREFIX: "ltsc2022"
+
+release_circleci_runner:
+  stage: release
+  needs: [ "build_circleci_runner" ]
+  variables:
+    IMAGE: circleci-runner
+  except: [ tags, schedules ]
+  only: [ master, main ]
+  tags: [ "runner:docker" ]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
+  script:
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker pull $SRC_IMAGE
+    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
+    - docker push datadog/agent-buildimages-$IMAGE:latest
+  after_script:
+    - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
 
 notify-on-failure:
   extends: .slack-notifier-base
