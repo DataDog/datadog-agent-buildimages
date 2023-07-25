@@ -260,6 +260,8 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
+RUN sha256sum $HOME/.cargo/bin/rustc
+
 # Perl >= 5.14 is needed to compile the libxcrypt project
 RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
