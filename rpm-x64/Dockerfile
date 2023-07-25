@@ -21,9 +21,9 @@ ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa7
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.66.1
+ARG RUST_VERSION=nightly
 ARG RUSTC_SHA256="44e793a79eb71924234a8dc673d2d0befebff54e79c4f208040cf9c1167d5a6f"
-ARG RUSTUP_VERSION=1.25.2
+ARG RUSTUP_VERSION=nightly
 ARG RUSTUP_SHA256="bb31eaf643926b2ee9f4d8d6fc0e2835e03c0a60f34d324048aa194f0b29a71c"
 ARG PERLBREW_VERSION=0.96
 ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
@@ -178,6 +178,17 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 # Override updated linker system-wide
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
+# Rust is needed to compile some python libs
+RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init" \
+    # && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
+      # We need this so that we can target musl instead of (a very old) glibc
+      -t x86_64-unknown-linux-musl  \
+    # && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
+
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
   && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
@@ -249,16 +260,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
       && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
 
-# Rust is needed to compile some python libs
-RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
-    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
-    && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
-      # We need this so that we can target musl instead of (a very old) glibc
-      -t x86_64-unknown-linux-musl  \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
+
 
 RUN sha256sum $HOME/.cargo/bin/rustc
 
