@@ -261,9 +261,6 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
       && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
 
 
-
-RUN sha256sum $HOME/.cargo/bin/rustc
-
 # Perl >= 5.14 is needed to compile the libxcrypt project
 RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
