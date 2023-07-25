@@ -254,6 +254,8 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
+    # We need this so that we can target musl instead of (a very old) glibc
+    -t x86_64-unknown-linux-musl  \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
