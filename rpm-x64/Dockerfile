@@ -22,7 +22,7 @@ ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
 ARG RUST_VERSION=1.66.1
-ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
+ARG RUSTC_SHA256="44e793a79eb71924234a8dc673d2d0befebff54e79c4f208040cf9c1167d5a6f"
 ARG RUSTUP_VERSION=1.25.2
 ARG RUSTUP_SHA256="bb31eaf643926b2ee9f4d8d6fc0e2835e03c0a60f34d324048aa194f0b29a71c"
 ARG PERLBREW_VERSION=0.96
@@ -256,7 +256,7 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
       # We need this so that we can target musl instead of (a very old) glibc
       -t x86_64-unknown-linux-musl  \
-    # && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
