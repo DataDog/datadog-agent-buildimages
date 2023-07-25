@@ -18,9 +18,9 @@ ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa7
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="9ef854b71949f825362a119bf2597f744836cb571131ae6b721cd102ffea8cd0"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.60.0
+ARG RUST_VERSION=1.66.1
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_VERSION=1.25.2
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
@@ -70,9 +70,9 @@ RUN echo 'Acquire::http::AllowRedirect"false";' >> /etc/apt/apt.conf.d/20datadog
 RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
-  build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-  libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre texinfo
+    build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
+    libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
+    selinux-basics libtool software-properties-common default-jre texinfo
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall

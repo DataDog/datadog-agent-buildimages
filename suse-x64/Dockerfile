@@ -22,9 +22,9 @@ ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa7
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.60.0
+ARG RUST_VERSION=1.66.1
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_VERSION=1.25.2
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
@@ -60,12 +60,12 @@ RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=htt
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
-      bison bzip2 curl flex gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
-      gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
-      libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
-      patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \ 
-      libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel
+    bison bzip2 curl flex gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
+    gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
+    libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
+    patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
+    tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \ 
+    libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
@@ -84,9 +84,9 @@ RUN chmod +x /opt/datadog/bin/curl
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+    && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 

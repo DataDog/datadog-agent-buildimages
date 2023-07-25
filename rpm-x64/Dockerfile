@@ -21,9 +21,9 @@ ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa7
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.60.0
+ARG RUST_VERSION=1.66.1
 ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG RUSTUP_VERSION=1.24.3
+ARG RUSTUP_VERSION=1.25.2
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG PERLBREW_VERSION=0.96
 ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
@@ -67,18 +67,18 @@ RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
 
 # The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
-  @development \
-  which perl-ExtUtils-MakeMaker perl-parent \
-  pkgconfig \
-  curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
-  glibc-static tar libtool \
-  bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
-  libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo \
-  && yum clean all
+    @development \
+    which perl-ExtUtils-MakeMaker perl-parent \
+    pkgconfig \
+    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
+    glibc-static tar libtool \
+    bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
+    libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
+    texinfo \
+    && yum clean all
 
 RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \ 
-     yum -y install policycoreutils-python; \ 
+    yum -y install policycoreutils-python; \ 
     fi
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -180,9 +180,9 @@ RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+    && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
@@ -225,16 +225,16 @@ RUN rm -r /usr/src/kernels/* \
 # uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
 COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
-      curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
-      && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
-      && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
+    curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
+    && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
+    && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
 
 # HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
 #       on the centos version; only required for centos 6 based images.
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
-      echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
-      && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
+    echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
+    && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
+    && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
 
 # Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
 # an old mirror copy.
@@ -245,9 +245,9 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
 
 RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \ 
-      curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
-      && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
-      && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
+    curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
+    && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
+    && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
 
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
