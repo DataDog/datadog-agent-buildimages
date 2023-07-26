@@ -78,7 +78,8 @@ RUN set -ex \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && apt-get update \
     && apt-get -t llvm-toolchain-focal install -y --no-install-recommends \
-    clang-format
+    clang-format-18 \
+    && ln -s /usr/bin/clang-format-18 /usr/bin/clang-format
 
 # Python
 COPY ./requirements.txt /
