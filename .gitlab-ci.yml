@@ -251,8 +251,8 @@ trigger_build_kernels:
   extends: .test
   before_script:
     - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - echo "Cloning ${AGENT_VERSION} branch of datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+    - echo "Cloning "ofek/rust-old-glibc" branch of datadog-agent repository"
+    - git clone -b "ofek/rust-old-glibc" https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
     - cd /go/src/github.com/DataDog/datadog-agent
     - VERSION="nightly"
     - source /root/.bashrc
