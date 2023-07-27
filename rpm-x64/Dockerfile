@@ -22,7 +22,7 @@ ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
 ARG RUST_VERSION=nightly-2022-05-15
-ARG RUSTC_SHA256="44e793a79eb71924234a8dc673d2d0befebff54e79c4f208040cf9c1167d5a6f"
+ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG RUSTUP_VERSION=1.24.3
 ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
 ARG PERLBREW_VERSION=0.96
@@ -251,11 +251,9 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
 
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
-    && sha256sum rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
-    && sha256sum $HOME/.cargo/bin/rustc \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
