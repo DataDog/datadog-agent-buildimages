@@ -2,7 +2,7 @@ FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV AWSCLI_VERSION=1.25.55
-ENV INVOKE_VERSION=1.6.0
+ENV INVOKE_VERSION=2.2.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
