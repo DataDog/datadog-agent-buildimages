@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libbpf-dev \
         libedit-dev \
         libelf-dev \
+        libffi-dev \
         libfl-dev \
         libstdc++-8-dev \
         libtinfo-dev \
