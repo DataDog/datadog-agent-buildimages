@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libelf-dev \
         libffi-dev \
         libfl-dev \
+        libssl-dev \
         libstdc++-8-dev \
         libtinfo-dev \
         libtinfo5 \
