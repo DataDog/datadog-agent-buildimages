@@ -21,10 +21,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         gcc-multilib \
         git \
         libbpf-dev \
+        libcurl4-openssl-dev \
         libedit-dev \
         libelf-dev \
         libffi-dev \
         libfl-dev \
+        libssl-dev \
         libstdc++-8-dev \
         libtinfo-dev \
         libtinfo5 \
