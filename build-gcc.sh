@@ -18,7 +18,7 @@ compile_with_autoconf() {
 	./configure --prefix=$PREFIX $configure_args $*
 	cpu_count=$(grep process /proc/cpuinfo | wc -l)
 	make -j $cpu_count --silent
-	make install
+	make install-strip
 }
 
 url="https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz"
