@@ -14,7 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GO_VERSION=1.20.6
+ARG GO_VERSION=1.20.7
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -84,7 +84,7 @@ RUN chmod +x /opt/datadog/bin/curl
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "b945ae2bb5db01a0fb4786afde64e6fbab50b67f6fa0eb6cfa4924f16a7ff1eb  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "f0a87f1bcae91c4b69f8dc2bc6d7e6bfcd7524fceec130af525058c0c17b1b44  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"

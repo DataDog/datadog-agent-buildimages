@@ -10,7 +10,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
-ARG GO_VERSION=1.20.6
+ARG GO_VERSION=1.20.7
 ARG DD_TARGET_ARCH=armhf
 
 # Environment
@@ -91,7 +91,7 @@ RUN ./setup_python.sh
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-  && echo "669902f5c8efefbd5d5fd078db01e34355af3693e48659b89593da7db367c488  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "7cc231b415b94f2f7065870a73f67dd2b0ec12b5a98052b7ee0121c42bc04f8d  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
