@@ -23,7 +23,7 @@ compile_with_autoconf() {
 
 url="https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz"
 archive=$(basename $url)
-[ ! -e "$archive" ] && curl -LO $url || true
+[ ! -e "$archive" ] && curl --retry 3 -LO $url || true
 echo "${GCC_SHA256}  ${archive}" | sha256sum --check
 
 tar xzf $(basename $url)
