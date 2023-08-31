@@ -172,7 +172,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
-# Setup patchelf 
+# Setup patchelf
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
     && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
     && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
@@ -196,3 +196,6 @@ RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
+
+# TMP
+RUN apt-get install ccache
