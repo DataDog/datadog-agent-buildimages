@@ -99,3 +99,9 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
+
+# Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
+COPY ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
