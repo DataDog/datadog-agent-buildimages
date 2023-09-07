@@ -13,7 +13,7 @@ ARG BASE_IMAGE
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GO_VERSION=1.20.7
+ARG GO_VERSION=1.20.8
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -180,7 +180,7 @@ RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "f0a87f1bcae91c4b69f8dc2bc6d7e6bfcd7524fceec130af525058c0c17b1b44  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
