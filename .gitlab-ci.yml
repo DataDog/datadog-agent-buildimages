@@ -483,6 +483,18 @@ release_rpm_arm64:
   variables:
     IMAGE: rpm_arm64
 
+release_system-probe_x64:
+  extends: .release
+  needs: [ "test_system-probe_x64" ]
+  variables:
+    IMAGE: system-probe_x64
+
+release_system-probe_arm64:
+  extends: .release
+  needs: [ "test_system-probe_arm64" ]
+  variables:
+    IMAGE: system-probe_arm64
+
 release_datadog-ci-uploader:
   extends: .release
   needs: [ "build_datadog-ci-uploader" ]
