@@ -6,7 +6,8 @@ import os
 from invoke import Collection
 
 from . import (
-    agent
+    agent,
+    update_go
 )
 
 # the root namespace
@@ -15,6 +16,7 @@ ns = Collection()
 # add single tasks to the root
 
 ns.add_collection(agent)
+ns.add_task(update_go.update_go)
 ns.configure(
     {
         'run': {
