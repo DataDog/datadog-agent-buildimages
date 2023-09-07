@@ -11,6 +11,7 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_ARM64=15ab379c6a2b0d086fe3e74be4599420e66549edf7426a300ee0f3809500f89e
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -84,7 +85,7 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "15ab379c6a2b0d086fe3e74be4599420e66549edf7426a300ee0f3809500f89e  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"

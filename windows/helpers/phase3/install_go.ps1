@@ -19,7 +19,7 @@ if($installedVers -and $installedVers.Contains($ENV:GO_VERSION)) {
 }
 Write-Host -ForegroundColor Green "Downloading $gozip to $out"
 
-Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $ENV:GO_SHA256
+Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $ENV:GO_SHA256_WINDOWS_AMD64
 
 ## set up proper output directory
 $godir = "c:\go\$ENV:GO_VERSION"
@@ -44,4 +44,3 @@ if(!(test-path "$RegRootPath\Go\$($ENV:GO_VERSION)")){
 }
 New-ItemProperty -Path "$RegRootPath\Go\$($ENV:GO_VERSION)" -Name "goroot" -Value "$($godir)" -PropertyType String
 Write-Host -ForegroundColor Green "Installed go $ENV:GO_VERSION"
-

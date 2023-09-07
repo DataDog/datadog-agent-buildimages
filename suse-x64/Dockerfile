@@ -15,6 +15,7 @@ FROM opensuse/archive:42.1
 
 # Build Args
 ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_AMD64=cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -84,7 +85,7 @@ RUN chmod +x /opt/datadog/bin/curl
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
