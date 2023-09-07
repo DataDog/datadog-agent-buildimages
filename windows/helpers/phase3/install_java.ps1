@@ -12,7 +12,7 @@ $out = 'java.zip'
 Write-Host -ForegroundColor Green "Downloading $javazip to $out"
 
 (New-Object System.Net.WebClient).DownloadFile($javazip, $out)
-if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$ENV:JAVA_SHA256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$ENV:GO_SHA256'.\"; exit 1 }
+if ((Get-FileHash -Algorithm SHA256 $out).Hash -ne "$ENV:JAVA_SHA256") { Write-Host \"Wrong hashsum for ${out}: got '$((Get-FileHash -Algorithm SHA256 $out).Hash)', expected '$ENV:JAVA_SHA256'.\"; exit 1 }
 
 mkdir c:\tmp\java
 
@@ -48,4 +48,3 @@ if (-Not (test-path $jsignjardir)) {
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
 
 Add-EnvironmentVariable -Variable JARSIGN_JAR -Value $jsignout -Global
-
