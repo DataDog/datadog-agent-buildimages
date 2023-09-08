@@ -61,7 +61,7 @@ get_agent_version:
   stage: setup
   image: $SETUP_IMAGE_NAME
   script:
-    - export VERSION=$(inv agent.version)
+    - VERSION=$(inv agent.version)
     - echo "AGENT_VERSION=$VERSION"
     - echo "AGENT_VERSION=$VERSION" >> version.env
   artifacts:
