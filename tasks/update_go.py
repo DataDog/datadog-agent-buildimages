@@ -121,6 +121,9 @@ def _handle_file(path: str, patterns: Dict[re.Pattern, str]):
     }
 )
 def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False):
+    """
+    Update Go versions and SHA256 of Go archives.
+    """
     if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
         raise exceptions.Exit(
             "The version doesn't have an expected format, it should be 3 numbers separated with a dot."
