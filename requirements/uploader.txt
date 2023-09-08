@@ -1,0 +1,4 @@
+-r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/requests_awscli.txt
+-r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/invoke_codeowners.txt
+datadog-api-client==2.3.0
+jira==3.5.2
