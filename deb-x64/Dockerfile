@@ -10,6 +10,8 @@ FROM ubuntu:14.04
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
+ARG GH_VERSION=2.34.0
+ARG GH_SHA256="056c45c510ca77ec7e492023e1aa79c078b679932b6202188b7f5abd914df911"
 ARG GO_VERSION=1.20.7
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
@@ -35,6 +37,8 @@ ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ENV GOPATH /go
 ENV GIT_VERSION $GIT_VERSION
 ENV GIT_SHA256 $GIT_SHA256
+ENV GH_VERSION $GH_VERSION
+ENV GH_SHA256 $GH_SHA256
 ENV GO_VERSION $GO_VERSION
 ENV IBM_MQ_VERSION $IBM_MQ_VERSION
 ENV IBM_MQ_SHA256 $IBM_MQ_SHA256
@@ -72,11 +76,11 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre texinfo
+  selinux-basics libtool software-properties-common default-jre texinfo unzip
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
-# it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
+# it and there's no way to prevent that. So leave it be and use update-alternatives to select 4.9
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
     && apt-get install -y gcc-4.9 g++-4.9 \
@@ -99,6 +103,16 @@ RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
+
+# GH CLI
+RUN curl -Lo gh.tar.gz https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz \
+    && echo "${GH_SHA256}  gh.tar.gz" | sha256sum --check \
+    && tar -xvf gh.tar.gz \
+    && chmod +x gh_* \
+    && mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/bin/gh \
+    && rm gh.tar.gz \
+    && rm -r gh_${GH_VERSION}_linux_amd64 \
+    && gh --version
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
