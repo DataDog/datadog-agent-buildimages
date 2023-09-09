@@ -1,9 +1,10 @@
 import hashlib
+import re
 import sys
 from typing import Dict, Optional, Set, Tuple, Type
-from invoke import task, Context, exceptions
-import re
+
 import requests
+from invoke import Context, exceptions, task
 
 # a platform is an OS and an architecture
 Platform = Type[Tuple[str, str]]
@@ -20,28 +21,33 @@ PLATFORMS: Set[Platform] = {
 }
 
 # list of Dockerfiles where we want to replace Go version and sha variables
-DOCKERFILES: Set[str] = {
-    "./circleci/Dockerfile",
-    "./deb-arm/Dockerfile",
-    "./deb-x64/Dockerfile",
-    "./rpm-arm64/Dockerfile",
-    "./rpm-armhf/Dockerfile",
-    "./rpm-x64/Dockerfile",
-    "./suse-x64/Dockerfile",
-    "./system-probe_arm64/Dockerfile",
-    "./system-probe_x64/Dockerfile",
+# hardcode the number of expected matches so that we can warn if we get something else
+DOCKERFILES: Dict[str, int] = {
+    "./circleci/Dockerfile": 2,
+    "./deb-arm/Dockerfile": 3,
+    "./deb-x64/Dockerfile": 1,
+    "./rpm-arm64/Dockerfile": 2,
+    "./rpm-armhf/Dockerfile": 2,
+    "./rpm-x64/Dockerfile": 2,
+    "./suse-x64/Dockerfile": 2,
+    "./system-probe_arm64/Dockerfile": 2,
+    "./system-probe_x64/Dockerfile": 2,
 }
 
 
 # returns a map from a pattern to what it should be replaced with, for dockerfiles
-def _get_dockerfile_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pattern, str]:
+def _get_dockerfile_patterns(
+    version: str, shas: Dict[Platform, str]
+) -> Dict[re.Pattern, str]:
     patterns: Dict[re.Pattern, str] = {
-        re.compile("^ARG GO_VERSION=[.0-9]+$", flags=re.MULTILINE): f"ARG GO_VERSION={version}",
+        re.compile(
+            "^(ARG GO_VERSION=)[.0-9]+$", flags=re.MULTILINE
+        ): rf"\g<1>{version}",
     }
     for (os, arch), sha in shas.items():
         varname = f"GO_SHA256_{os.upper()}_{arch.upper()}"
-        pattern = re.compile(f"^ARG {varname}=[a-z0-9]+$", flags=re.MULTILINE)
-        replace = f"ARG {varname}={sha}"
+        pattern = re.compile(f"^(ARG {varname}=)[a-z0-9]+$", flags=re.MULTILINE)
+        replace = rf"\g<1>{sha}"
 
         patterns[pattern] = replace
 
@@ -49,14 +55,18 @@ def _get_dockerfile_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re
 
 
 # returns a map from a pattern to what it should be replaced with, for windows file
-def _get_windows_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pattern, str]:
+def _get_windows_patterns(
+    version: str, shas: Dict[Platform, str]
+) -> Dict[re.Pattern, str]:
     patterns: Dict[re.Pattern, str] = {
-        re.compile('^    "GO_VERSION"="[.0-9]+";$', flags=re.MULTILINE): f'    "GO_VERSION"="{version}";',
+        re.compile(
+            '^(    "GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE
+        ): rf"\g<1>{version}\g<2>",
     }
     for (os, arch), sha in shas.items():
         varname = f"GO_SHA256_{os.upper()}_{arch.upper()}"
-        pattern = re.compile(f'^    "{varname}"="[a-z0-9]+";$', flags=re.MULTILINE)
-        replace = f'    "{varname}"="{sha}";'
+        pattern = re.compile(f'^(    "{varname}"=")[a-z0-9]+(";)$', flags=re.MULTILINE)
+        replace = rf"\g<1>{sha}\g<2>"
 
         patterns[pattern] = replace
 
@@ -83,7 +93,9 @@ def _get_expected_sha256(version: str) -> Dict[Platform, str]:
         res = requests.get(url)
         sha = res.text.strip()
         if len(sha) != 64:
-            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'")
+            raise exceptions.Exit(
+                f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'"
+            )
         shas[(os, arch)] = sha
     return shas
 
@@ -99,16 +111,25 @@ def _check_archive(version: str, shas: Dict[Platform, str]):
         req = requests.get(url)
         sha = hashlib.sha256(req.content).hexdigest()
         if sha != expected_sha:
-            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}")
+            raise exceptions.Exit(
+                f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
+            )
 
 
 # replace patterns in a file
-def _handle_file(path: str, patterns: Dict[re.Pattern, str]):
+def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int = 1):
     with open(path, "r") as reader:
         content: str = reader.read()
 
+    nb_match = 0
     for pattern, replace in patterns.items():
-        content = re.sub(pattern, replace, content)
+        content, nb = re.subn(pattern, replace, content)
+        nb_match += nb
+
+    if nb_match != expected_match:
+        print(
+            f"WARNING: {path}: {pattern}: expected {expected_match} matches but got {nb_match}"
+        )
 
     with open(path, "w") as writer:
         writer.write(content)
@@ -133,16 +154,18 @@ def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False)
     if check_archive:
         _check_archive(version, shas)
 
-    print(f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:")
+    print(
+        f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
+    )
     for (os, arch), sha in shas.items():
         platform = f"[{os}/{arch}]"
         print(f"{platform : <15} {sha}")
 
     # handle Dockerfiles
     dockerfile_patterns = _get_dockerfile_patterns(version, shas)
-    for path in DOCKERFILES:
-        _handle_file(path, dockerfile_patterns)
+    for path, nb_match in DOCKERFILES.items():
+        _handle_file(path, dockerfile_patterns, expected_match=nb_match)
 
     # handle `./windows/versions.ps1` file
     windows_patterns = _get_windows_patterns(version, shas)
-    _handle_file("./windows/versions.ps1", windows_patterns)
+    _handle_file("./windows/versions.ps1", windows_patterns, 2)
