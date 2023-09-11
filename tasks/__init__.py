@@ -4,9 +4,9 @@ Invoke entrypoint, import here all the tasks we want to make available
 import os
 
 from invoke import Collection
-from update_go import update_go
 
 from . import agent
+from .update_go import update_go
 
 # the root namespace
 ns = Collection()

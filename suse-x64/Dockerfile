@@ -14,7 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-# The format of the GO args shouldn't be changed as the update-go invoke task relies on it
+# If you want to change the Go version, please use the update-go invoke task
 ARG GO_VERSION=1.20.8
 ARG GO_SHA256_LINUX_AMD64=cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4
 ARG IBM_MQ_VERSION=9.2.4.0

@@ -35,14 +35,10 @@ DOCKERFILES: Dict[str, int] = {
 }
 
 
-# returns a map from a pattern to what it should be replaced with, for dockerfiles
-def _get_dockerfile_patterns(
-    version: str, shas: Dict[Platform, str]
-) -> Dict[re.Pattern, str]:
+def _get_dockerfile_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pattern, str]:
+    """returns a map from a pattern to what it should be replaced with, for dockerfiles"""
     patterns: Dict[re.Pattern, str] = {
-        re.compile(
-            "^(ARG GO_VERSION=)[.0-9]+$", flags=re.MULTILINE
-        ): rf"\g<1>{version}",
+        re.compile("^(ARG GO_VERSION=)[.0-9]+$", flags=re.MULTILINE): rf"\g<1>{version}",
     }
     for (os, arch), sha in shas.items():
         varname = f"GO_SHA256_{os.upper()}_{arch.upper()}"
@@ -54,10 +50,8 @@ def _get_dockerfile_patterns(
     return patterns
 
 
-# returns a map from a pattern to what it should be replaced with, for windows file
-def _get_windows_patterns(
-    version: str, shas: Dict[Platform, str]
-) -> Dict[re.Pattern, str]:
+def _get_windows_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pattern, str]:
+    """returns a map from a pattern to what it should be replaced with, for windows file"""
     patterns: Dict[re.Pattern, str] = {
         re.compile(
             '^(    "GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE
@@ -73,15 +67,15 @@ def _get_windows_patterns(
     return patterns
 
 
-# returns the extension of the archive for the given os
 def _get_archive_extension(os: str) -> str:
+    """returns the extension of the archive for the given os"""
     if os == "windows":
         return "zip"
     return "tar.gz"
 
 
-# returns a map from platform to sha of the archive
 def _get_expected_sha256(version: str) -> Dict[Platform, str]:
+    """returns a map from platform to sha of the archive"""
     # weirdly, the stored sha256 for round versions don't have a ".0" in the version
     # while the archives have the ".0" suffix
     version = version.removesuffix(".0")
@@ -91,6 +85,8 @@ def _get_expected_sha256(version: str) -> Dict[Platform, str]:
         ext = _get_archive_extension(os)
         url = f"https://storage.googleapis.com/golang/go{version}.{os}-{arch}.{ext}.sha256"
         res = requests.get(url)
+        res.raise_for_status()
+
         sha = res.text.strip()
         if len(sha) != 64:
             raise exceptions.Exit(
@@ -100,8 +96,8 @@ def _get_expected_sha256(version: str) -> Dict[Platform, str]:
     return shas
 
 
-# checks that the archive sha is the same as the given one
 def _check_archive(version: str, shas: Dict[Platform, str]):
+    """checks that the archive sha is the same as the given one"""
     for (os, arch), expected_sha in shas.items():
         ext = _get_archive_extension(os)
         url = f"https://go.dev/dl/go{version}.{os}-{arch}.{ext}"
@@ -116,8 +112,8 @@ def _check_archive(version: str, shas: Dict[Platform, str]):
             )
 
 
-# replace patterns in a file
 def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int = 1):
+    """replace patterns in a file"""
     with open(path, "r") as reader:
         content: str = reader.read()
 
@@ -127,9 +123,7 @@ def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int
         nb_match += nb
 
     if nb_match != expected_match:
-        print(
-            f"WARNING: {path}: {pattern}: expected {expected_match} matches but got {nb_match}"
-        )
+        print(f"WARNING: {path}: {pattern}: expected {expected_match} matches but got {nb_match}")
 
     with open(path, "w") as writer:
         writer.write(content)
@@ -145,18 +139,17 @@ def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False)
     """
     Update Go versions and SHA256 of Go archives.
     """
+
     if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
         raise exceptions.Exit(
-            "The version doesn't have an expected format, it should be 3 numbers separated with a dot."
+            f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
         )
 
     shas = _get_expected_sha256(version)
     if check_archive:
         _check_archive(version, shas)
 
-    print(
-        f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
-    )
+    print(f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:")
     for (os, arch), sha in shas.items():
         platform = f"[{os}/{arch}]"
         print(f"{platform : <15} {sha}")

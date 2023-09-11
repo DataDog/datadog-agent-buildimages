@@ -1,7 +1,7 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-# The format of the GO args shouldn't be changed as the update-go invoke task relies on it
+# If you want to change the Go version, please use the update-go invoke task
 ARG GO_VERSION=1.20.8
 ARG GO_SHA256_LINUX_AMD64=cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4
 
