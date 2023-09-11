@@ -11,6 +11,7 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_ARMV6L=6fd6b0bd7861d8ff69d6f25b879c69cd25ee33b2cc52b6ed3a6c0d26368e0dcb
 ARG DD_TARGET_ARCH=armhf
 
 # Environment
@@ -91,7 +92,7 @@ RUN ./setup_python.sh
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-  && echo "6fd6b0bd7861d8ff69d6f25b879c69cd25ee33b2cc52b6ed3a6c0d26368e0dcb  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "$GO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
