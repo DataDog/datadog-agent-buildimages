@@ -1,2 +1,2 @@
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/invoke.txt
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/requests_awscli.txt
+-r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/invoke.txt
+-r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/requests_awscli.txt
