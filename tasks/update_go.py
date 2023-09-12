@@ -54,8 +54,8 @@ def _get_windows_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pa
     """returns a map from a pattern to what it should be replaced with, for windows file"""
     sha = shas[("windows", "amd64")]
     return {
-        re.compile('^(    "GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{version}\g<2>",
-        re.compile('^(    "GO_SHA256_WINDOWS_AMD64"=")[a-z0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{sha}\g<2>",
+        re.compile(r'^(\s*"GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{version}\g<2>",
+        re.compile(r'^(\s*"GO_SHA256_WINDOWS_AMD64"=")[a-z0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{sha}\g<2>",
     }
 
 
