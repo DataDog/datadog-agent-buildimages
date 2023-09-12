@@ -52,19 +52,11 @@ def _get_dockerfile_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re
 
 def _get_windows_patterns(version: str, shas: Dict[Platform, str]) -> Dict[re.Pattern, str]:
     """returns a map from a pattern to what it should be replaced with, for windows file"""
-    patterns: Dict[re.Pattern, str] = {
-        re.compile(
-            '^(    "GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE
-        ): rf"\g<1>{version}\g<2>",
+    sha = shas[("windows", "amd64")]
+    return {
+        re.compile('^(    "GO_VERSION"=")[.0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{version}\g<2>",
+        re.compile('^(    "GO_SHA256_WINDOWS_AMD64"=")[a-z0-9]+(";)$', flags=re.MULTILINE): rf"\g<1>{sha}\g<2>",
     }
-    for (os, arch), sha in shas.items():
-        varname = f"GO_SHA256_{os.upper()}_{arch.upper()}"
-        pattern = re.compile(f'^(    "{varname}"=")[a-z0-9]+(";)$', flags=re.MULTILINE)
-        replace = rf"\g<1>{sha}\g<2>"
-
-        patterns[pattern] = replace
-
-    return patterns
 
 
 def _get_archive_extension(os: str) -> str:
@@ -89,9 +81,7 @@ def _get_expected_sha256(version: str) -> Dict[Platform, str]:
 
         sha = res.text.strip()
         if len(sha) != 64:
-            raise exceptions.Exit(
-                f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'"
-            )
+            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'")
         shas[(os, arch)] = sha
     return shas
 
@@ -107,9 +97,7 @@ def _check_archive(version: str, shas: Dict[Platform, str]):
         req = requests.get(url)
         sha = hashlib.sha256(req.content).hexdigest()
         if sha != expected_sha:
-            raise exceptions.Exit(
-                f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
-            )
+            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}")
 
 
 def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int = 1):
