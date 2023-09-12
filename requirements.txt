@@ -6,8 +6,9 @@ docker-squash==1.1.0
 dulwich==0.21.6
 toml==0.10.2
 packaging==21.3
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/common.txt
-boto3==1.28.45
 # urllib3 major version 2, released on May 4th 2023, breaks botocore used
 # by awscli (removed DEFAULT_CIPHERS list from urllib3.util.ssl_)
+# Needs to be declared first otherwise urllib2 is fetched by another module
 urllib3==1.26.15
+-r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/common.txt
+boto3==1.28.45
