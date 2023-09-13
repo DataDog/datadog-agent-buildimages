@@ -100,7 +100,7 @@ def _check_archive(version: str, shas: Dict[Platform, str]):
             raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}")
 
 
-def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int = 1):
+def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int = 1, warn: bool = False):
     """replace patterns in a file"""
     with open(path, "r") as reader:
         content: str = reader.read()
@@ -111,7 +111,11 @@ def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int
         nb_match += nb
 
     if nb_match != expected_match:
-        print(f"WARNING: {path}: {pattern}: expected {expected_match} matches but got {nb_match}")
+        msg = f"{path}: {pattern.pattern}: expected {expected_match} matches but got {nb_match}"
+        if warn:
+            print(f"WARNING: {msg}")
+        else:
+            raise exceptions.Exit(msg)
 
     with open(path, "w") as writer:
         writer.write(content)
@@ -121,9 +125,10 @@ def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int
     help={
         "version": "The version of Go to use.",
         "check_archive": "If specified, download archive and check the SHA256.",
+        "warn": "Don't exit in case of matching error, just warn.",
     }
 )
-def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False):
+def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):
     """
     Update Go versions and SHA256 of Go archives.
     """
@@ -145,8 +150,8 @@ def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False)
     # handle Dockerfiles
     dockerfile_patterns = _get_dockerfile_patterns(version, shas)
     for path, nb_match in DOCKERFILES.items():
-        _handle_file(path, dockerfile_patterns, expected_match=nb_match)
+        _handle_file(path, dockerfile_patterns, nb_match, warn)
 
     # handle `./windows/versions.ps1` file
     windows_patterns = _get_windows_patterns(version, shas)
-    _handle_file("./windows/versions.ps1", windows_patterns, 2)
+    _handle_file("./windows/versions.ps1", windows_patterns, 1, warn)
