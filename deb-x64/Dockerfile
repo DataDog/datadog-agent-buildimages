@@ -160,7 +160,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 COPY ./setup_go.sh /setup_go.sh
 RUN ./setup_go.sh
 
-ENV PATH="/goroot/bin:$PATH"
+ENV PATH="/usr/local/go/bin:$PATH"
 ENV PATH="/go/bin:$PATH"
 
 # Rust is needed to compile some python libs
