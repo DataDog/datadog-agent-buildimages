@@ -16,6 +16,7 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
+# If you want to change the Go version, please use the update-go invoke task
 ARG GO_VERSION=1.20.8
 ARG GO_SHA256_LINUX_ARM64=15ab379c6a2b0d086fe3e74be4599420e66549edf7426a300ee0f3809500f89e
 ARG GO_SHA256_LINUX_ARMV6L=6fd6b0bd7861d8ff69d6f25b879c69cd25ee33b2cc52b6ed3a6c0d26368e0dcb

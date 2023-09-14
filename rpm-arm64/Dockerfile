@@ -10,6 +10,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
+# If you want to change the Go version, please use the update-go invoke task
 ARG GO_VERSION=1.20.8
 ARG GO_SHA256_LINUX_ARM64=15ab379c6a2b0d086fe3e74be4599420e66549edf7426a300ee0f3809500f89e
 ARG CMAKE_VERSION=3.23.0
