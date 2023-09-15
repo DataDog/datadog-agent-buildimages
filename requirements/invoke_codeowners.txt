@@ -1,2 +1,2 @@
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/invoke.txt
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/main/requirements/codeowners.txt
+-r invoke.txt
+-r codeowners.txt

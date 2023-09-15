@@ -10,5 +10,5 @@ packaging==21.3
 # by awscli (removed DEFAULT_CIPHERS list from urllib3.util.ssl_)
 # Needs to be declared first otherwise urllib2 is fetched by another module
 urllib3==1.26.15
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/common.txt
+-r requirements/common.txt
 boto3==1.28.45

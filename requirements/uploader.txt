@@ -1,4 +1,4 @@
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/requests_awscli.txt
--r https://raw.githubusercontent.com/DataDog/datadog-agent-buildimages/nschweitzer/bump_python/requirements/invoke_codeowners.txt
+-r requests_awscli.txt
+-r invoke_codeowners.txt
 datadog-api-client==2.16.0
 jira==3.5.2
