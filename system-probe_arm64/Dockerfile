@@ -1,8 +1,9 @@
 FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_VERSION=1.20.7
-ARG GO_SHA256=44781ae3b153c3b07651d93b6bc554e835a36e2d72a696281c1e4dad9efffe43
+# If you want to change the Go version, please use the update-go invoke task
+ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_ARM64=15ab379c6a2b0d086fe3e74be4599420e66549edf7426a300ee0f3809500f89e
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
@@ -54,7 +55,7 @@ ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check \
+  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"

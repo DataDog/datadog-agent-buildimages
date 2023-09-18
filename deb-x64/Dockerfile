@@ -12,7 +12,7 @@ ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GH_VERSION=2.34.0
 ARG GH_SHA256="056c45c510ca77ec7e492023e1aa79c078b679932b6202188b7f5abd914df911"
-ARG GO_VERSION=1.20.7
+ARG GO_VERSION=1.20.8
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -174,7 +174,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 COPY ./setup_go.sh /setup_go.sh
 RUN ./setup_go.sh
 
-ENV PATH="/goroot/bin:$PATH"
+ENV PATH="/usr/local/go/bin:$PATH"
 ENV PATH="/go/bin:$PATH"
 
 # Rust is needed to compile some python libs

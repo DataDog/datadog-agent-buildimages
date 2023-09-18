@@ -5,9 +5,8 @@ import os
 
 from invoke import Collection
 
-from . import (
-    agent
-)
+from . import agent
+from .update_go import update_go
 
 # the root namespace
 ns = Collection()
@@ -15,15 +14,16 @@ ns = Collection()
 # add single tasks to the root
 
 ns.add_collection(agent)
+ns.add_task(update_go)
 ns.configure(
     {
-        'run': {
+        "run": {
             # workaround waiting for a fix being merged on Invoke,
             # see https://github.com/pyinvoke/invoke/pull/407
-            'shell': os.environ.get('COMSPEC', os.environ.get('SHELL')),
+            "shell": os.environ.get("COMSPEC", os.environ.get("SHELL")),
             # this should stay, set the encoding explicitly so invoke doesn't
             # freak out if a command outputs unicode chars.
-            'encoding': 'utf-8',
+            "encoding": "utf-8",
         }
     }
 )

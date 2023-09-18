@@ -18,11 +18,23 @@ of the [datadog-agent repository][agent] to use the newly created images.
 [agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/master/docs/dev/agent_omnibus.md
 
 ## Upgrading Golang version
+### Invoke task
+The `update-go` invoke task updates all Go versions and SHA256 of the repository.
 
-Upgrade all `GIMME_GO_VERSION` and hashes in the Dockerfiles like in
+For example:
+```sh
+inv update-go -v 1.20.8
+```
+You can use the `--check-archive` argument to have the task download the archives and check that
+their SHA256 are the expected ones.
+
+Note that the task does all changes locally and doesn't create a branch or a PR.
+
+### Manual process
+Upgrade all `GO_VERSION` and hashes in the Dockerfiles like in
 [this](https://github.com/DataDog/datadog-agent-buildimages/commit/4fdacd48725fdbab84d8fc0e27f9fc23ac5e7d9a) commit.
 
-Also upgrade the `GO_VERSION` in the Dockerfiles that build Go from source and in `windows/Dockerfile`.
+Also upgrade `windows/helpers/phase2/install_docker.ps1`.
 
 Once pushed, Gitlab will build and push the containers to aws for you. Look for
 the pipeline and get the new images ID (in each job log). The
