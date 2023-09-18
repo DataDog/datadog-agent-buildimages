@@ -1,5 +1,3 @@
-include: "https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml"
-
 stages:
   - setup
   - build
@@ -24,6 +22,7 @@ variables:
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
+  KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: $CI_PROJECT_NAME
 
 #
 # Workflow rules
@@ -534,6 +533,11 @@ release_circleci_runner:
     - docker push datadog/agent-buildimages-$IMAGE:latest
   after_script:
     - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
+
+.slack-notifier-base:
+  stage: notify
+  tags: [arch:amd64]
+  image: registry.ddbuild.io/slack-notifier:sdm-gbi-jammy
 
 notify-images-available:
   extends: .slack-notifier-base
