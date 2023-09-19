@@ -62,9 +62,8 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && /usr/local/bin/rpm --rebuilddb
 
 # CONDA
-COPY ./python-packages-versions.txt /python-packages-versions.txt
-COPY ./setup_python.sh /setup_python.sh
-COPY ./requirements.txt ./requirements-py2.txt /
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
@@ -109,7 +108,7 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
 ENV PATH="/opt/clang/bin:$PATH"
 
 # gcc
-COPY ./build-gcc.sh /build-gcc.sh
+COPY build-gcc.sh /
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
@@ -118,7 +117,7 @@ RUN chmod +x /build-gcc.sh \
 RUN echo "umask 0022" >> /root/.bashrc
 
 # Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
-COPY ./entrypoint.sh /
+COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
