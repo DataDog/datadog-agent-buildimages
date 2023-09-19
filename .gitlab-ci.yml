@@ -1,3 +1,5 @@
+include: "https://gitlab-templates.ddbuild.io/slack-notifier/sdm/template.yml"
+
 stages:
   - setup
   - build
@@ -534,11 +536,6 @@ release_circleci_runner:
   after_script:
     - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
 
-.slack-notifier-base:
-  stage: notify
-  tags: [arch:amd64]
-  image: registry.ddbuild.io/slack-notifier:sdm-gbi-jammy
-
 notify-images-available:
   extends: .slack-notifier-base
   stage: availability_message # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
@@ -548,7 +545,7 @@ notify-images-available:
     - when: on_success
   dependencies: []
   script: |
-    export MESSAGE="Your images tagged `v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}` are ready to be used. In datadog-agent you can test with ```inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} [--no-test-version] [--branch-name <your_branch>]```"
+    export MESSAGE="Your images :docker: tagged 'v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}' are ready. :idea: In datadog-agent you can test with 'inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} [--no-test-version] [--branch-name <your_branch>]'"
     /usr/local/bin/notify.sh
 
 notify-on-failure:
