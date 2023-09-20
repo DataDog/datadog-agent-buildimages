@@ -84,9 +84,9 @@ RUN set -ex \
     clang-format
 
 # Python
-COPY ./requirements.txt /
-COPY ./circleci/requirements.txt /circleci_requirements.txt
-RUN python3 -m pip install -r requirements.txt -r circleci_requirements.txt
+COPY requirements.txt /
+COPY requirements /requirements
+RUN python3 -m pip install -r requirements.txt -r requirements/circleci.txt
 
 # Setup entrypoint
 WORKDIR $GOPATH

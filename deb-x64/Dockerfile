@@ -122,9 +122,8 @@ RUN mkdir -p /opt/mqm \
     && rm -rf /tmp/mq_client.tar.gz
 
 # CONDA
-COPY ./python-packages-versions.txt /python-packages-versions.txt
-COPY ./setup_python.sh /setup_python.sh
-COPY ./requirements.txt ./requirements-py2.txt /
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
@@ -171,7 +170,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 # build go manually in the builder for it to work with the linker present in the builder image.
 # See: https://github.com/golang/go/issues/43996#issuecomment-782547917
 # TODO: investigate if we could use gvm to do this for us.
-COPY ./setup_go.sh /setup_go.sh
+COPY setup_go.sh /
 RUN ./setup_go.sh
 
 ENV PATH="/usr/local/go/bin:$PATH"
@@ -200,7 +199,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
 # gcc
-COPY ./build-gcc.sh /build-gcc.sh
+COPY build-gcc.sh /
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
@@ -212,7 +211,7 @@ RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 RUN echo "umask 0022" >> /root/.bashrc
 
 # Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
-COPY ./entrypoint.sh /
+COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

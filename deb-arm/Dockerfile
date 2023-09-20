@@ -58,9 +58,8 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
 RUN chmod +x /usr/local/bin/curl
 
 # CONDA
-COPY ./python-packages-versions.txt /python-packages-versions.txt
-COPY ./setup_python.sh /setup_python.sh
-COPY ./requirements.txt ./requirements-py2.txt /
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"

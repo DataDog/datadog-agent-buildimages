@@ -15,7 +15,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Python
-COPY ./requirements.txt /requirements.txt
+COPY requirements.txt /
+COPY requirements /requirements
 RUN python3 -m pip install -r requirements.txt
 
 # Ruby
