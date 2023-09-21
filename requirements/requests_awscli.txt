@@ -1,2 +1,2 @@
-requests==2.31.0
+-r requirements/requests.txt
 awscli==1.29.45

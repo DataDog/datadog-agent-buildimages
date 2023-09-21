@@ -1,0 +1,8 @@
+
+#   # python development requirements for running e2e tests on Datadog Agent pipeline
+-r requirements/invoke.txt
+-r requirements/reno.txt
+-r requirements/docker.txt
+-r requirements/requests.txt
+-r requirements/tolm.txt
+-r requirements/packaging.txt
