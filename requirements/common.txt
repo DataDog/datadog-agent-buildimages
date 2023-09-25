@@ -1,2 +1,3 @@
 -r invoke.txt
--r requests_awscli.txt
+-r requests.txt
+-r awscli.txt

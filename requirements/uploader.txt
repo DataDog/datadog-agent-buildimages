@@ -1,4 +1,6 @@
--r requests_awscli.txt
--r invoke_codeowners.txt
+-r requests.txt
+-r awscli.txt
+-r invoke.txt
+-r codeowners.txt
 datadog-api-client==2.16.0
 jira==3.5.2
