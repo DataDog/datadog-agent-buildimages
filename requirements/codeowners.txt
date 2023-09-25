@@ -1,1 +1,3 @@
-codeowners==0.6.0
+-c constraints.txt
+
+codeowners

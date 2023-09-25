@@ -1,2 +1,4 @@
--r requests.txt
-awscli==1.29.45
+-c constraints.txt
+
+requests
+awscli

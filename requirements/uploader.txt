@@ -1,4 +1,8 @@
--r requests_awscli.txt
--r invoke_codeowners.txt
-datadog-api-client==2.16.0
-jira==3.5.2
+-c constraints.txt
+
+requests
+awscli
+invoke
+codeowners
+datadog-api-client
+jira

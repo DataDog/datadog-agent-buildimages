@@ -1,8 +1,10 @@
+-c constraints.txt
 
 #   # python development requirements for running e2e tests on Datadog Agent pipeline
--r invoke.txt
--r reno.txt
--r docker.txt
--r requests.txt
--r toml.txt
--r packaging.txt
+invoke
+reno
+docker
+docker-squash
+requests
+toml
+packaging
