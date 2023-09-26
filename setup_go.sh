@@ -43,6 +43,9 @@ ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 ./all.bash
 
+# Remove go build files from the image
+rm -rf /usr/local/go/pkg/obj
+
 # Remove gimme
 rm -rf $HOME/.gimme
 rm /bin/gimme
