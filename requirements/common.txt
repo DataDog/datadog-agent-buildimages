@@ -1,4 +1,4 @@
 -r invoke.txt
--r codeownwers.txt
+-r codeowners.txt
 -r requests.txt
 -r awscli.txt
