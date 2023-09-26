@@ -7,7 +7,7 @@ set -ex
 # Note: the official go build uses the fourth option (bootstrap the build using go1.4), but according to the documentation
 # this shouldn't make a difference.
 
-# Upgrade bison 
+# Upgrade bison
 curl -sL -O "https://ftp.gnu.org/gnu/bison/bison-${BISON_VERSION}.tar.gz"
 echo "${BISON_SHA256}  ./bison-${BISON_VERSION}.tar.gz" | sha256sum --check
 tar -zxvf "./bison-${BISON_VERSION}.tar.gz"
