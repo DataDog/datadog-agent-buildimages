@@ -49,3 +49,6 @@ rm -rf /usr/local/go/pkg/obj
 # Remove gimme
 rm -rf $HOME/.gimme
 rm /bin/gimme
+
+# Remove gimme downloaded files
+rm -rf /tmp/gimme
