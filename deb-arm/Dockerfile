@@ -122,6 +122,9 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && /build-gcc.sh \
     && rm /build-gcc.sh ; fi
 
+RUN git config --global user.email "package@datadoghq.com"
+RUN git config --global user.name "Bits"
+
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 
