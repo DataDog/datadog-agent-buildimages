@@ -20,3 +20,5 @@ requests==2.31.0
 toml==0.10.2
 datadog-api-client==2.16.0
 jira==3.5.2
+urllib3==1.26.15
+boto3==1.28.45
