@@ -66,7 +66,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
-      tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \ 
+      tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
@@ -173,6 +173,9 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
+
+RUN git config --global user.email "package@datadoghq.com"
+RUN git config --global user.name "Bits"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

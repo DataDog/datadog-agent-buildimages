@@ -1,8 +1,6 @@
 FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
-ENV AWSCLI_VERSION=1.25.55
-ENV INVOKE_VERSION=2.2.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -28,4 +26,5 @@ RUN git apply Makefile.patch
 
 RUN make -C src/ V=1 install
 
-RUN pip install awscli==${AWSCLI_VERSION} invoke==${INVOKE_VERSION}
+COPY requirements ./
+RUN pip install -r btf-gen.txt
