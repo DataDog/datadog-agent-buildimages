@@ -1,4 +1,4 @@
 -c constraints.txt
 
-requests
 awscli
+requests

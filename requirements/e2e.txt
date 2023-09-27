@@ -2,10 +2,10 @@
 
 -c constraints.txt
 
-invoke
-reno
 docker
 docker-squash
+invoke
+packaging
+reno
 requests
 toml
-packaging
