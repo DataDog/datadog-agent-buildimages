@@ -1,4 +1,0 @@
--c constraints.txt
-
-awscli
-requests

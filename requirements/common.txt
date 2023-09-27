@@ -1,6 +1,0 @@
--c constraints.txt
-
-awscli
-codeowners
-invoke
-requests
