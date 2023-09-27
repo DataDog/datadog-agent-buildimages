@@ -1,6 +1,6 @@
 # Python development requirements for the Datadog Agent
 
--c constraints.txt
+-c requirements/constraints.txt
 
 awscli
 boto3
