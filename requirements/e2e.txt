@@ -1,6 +1,7 @@
+# Python development requirements for running e2e tests on Datadog Agent pipeline
+
 -c constraints.txt
 
-#   # python development requirements for running e2e tests on Datadog Agent pipeline
 invoke
 reno
 docker
