@@ -1,2 +1,5 @@
--r awscli.txt
--r invoke.txt
+-c constraints.txt
+
+awscli
+requests
+invoke

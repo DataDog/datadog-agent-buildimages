@@ -1,8 +1,11 @@
+# Python development requirements for running e2e tests on Datadog Agent pipeline
 
-#   # python development requirements for running e2e tests on Datadog Agent pipeline
--r invoke.txt
--r reno.txt
--r docker.txt
--r requests.txt
--r toml.txt
--r packaging.txt
+-c constraints.txt
+
+docker
+docker-squash
+invoke
+packaging
+reno
+requests
+toml
