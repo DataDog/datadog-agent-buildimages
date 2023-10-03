@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
           cut -f 2-3 -d " ") \
         linux-libc-dev \
         make \
-        ninja-build \
+        ninja-build/buster-backports \
         openssh-client \
         patch \
         pkg-config \
