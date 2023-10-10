@@ -61,7 +61,7 @@ if ( $mshell -ne "0") {
 # fails with autoconf errors
 # ridk install 3
 ridk enable
-pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc
+pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc mingw-w64-x86_64-tools-git
 If ($lastExitCode -ne "0") { 
     throw "ridk install 3 returned $lastExitCode" 
 }
