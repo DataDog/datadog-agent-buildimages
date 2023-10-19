@@ -34,6 +34,7 @@ ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
+ARG BUNDLER_VERSION=2.4.20
 
 # Environment
 ENV GOPATH /go
@@ -57,6 +58,7 @@ ENV BINUTILS_VERSION $BINUTILS_VERSION
 ENV BINUTILS_SHA256 $BINUTILS_SHA256
 ENV BASE_IMAGE $BASE_IMAGE
 ENV GCC_VERSION $GCC_VERSION
+ENV BUNDLER_VERSION $BUNDLER_VERSION
 
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
@@ -163,7 +165,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Upgrade binutils
