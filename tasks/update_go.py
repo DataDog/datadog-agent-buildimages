@@ -154,4 +154,4 @@ def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False,
 
     # handle `./windows/versions.ps1` file
     windows_patterns = _get_windows_patterns(version, shas)
-    _handle_file("./windows/versions.ps1", windows_patterns, 2, warn)
+    _handle_file("./windows/versions.ps1", windows_patterns, 1, warn)

@@ -11,8 +11,8 @@ FROM ${BASE_IMAGE}
 
 # Build Args
 # If you want to change the Go version, please use the update-go invoke task
-ARG GO_VERSION=1.20.10
-ARG GO_SHA256_LINUX_ARMV6L=a2229772434dee3dde1e974ef5ae7936160a05a1b82c57cc5c64660479aa98cb
+ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_ARMV6L=6fd6b0bd7861d8ff69d6f25b879c69cd25ee33b2cc52b6ed3a6c0d26368e0dcb
 ARG DD_TARGET_ARCH=armhf
 
 # Environment

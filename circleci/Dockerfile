@@ -39,8 +39,8 @@ RUN set -ex \
 
 # Golang
 # If you want to change the Go version, please use the update-go invoke task
-ARG GO_VERSION=1.20.10
-ARG GO_SHA256_LINUX_AMD64=80d34f1fd74e382d86c2d6102e0e60d4318461a7c2f457ec1efc4042752d4248
+ARG GO_VERSION=1.20.8
+ARG GO_SHA256_LINUX_AMD64=cc97c28d9c252fbf28f91950d830201aa403836cbed702a05932e63f7f0c7bc4
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH /go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
