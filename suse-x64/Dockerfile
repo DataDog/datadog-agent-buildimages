@@ -120,7 +120,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && rm get-rvm.sh
 RUN bash -l -c "rvm autolibs disable" # do not try to fetch requirements from system repos
 RUN bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN bash -l -c "gem install bundler --no-document"
+RUN bash -l -c "gem install bundler --version 2.4.20 --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # CMake
