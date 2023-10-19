@@ -14,11 +14,13 @@ FROM ${BASE_IMAGE}
 ARG GO_VERSION=1.20.10
 ARG GO_SHA256_LINUX_ARMV6L=a2229772434dee3dde1e974ef5ae7936160a05a1b82c57cc5c64660479aa98cb
 ARG DD_TARGET_ARCH=armhf
+ARG BUNDLER_VERSION=2.4.20
 
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+ENV BUNDLER_VERSION $BUNDLER_VERSION
 
 # configure yum and rpm for running on non-armv7l architectures
 RUN echo "armhfp" > /etc/yum/vars/basearch && \
@@ -82,7 +84,7 @@ RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/bi
     && rm get-rvm.sh
 RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --no-document"
+RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # CONDA
