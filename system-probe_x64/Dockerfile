@@ -73,6 +73,10 @@ COPY requirements.txt /
 COPY /requirements /requirements
 RUN python3 -m pip install -r requirements.txt
 
+# External calls configuration
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
+
 # Install pulumi
 RUN curl -fsSL https://raw.githubusercontent.com/pulumi/get.pulumi.com/f06767e3b26451439c066c94e0a907e6d6ec3d85/dist/install.sh > install-pulumi.sh
 RUN echo "060d39770476f7d11de7c75dc1e1780f6492455555b36f4d3ff18f89752ebfc6  install-pulumi.sh" | sha256sum --check
