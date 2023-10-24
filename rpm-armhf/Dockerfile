@@ -92,6 +92,10 @@ COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-
 COPY requirements /requirements
 RUN ./setup_python.sh
 
+# External calls configuration
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
+
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
   && echo "$GO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check \

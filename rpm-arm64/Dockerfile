@@ -71,6 +71,10 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
+# External calls configuration
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*

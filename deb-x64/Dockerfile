@@ -116,6 +116,10 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
+# External calls configuration
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
@@ -173,7 +177,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
 
-# Setup patchelf 
+# Setup patchelf
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
     && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
     && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \

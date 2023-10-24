@@ -4,3 +4,7 @@ COPY requirements.txt /
 COPY requirements /requirements
 
 RUN python3 -m pip install -r requirements.txt
+
+# External calls configuration
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/

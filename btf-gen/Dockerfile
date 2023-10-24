@@ -28,3 +28,6 @@ RUN make -C src/ V=1 install
 
 COPY requirements ./
 RUN pip install -r btf-gen.txt
+
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
