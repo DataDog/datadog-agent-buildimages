@@ -226,8 +226,19 @@ build_circleci_runner:
     # Build
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+
+deploy_circleci_runner:
+  stage: build
+  tagst: ["runner:amd64"]
+  needs: build_circleci_runner 
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v21999990-f991d55
+  variables:
+    DOCKERFILE: circleci/Dockerfile
+    IMAGE: circleci-runner
+    DD_TARGET_ARCH: x64
+  script:
     - echo "Deploying on gcr via public-images"
-    - git clone https://github.com/DataDog/public-images.git && cd public-images/
+    - git clone git@github.com:DataDog/public-images.git && cd public-images/
     - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_DESTINATIONS=circleci-runner:agent-buildimages-${IMAGE}${ECR_TEST_ONLY} IMG_REGISTRIES=gcr-datadoghq ./dd-image publish
 
 trigger_build_kernels:
