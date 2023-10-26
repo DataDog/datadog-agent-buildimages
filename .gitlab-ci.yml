@@ -230,7 +230,7 @@ build_circleci_runner:
 
     - python3 -m pip install invoke==2.2.0
 
-    - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_DESTINATIONS=circleci-runner:agent-buildimages-${IMAGE}${ECR_TEST_ONLY} IMG_REGISTRIES=gcr-datadoghq inv trigger_child_pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
+    - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_DESTINATIONS=circleci-runner:agent-buildimages-${IMAGE}${ECR_TEST_ONLY} IMG_REGISTRIES=gcr-datadoghq inv trigger-child-pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
 
 trigger_build_kernels:
   stage: trigger_build_kernels
