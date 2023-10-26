@@ -1,4 +1,5 @@
 from invoke import task
+from invoke.exceptions import Exit
 import os
 
 @task
@@ -13,8 +14,9 @@ def trigger_child_pipeline(ctx, variable):
         env_value = os.getenv(key)
         if env_value:
             forms += f"--form variables[{key}]={env_value} "
-    forms += "--form token=${CI_JOB_TOKEN} "
+    forms += f"--form token={CI_JOB_TOKEN} "
     forms += "--form ref=main "
     trigger_cmd = "curl --request POST {forms} https://gitlab.ddbuild.io/api/v4/projects/1856/trigger/pipeline"
-    ctx.run(trigger_cmd)
+    err = ctx.run(trigger_cmd)
+    err.
 
