@@ -7,7 +7,7 @@ from invoke import Collection
 
 from . import agent
 from .update_go import update_go
-
+from .pipeline import trigger_child_pipeline
 # the root namespace
 ns = Collection()
 
@@ -15,6 +15,7 @@ ns = Collection()
 
 ns.add_collection(agent)
 ns.add_task(update_go)
+ns.add_task(trigger_child_pipeline)
 ns.configure(
     {
         "run": {
