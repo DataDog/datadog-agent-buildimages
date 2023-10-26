@@ -16,6 +16,6 @@ def trigger_child_pipeline(ctx, variable):
             forms += f"--form variables[{key}]={env_value} "
     forms += f"--form token={CI_JOB_TOKEN} "
     forms += "--form ref=main "
-    trigger_cmd = "curl --request POST {forms} https://gitlab.ddbuild.io/api/v4/projects/1856/trigger/pipeline"
+    trigger_cmd = f"curl --request POST {forms} https://gitlab.ddbuild.io/api/v4/projects/1856/trigger/pipeline"
     err = ctx.run(trigger_cmd)
 
