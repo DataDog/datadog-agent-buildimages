@@ -18,5 +18,4 @@ def trigger_child_pipeline(ctx, variable):
     forms += "--form ref=main "
     trigger_cmd = "curl --request POST {forms} https://gitlab.ddbuild.io/api/v4/projects/1856/trigger/pipeline"
     err = ctx.run(trigger_cmd)
-    err.
 
