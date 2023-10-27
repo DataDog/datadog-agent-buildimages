@@ -3,6 +3,7 @@ from invoke.exceptions import Exit
 from invoke.context import Context
 import time
 import os
+import json
 
 
 def _trigger_pipeline(ctx: Context, variable, job_token):
@@ -17,7 +18,7 @@ def _trigger_pipeline(ctx: Context, variable, job_token):
     output = ctx.run(trigger_cmd)
     if output.exited != 0:
         raise Exit("An error occurred while creating the pipeline", code=1)
-    return dict(output.stdout)
+    return json.loads(output.stdout)
 
 
 def _get_pipeline_status(ctx: Context, pipeline_id, job_token):
@@ -25,7 +26,7 @@ def _get_pipeline_status(ctx: Context, pipeline_id, job_token):
     output = ctx.run(get_status_cmd)
     if output.exited != 0:
         raise Exit("An error occurred while creating the pipeline", code=1)
-    return dict(output.stdout)["status"]
+    return json.loads(output.stdout)["status"]
 
 
 @task
