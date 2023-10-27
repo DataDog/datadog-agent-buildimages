@@ -22,7 +22,7 @@ def _trigger_pipeline(ctx: Context, variable, job_token):
 
 
 def _get_pipeline_status(ctx: Context, pipeline_id, job_token):
-    get_status_cmd = f"curl --request GET --form token={job_token} https://gitlab.ddbuild.io/api/v4/projects/1856/pipelines/{pipeline_id}"
+    get_status_cmd = f"curl --header \"PRIVATE-TOKEN: {job_token}\" https://gitlab.ddbuild.io/api/v4/projects/1856/pipelines/{pipeline_id}"
     output = ctx.run(get_status_cmd)
     if output.exited != 0:
         raise Exit("An error occurred while creating the pipeline", code=1)
