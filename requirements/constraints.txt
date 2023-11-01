@@ -11,7 +11,7 @@ flake8-bugbear==22.10.27
 flake8-comprehensions==3.10.1
 flake8-unused-arguments==0.0.12
 flake8-use-fstring==1.4
-flake8==5.0.4
+flake8==6.1.0
 invoke==2.2.0
 isort==5.10.1
 jira==3.5.2
