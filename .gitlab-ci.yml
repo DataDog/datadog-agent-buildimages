@@ -541,6 +541,17 @@ release_circleci_runner:
   after_script:
     - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
 
+release_circleci_runner_gcr:
+  stage: release
+  needs: ["build_circleci_runner"]
+  except: [tags, schedules]
+  variables:
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    IMG_REGISTRIES: gcr-datadoghq
+  trigger:
+    project: DataDog/public-images
+
 notify-images-available:
   extends: .slack-notifier-base
   stage: availability_message # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
