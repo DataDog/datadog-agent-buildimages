@@ -551,6 +551,7 @@ release_circleci_runner_gcr:
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
+    strategy: depend
 
 notify-images-available:
   extends: .slack-notifier-base
