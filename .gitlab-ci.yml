@@ -546,8 +546,8 @@ release_circleci_runner_gcr:
   needs: ["build_circleci_runner"]
   except: [tags, schedules]
   variables:
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
-    IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
