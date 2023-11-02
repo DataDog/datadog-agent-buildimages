@@ -7,6 +7,7 @@ from invoke import Collection
 
 from . import agent
 from .update_go import update_go
+
 # the root namespace
 ns = Collection()
 
