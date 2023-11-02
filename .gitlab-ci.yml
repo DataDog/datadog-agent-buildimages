@@ -226,11 +226,6 @@ build_circleci_runner:
     # Build
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - echo "Deploying on gcr via public-images"
-
-    - python3 -m pip install invoke==2.2.0
-    
-    - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} IMG_DESTINATIONS=agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} IMG_REGISTRIES=gcr-datadoghq inv trigger-child-pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
 
 trigger_build_kernels:
   stage: trigger_build_kernels
