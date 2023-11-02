@@ -230,8 +230,6 @@ build_circleci_runner:
 
     - python3 -m pip install invoke==2.2.0
     
-    - export GITLAB_TOKEN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.gitlab_pipelines_scheduler_token --with-decryption --query "Parameter.Value" --out text)
-
     - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_DESTINATIONS=agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_REGISTRIES=gcr-datadoghq inv trigger-child-pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
 
 trigger_build_kernels:
