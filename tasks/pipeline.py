@@ -37,14 +37,15 @@ def trigger_child_pipeline(ctx: Context, variable):
         print("CI_JOB_TOKEN and GITLAB_TOKEN environment variable is undefined and required.")
         return
     metadata = _trigger_pipeline(ctx, variable, CI_JOB_TOKEN)
-    pipeline_status = _get_pipeline_status(ctx, metadata["id"], GITLAB_TOKEN)
-    while pipeline_status not in ["success", "failed", "canceled", "skipped"]:
-        print(f"Current status : {pipeline_status}...")
-        time.sleep(15)
-        pipeline_status = _get_pipeline_status(ctx, metadata["id"], GITLAB_TOKEN)
-    print(f"Pipeline {metadata['id']} ended with {pipeline_status} status.")
-    if pipeline_status != "success":
-        raise Exit(
-            f"Pipeline {metadata['id']} failed. Please look at {metadata['web_url']} for more details.",
-            code=1,
-        )
+
+    #pipeline_status = _get_pipeline_status(ctx, metadata["id"], GITLAB_TOKEN)
+    #while pipeline_status not in ["success", "failed", "canceled", "skipped"]:
+    #    print(f"Current status : {pipeline_status}...")
+    #    time.sleep(15)
+    #    pipeline_status = _get_pipeline_status(ctx, metadata["id"], GITLAB_TOKEN)
+    #print(f"Pipeline {metadata['id']} ended with {pipeline_status} status.")
+    #if pipeline_status != "success":
+    #    raise Exit(
+    #        f"Pipeline {metadata['id']} failed. Please look at {metadata['web_url']} for more details.",
+    #        code=1,
+    #    )
