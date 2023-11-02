@@ -224,13 +224,13 @@ build_circleci_runner:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} --file $DOCKERFILE .
-    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
+    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     - echo "Deploying on gcr via public-images"
 
     - python3 -m pip install invoke==2.2.0
     
-    - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_DESTINATIONS=agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} IMG_REGISTRIES=gcr-datadoghq inv trigger-child-pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
+    - IMG_SOURCES=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} IMG_DESTINATIONS=agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} IMG_REGISTRIES=gcr-datadoghq inv trigger-child-pipeline --variable "IMG_SOURCES,IMG_DESTINATIONS,IMG_REGISTRIES"
 
 trigger_build_kernels:
   stage: trigger_build_kernels
@@ -534,14 +534,14 @@ release_circleci_runner:
   script:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}
+    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     - docker pull $SRC_IMAGE
     - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
     - docker push datadog/agent-buildimages-$IMAGE:latest
   after_script:
-    - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7} datadog/agent-buildimages-$IMAGE:latest
+    - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} datadog/agent-buildimages-$IMAGE:latest
 
-release_circleci_runner_gcr:
+dev_release_circleci_runner_gcr:
   stage: release
   needs: ["build_circleci_runner"]
   except: [tags, schedules]
@@ -552,6 +552,20 @@ release_circleci_runner_gcr:
   trigger:
     project: DataDog/public-images
     strategy: depend
+
+release_circleci_runner_gcr:
+  stage: release
+  needs: ["build_circleci_runner"]
+  except: [tags, schedules]
+  only: [master, main]
+  variables:
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-circleci-runner:latest
+    IMG_REGISTRIES: gcr-datadoghq
+  trigger:
+    project: DataDog/public-images
+    strategy: depend
+
 
 notify-images-available:
   extends: .slack-notifier-base
