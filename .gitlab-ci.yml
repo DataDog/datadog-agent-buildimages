@@ -466,55 +466,55 @@ build_windows_ltsc2022_x64:
 
 release_deb_x64:
   extends: .release
-  needs: ["test_deb_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: deb_x64
 
 release_rpm_x64:
   extends: .release
-  needs: ["test_rpm_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: rpm_x64
 
 release_suse_x64:
   extends: .release
-  needs: ["test_suse_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: suse_x64
 
 release_deb_arm64:
   extends: .release
-  needs: ["test_deb_arm64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: deb_arm64
 
 release_rpm_arm64:
   extends: .release
-  needs: ["test_rpm_arm64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: rpm_arm64
 
 release_system-probe_x64:
   extends: .release
-  needs: ["test_system-probe_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: system-probe_x64
 
 release_system-probe_arm64:
   extends: .release
-  needs: ["test_system-probe_arm64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: system-probe_arm64
 
 release_datadog-ci-uploader:
   extends: .release
-  needs: ["build_datadog-ci-uploader"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: datadog-ci-uploader
 
 release_windows_1809_x64:
   extends: .winrelease
-  needs: ["build_windows_ltsc2022_x64", "test_windows_1809_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: windows_1809_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -522,7 +522,7 @@ release_windows_1809_x64:
 
 release_windows_ltsc2022_x64:
   extends: .winrelease
-  needs: ["build_windows_ltsc2022_x64", "test_windows_ltsc2022_x64"]
+  needs: ["trigger_tests"]
   variables:
     IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
