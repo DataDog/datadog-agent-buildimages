@@ -11,6 +11,7 @@ FROM ubuntu:14.04
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION=1.20.10
+ARG GO_SHA256_LINUX_AMD64=80d34f1fd74e382d86c2d6102e0e60d4318461a7c2f457ec1efc4042752d4248
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -34,6 +35,7 @@ ARG BUNDLER_VERSION=2.4.20
 
 # Environment
 ENV GOPATH /go
+ENV GIMME_GO_VERSION $GIMME_GO_VERSION
 ENV GIT_VERSION $GIT_VERSION
 ENV GIT_SHA256 $GIT_SHA256
 ENV GO_VERSION $GO_VERSION
@@ -156,15 +158,10 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
     && rm kernel-4.9-headers-deb-x64.tgz
 
 # Go
-# Starting with go1.16, we need to build go from source, as the publicly distributed
-# go binaries are built with a linker (binutils) version that's higher than what we have in
-# the deb_x64 builder (the builder has 2.22, while go1.16 uses 2.26). Therefore, we need to
-# build go manually in the builder for it to work with the linker present in the builder image.
-# See: https://github.com/golang/go/issues/43996#issuecomment-782547917
-# TODO: investigate if we could use gvm to do this for us.
-COPY setup_go.sh /
-RUN ./setup_go.sh
-
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:$PATH"
 ENV PATH="/go/bin:$PATH"
 
