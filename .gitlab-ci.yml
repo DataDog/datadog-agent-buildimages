@@ -154,7 +154,6 @@ build_rpm_armhf:
     DOCKERFILE: rpm-armhf/Dockerfile
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
-    DD_TARGET_ARCH: armhf
 
 build_system-probe_x64:
   extends: [.build, .x64]
@@ -243,89 +242,97 @@ trigger_build_kernels:
       - local: .gitlab/kernel_version_testing.yml
     strategy: depend
 
-.test:
+trigger_tests:
   stage: test
   except: [tags, schedules]
-
-.test_agent6:
-  extends: .test
-  before_script:
-    - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - echo "Cloning $AGENT_VERSION branch of datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
-    - cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - source /root/.bashrc
-    - inv -e deps
-  script:
-    - inv check-go-version
-    - inv -e system-probe.build --strip-object-files
-    # fail if references to glibc >= 2.18
-    - objdump -p $CI_PROJECT_DIR/$SYSTEM_PROBE_BINARIES_DIR/system-probe | egrep 'GLIBC_2\.(1[8-9]|[2-9][0-9])' && exit 1
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
-
-test_deb_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_deb_x64"]
-  tags: ["runner:main"]
-
-test_deb_arm64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_deb_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-
-test_rpm_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_x64"]
-  tags: ["runner:main"]
-
-test_rpm_x64_testing:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_x64_testing"]
-  tags: ["runner:main"]
-
-test_rpm_arm64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-
-test_suse_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_suse_x64"]
-  tags: ["runner:main"]
-
-.test_system_probe:
-  extends: .test
-  before_script:
-    - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - echo "Cloning ${AGENT_VERSION} branch of datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
-    - cd /go/src/github.com/DataDog/datadog-agent
-    - inv -e deps
-  script:
-    - inv -e system-probe.build
-
-test_system-probe_x64:
-  extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_system-probe_x64"]
-  tags: ["runner:main"]
   variables:
-    ARCH: amd64
+    RUN_KITCHEN_TESTS: "false"
+    BUCKET_BRANCH: "dev"
+    DATADOG_AGENT_BUILDIMAGES: "${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+  trigger:
+    project: DataDog/datadog-agent
+    strategy: depend
 
-test_system-probe_arm64:
-  extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_system-probe_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-  variables:
-    ARCH: arm64
+#.test:
+#  stage: test
+#  except: [tags, schedules]
+#
+#.test_agent6:
+#  extends: .test
+#  before_script:
+#    - rm -r /go/src/github.com/DataDog/datadog-agent || true
+#    - echo "Cloning $AGENT_VERSION branch of datadog-agent repository"
+#    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+#    - cd /go/src/github.com/DataDog/datadog-agent
+#    - VERSION="nightly"
+#    - source /root/.bashrc
+#    - inv -e deps
+#  script:
+#    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
+#
+#test_deb_x64:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_deb_x64"]
+#  tags: ["runner:main"]
+#
+#test_deb_arm64:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_deb_arm64"]
+#  tags: ["runner:docker-arm", "platform:arm64"]
+#
+#test_rpm_x64:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_rpm_x64"]
+#  tags: ["runner:main"]
+#
+#test_rpm_x64_testing:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_rpm_x64_testing"]
+#  tags: ["runner:main"]
+#
+#test_rpm_arm64:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_rpm_arm64"]
+#  tags: ["runner:docker-arm", "platform:arm64"]
+#
+#test_suse_x64:
+#  extends: .test_agent6
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_suse_x64"]
+#  tags: ["runner:main"]
+#
+#.test_system_probe:
+#  extends: .test
+#  before_script:
+#    - rm -r /go/src/github.com/DataDog/datadog-agent || true
+#    - echo "Cloning ${AGENT_VERSION} branch of datadog-agent repository"
+#    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
+#    - cd /go/src/github.com/DataDog/datadog-agent
+#    - inv -e deps
+#  script:
+#    - inv -e system-probe.build
+#
+#test_system-probe_x64:
+#  extends: .test_system_probe
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_system-probe_x64"]
+#  tags: ["runner:main"]
+#  variables:
+#    ARCH: amd64
+#
+#test_system-probe_arm64:
+#  extends: .test_system_probe
+#  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+#  needs: ["get_agent_version", "build_system-probe_arm64"]
+#  tags: ["runner:docker-arm", "platform:arm64"]
+#  variables:
+#    ARCH: arm64
 
 .winbuild: &winbuild
   stage: build
