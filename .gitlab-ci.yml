@@ -258,6 +258,10 @@ trigger_build_kernels:
     - source /root/.bashrc
     - inv -e deps
   script:
+    - inv check-go-version
+    - inv -e system-probe.build --strip-object-files
+    # fail if references to glibc >= 2.18
+    - objdump -p $CI_PROJECT_DIR/$SYSTEM_PROBE_BINARIES_DIR/system-probe | egrep 'GLIBC_2\.(1[8-9]|[2-9][0-9])' && exit 1
     - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
 
 test_deb_x64:
