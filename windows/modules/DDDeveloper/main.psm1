@@ -68,6 +68,11 @@ function Use-BuildEnv {
     # enable RIDK in this shell
     & $Env:RIDK enable
 
+    # activate the development python venv
+    $venvdir = "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
+    & $venvdir
+
+
     # load the developer prompt
     . $PSScriptRoot\prompt.ps1
 }
