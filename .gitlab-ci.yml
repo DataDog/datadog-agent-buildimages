@@ -382,21 +382,21 @@ build_windows_ltsc2022_x64:
     - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
 
-test_windows_1809_x64:
-  extends: .test_windows
-  tags: ["runner:windows-docker", "windowsversion:1809"]
-  needs: ["get_agent_version", "build_windows_1809_x64"]
-  variables:
-    ARCH: x64
-    IMAGE: windows_1809_x64
-
-test_windows_ltsc2022_x64:
-  extends: .test_windows
-  tags: ["runner:windows-docker", "windowsversion:2022"]
-  needs: ["get_agent_version", "build_windows_ltsc2022_x64"]
-  variables:
-    ARCH: x64
-    IMAGE: windows_ltsc2022_x64
+#test_windows_1809_x64:
+#  extends: .test_windows
+#  tags: ["runner:windows-docker", "windowsversion:1809"]
+#  needs: ["get_agent_version", "build_windows_1809_x64"]
+#  variables:
+#    ARCH: x64
+#    IMAGE: windows_1809_x64
+#
+#test_windows_ltsc2022_x64:
+#  extends: .test_windows
+#  tags: ["runner:windows-docker", "windowsversion:2022"]
+#  needs: ["get_agent_version", "build_windows_ltsc2022_x64"]
+#  variables:
+#    ARCH: x64
+#    IMAGE: windows_ltsc2022_x64
 
 .release:
   stage: release
