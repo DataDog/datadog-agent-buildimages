@@ -33,8 +33,25 @@ $target = "$($PSScriptRoot)\get-pip.py"
 
 Get-RemoteFile -RemoteFile $getpipurl -LocalFile $target -VerifyHash $getpipsha256
 
+$packages_file = "\python-packages-versions.txt"
+if($Env:DD_DEV_TARGET -ne "Container") {
+    $packages_file = "$($PSScriptRoot)\..\..\.." + $packages_file
+}
+Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
+    $var = $_.Split('=')
+    Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
+ }
+ 
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
-python -m pip install -r /requirements.txt
+if($Env:DD_DEV_TARGET -eq "Container") {
+    python -m pip install -r /requirements.txt
+} else {
+    ## When installing for local use, set up the virtual environment first
+    python -m venv "$($Env:USERPROFILE)\.ddbuild\agentdev"
+    &  "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
+    python -m pip install -r "$($PSScriptRoot)\..\..\..\requirements.txt"
+}
+
 
 Set-InstalledVersionKey -Component "Python" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with Python

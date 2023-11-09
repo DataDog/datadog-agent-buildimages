@@ -243,85 +243,23 @@ trigger_build_kernels:
       - local: .gitlab/kernel_version_testing.yml
     strategy: depend
 
-.test:
+trigger_tests:
   stage: test
   except: [tags, schedules]
-
-.test_agent6:
-  extends: .test
-  before_script:
-    - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - echo "Cloning $AGENT_VERSION branch of datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
-    - cd /go/src/github.com/DataDog/datadog-agent
-    - VERSION="nightly"
-    - source /root/.bashrc
-    - inv -e deps
-  script:
-    - inv -e agent.omnibus-build --release-version "$VERSION" --major-version "6" --python-runtimes "2,3" --base-dir /.omnibus --skip-deps
-
-test_deb_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_deb_x64"]
-  tags: ["runner:main"]
-
-test_deb_arm64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_deb_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-
-test_rpm_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_x64"]
-  tags: ["runner:main"]
-
-test_rpm_x64_testing:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_x64_testing${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_x64_testing"]
-  tags: ["runner:main"]
-
-test_rpm_arm64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/rpm_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_rpm_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-
-test_suse_x64:
-  extends: .test_agent6
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/suse_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_suse_x64"]
-  tags: ["runner:main"]
-
-.test_system_probe:
-  extends: .test
-  before_script:
-    - rm -r /go/src/github.com/DataDog/datadog-agent || true
-    - echo "Cloning ${AGENT_VERSION} branch of datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent /go/src/github.com/DataDog/datadog-agent
-    - cd /go/src/github.com/DataDog/datadog-agent
-    - inv -e deps
-  script:
-    - inv -e system-probe.build
-
-test_system-probe_x64:
-  extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_x64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_system-probe_x64"]
-  tags: ["runner:main"]
   variables:
-    ARCH: amd64
-
-test_system-probe_arm64:
-  extends: .test_system_probe
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/system-probe_arm64${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-  needs: ["get_agent_version", "build_system-probe_arm64"]
-  tags: ["runner:docker-arm", "platform:arm64"]
-  variables:
-    ARCH: arm64
+    RUN_KITCHEN_TESTS: "false"
+    BUCKET_BRANCH: "dev"
+    DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+  trigger:
+    project: DataDog/datadog-agent
+    strategy: depend
 
 .winbuild: &winbuild
   stage: build
@@ -329,7 +267,7 @@ test_system-probe_arm64:
   timeout: 2h 00m
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
+    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
@@ -337,7 +275,7 @@ test_system-probe_arm64:
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
 
 build_windows_1809_x64:
   extends: .winbuild
@@ -355,42 +293,11 @@ build_windows_ltsc2022_x64:
     IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
 
-.test_windows:
-  extends: .test
-  timeout: 3h 00m
-  script:
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - Write-Host "Cloning $AGENT_VERSION branch of the datadog-agent repository"
-    - git clone -b $AGENT_VERSION https://github.com/DataDog/datadog-agent datadog-agent
-    - cd datadog-agent
-    - $VERSION="nightly"
-    - docker run --rm -m 4096M -v "$(Get-Location):c:\mnt" -e CI_JOB_ID=${CI_JOB_ID} -e WINDOWS_BUILDER=true -e RELEASE_VERSION="$VERSION" -e MAJOR_VERSION="6" -e PY_RUNTIMES="2,3" -e AWS_NETWORKING=true -e SIGN_WINDOWS_DD_WCS=true -e TARGET_ARCH="$ARCH" -e NEW_BUILDER=true -e S3_OMNIBUS_CACHE_BUCKET="${S3_OMNIBUS_CACHE_BUCKET}" -e S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS="${S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7)) c:\mnt\tasks\winbuildscripts\buildwin.bat
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - if (Test-Path datadog-agent) { remove-item -recurse -force datadog-agent }
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,7))
-
-test_windows_1809_x64:
-  extends: .test_windows
-  tags: ["runner:windows-docker", "windowsversion:1809"]
-  needs: ["get_agent_version", "build_windows_1809_x64"]
-  variables:
-    ARCH: x64
-    IMAGE: windows_1809_x64
-
-test_windows_ltsc2022_x64:
-  extends: .test_windows
-  tags: ["runner:windows-docker", "windowsversion:2022"]
-  needs: ["get_agent_version", "build_windows_ltsc2022_x64"]
-  variables:
-    ARCH: x64
-    IMAGE: windows_ltsc2022_x64
-
 .release:
   stage: release
   except: [tags, schedules]
   only: [master, main]
+  needs: ["trigger_tests"]
   tags: ["runner:docker"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
@@ -415,7 +322,7 @@ test_windows_ltsc2022_x64:
   tags: ["runner:windows-docker", "windowsversion:2022"]
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
+    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
     - mkdir ci-scripts
@@ -447,7 +354,7 @@ test_windows_ltsc2022_x64:
     - cat ci-scripts/docker-publish.ps1
     - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS_DD_WCS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine ${WINDOWS_RELEASE_IMAGE}:${SRC_TAG} powershell -C C:\mnt\ci-scripts\docker-publish.ps1
   after_script:
-    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,7))
+    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
@@ -455,55 +362,46 @@ test_windows_ltsc2022_x64:
 
 release_deb_x64:
   extends: .release
-  needs: ["test_deb_x64"]
   variables:
     IMAGE: deb_x64
 
 release_rpm_x64:
   extends: .release
-  needs: ["test_rpm_x64"]
   variables:
     IMAGE: rpm_x64
 
 release_suse_x64:
   extends: .release
-  needs: ["test_suse_x64"]
   variables:
     IMAGE: suse_x64
 
 release_deb_arm64:
   extends: .release
-  needs: ["test_deb_arm64"]
   variables:
     IMAGE: deb_arm64
 
 release_rpm_arm64:
   extends: .release
-  needs: ["test_rpm_arm64"]
   variables:
     IMAGE: rpm_arm64
 
 release_system-probe_x64:
   extends: .release
-  needs: ["test_system-probe_x64"]
   variables:
     IMAGE: system-probe_x64
 
 release_system-probe_arm64:
   extends: .release
-  needs: ["test_system-probe_arm64"]
   variables:
     IMAGE: system-probe_arm64
 
 release_datadog-ci-uploader:
   extends: .release
-  needs: ["build_datadog-ci-uploader"]
   variables:
     IMAGE: datadog-ci-uploader
 
 release_windows_1809_x64:
   extends: .winrelease
-  needs: ["build_windows_ltsc2022_x64", "test_windows_1809_x64"]
   variables:
     IMAGE: windows_1809_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -511,7 +409,6 @@ release_windows_1809_x64:
 
 release_windows_ltsc2022_x64:
   extends: .winrelease
-  needs: ["build_windows_ltsc2022_x64", "test_windows_ltsc2022_x64"]
   variables:
     IMAGE: windows_ltsc2022_x64
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
@@ -561,6 +458,12 @@ release_circleci_runner_gcr:
     project: DataDog/public-images
     strategy: depend
 
+notify-pipeline-trigger:
+  stage: notify
+  tags: ["runner:docker"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  script:
+    echo Notifying triggered datadog-agent pipeline
 
 notify-images-available:
   extends: .slack-notifier-base
