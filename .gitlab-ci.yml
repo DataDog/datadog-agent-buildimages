@@ -263,7 +263,7 @@ trigger_tests:
 
 wait_for_tests:
   stage: test
-  need: ["trigger_tests"]
+  needs: ["trigger_tests"]
   tags: ["runner:docker"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   script:
