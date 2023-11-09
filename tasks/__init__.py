@@ -15,6 +15,7 @@ ns = Collection()
 
 ns.add_collection(agent)
 ns.add_task(update_go)
+ns.add_task(check_pipeline_status)
 ns.configure(
     {
         "run": {

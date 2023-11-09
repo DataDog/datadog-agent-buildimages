@@ -261,6 +261,14 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
+wait_for_tests:
+  stage: test
+  need: ["trigger_tests"]
+  tags: ["runner:docker"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  script:
+    - inv check-pipeline-status
+
 .winbuild: &winbuild
   stage: build
   except: [tags]
@@ -457,13 +465,6 @@ release_circleci_runner_gcr:
   trigger:
     project: DataDog/public-images
     strategy: depend
-
-notify-pipeline-trigger:
-  stage: notify
-  tags: ["runner:docker"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
-  script:
-    echo Notifying triggered datadog-agent pipeline
 
 notify-images-available:
   extends: .slack-notifier-base
