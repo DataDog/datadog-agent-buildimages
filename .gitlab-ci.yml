@@ -262,17 +262,18 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
-success_build:
+fail_build:
   stage: build
   needs: []
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  allow_failure: true
   script:
     - Build failed oh no
 
 wait_for_tests:
   stage: test
-  needs: ["success_build"]
+  needs: ["fail_build"]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   script:
