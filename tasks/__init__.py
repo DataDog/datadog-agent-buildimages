@@ -7,7 +7,6 @@ from invoke import Collection
 
 from . import agent
 from .update_go import update_go
-from .pipeline import check_pipeline_status
 # the root namespace
 ns = Collection()
 
@@ -15,7 +14,6 @@ ns = Collection()
 
 ns.add_collection(agent)
 ns.add_task(update_go)
-ns.add_task(check_pipeline_status)
 ns.configure(
     {
         "run": {
