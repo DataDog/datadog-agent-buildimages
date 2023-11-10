@@ -152,7 +152,7 @@ COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-
 COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
-ENV PKG_CONFIG_LIBDIR ""
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # External calls configuration
 COPY .awsconfig $HOME/.aws/config
