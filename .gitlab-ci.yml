@@ -269,7 +269,8 @@ fail_build:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   allow_failure: true
   script:
-    - echo no fail
+    - echo fail
+    - exit 1
 
 wait_for_tests_success:
   stage: test
