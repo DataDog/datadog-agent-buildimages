@@ -263,7 +263,7 @@ trigger_tests:
     strategy: depend
 
 on_success:
-  stage: build
+  stage: test
   needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
