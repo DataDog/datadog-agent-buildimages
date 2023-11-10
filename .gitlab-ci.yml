@@ -6,6 +6,7 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
+  - after_test
   - release
   - notify
 
@@ -261,6 +262,27 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
+on_success:
+  stage: test
+  needs: ["trigger_tests"]
+  tags: ["arch:amd64"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  when: on_success
+  script:
+    - echo success > output.pipeline
+  artifacts:
+    paths:
+      - output.pipeline
+    expire_in: 1 week
+
+wait_for_tests:
+  stage: after_test
+  tags: ["arch:amd64"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  when: always
+  script:
+    - cat output.pipeline
+
 .winbuild: &winbuild
   stage: build
   except: [tags]
@@ -457,13 +479,6 @@ release_circleci_runner_gcr:
   trigger:
     project: DataDog/public-images
     strategy: depend
-
-notify-pipeline-trigger:
-  stage: notify
-  tags: ["runner:docker"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
-  script:
-    echo Notifying triggered datadog-agent pipeline
 
 notify-images-available:
   extends: .slack-notifier-base
