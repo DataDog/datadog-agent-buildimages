@@ -6,6 +6,7 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
+  - after_test
   - release
   - notify
 
@@ -257,38 +258,30 @@ trigger_tests:
     DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-  allow_failure: true
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
 
-fail_build:
+on_success:
   stage: build
-  needs: []
-  tags: ["arch:amd64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  script:
-    - echo fail
-    - exit 1
-
-wait_for_tests_success:
-  stage: test
-  needs: ["fail_build"]
+  needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   when: on_success
   script:
-    - echo "oh yeah"
+    - echo success > output.pipeline
+  artifacts:
+    paths:
+      - output.pipeline
+    expire_in: 1 week
 
-wait_for_tests_fail:
-  stage: test
-  needs: ["fail_build"]
+wait_for_tests:
+  stage: after_test
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: on_failure
+  when: always
   script:
-    - echo "oh no"
-    - exit 1
+    - cat output.pipeline
 
 .winbuild: &winbuild
   stage: build
