@@ -271,13 +271,24 @@ fail_build:
   script:
     - echo no fail
 
-wait_for_tests:
+wait_for_tests_success:
   stage: test
   needs: ["fail_build"]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  when: on_success
   script:
-    - inv check-pipeline-status
+    - echo "oh yeah"
+
+wait_for_tests_fail:
+  stage: test
+  needs: ["fail_build"]
+  tags: ["arch:amd64"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  when: on_failure
+  script:
+    - echo "oh no"
+    - exit 1
 
 .winbuild: &winbuild
   stage: build
