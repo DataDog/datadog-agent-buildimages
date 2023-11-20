@@ -38,7 +38,7 @@ a mirror PR on the [datadog-agent repository][agent], you have two option :
 
 ## Upgrading Golang version
 
-Refer to [#If-your-changes-requires-a-mirror-PR](#markdown-header-If-your-changes-requires-a-mirror-PR) to test your PR.
+Refer to [#If-your-changes-requires-a-mirror-PR](#If-your-changes-requires-a-mirror-PR) to test your PR.
 
 ### Invoke task
 The `update-go` invoke task updates all Go versions and SHA256 of the repository.
