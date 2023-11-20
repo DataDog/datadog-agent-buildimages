@@ -501,7 +501,7 @@ notify-images-failure:
     - when: on_failure
   dependencies: []
   script: |
-    export MESSAGE=":warning: Your images :docker: tagged 'v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}' failed to build :warning: More details :arrow_right: 'https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/pipelines/$CI_PIPELINE_ID'"
+    export MESSAGE=":warning: Your images :docker: tagged 'v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}' failed to build :warning: More details :arrow_right:"
     /usr/local/bin/notify.sh
 
 notify-on-failure:
