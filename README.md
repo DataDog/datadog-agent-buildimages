@@ -14,31 +14,32 @@ pipeline, you will have to replace the `DATADOG_AGENT_BUILDIMAGES` variable
 in the [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent/blob/master/.gitlab-ci.yml)
 of the [datadog-agent repository][agent] to use the newly created images.
 
-## If your changes requires a mirror PR
+## If you're modifying both datadog-agent and buildimages repositories
 
-Current tests are running a [datadog-agent pipeline][agent] without kitchen 
-tests to confirm if your newly builded images are working. If your changes requires
-a mirror PR on the [datadog-agent repository][agent], you have two option :
+If your changes affect both [datadog-agent][agent] and buildimages, you have two option :
 ### If you need multiple test commits in agent-buildimages
-  - Add `branch: your/datadog-agent-branch` in your [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent-buildimages/blob/fcc4843103d3bfdb976da845133ad3edc48754b2/.gitlab-ci.yml#L261-L263)
-  - Commit and waits for the `dd-gitlab/wait_for_tests` jobs to appear in the CI, it will indicate if your tests succeeded or failed.
-    Once your tests worked you can move to the next step.
-  - Remove `branch: your/datadog-agent-branch` in your [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent-buildimages/blob/fcc4843103d3bfdb976da845133ad3edc48754b2/.gitlab-ci.yml#L261-L263)
-    - Commit and don't waits for the `dd-gitlab/wait_for_tests` job to appear in the CI. 
-      If your pipeline is green it's good to merge (if you wait too long the `dd-gitlab/wait_for_tests` job will appear failling your PR but this jobs isn't required)
-### Or if the required changes are on datadog-agent
-  - Create your branch normally on datadog-agent-buildimages
-  - On your [datadog-agent][agent] PR, edit `DATADOG_AGENT_BUILDIMAGES` with your current commit and pipelind id and the `SUFFIX` in `_test_only`
-  - Make your changes until datadog-agent CI is green
-  - Merge agent-buildimages PR, set `DATADOG_AGENT_BUILDIMAGES` with main commit and pipeline id and revert `SUFFIX` to `""`.
-    If your pipeline is green it's good to merge
+In your datadog-agent-buildimages's PR:
+  - Add `branch: your/datadog-agent-branch` in your [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent-buildimages/blob/fcc4843103d3bfdb976da845133ad3edc48754b2/.gitlab-ci.yml#L261-L263) file.
+  - Commit and wait for the `dd-gitlab/wait_for_tests` job to appear in the CI, it will indicate if your tests succeeded or failed. Once your tests worked you can move on to the next step.
+  - Remove `branch: your/datadog-agent-branch` in your [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent-buildimages/blob/fcc4843103d3bfdb976da845133ad3edc48754b2/.gitlab-ci.yml#L261-L263) file.
+  - Commit and don't wait for the `dd-gitlab/wait_for_tests` job to appear in the CI. If your pipeline is green it's good to merge (if you wait for too long the `dd-gitlab/wait_for_tests` job will appear failing your PR but this jobs isn't required)
+### If the required changes are on datadog-agent
+
+  - Create your branch in buildimages.
+  - In your [datadog-agent][agent]'s PR:
+    - Edit `DATADOG_AGENT_BUILDIMAGES` [with your current pipeline_id and commit](https://github.com/DataDog/datadog-agent/blob/69b46c9b8103d12364c8eb01e23a83e4c9efcf21/.gitlab-ci.yml/#L161-L162) (`v${pipeline_id}-${commit}`).
+    - Set `DATADOG_AGENT_BUILDIMAGES_SUFFIX` to `_test_only`
+    - Once [datadog-agent][agent]'s PR is green, merge buildimages' PR
+    - Set `DATADOG_AGENT_BUILDIMAGES` to [main's current pipeline_id and commit](https://github.com/DataDog/datadog-agent/blob/69b46c9b8103d12364c8eb01e23a83e4c9efcf21/.gitlab-ci.yml/#L161-L162) (`v${pipeline_id}-${commit}`)
+    - Set `DATADOG_AGENT_BUILDIMAGES_SUFFIX` back to `""`.
+    - Once [datadog-agent][agent]'s PR is green, merge.
 
 [agent]: https://github.com/DataDog/datadog-agent
 [agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/master/docs/dev/agent_omnibus.md
 
 ## Upgrading Golang version
 
-Refer to [#If-your-changes-requires-a-mirror-PR](#If-your-changes-requires-a-mirror-PR) to test your PR.
+Refer to [this section](#If-you-need-multiple-test-commits-in-agent-buildimages) to test your PR.
 
 ### Invoke task
 The `update-go` invoke task updates all Go versions and SHA256 of the repository.
