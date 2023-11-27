@@ -29,17 +29,17 @@ variables:
     - cp /extra.config-$PARENT_EXTRA_KCONFIG_VERSION $LINUX_SRC_DIR/extra.config
     # Build kernel
     - make -C $LINUX_SRC_DIR clean
-    - make -C $LINUX_SRC_DIR ARCH=$ARCH KCONFIG_CONFIG=start.config defconfig
+    - make -C $LINUX_SRC_DIR ARCH=$KARCH KCONFIG_CONFIG=start.config defconfig
     - tee -a < $LINUX_SRC_DIR/extra.config $LINUX_SRC_DIR/start.config
     - make -C $LINUX_SRC_DIR allnoconfig KCONFIG_ALLCONFIG=start.config
-    - if [[ "$ARCH" == "arm64" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $ARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
-    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$ARCH bindeb-pkg LOCALVERSION=-ddvm
-    - mkdir kernel-$TARGET_TAG.$ARCH.pkg
-    - cp $LINUX_SRC_DIR/arch/$ARCH/boot/$BZ_IMAGE kernel-$TARGET_TAG.$ARCH.pkg/bzImage
-    - cp $LINUX_SRC_DIR/vmlinux kernel-$TARGET_TAG.$ARCH.pkg/vmlinux
-    - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
-    - find $LINUX_SRC_DIR/.. -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$ARCH.pkg/
-    - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$ARCH.pkg
+    - if [[ "$KARCH" == "arm64" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $KARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
+    - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$KARCH bindeb-pkg LOCALVERSION=-ddvm
+    - mkdir kernel-$TARGET_TAG.$KARCH.pkg
+    - cp $LINUX_SRC_DIR/arch/$KARCH/boot/$BZ_IMAGE kernel-$TARGET_TAG.$KARCH.pkg/bzImage
+    - cp $LINUX_SRC_DIR/vmlinux kernel-$TARGET_TAG.$KARCH.pkg/vmlinux
+    - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$KARCH.pkg/
+    - find $LINUX_SRC_DIR/.. -name linux-image-$(echo $TARGET_TAG | tr -d 'v')* -type f | grep -Fv dbg | xargs -i cp {} kernel-$TARGET_TAG.$KARCH.pkg/
+    - tar -czvf kernel-$TARGET_TAG.$ARCH.pkg.tar.gz kernel-$TARGET_TAG.$KARCH.pkg
   variables:
     TAGS_COMMITS_FILE: /tags-commits
   artifacts:
@@ -51,7 +51,8 @@ build_kernels_x64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_x64${ECR_TEST_ONLY}:v$PARENT_PIPELINE_ID
   tags: [ "runner:main" ]
   variables:
-    ARCH: x86
+    KARCH: x86
+    ARCH: x86_64
     BZ_IMAGE: bzImage
   parallel:
     matrix:
@@ -62,6 +63,7 @@ build_kernels_arm64:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/kernel-version-testing_arm64${ECR_TEST_ONLY}:v$PARENT_PIPELINE_ID
   tags: [ "runner:docker-arm", "platform:arm64" ]
   variables:
+    KARCH: arm64
     ARCH: arm64
     BZ_IMAGE: Image.gz
   parallel:
@@ -75,8 +77,7 @@ upload_kernel_packages_x64:
   tags: [ "runner:main" ]
   needs: [ "build_kernels_x64" ]
   script:
-    - KARCH=$(echo $ARCH | cut -d '_' -f 1)
-    - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
+    - find . -name "kernel-*.${ARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
     - cat packages.txt
     - cd $DIR; tar -cf $KERNEL_PKG_NAME -T packages.txt
@@ -94,8 +95,7 @@ upload_kernel_packages_arm64:
   tags: [ "runner:main" ]
   needs: [ "build_kernels_arm64" ]
   script:
-    - KARCH=$(echo $ARCH | cut -d '_' -f 1)
-    - find . -name "kernel-*.${KARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
+    - find . -name "kernel-*.${ARCH}.pkg.tar.gz" -type f | rev | cut -d '/' -f 1 | rev > packages.txt
     - DIR=$(dirname $(head -n 1 packages.txt))
     - cat packages.txt
     - cd $DIR; tar -cf $KERNEL_PKG_NAME -T packages.txt
