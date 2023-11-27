@@ -34,7 +34,7 @@ variables:
     - make -C $LINUX_SRC_DIR allnoconfig KCONFIG_ALLCONFIG=start.config
     - if [[ "$KARCH" == "arm64" && $MAJOR -eq 4 && $MINOR -lt 9 ]]; then echo "kvm_guest.config target not available for $KARCH $TARGET_TAG"; else make -C $LINUX_SRC_DIR kvm_guest.config; fi
     - make -j$(nproc) -C $LINUX_SRC_DIR ARCH=$KARCH bindeb-pkg LOCALVERSION=-ddvm
-    - mkdir kernel-$TARGET_TAG.$KARCH.pkg
+    - mkdir kernel-$TARGET_TAG.$ARCH.pkg
     - cp $LINUX_SRC_DIR/arch/$KARCH/boot/$BZ_IMAGE kernel-$TARGET_TAG.$KARCH.pkg/bzImage
     - cp $LINUX_SRC_DIR/vmlinux kernel-$TARGET_TAG.$KARCH.pkg/vmlinux
     - find $LINUX_SRC_DIR/.. -name linux-headers-$(echo $TARGET_TAG | tr -d 'v')* -type f | xargs -i cp {} kernel-$TARGET_TAG.$KARCH.pkg/
