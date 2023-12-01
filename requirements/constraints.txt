@@ -1,6 +1,6 @@
 awscli==1.29.45
 black==22.10.0
-boto3==1.28.45
+boto3==1.33.5
 codeowners==0.6.0
 datadog-api-client==2.16.0
 docker-squash==1.1.0
