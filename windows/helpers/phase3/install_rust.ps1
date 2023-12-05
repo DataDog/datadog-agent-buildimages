@@ -5,19 +5,19 @@ param (
 
 $ErrorActionPreference = 'Stop'
 
-$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "rust" -Keyname "version" -TargetValue $Version
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "rust-up" -Keyname "version" -TargetValue $Version
 if($isInstalled -and $isCurrent) {
-    Write-Host -ForegroundColor Green "Rust up to date"
+    Write-Host -ForegroundColor Green "Rust-up up to date"
     return
 }
 # No need to check for previous installations; rust-up will remove them.
 
 $source="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe"
 
-Write-Host -ForegroundColor Green "Installing rust-up"
+Write-Host -ForegroundColor Green "Installing & running rust-up"
 $out = "$($PSScriptRoot)\rustup-init.exe"
 Get-RemoteFile -RemoteFile $source -LocalFile $out -VerifyHash $Sha256
 
 & $out -y
 
-Set-InstalledVersionKey -Component "rust" -Keyname "version" -TargetValue $Version
+Set-InstalledVersionKey -Component "rust-up" -Keyname "version" -TargetValue $Version
