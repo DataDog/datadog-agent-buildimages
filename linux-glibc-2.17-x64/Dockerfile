@@ -12,8 +12,8 @@ RUN apt update -qy && apt install -y \
     help2man file gawk libtool-bin bison libncurses-dev \
     python-is-python3
 
-COPY linux-x64-glibc-2.17/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-x64-glibc-2.17/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 
 RUN apt update -y && apt install -y git cmake curl fakeroot procps bzip2 \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
