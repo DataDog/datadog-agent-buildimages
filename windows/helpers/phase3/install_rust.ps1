@@ -12,7 +12,7 @@ if($isInstalled -and $isCurrent) {
 }
 # No need to check for previous installations; rust-up will remove them.
 
-$source="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe"
+$source="https://static.rust-lang.org/rustup/archive/${Version}/x86_64-pc-windows-msvc/rustup-init.exe"
 
 Write-Host -ForegroundColor Green "Installing & running rust-up"
 $out = "$($PSScriptRoot)\rustup-init.exe"
