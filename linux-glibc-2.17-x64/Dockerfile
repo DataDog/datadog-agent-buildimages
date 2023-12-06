@@ -18,7 +18,7 @@ COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.to
 RUN apt update -y && apt install -y git cmake curl fakeroot procps bzip2 \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang golang-1.20 golang-1.20-go libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg zstd
+    pkg-config flex meson selinux-basics squashfs-tools gpg zstd gnupg2
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
