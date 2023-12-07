@@ -35,6 +35,8 @@ ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
+ARG PATCHELF_VERSION=0.13.1
+ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
@@ -280,6 +282,22 @@ COPY build-gcc.sh /
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
+
+# Patchelf. This needs a compiler that can handle C++11
+RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
+    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
+    && cd patchelf-${PATCHELF_VERSION}  \
+    && ./bootstrap.sh \
+    && ./configure CC=/opt/gcc-${GCC_VERSION}/bin/gcc \
+        CXX=/opt/gcc-${GCC_VERSION}/bin/g++ \
+        CXXFLAGS='-static-libstdc++' \
+    && make -j$(nproc) \
+    && make install \
+    && cd - \
+    && rm -rf patchelf-${PATCHELF_VERSION} \
+    && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

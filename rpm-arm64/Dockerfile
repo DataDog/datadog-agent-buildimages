@@ -21,6 +21,8 @@ ARG DD_TARGET_ARCH=aarch64
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
+ARG PATCHELF_VERSION=0.13.1
+ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
@@ -74,6 +76,19 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 # External calls configuration
 COPY .awsconfig $HOME/.aws/config
 COPY .curlrc .wgetrc $HOME/
+
+# Patchelf
+RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
+    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
+    && cd patchelf-${PATCHELF_VERSION}  \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make \
+    && make install \
+    && cd - \
+    && rm -rf patchelf-${PATCHELF_VERSION} \
+    && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
