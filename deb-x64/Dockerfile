@@ -73,7 +73,7 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-  libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
+  rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics libtool software-properties-common default-jre texinfo pxz
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
