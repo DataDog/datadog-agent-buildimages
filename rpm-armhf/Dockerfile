@@ -35,7 +35,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
 
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
+    curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
