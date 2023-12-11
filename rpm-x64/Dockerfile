@@ -202,9 +202,6 @@ RUN mkdir -p /opt/mqm \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
-# Add systemd headers
-COPY ./rpm-headers/systemd /usr/include/systemd
-
 # CMake
 RUN set -ex \
     && curl -sL -o cmake.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh" \
