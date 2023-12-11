@@ -24,7 +24,6 @@ RUN set -ex \
     libsnmp-base \
     libsnmp-dev \
     libssl-dev \
-    libsystemd-dev \
     make \
     pkg-config \
     python3 \
