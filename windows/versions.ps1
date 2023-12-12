@@ -11,8 +11,8 @@ $SoftwareTable = @{
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
     # If you want to change the Go version, please use the update-go invoke task
-    "GO_VERSION"="1.21.4";
-    "GO_SHA256_WINDOWS_AMD64"="79e5428e068c912d9cfa6cd115c13549856ec689c1332eac17f5d6122e19d595";
+    "GO_VERSION"="1.21.5";
+    "GO_SHA256_WINDOWS_AMD64"="bbe603cde7c9dee658f45164b4d06de1eff6e6e6b800100824e7c00d56a9a92f";
     "RUBY_VERSION"="2.6.6-1";
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
     "IBM_MQ_VERSION"="9.2.4.0";
