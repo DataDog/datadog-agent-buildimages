@@ -79,10 +79,13 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
 # it and there's not way to prevent that. So leave it be and use update-alternatives to select 4.9
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && add-apt-repository ppa:mikepurvis/dpkg
 RUN apt-get update \
-    && apt-get install -y gcc-4.9 g++-4.9 \
+    && apt-get install -y gcc-4.9 g++-4.9 dpkg \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 0
+
+RUN apt-get update -q && apt-get install -y dpkg
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
