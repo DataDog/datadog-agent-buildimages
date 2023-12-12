@@ -31,6 +31,8 @@ ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
+ARG BINUTILS_VERSION="2.39"
+ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 
 # Environment
 ENV GOPATH /go
@@ -47,6 +49,8 @@ ENV RUST_VERSION $RUST_VERSION
 ENV RUSTC_SHA256 $RUSTC_SHA256
 ENV GCC_VERSION $GCC_VERSION
 ENV BUNDLER_VERSION $BUNDLER_VERSION
+ENV BINUTILS_VERSION $BINUTILS_VERSION
+ENV BINUTILS_SHA256 $BINUTILS_SHA256
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
@@ -70,7 +74,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel \
-      xz-devel
+      xz-devel patchelf makeinfo
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
@@ -165,6 +169,20 @@ COPY build-gcc.sh /
 RUN chmod +x /build-gcc.sh \
     && /build-gcc.sh \
     && rm /build-gcc.sh
+
+# Upgrade binutils
+RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
+    && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
+    && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
+    && cd "binutils-${BINUTILS_VERSION}" \
+    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install \
+    && cd - \
+    && rm -rf "binutils-${BINUTILS_VERSION}" \
+    && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
+
+# Use our updated binutils version
+ENV PATH="/usr/local/binutils/bin:$PATH"
+
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \

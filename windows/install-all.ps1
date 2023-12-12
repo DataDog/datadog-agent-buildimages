@@ -79,6 +79,7 @@ try {
         .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
         .\helpers\phase3\install_java.ps1
         .\helpers\phase3\install_winsign.ps1
+        .\helpers\phase3\install_rust.ps1 -Rustup_Version $ENV:RUSTUP_VERSION -Rustup_Sha256 $ENV:RUSTUP_SHA256 -Rust_Version $ENV:RUST_VERSION
         ## # Add signtool to path
         Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
         & .\set_cpython_compiler.cmd
