@@ -162,7 +162,7 @@ def _update_and_create_pr(gover):
         if local_uncommited_changes_exist(repo):
             raise exceptions.Exit("Uncommited changes exist in datadog-agent-buildimages repo. Exiting.")
         checkout_latest_main(repo)
-        _add_wait_for_tests(f"update-go-{gover}")
+        _add_wait_for_tests(branch)
         _update_images(gover)
         if local_uncommited_changes_exist(repo):
             create_branch_and_push_changes(
@@ -198,7 +198,7 @@ def _update_and_create_pr(gover):
         res = requests.get(f"https://gitlab.ddbuild.io/api/v4/projects/291/jobs/{build_ids[0]}", headers={"PRIVATE-TOKEN": os.environ["GITLAB_ACCESS_TOKEN"]})
         pipeline_id = res.json()["pipeline"]["id"]
         image_tag = f"v{pipeline_id}-{commit_sha[:8]}_test_only"
-        _create_agent_pr(gover, image_tag)
+        _create_agent_pr(branch, gover, image_tag)
 
     create_pr_link = f"https://github.com/DataDog/datadog-agent-buildimages/compare/{branch}?expand=1"
     print(f"Opening link to create an associated PR for the updated buildimages: {create_pr_link}")
@@ -209,7 +209,7 @@ def _update_and_create_pr(gover):
     subprocess.run(["open", create_pr_link])
 
 
-def _create_agent_pr(gover, image_tag):
+def _create_agent_pr(branch, gover, image_tag):
     repo = "datadog-agent"
     with dd_repo_temp_cwd(repo):
         if local_uncommited_changes_exist(repo):
@@ -219,7 +219,7 @@ def _create_agent_pr(gover, image_tag):
         if local_uncommited_changes_exist(repo):
             create_branch_and_push_changes(
                 repo,
-                f"update-go-{gover}",
+                branch,
                 f"Update Go version to {gover} and buildimages to {image_tag} for datadog agent",
             )
         else:
