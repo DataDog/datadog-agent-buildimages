@@ -21,7 +21,7 @@ def dd_repo_temp_cwd(repo=""):
 def checkout_latest_main(repo):
     with dd_repo_temp_cwd(repo):
         subprocess.check_call(["git", "checkout", "main"])
-        subprocess.check_call(["git", "pull"])
+        subprocess.check_call(["git", "pull", "origin", "main"])
 
 def create_branch_and_push_changes(
         repo,

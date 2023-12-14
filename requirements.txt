@@ -12,5 +12,6 @@ invoke
 packaging
 reno
 requests
+semver==2.10.0
 toml
 urllib3

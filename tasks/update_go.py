@@ -185,7 +185,7 @@ def _update_and_create_pr(gover):
             matches = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)
             if len(matches) < 1:
                 if i < tries - 1:
-                    time.sleep(30)
+                    time.sleep(15)
                     continue
                 else:
                     raise exceptions.Exit("Exhausted retries waiting for gitlab job to start.")
@@ -200,8 +200,12 @@ def _update_and_create_pr(gover):
         image_tag = f"v{pipeline_id}-{commit_sha[:8]}_test_only"
         _create_agent_pr(gover, image_tag)
 
-    create_pr_link = f"https://github.com/DataDog/mortar-terraform/compare/{branch}?expand=1"
-    print(f"Opening link to create an associated PR for the updated images: {create_pr_link}")
+    create_pr_link = f"https://github.com/DataDog/datadog-agent-buildimages/compare/{branch}?expand=1"
+    print(f"Opening link to create an associated PR for the updated buildimages: {create_pr_link}")
+    subprocess.run(["open", create_pr_link])
+
+    create_pr_link = f"https://github.com/DataDog/datadog-agent/compare/{branch}?expand=1"
+    print(f"Opening link to create an associated PR for the agent with updated images: {create_pr_link}")
     subprocess.run(["open", create_pr_link])
 
 
@@ -211,7 +215,7 @@ def _create_agent_pr(gover, image_tag):
         if local_uncommited_changes_exist(repo):
             raise "Uncommited changes exist in datadog-agent repo. Exiting."
         checkout_latest_main(repo)
-        subprocess.check_call('invoke', 'update-go', gover, image_tag)
+        out = subprocess.check_output('inv', '-e', 'update-go', gover, image_tag)
         if local_uncommited_changes_exist(repo):
             create_branch_and_push_changes(
                 repo,
@@ -220,7 +224,6 @@ def _create_agent_pr(gover, image_tag):
             )
         else:
             raise exceptions.Exit(f"Task 'update-go' for version:{gover} and image:{image_tag} changed nothing. Exiting.")
-    return
 
 def _update_images(version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):
     """
