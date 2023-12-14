@@ -1,10 +1,16 @@
 import hashlib
+import json
+import os
 import re
+import subprocess
 import sys
+import time
+import yaml
 from typing import Dict, Optional, Set, Tuple, Type
 
 import requests
 from invoke import Context, exceptions, task
+from .utils import create_branch_and_push_changes, checkout_latest_main, local_uncommited_changes_exist, dd_repo_temp_cwd
 
 # a platform is an OS and an architecture
 Platform = Type[Tuple[str, str]]
@@ -120,15 +126,89 @@ def _handle_file(path: str, patterns: Dict[re.Pattern, str], expected_match: int
     with open(path, "w") as writer:
         writer.write(content)
 
+def _check_appgate():
+    return
 
-@task(
-    help={
-        "version": "The version of Go to use.",
-        "check_archive": "If specified, download archive and check the SHA256.",
-        "warn": "Don't exit in case of matching error, just warn.",
-    }
-)
-def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):
+# maybe this could be done with yq but it removes a lot of the formatting
+# https://github.com/mikefarah/yq/issues/515
+def _add_wait_for_tests(branch: str):
+    import re
+    trigger = """project: DataDog/datadog-agent"""
+    # load bearing yaml whitespace :sigh:
+    with_branch = f"""{trigger}
+    branch: {branch}"""
+    with open(".gitlab-ci.yml", "r") as f:
+        contents = f.read()
+    contents = re.sub(trigger, with_branch, contents, count=1)
+    with open(".gitlab-ci.yml", "w") as f:
+        f.write(contents)
+
+# TODO: not sure how to run this before merging
+def _remove_wait_for_tests(branch: str):
+    import re
+    with_branch = f"""project: DataDog/datadog-agent
+    branch: .*"""
+    with open(".gitlab-ci.yml", "r") as f:
+        contents = f.read()
+    contents = re.sub(with_branch, "project: DataDog/datadog-agent", contents, count=1)
+    with open(".gitlab-ci.yml", "w") as f:
+        f.write(contents)
+
+def _update_and_create_pr(gover):
+    # TODO: check that appgate is turned on so that gitlab.ddbuild.io is reachable
+    repo = "datadog-agent-buildimages"
+    branch = f"update-go-{gover}"
+    with dd_repo_temp_cwd(repo):
+        if local_uncommited_changes_exist(repo):
+            raise "Uncommited changes exist in datadog-agent-buildimages repo. Exiting."
+        checkout_latest_main(repo)
+        _add_wait_for_tests(f"update-go-{gover}")
+        _update_images(gover)
+        if local_uncommited_changes_exist(repo):
+            create_branch_and_push_changes(
+                repo,
+                branch,
+                f"Update Go version to {gover} for datadog agent buildimages",
+            )
+        else:
+            raise f"Updating buildimages to {gover} changed nothing. Exiting."
+
+        # gitlab job takes a bit to start up
+        # GIT_COMMIT_SHORT_SHA used in gitlab is first 8 characters of commit SHA
+        short_sha = subprocess.check_output(["git", "rev-parse", "--short=8", "@"])
+        time.sleep(60)
+        status = subprocess.check_output(["curl", f"https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/{short_sha}/status"])
+        build_id = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)[0]
+
+        # XXX: is it OK to require the user create a gitlab access token?
+        res = requests.get(f"https://gitlab.ddbuild.io/api/v4/projects/291/jobs/{build_id}", headers={"PRIVATE-TOKEN": os.environ["GITLAB_ACCESS_TOKEN"]})
+        pipeline_id = json.loads(res)["pipeline"]["id"]
+        image_tag = f"v{pipeline_id}-{short_sha}_test_only"
+        _create_agent_pr(gover, image_tag)
+
+    create_pr_link = f"https://github.com/DataDog/mortar-terraform/compare/{branch}?expand=1"
+    print(f"Opening link to create an associated PR for the updated images: {create_pr_link}")
+    subprocess.run(["open", create_pr_link])
+
+
+def _create_agent_pr(gover, image_tag):
+    repo = "datadog-agent"
+    with dd_repo_temp_cwd(repo):
+        if local_uncommited_changes_exist(repo):
+            raise "Uncommited changes exist in datadog-agent repo. Exiting."
+        checkout_latest_main(repo)
+        subprocess.check_call('invoke', 'update-go', gover, image_tag)
+        if local_uncommited_changes_exist(repo):
+            create_branch_and_push_changes(
+                repo,
+                f"update-go-{gover}",
+                f"Update Go version to {gover} and buildimages to {image_tag} for datadog agent",
+            )
+        else:
+            raise f"Task 'update-go' for version:{gover} and image:{image_tag} changed nothing. Exiting."
+    return
+
+def _update_images(version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):
     """
     Update Go versions and SHA256 of Go archives.
     """
@@ -155,3 +235,13 @@ def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False,
     # handle `./windows/versions.ps1` file
     windows_patterns = _get_windows_patterns(version, shas)
     _handle_file("./windows/versions.ps1", windows_patterns, 2, warn)
+
+@task(
+    help={
+        "version": "The version of Go to use.",
+        "check_archive": "If specified, download archive and check the SHA256.",
+        "warn": "Don't exit in case of matching error, just warn.",
+    }
+)
+def update_go(ctx: Context, version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):
+    _update_and_create_pr(version)
