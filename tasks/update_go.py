@@ -160,7 +160,7 @@ def _update_and_create_pr(gover):
     branch = f"update-go-{gover}"
     with dd_repo_temp_cwd(repo):
         if local_uncommited_changes_exist(repo):
-            raise "Uncommited changes exist in datadog-agent-buildimages repo. Exiting."
+            raise exceptions.Exit("Uncommited changes exist in datadog-agent-buildimages repo. Exiting.")
         checkout_latest_main(repo)
         _add_wait_for_tests(f"update-go-{gover}")
         _update_images(gover)
@@ -171,28 +171,33 @@ def _update_and_create_pr(gover):
                 f"Update Go version to {gover} for datadog agent buildimages",
             )
         else:
-            raise f"Updating buildimages to {gover} changed nothing. Exiting."
+            raise exceptions.Exit(f"Updating buildimages to {gover} changed nothing. Exiting.")
 
         # gitlab job takes a bit to start up
         # GIT_COMMIT_SHORT_SHA used in gitlab is first 8 characters of commit SHA
-        short_sha = subprocess.check_output(["git", "rev-parse", "--short=8", "@"])
-        tries = 5
+        commit_sha = subprocess.check_output(["git", "rev-parse", "@"]).strip().decode('utf-8')
+        print(commit_sha)
+        tries = 10
+        build_ids = []
         for i in range(tries):
-            try:
-                status = subprocess.check_output(["curl", f"https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/{short_sha}/status"])
-                build_id = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)[0]
-            except IndexError as e:
-                if i < tries:
-                    time.sleep(20)
+            status = requests.get(f"https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/{commit_sha}/status", headers={"Cache-Control": "no-cache"}).text
+            print(status)
+            matches = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)
+            if len(matches) < 1:
+                if i < tries - 1:
+                    time.sleep(30)
                     continue
                 else:
-                    raise "Exhausted retries waiting for gitlab job to start."
-            break
+                    raise exceptions.Exit("Exhausted retries waiting for gitlab job to start.")
+            else:
+                build_ids.extend(matches)
+                print(f"Gitlab job started with build_ids: {build_ids}")
+                break
 
         # XXX: is it OK to require the user create a gitlab access token?
-        res = requests.get(f"https://gitlab.ddbuild.io/api/v4/projects/291/jobs/{build_id}", headers={"PRIVATE-TOKEN": os.environ["GITLAB_ACCESS_TOKEN"]})
-        pipeline_id = json.loads(res)["pipeline"]["id"]
-        image_tag = f"v{pipeline_id}-{short_sha}_test_only"
+        res = requests.get(f"https://gitlab.ddbuild.io/api/v4/projects/291/jobs/{build_ids[0]}", headers={"PRIVATE-TOKEN": os.environ["GITLAB_ACCESS_TOKEN"]})
+        pipeline_id = res.json()["pipeline"]["id"]
+        image_tag = f"v{pipeline_id}-{commit_sha[:8]}_test_only"
         _create_agent_pr(gover, image_tag)
 
     create_pr_link = f"https://github.com/DataDog/mortar-terraform/compare/{branch}?expand=1"
@@ -214,7 +219,7 @@ def _create_agent_pr(gover, image_tag):
                 f"Update Go version to {gover} and buildimages to {image_tag} for datadog agent",
             )
         else:
-            raise f"Task 'update-go' for version:{gover} and image:{image_tag} changed nothing. Exiting."
+            raise exceptions.Exit(f"Task 'update-go' for version:{gover} and image:{image_tag} changed nothing. Exiting.")
     return
 
 def _update_images(version: str, check_archive: Optional[bool] = False, warn: Optional[bool] = False):

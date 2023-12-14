@@ -7,7 +7,7 @@ def _get_local_path(repo):
 
 def local_uncommited_changes_exist(repo):
     with dd_repo_temp_cwd(repo):
-        return subprocess.check_output(["git", "status", "--porcelain"]) != b""
+        return subprocess.check_output(["git", "status", "--porcelain"]).strip() != b""
 
 @contextmanager
 def dd_repo_temp_cwd(repo=""):
