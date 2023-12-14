@@ -100,7 +100,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
     && cd autoconf-2.69 \
     && ./configure \
-    && make && make install \
+    && make -j$(nproc) && make install \
     && cd / \
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
 
@@ -123,7 +123,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && cd rpm-4.15.1 \
     && cat /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch | patch -p1 \
     && ./configure --without-lua --without-audit \
-    && make \
+    && make -j$(nproc) \
     && make install \
     && cd / \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
@@ -140,7 +140,7 @@ RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
     && cd "git-${GIT_VERSION}" \
-    && make prefix=/usr/local all \
+    && make -j$(nproc) prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"
@@ -178,7 +178,7 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
     && cd "binutils-${BINUTILS_VERSION}" \
-    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make && make install \
+    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make -j$(nproc) && make install \
     && cd - \
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
