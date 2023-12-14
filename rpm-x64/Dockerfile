@@ -112,6 +112,19 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && rpm -Uvh --nodeps /root/rpmbuild/RPMS/x86_64/* \
     && rm -rf /tmp/libarchive-3.1.2-12.el7.src.rpm /root/rpmbuild; fi
 
+# Build liblzma 5.2+ which supports parallel compression
+# We still install xz-devel as the distribution provided package
+# is required when rebuilding libarchive just above
+RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
+    curl -sL -o /tmp/xz-5.2.11.tar.xz https://github.com/tukaani-project/xz/releases/download/v5.2.11/xz-5.2.11.tar.xz \
+    && cd /tmp \
+    && echo "503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc  /tmp/xz-5.2.11.tar.xz" | sha256sum --check \
+    && tar -xf /tmp/xz-5.2.11.tar.xz \
+    && cd xz-5.2.11 \
+    && ./configure --prefix=/usr --libdir=/usr/lib64 --disable-symbol-versions \
+    && make -j$(nproc) && make install \
+    && rm -rf /tmp/xz-5.2.11; fi
+
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
