@@ -176,9 +176,18 @@ def _update_and_create_pr(gover):
         # gitlab job takes a bit to start up
         # GIT_COMMIT_SHORT_SHA used in gitlab is first 8 characters of commit SHA
         short_sha = subprocess.check_output(["git", "rev-parse", "--short=8", "@"])
-        time.sleep(60)
-        status = subprocess.check_output(["curl", f"https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/{short_sha}/status"])
-        build_id = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)[0]
+        tries = 5
+        for i in range(tries):
+            try:
+                status = subprocess.check_output(["curl", f"https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/{short_sha}/status"])
+                build_id = re.findall("\"https://gitlab.ddbuild.io/datadog/datadog-agent-buildimages/builds/(\d+)\"", status)[0]
+            except IndexError as e:
+                if i < tries:
+                    time.sleep(20)
+                    continue
+                else:
+                    raise "Exhausted retries waiting for gitlab job to start."
+            break
 
         # XXX: is it OK to require the user create a gitlab access token?
         res = requests.get(f"https://gitlab.ddbuild.io/api/v4/projects/291/jobs/{build_id}", headers={"PRIVATE-TOKEN": os.environ["GITLAB_ACCESS_TOKEN"]})
