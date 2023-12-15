@@ -122,7 +122,7 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
     && echo 1.18.4 > .dist-version \
     && autoreconf -vfi \
     && mkdir build && cd build \
-    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
     && make -j$(nproc) \
     && make install
 
