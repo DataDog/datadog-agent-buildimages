@@ -38,6 +38,21 @@ variables:
 .if_not_release_nor_main_branch: &if_not_release_nor_main_branch
   if: $CI_COMMIT_BRANCH !~ /^[0-9]+\.[0-9]+\.x$/ && $CI_COMMIT_BRANCH != "main"
 
+.on_push:
+  - if: $CI_PIPELINE_SOURCE == "schedule"
+    when: never
+  - if: $CI_COMMIT_TAG != null
+    when: never
+  - when: always
+
+.on_default_branch_push:
+  - if: $CI_PIPELINE_SOURCE == "schedule"
+    when: never
+  - if: $CI_COMMIT_TAG != null
+    when: never
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    when: always
+
 workflow:
   rules:
     - <<: *if_release_or_main_branch
@@ -84,7 +99,10 @@ get_agent_version:
 
 .build:
   stage: build
-  except: [tags]
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: never
+    - when: always
   script:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
@@ -216,7 +234,10 @@ build_kernel_version_testing_arm64:
 build_circleci_runner:
   extends: [.x64]
   stage: build
-  except: [tags]
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: never
+    - when: always
   variables:
     DOCKERFILE: circleci/Dockerfile
     IMAGE: circleci-runner
@@ -246,7 +267,8 @@ trigger_build_kernels:
 
 trigger_tests:
   stage: test
-  except: [tags, schedules]
+  rules:
+    - !reference [.on_push]
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
@@ -285,7 +307,10 @@ wait_for_tests:
 
 .winbuild: &winbuild
   stage: build
-  except: [tags]
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: never
+    - when: always
   timeout: 2h 00m
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
@@ -317,8 +342,8 @@ build_windows_ltsc2022_x64:
 
 .release:
   stage: release
-  except: [tags, schedules]
-  only: [master, main]
+  rules:
+    - !reference [.on_default_branch_push]
   needs: ["trigger_tests"]
   tags: ["runner:docker"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
@@ -338,8 +363,8 @@ build_windows_ltsc2022_x64:
 
 .winrelease:
   stage: release
-  except: [tags, schedules]
-  only: [master, main]
+  rules:
+    - !reference [.on_default_branch_push]
   ## this always needs to be the newest available builder version
   tags: ["runner:windows-docker", "windowsversion:2022"]
   script:
@@ -441,8 +466,8 @@ release_circleci_runner:
   needs: ["build_circleci_runner"]
   variables:
     IMAGE: circleci-runner
-  except: [tags, schedules]
-  only: [master, main]
+  rules:
+    - !reference [.on_default_branch_push]
   tags: ["runner:docker"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
   script:
@@ -458,7 +483,8 @@ release_circleci_runner:
 dev_release_circleci_runner_gcr:
   stage: release
   needs: ["build_circleci_runner"]
-  except: [tags, schedules]
+  rules:
+    - !reference [.on_push]
   variables:
     IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
@@ -470,8 +496,8 @@ dev_release_circleci_runner_gcr:
 release_circleci_runner_gcr:
   stage: release
   needs: ["build_circleci_runner"]
-  except: [tags, schedules]
-  only: [master, main]
+  rules:
+    - !reference [.on_default_branch_push]
   variables:
     IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
