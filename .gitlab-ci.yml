@@ -286,6 +286,8 @@ trigger_tests:
 
 on_success:
   stage: test
+  rules:
+    - !reference [.on_push]
   needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
@@ -299,6 +301,8 @@ on_success:
 
 wait_for_tests:
   stage: after_test
+  rules:
+    - !reference [.on_push]
   tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   when: always
