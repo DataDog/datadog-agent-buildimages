@@ -2,8 +2,8 @@ FROM debian:buster
 
 ARG DEBIAN_FRONTEND=noninteractive
 # If you want to change the Go version, please use the update-go invoke task
-ARG GO_VERSION=1.20.12
-ARG GO_SHA256_LINUX_ARM64=8afe8e3fb6972eaa2179ef0a71678c67f26509fab4f0f67c4b00f4cdfa92dc87
+ARG GO_VERSION=1.21.5
+ARG GO_SHA256_LINUX_ARM64=841cced7ecda9b2014f139f5bab5ae31785f35399f236b8b3e75dff2a2978d96
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
