@@ -7,7 +7,11 @@ on:
         description: 'Go version'
         required: true
         type: string
-        default: ''
+      draft:
+        description: 'Open a Draft PR'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   open-go-update-pr:
@@ -46,8 +50,7 @@ jobs:
         uses: actions/github-script@v7
         if: ${{ steps.autocommit.outputs.changes_detected }}
         with:
-          # TODO: if minor update, add changelog to the PR body:
-          # https://tip.golang.org/doc/go1.21
+          # TODO: if minor update, add changelog to the PR body: https://tip.golang.org/doc/go1.21
           script: |
             github.rest.pulls.create({
               title: `Update Go version to ${{ inputs.go_version }}`,
@@ -55,7 +58,7 @@ jobs:
               repo: context.repo.repo,
               head: "gobot/go-update-${{ inputs.go_version }}",
               base: context.ref,
-              draft: true, // for test purpose, remove before merging
+              draft: ${{ inputs.draft }},
               body: [
                 '## Update docker images to Go ${{ inputs.go_version }}',
                 'For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved).',
