@@ -7,11 +7,24 @@ on:
         description: 'Go version'
         required: true
         type: string
+      open_pr:
+        description: 'Whether to a PR'
+        required: false
+        type: boolean
+        default: true
       draft:
         description: 'Open a Draft PR'
         required: false
         type: boolean
         default: false
+      branch:
+        description: 'Git branch to use (defaults to "gobot/go-update-<go_version>")'
+        required: false
+        type: string
+        default: ''
+
+env:
+  BRANCH_NAME: ${{ inputs.branch || format('gobot/go-update-{0})', inputs.go_version) }}
 
 jobs:
   open-go-update-pr:
@@ -43,12 +56,12 @@ jobs:
         id: autocommit
         with:
           commit_message: Update go version to ${{ inputs.go_version }}
-          branch: gobot/go-update-${{ inputs.go_version }}
+          branch: ${{ env.BRANCH_NAME }}
           create_branch: true
 
       - name: Create Pull Request
         uses: actions/github-script@v7
-        if: ${{ steps.autocommit.outputs.changes_detected }}
+        if: ${{ inputs.open_pr && steps.autocommit.outputs.changes_detected }}
         with:
           # TODO: if minor update, add changelog to the PR body: https://tip.golang.org/doc/go1.21
           script: |
@@ -56,7 +69,7 @@ jobs:
               title: `Update Go version to ${{ inputs.go_version }}`,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: "gobot/go-update-${{ inputs.go_version }}",
+              head: ${{ env.BRANCH_NAME }},
               base: context.ref,
               draft: ${{ inputs.draft }},
               body: [
