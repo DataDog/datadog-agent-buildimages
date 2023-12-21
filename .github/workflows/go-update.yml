@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       open_pr:
-        description: 'Whether to a PR'
+        description: 'Whether to open a PR'
         required: false
         type: boolean
         default: true
