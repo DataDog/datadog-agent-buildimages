@@ -32,6 +32,13 @@ if($Tag -eq $null -or $Tag -eq ""){
 }
 $arglist += "build"
 
+# Read arguments from go.env file
+$lines = Get-Content -Path 'go.env'
+foreach ($line in $lines) {
+    $arglist += "--build-arg"
+    $arglist += "$line"
+}
+
 foreach ($h in $SoftwareTable.GetEnumerator()){
     if( -not ($($h.Key) -like "*SHA256")){
         $arglist += "--build-arg"
@@ -48,4 +55,3 @@ $arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --
 # Write-Host -ForegroundColor Green "$buildcommand `n"
 filter timestamp {"$(Get-Date -Format o): $_"}
 & docker $arglist | timestamp
-

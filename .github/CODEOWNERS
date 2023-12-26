@@ -13,6 +13,7 @@
 
 .gitlab/kernel-version-testing.yml  @DataDog/ebpf-platform @DataDog/agent-platform
 
+go.env                              @DataDog/agent-shared-components
 tasks/update_go.py                  @DataDog/agent-shared-components
 
 /entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-platform

@@ -27,6 +27,7 @@ ARG GIT_VERSION
 ARG SEVENZIP_VERSION
 ARG VS2017BUILDTOOLS_VERSION
 ARG GO_VERSION
+ARG GO_SHA256_WINDOWS_AMD64
 ARG RUBY_VERSION
 ARG WIX_VERSION
 ARG CMAKE_VERSION
@@ -78,4 +79,3 @@ COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
 
 ENTRYPOINT ["/entrypoint.bat"]
-
