@@ -24,7 +24,7 @@ on:
         default: ''
 
 env:
-  BRANCH_NAME: ${{ inputs.branch || format('gobot/go-update-{0})', inputs.go_version) }}
+  BRANCH_NAME: ${{ inputs.branch || format('gobot/go-update-{0}', inputs.go_version) }}
 
 jobs:
   open-go-update-pr:
