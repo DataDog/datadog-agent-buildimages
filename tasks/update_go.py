@@ -1,23 +1,25 @@
 import hashlib
 import re
 import sys
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple
 
 import requests
-from invoke import Context, exceptions, task
+from invoke import exceptions
+from invoke.context import Context
+from invoke.tasks import task
 
 # a platform is an OS and an architecture
-Platform = Type[Tuple[str, str]]
+Platform = Tuple[str, str]
 
 # list all platforms used in the repo
 # store the platform names in the format expected by Go
 # see https://go.dev/dl/ for the full list of platforms
-PLATFORMS: List[Platform] = {
+PLATFORMS: List[Platform] = [
     ("linux", "amd64"),
     ("linux", "arm64"),
     ("linux", "armv6l"),
     ("windows", "amd64"),
-}
+]
 
 
 def _get_archive_extension(os: str) -> str:
