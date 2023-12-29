@@ -27,6 +27,7 @@ ARG GIT_VERSION
 ARG SEVENZIP_VERSION
 ARG VS2017BUILDTOOLS_VERSION
 ARG GO_VERSION
+ARG GO_SHA256_WINDOWS_AMD64
 ARG RUBY_VERSION
 ARG WIX_VERSION
 ARG CMAKE_VERSION
@@ -59,6 +60,8 @@ WORKDIR c:/scripts
 COPY ./windows/*.ps1 ./
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
+COPY go.env c:/
+
 COPY python-packages-versions.txt requirements.txt requirements-py2.txt /
 COPY requirements /requirements
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
@@ -78,4 +81,3 @@ COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
 
 ENTRYPOINT ["/entrypoint.bat"]
-
