@@ -21,7 +21,7 @@ $GlobalEnvVariables = [PSCustomObject]@{
 }
 
 # Read Go variables from go.env file
-$lines = Get-Content -Path '.\go.env'
+$lines = Get-Content -Path '..\go.env'
 foreach ($line in $lines) {
     $key, $val = $line.split('=')
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)

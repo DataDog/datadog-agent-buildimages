@@ -60,7 +60,7 @@ WORKDIR c:/scripts
 COPY ./windows/*.ps1 ./
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
-COPY go.env ./
+COPY go.env c:/
 
 COPY python-packages-versions.txt requirements.txt requirements-py2.txt /
 COPY requirements /requirements
