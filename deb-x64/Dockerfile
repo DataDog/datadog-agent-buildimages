@@ -31,6 +31,12 @@ ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa
 ARG GCC_VERSION=10.4.0
 ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
+ARG DPKG_VERSION=1.18.4
+ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
+ARG GETTEXT_VERSION=0.19.8
+ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
+ARG LIBLZMA_VERSION=5.2.11
+ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 
 # Environment
 ENV GOPATH /go
@@ -88,13 +94,45 @@ RUN apt-get update \
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
 RUN chmod +x /usr/local/bin/curl
 
+# The dpkg version we want to install requires a more recent version of
+# gettext than the one shipped in ubuntu 14.04. Even though we disable i18n,
+# their buildsystem still needs gettext
+RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+    && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
+    && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
+    && cd "gettext-${GETTEXT_VERSION}" \
+    && ./configure --prefix=/usr && make -j$(nproc) && make install \
+    && cd / \
+    && rm -rf "gettext-${GETTEXT_VERSION}"
+
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
+    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
+    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
+    && cd xz-${LIBLZMA_VERSION} \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
+    && rm -rf /xz-${LIBLZMA_VERSION}
+
+RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
+    && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
+    && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
+    && cd "dpkg-${DPKG_VERSION}" \
+    && echo 1.18.4 > .dist-version \
+    && autoreconf -vfi \
+    && mkdir build && cd build \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
+    && make -j$(nproc) \
+    && make install
+
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
     && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
     && cd git-${GIT_VERSION} \
-    && make prefix=/usr/local all \
+    && make -j$(nproc) prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
@@ -184,7 +222,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd patchelf-${PATCHELF_VERSION}  \
     && ./bootstrap.sh \
     && ./configure \
-    && make \
+    && make -j$(nproc) \
     && make install \
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
