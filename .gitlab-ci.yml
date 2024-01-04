@@ -43,7 +43,7 @@ variables:
     when: never
   - if: $CI_COMMIT_TAG != null
     when: never
-  - when: always
+  - when: on_success
 
 .on_default_branch_push:
   - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -51,7 +51,7 @@ variables:
   - if: $CI_COMMIT_TAG != null
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    when: always
+    when: on_success
 
 workflow:
   rules:
