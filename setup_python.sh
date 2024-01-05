@@ -42,7 +42,7 @@ case $DD_TARGET_ARCH in
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
-      ./config -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
+      ./config --prefix=/usr -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
       make -j $(nproc)
       make install
     popd
@@ -52,7 +52,7 @@ case $DD_TARGET_ARCH in
     echo "$PYTHON_SHA256 Python-$PY3_VERSION.tgz" | sha256sum --check
     tar xzf Python-$PY3_VERSION.tgz
     pushd /Python-$PY3_VERSION
-        LD_LIBRARY_PATH="/usr/local/lib" ./configure --with-openssl=/usr/local
+        ./configure --with-openssl=/usr
         make -j $(nproc)
         make install
     popd
