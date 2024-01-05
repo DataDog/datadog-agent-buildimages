@@ -42,7 +42,7 @@ case $DD_TARGET_ARCH in
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
-      ./config -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
+      KERNEL_BITS=32 ./config -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3
       make -j $(nproc)
       make install
     popd
