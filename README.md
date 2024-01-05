@@ -67,5 +67,11 @@ new images ID should resemble something like
 Update the `.gitlab-ci.yml` file in the `datadog-agent` repo to use the new images,
 push a new PR and see if gitlab is still green.
 
+You can use datadog-agent's invoke task to do so:
+```sh
+inv -e pipeline.update-buildimages -i <new image ID> --branch-name <your working branch> [--no-test-version]
+```
+`--no-test-version` will prevent the task from appending the `test_only` suffix to your image tag.
+
 ## Building on Windows
 See Building on Windows [README.md](windows/README.md)
