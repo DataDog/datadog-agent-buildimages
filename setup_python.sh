@@ -32,7 +32,7 @@ case $DD_TARGET_ARCH in
         libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
         libc6-dev libbz2-dev libffi-dev zlib1g-dev
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
-        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make
+        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make perl-IPC-Cmd
     fi
     OPENSSL_VERSION="3.0.12"
     OPENSSL_SHA256="f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61"
@@ -42,7 +42,7 @@ case $DD_TARGET_ARCH in
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
-      KERNEL_BITS=32 ./config -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3
+      ./config -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
       make -j $(nproc)
       make install
     popd
