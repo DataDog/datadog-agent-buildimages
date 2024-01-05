@@ -52,7 +52,7 @@ case $DD_TARGET_ARCH in
     echo "$PYTHON_SHA256 Python-$PY3_VERSION.tgz" | sha256sum --check
     tar xzf Python-$PY3_VERSION.tgz
     pushd /Python-$PY3_VERSION
-        ./configure
+        ./configure --with-openssl=/usr/local
         make -j $(nproc)
         make install
     popd
