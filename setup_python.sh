@@ -57,7 +57,6 @@ case $DD_TARGET_ARCH in
         make install
     popd
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
-    ln -sf /usr/bin/python3.11 /usr/bin/python3
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
