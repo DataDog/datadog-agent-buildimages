@@ -90,6 +90,9 @@ COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY --from=CURL_GETTER /curl-amd64 /opt/datadog/bin/curl
 RUN chmod +x /opt/datadog/bin/curl
 
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
   && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
