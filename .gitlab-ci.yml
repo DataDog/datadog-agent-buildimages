@@ -280,7 +280,6 @@ trigger_tests:
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   trigger:
     project: DataDog/datadog-agent
-    branch: florentclarret/python_3_11_build_image
     strategy: depend
 
 on_success:
