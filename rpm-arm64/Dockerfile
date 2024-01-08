@@ -26,14 +26,9 @@ ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
-ENV CMAKE_VERSION $CMAKE_VERSION
-ENV CMAKE_SHA256 $CMAKE_SHA256
-ENV CLANG_VERSION $CLANG_VERSION
-ENV CLANG_SHA256 $CLANG_SHA256
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV GCC_VERSION $GCC_VERSION
-ENV BUNDLER_VERSION $BUNDLER_VERSION
 
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
