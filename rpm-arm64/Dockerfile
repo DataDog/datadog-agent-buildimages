@@ -65,6 +65,9 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
 
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements

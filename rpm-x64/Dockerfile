@@ -125,6 +125,9 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && make -j$(nproc) && make install \
     && rm -rf /tmp/xz-5.2.11; fi
 
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid

@@ -137,8 +137,8 @@ RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.
     && cd .. \
     && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
 
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \

@@ -62,6 +62,9 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
 
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
 # This trick preloads a dynamic library that will replace the uname syscall to pretend the machine is armv7l
 # The fakearmv7l library gets installed in "/usr/local/lib/libfakearmv7l.so"
 RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
