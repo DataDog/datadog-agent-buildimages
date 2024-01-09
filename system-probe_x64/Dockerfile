@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
