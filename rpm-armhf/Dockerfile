@@ -14,6 +14,8 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARMV6L
 ARG DD_TARGET_ARCH=armhf
 ARG BUNDLER_VERSION=2.4.20
+ARG GIT_VERSION=2.10.1
+ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 
 # Environment
 ENV GOPATH /go
@@ -61,6 +63,17 @@ RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/r
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
+
+# Git
+RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
+    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
+    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
+    && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
+    && cd "git-${GIT_VERSION}" \
+    && make -j$(nproc) all \
+    && make prefix=/usr/local install \
+    && cd .. \
+    && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"
 
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
