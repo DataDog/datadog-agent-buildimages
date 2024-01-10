@@ -43,7 +43,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-netaddr \
         python3-setuptools \
         python3-pip \
-        python3-pyroute2 \
         python3-dev \
         default-jre \
         wget \
