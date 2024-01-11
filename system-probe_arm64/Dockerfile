@@ -3,6 +3,10 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG DD_TARGET_ARCH=aarch64
+
+ENV CONDA_PATH /root/miniconda3
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
