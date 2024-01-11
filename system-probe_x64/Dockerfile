@@ -38,18 +38,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         openssh-client \
         patch \
         pkg-config \
-        python \
-        python3-distro \
-        python3-distutils \
-        python3-netaddr \
-        python3-setuptools \
-        python3-pip \
-        python3-pyroute2 \
-        python3-dev \
         default-jre \
         wget \
         xsltproc \
         xz-utils
+
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
+RUN ./setup_python.sh
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
