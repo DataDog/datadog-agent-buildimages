@@ -40,7 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python \
         python3-distro \
         python3-distutils \
-        python3-netaddr \
         python3-setuptools \
         python3-pip \
         python3-dev \
