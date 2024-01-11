@@ -108,15 +108,16 @@ get_agent_version:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker buildx build \
-      --build-arg BASE_IMAGE=$BASE_IMAGE \
-      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH \
-      $GO_BUILD_ARGS \
-      $CUSTOM_BUILD_ARGS \
-      --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} \
-      --file $DOCKERFILE \
-      -- push \
-      .
+    - |-
+      docker buildx build \
+        --file $DOCKERFILE \
+        --build-arg BASE_IMAGE=$BASE_IMAGE \
+        --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH \
+        $GO_BUILD_ARGS \
+        $CUSTOM_BUILD_ARGS \
+        --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} \
+        --push \
+        .
     # For size debug purposes
     - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
