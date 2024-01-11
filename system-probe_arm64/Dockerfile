@@ -45,12 +45,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
-ENV CONDA_PATH /root/miniconda3
+ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
-COPY requirements.txt /
-COPY /requirements /requirements
-RUN python3 -m pip install -r requirements.txt
+# CONDA
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
+RUN ./setup_python.sh
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
   && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
@@ -65,10 +68,6 @@ RUN echo "3d4ad804b7c85007686548cbc917ab067bf17eaedeab43d9eb83d3a683d8e9d4  /tmp
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
-
-COPY requirements.txt /
-COPY /requirements /requirements
-RUN python3 -m pip install -r requirements.txt
 
 # External calls configuration
 COPY .awsconfig $HOME/.aws/config
