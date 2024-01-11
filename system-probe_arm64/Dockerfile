@@ -41,11 +41,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         openssh-client \
         patch \
         pkg-config \
-        python \
-        python3-distutils \
-        python3-setuptools \
-        python3-pip \
-        python3-dev \
         default-jre \
         wget \
         xsltproc \
