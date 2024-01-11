@@ -515,7 +515,10 @@ notify-images-available:
     - when: on_success
   dependencies: []
   script: |
-    export MESSAGE="Your images :docker: tagged 'v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}' are ready. :idea: In datadog-agent you can test with 'inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]'"
+    export MESSAGE="Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` are ready.
+    :idea: You can test them in the datadog-agent repository by running:
+    \`\`\`inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    "
     /usr/local/bin/notify.sh
 
 notify-images-failure:
@@ -527,7 +530,8 @@ notify-images-failure:
     - when: on_failure
   dependencies: []
   script: |
-    export MESSAGE=":warning: Your images :docker: tagged 'v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}' failed to build :warning: More details :arrow_right:"
+    export MESSAGE=":warning: Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` failed to build. :warning:
+    More details :arrow_right:"
     /usr/local/bin/notify.sh
 
 notify-on-failure:
