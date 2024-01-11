@@ -49,6 +49,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
 
+COPY requirements.txt /
+COPY /requirements /requirements
+RUN python3 -m pip install -r requirements.txt
+
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
   && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
