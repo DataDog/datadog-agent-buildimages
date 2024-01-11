@@ -5,9 +5,6 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG DD_TARGET_ARCH=x64
 
-ENV CONDA_PATH /root/miniconda3
-ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
 
@@ -53,6 +50,8 @@ RUN ./setup_python.sh
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
+ENV CONDA_PATH /root/miniconda3
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
   && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
