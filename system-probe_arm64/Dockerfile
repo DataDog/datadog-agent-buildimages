@@ -38,7 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         patch \
         pkg-config \
         python \
-        python3-distro \
         python3-distutils \
         python3-setuptools \
         python3-pip \
