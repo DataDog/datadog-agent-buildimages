@@ -117,13 +117,18 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    LIBDIR="arm-linux-gnueabihf"; \
+    else \
+    LIBDIR="aarch64-linux-gnu"; \
+    fi && \
+    curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
     && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
     && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
     && cd xz-${LIBLZMA_VERSION} \
     && ./configure --prefix=/usr/ \
     && make -j$(nproc) && make install \
-    && cp /usr/lib/liblzma.so* /lib/arm-linux-gnueabihf/ \
+    && cp /usr/lib/liblzma.so* /lib/${LIBDIR}/ \
     && rm -rf /xz-${LIBLZMA_VERSION}
 
 RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
