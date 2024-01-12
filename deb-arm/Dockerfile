@@ -29,6 +29,10 @@ ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG DPKG_VERSION=1.18.4
+ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
+ARG LIBLZMA_VERSION=5.2.11
+ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 
 # Environment
 ENV GOPATH /go
@@ -111,6 +115,27 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
+    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
+    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
+    && cd xz-${LIBLZMA_VERSION} \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && cp /usr/lib/liblzma.so* /lib/arm-linux-gnueabihf/ \
+    && rm -rf /xz-${LIBLZMA_VERSION}
+
+RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
+    && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
+    && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
+    && cd "dpkg-${DPKG_VERSION}" \
+    && echo 1.18.4 > .dist-version \
+    && autoreconf -vfi \
+    && mkdir build && cd build \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
+    && make -j$(nproc) \
+    && make install
 
 # CMake
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
