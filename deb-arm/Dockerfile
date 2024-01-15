@@ -131,14 +131,20 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
     && rm -rf /xz-${LIBLZMA_VERSION}
 
-RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    LIB_DEST="arm-linux-gnueabihf"; \
+    EXTRA_CONFIGURE_OPTIONS="--host=arm-linux-gnueabihf --build=arm-linux-gnueabihf"; \
+    else \
+    LIB_DEST="aarch64-linux-gnu"; \
+    fi && \
+    curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
     && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
     && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
     && cd "dpkg-${DPKG_VERSION}" \
     && echo 1.18.4 > .dist-version \
     && autoreconf -vfi \
     && mkdir build && cd build \
-    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
     && make -j$(nproc) \
     && make install
 
