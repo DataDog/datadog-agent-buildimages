@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         g++ \
         gcc \
         git \
+        jq \
         libbpf-dev \
         libedit-dev \
         libelf-dev \

@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         gcc \
         gcc-multilib \
         git \
+        jq \
         libbpf-dev \
         libedit-dev \
         libelf-dev \
