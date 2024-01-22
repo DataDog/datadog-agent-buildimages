@@ -317,12 +317,13 @@ push_to_datadog_agent:
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
-    - if: $CI_COMMIT_MESSAGE !~ /^\[push\]/
-      # for now only run when the commit message starts with [push]
-      when: never
+    #FIXME: disable commit message check for now (ease of testing)
+    # - if: $CI_COMMIT_MESSAGE !~ /^\[push\]/
+    #   # for now only run when the commit message starts with [push]
+    #   when: never
     - when: always
   tags: ["arch:amd64"]
-  image: $SETUP_IMAGE_NAME
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3 #FIXME: looks like the $SETUP_IMAGE_NAME doesn't have aws cli installed so using something else for now
   variables:
     # Workflow ID can be found in https://api.github.com/repos/DataDog/datadog-agent/actions/workflows
     WORKFLOW_ID: 80540190
