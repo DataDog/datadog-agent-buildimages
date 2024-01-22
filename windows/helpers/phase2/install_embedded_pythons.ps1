@@ -23,7 +23,7 @@ if($Env:DD_DEV_TARGET -ne "Container") {
 }
 
 $py2 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_2_VERSION}-amd64.zip"
-$py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-x64.zip"
+$py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-amd64.zip"
 
 $py2Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_2_VERSION}"
 $py3Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_3_VERSION}"
