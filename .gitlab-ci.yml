@@ -85,6 +85,17 @@ get_agent_version:
       dotenv: version.env
   tags: ["runner:main"]
 
+test_nico:
+  stage: setup
+  tags: ["arch:amd64"]
+  script:
+    # Install the ci-visbility standalone CLI and upload junits
+    - curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" && chmod +x /usr/local/bin/datadog-ci
+    - set +x
+    - export DATADOG_API_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.datadog_api_key_org2 --with-decryption --query "Parameter.Value" --out text)
+    - set -x
+    - for f in junit-*.tgz; do inv -e junit-upload --tgz-path $f; done
+
 .x64:
   tags: ["runner:docker"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
