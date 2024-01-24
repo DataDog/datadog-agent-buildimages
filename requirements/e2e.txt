@@ -2,6 +2,7 @@
 
 -c constraints.txt
 
+codeowners
 docker
 docker-squash
 invoke
