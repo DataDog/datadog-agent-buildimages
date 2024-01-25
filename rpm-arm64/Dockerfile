@@ -71,8 +71,8 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 # Patchelf
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \

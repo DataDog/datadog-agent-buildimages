@@ -20,8 +20,8 @@ COPY requirements /requirements
 RUN python3 -m pip install -r requirements.txt
 
 # External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 # Ruby
 RUN gem install bundler --version ${BUNDLER_VERSION}
