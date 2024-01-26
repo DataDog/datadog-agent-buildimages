@@ -108,8 +108,8 @@ COPY requirements /requirements
 RUN ./setup_python.sh
 
 # External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
