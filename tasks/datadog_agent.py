@@ -46,7 +46,10 @@ def update_datadog_agent_buildimages(
         os.environ["GITHUB_APP_ID"], base64.b64decode(os.environ["GITHUB_KEY_B64"]).decode("ascii")
     )
     installation_id = os.environ["GITHUB_INSTALLATION_ID"]
-    inst_auth = app_auth.get_installation_auth(int(installation_id))
+    inst_auth = app_auth.get_installation_auth(
+        int(installation_id),
+        token_permissions={"contents": "write"},
+    )
 
     gh = github.Github(auth=inst_auth)
     repo = gh.get_repo(REPO_NAME)
