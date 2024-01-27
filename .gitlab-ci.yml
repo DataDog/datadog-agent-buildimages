@@ -340,7 +340,7 @@ push_to_datadog_agent:
         export $line
       done
     # Read the Github app private token from AWS SSM
-    - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text | base64 -d -)
+    - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
     - pip install -r requirements.txt
     - pip install PyGithub
     - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
