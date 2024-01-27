@@ -6,6 +6,7 @@ import os
 from invoke import Collection
 
 from . import agent
+from .datadog_agent import update_datadog_agent_buildimages
 from .update_go import update_go
 
 # the root namespace
@@ -15,6 +16,7 @@ ns = Collection()
 
 ns.add_collection(agent)
 ns.add_task(update_go)
+ns.add_task(update_datadog_agent_buildimages)
 ns.configure(
     {
         "run": {
