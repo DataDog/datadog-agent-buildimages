@@ -517,7 +517,7 @@ notify-images-available:
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
     export MESSAGE="Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` are ready.
-    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit `$CI_COMMIT_TITLE` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
+    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     :idea: You can test them in the datadog-agent repository by running:
     \`\`\`inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]\`\`\`
     "
@@ -535,7 +535,7 @@ notify-images-failure:
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
     export MESSAGE=":warning: Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` failed to build. :warning:
-    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit `$CI_COMMIT_TITLE` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
+    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     More details :arrow_right:"
     /usr/local/bin/notify.sh
 
