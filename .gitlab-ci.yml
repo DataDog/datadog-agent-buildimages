@@ -1,4 +1,4 @@
-include: "https://gitlab-templates.ddbuild.io/slack-notifier/sdm/template.yml"
+include: "https://gitlab-templates.ddbuild.io/slack-notifier/v3-sdm/template.yml"
 
 stages:
   - setup
