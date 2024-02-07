@@ -11,8 +11,8 @@ ENV DATADOG_CI_VERSION=2.17.2
 RUN apt update && apt install -y curl git python3 python3-pip
 COPY requirements /
 RUN pip install -r uploader.txt
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
 
 RUN curl -L https://raw.githubusercontent.com/tj/n/v${N_VERSION}/bin/n -o n \
     && echo "${N_SHA256}  n" | sha256sum --check \

@@ -140,8 +140,8 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
+COPY .awsconfig $HOME/.aws/config
+COPY .curlrc .wgetrc $HOME/
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
