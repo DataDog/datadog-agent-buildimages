@@ -62,6 +62,9 @@ workflow:
       variables:
         # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
         ECR_TEST_ONLY: "_test_only"
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+      variables:
+        DOCKER_PUSH_EXTRA: "--tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID"
 
 default:
   retry:
@@ -116,14 +119,9 @@ get_agent_version:
         $GO_BUILD_ARGS \
         $CUSTOM_BUILD_ARGS \
         --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} \
+        $DOCKER_PUSH_EXTRA \
         --push \
         .
-    # For size debug purposes
-    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
-    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID; fi
 
 build_deb_x64:
   extends: [.build, .x64]
