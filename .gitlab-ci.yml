@@ -62,9 +62,6 @@ workflow:
       variables:
         # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
         ECR_TEST_ONLY: "_test_only"
-    - if: $CI_PIPELINE_SOURCE != "schedule"
-      variables:
-        DOCKER_PUSH_EXTRA: "--tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID"
 
 default:
   retry:
@@ -119,7 +116,6 @@ get_agent_version:
         $GO_BUILD_ARGS \
         $CUSTOM_BUILD_ARGS \
         --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} \
-        $DOCKER_PUSH_EXTRA \
         --push \
         .
 
@@ -249,14 +245,16 @@ build_circleci_runner:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker buildx build \
+    - |-
+      docker buildx build \
+      --file $DOCKERFILE \
       --build-arg BASE_IMAGE=$BASE_IMAGE \
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH \
       $GO_BUILD_ARGS \
       $CUSTOM_BUILD_ARGS \
       --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} \
-      --file $DOCKERFILE .
-    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+      --push \
+      .
 
 trigger_build_kernels:
   stage: trigger_build_kernels
