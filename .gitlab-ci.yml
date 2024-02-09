@@ -89,12 +89,14 @@ get_agent_version:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
 
 .arm:
   tags: ["arch:arm64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
 
 .build:
   stage: build
@@ -111,6 +113,7 @@ get_agent_version:
     - |-
       docker buildx build \
         --file $DOCKERFILE \
+        --platform $PLATFORM \
         --build-arg BASE_IMAGE=$BASE_IMAGE \
         --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH \
         $GO_BUILD_ARGS \
@@ -162,6 +165,7 @@ build_deb_armhf:
     IMAGE: deb_armhf
     BASE_IMAGE: arm32v7/ubuntu:16.04
     DD_TARGET_ARCH: armhf
+    PLATFORM: linux/arm/v7
 
 build_rpm_arm64:
   extends: [.build, .arm]
@@ -177,6 +181,7 @@ build_rpm_armhf:
     IMAGE: rpm_armhf
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: armhf
+    PLATFORM: linux/arm/v7
 
 build_system-probe_x64:
   extends: [.build, .x64]
