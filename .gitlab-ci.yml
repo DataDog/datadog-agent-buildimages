@@ -121,12 +121,14 @@ get_agent_version:
 
 build_deb_x64:
   extends: [.build, .x64]
+  timeout: 240 minutes
   variables:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
 build_rpm_x64:
   extends: [.build, .x64]
+  timeout: 240 minutes
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
@@ -140,6 +142,7 @@ build_suse_x64:
 
 build_rpm_x64_testing:
   extends: [.build, .x64]
+  timeout: 240 minutes
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64_testing
