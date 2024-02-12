@@ -270,7 +270,7 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
     && bash ./perlbrew-install.sh \
     && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install -j ${KUBERNETES_CPU_REQUEST} --notest "perl-${PERL_VERSION}" \
+    && perlbrew install -j 1 --notest "perl-${PERL_VERSION}" \
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
