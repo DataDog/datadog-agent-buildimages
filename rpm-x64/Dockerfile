@@ -83,7 +83,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
     && cd autoconf-2.69 \
     && ./configure \
-    && make -j$(nproc) && make install \
+    && make -j${KUBERNETES_CPU_REQUEST} && make install \
     && cd / \
     && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
 
@@ -105,7 +105,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && tar -xf /tmp/xz-5.2.11.tar.xz \
     && cd xz-5.2.11 \
     && ./configure --prefix=/usr --libdir=/usr/lib64 --disable-symbol-versions \
-    && make -j$(nproc) && make install \
+    && make -j${KUBERNETES_CPU_REQUEST} && make install \
     && rm -rf /tmp/xz-5.2.11; fi
 
 RUN git config --global user.email "package@datadoghq.com" && \
@@ -122,7 +122,7 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && cd rpm-4.15.1 \
     && cat /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch | patch -p1 \
     && ./configure --without-lua --without-audit \
-    && make -j$(nproc) \
+    && make -j${KUBERNETES_CPU_REQUEST} \
     && make install \
     && cd / \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
@@ -139,7 +139,7 @@ RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
     && cd "git-${GIT_VERSION}" \
-    && make -j$(nproc) prefix=/usr/local all \
+    && make -j${KUBERNETES_CPU_REQUEST} prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"
@@ -177,7 +177,7 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
     && cd "binutils-${BINUTILS_VERSION}" \
-    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make -j$(nproc) && make install \
+    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make -j${KUBERNETES_CPU_REQUEST} && make install \
     && cd - \
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
@@ -270,7 +270,7 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
     && bash ./perlbrew-install.sh \
     && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install -j $(nproc) --notest "perl-${PERL_VERSION}" \
+    && perlbrew install -j ${KUBERNETES_CPU_REQUEST} --notest "perl-${PERL_VERSION}" \
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
@@ -290,7 +290,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && ./configure CC=/opt/gcc-${GCC_VERSION}/bin/gcc \
         CXX=/opt/gcc-${GCC_VERSION}/bin/g++ \
         CXXFLAGS='-static-libstdc++' \
-    && make -j$(nproc) \
+    && make -j ${KUBERNETES_CPU_REQUEST} \
     && make install \
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \

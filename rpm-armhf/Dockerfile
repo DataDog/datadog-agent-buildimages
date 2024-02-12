@@ -70,7 +70,7 @@ RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
     && cd "git-${GIT_VERSION}" \
-    && make -j$(nproc) all \
+    && make -j${KUBERNETES_CPU_REQUEST} all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"

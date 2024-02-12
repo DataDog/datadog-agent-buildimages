@@ -127,7 +127,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
     && cd xz-${LIBLZMA_VERSION} \
     && ./configure --prefix=/usr/ \
-    && make -j$(nproc) && make install \
+    && make -j${KUBERNETES_CPU_REQUEST} && make install \
     && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
     && rm -rf /xz-${LIBLZMA_VERSION}
 
@@ -145,7 +145,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && autoreconf -vfi \
     && mkdir build && cd build \
     && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
-    && make -j$(nproc) \
+    && make -j${KUBERNETES_CPU_REQUEST} \
     && make install
 
 # CMake

@@ -43,7 +43,7 @@ case $DD_TARGET_ARCH in
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
       ./config --prefix=/opt/openssl --openssldir=/usr/local/ssl -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
-      make -j $(nproc)
+      make -j ${KUBERNETES_CPU_REQUEST}
       make install
     popd
     rm -rf openssl-$OPENSSL_VERSION.tar.gz openssl-$OPENSSL_VERSION
@@ -53,7 +53,7 @@ case $DD_TARGET_ARCH in
     tar xzf Python-$PY3_VERSION.tgz
     pushd /Python-$PY3_VERSION
         ./configure --with-openssl=/opt/openssl --with-openssl-rpath=auto
-        make -j $(nproc)
+        make -j ${KUBERNETES_CPU_REQUEST}
         make install
     popd
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
