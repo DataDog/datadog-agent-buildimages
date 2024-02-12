@@ -273,7 +273,7 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew install "perl-${PERL_VERSION}" \
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
-    && rm perlbrew-install.sh
+    && rm perlbrew-install.sh || cat /root/perl5/perlbrew/build.perl-5.36.0.log
 
 # gcc
 COPY build-gcc.sh /
