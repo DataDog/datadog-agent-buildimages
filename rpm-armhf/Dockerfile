@@ -16,6 +16,7 @@ ARG DD_TARGET_ARCH=armhf
 ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
+ARG JOBS=1
 
 # Environment
 ENV GOPATH /go
@@ -70,7 +71,7 @@ RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf "git-${GIT_VERSION}.tar.gz" --no-same-owner \
     && cd "git-${GIT_VERSION}" \
-    && make -j${KUBERNETES_CPU_REQUEST} all \
+    && make -j${JOBS} all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf "git-${GIT_VERSION}" "git-${GIT_VERSION}.tar.gz"

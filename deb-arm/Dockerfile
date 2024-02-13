@@ -33,6 +33,7 @@ ARG DPKG_VERSION=1.18.4
 ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG LIBLZMA_VERSION=5.2.11
 ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
+ARG JOBS=1
 
 # Environment
 ENV GOPATH /go
@@ -127,7 +128,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
     && cd xz-${LIBLZMA_VERSION} \
     && ./configure --prefix=/usr/ \
-    && make -j${KUBERNETES_CPU_REQUEST} && make install \
+    && make -j${JOBS} && make install \
     && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
     && rm -rf /xz-${LIBLZMA_VERSION}
 
@@ -145,7 +146,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && autoreconf -vfi \
     && mkdir build && cd build \
     && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
-    && make -j${KUBERNETES_CPU_REQUEST} \
+    && make -j${JOBS} \
     && make install
 
 # CMake

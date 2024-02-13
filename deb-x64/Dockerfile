@@ -37,6 +37,7 @@ ARG GETTEXT_VERSION=0.19.8
 ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 ARG LIBLZMA_VERSION=5.2.11
 ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
+ARG JOBS=1
 
 # Environment
 ENV GOPATH /go
@@ -86,7 +87,7 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
     && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
     && cd "gettext-${GETTEXT_VERSION}" \
-    && ./configure --prefix=/usr && make -j${KUBERNETES_CPU_REQUEST} && make install \
+    && ./configure --prefix=/usr && make -j${JOBS} && make install \
     && cd / \
     && rm -rf "gettext-${GETTEXT_VERSION}"
 
@@ -96,7 +97,7 @@ RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_
     && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
     && cd xz-${LIBLZMA_VERSION} \
     && ./configure --prefix=/usr/ \
-    && make -j${KUBERNETES_CPU_REQUEST} && make install \
+    && make -j${JOBS} && make install \
     && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
     && rm -rf /xz-${LIBLZMA_VERSION}
 
@@ -108,7 +109,7 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
     && autoreconf -vfi \
     && mkdir build && cd build \
     && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
-    && make -j${KUBERNETES_CPU_REQUEST} \
+    && make -j${JOBS} \
     && make install
 
 # Git
@@ -117,7 +118,7 @@ RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.
     # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
     && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
     && cd git-${GIT_VERSION} \
-    && make -j${KUBERNETES_CPU_REQUEST} prefix=/usr/local all \
+    && make -j${JOBS} prefix=/usr/local all \
     && make prefix=/usr/local install \
     && cd .. \
     && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
@@ -207,7 +208,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd patchelf-${PATCHELF_VERSION}  \
     && ./bootstrap.sh \
     && ./configure \
-    && make -j${KUBERNETES_CPU_REQUEST} \
+    && make -j${JOBS} \
     && make install \
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
