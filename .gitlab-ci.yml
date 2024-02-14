@@ -109,6 +109,7 @@ get_agent_version:
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - |-
       docker buildx build \
+        --no-cache \
         --file $DOCKERFILE \
         --platform $PLATFORM \
         --build-arg BASE_IMAGE=$BASE_IMAGE \
