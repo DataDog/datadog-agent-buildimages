@@ -12,7 +12,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       tee /etc/apt/sources.list.d/azure-cli.list && \
       curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
   && apt-get update && apt-get install -y azure-cli=2.40.0-1~focal \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+  && apt-get clean && rm -rf /var/lib/apt/lists/* \
+  && curl --retry 10 -fsSL https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+  chmod +x /usr/local/bin/datadog-ci
 
 # Python
 COPY requirements.txt /

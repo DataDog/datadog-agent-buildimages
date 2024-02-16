@@ -108,6 +108,10 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
     && make -j$(nproc) \
     && make install
 
+# CI uploader, to send junit to ci-visibility duing CI tests
+RUN curl --retry 10 -fsSL https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+    chmod +x /usr/local/bin/datadog-ci
+
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
     && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \

@@ -61,6 +61,11 @@ RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.g
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 
+# CI uploader, to send junit to ci-visibility duing CI tests
+RUN curl --retry 10 -fsSL https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+    chmod +x /usr/local/bin/datadog-ci
+
+
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
 RUN echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp/clang.tar.xz" | sha256sum --check
