@@ -35,6 +35,8 @@ ARG GETTEXT_VERSION=0.19.8
 ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 ARG LIBLZMA_VERSION=5.2.11
 ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
+ARG CI_UPLOADER_VERSION=2.30.1
+ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
 # Environment
 ENV GOPATH /go
@@ -76,6 +78,10 @@ RUN apt-get update \
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
 RUN chmod +x /usr/local/bin/curl
 
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
+
 # The dpkg version we want to install requires a more recent version of
 # gettext than the one shipped in ubuntu 14.04. Even though we disable i18n,
 # their buildsystem still needs gettext
@@ -109,7 +115,8 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
     && make install
 
 # CI uploader, to send junit to ci-visibility duing CI tests
-RUN curl --retry 10 -fsSL https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+    echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci
 
 # Git
@@ -139,10 +146,6 @@ COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-
-# External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
