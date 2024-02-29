@@ -23,7 +23,7 @@ COPY .curlrc .wgetrc /root/
 
 RUN git clone --recurse-submodules https://github.com/brycekahle/bpftool.git
 WORKDIR bpftool
-RUN git reset --hard 6d6703613e6f996dbe4b0b9b00a079b2a668483d
+RUN git reset --hard cb5e5c83d5ce48257b7763cb6d111aa28f07c1c7
 COPY btf-gen/Makefile.patch ./
 RUN git apply Makefile.patch
 
