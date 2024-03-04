@@ -128,7 +128,7 @@ build_rpm_x64:
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
-    BASE_IMAGE: centos:6
+    BASE_IMAGE: centos:7
 
 build_suse_x64:
   extends: [.build, .x64]
