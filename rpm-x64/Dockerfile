@@ -32,8 +32,6 @@ ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG BUNDLER_VERSION=2.4.20
-ARG PATCHELF_VERSION=0.13.1
-ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
@@ -45,7 +43,8 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
 # The last two lines contain dependencies for build of newer rpm
-RUN yum -y install \
+RUN yum install -y epel-release && \
+  yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
@@ -53,7 +52,7 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel \
+  texinfo wget policycoreutils-python libarchive-devel patchelf \
   && yum -y install centos-release-scl \
   && yum-config-manager --enable rhel-server-rhscl-7-rpms \
   && yum -y install devtoolset-11 \
@@ -199,21 +198,6 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
-
-# Patchelf. This needs a compiler that can handle C++11
-RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
-    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
-    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
-    && cd patchelf-${PATCHELF_VERSION}  \
-    && ./bootstrap.sh \
-    && ./configure \
-        CXXFLAGS='-static-libstdc++' \
-    && make -j$(nproc) \
-    && make install \
-    && cd - \
-    && rm -rf patchelf-${PATCHELF_VERSION} \
-    && rm patchelf-${PATCHELF_VERSION}.tar.gz
-
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
