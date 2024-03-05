@@ -11,6 +11,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN set -ex \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
+    clang-format \
     curl \
     default-jre \
     doxygen \
@@ -74,13 +75,6 @@ RUN curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyr
     && chmod +x /usr/local/bin/codecov
 
 # Other dependencies
-RUN set -ex \
-    # clang-format
-    && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main" >> /etc/apt/sources.list \
-    && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-    && apt-get update \
-    && apt-get -t llvm-toolchain-focal install -y --no-install-recommends \
-    clang-format
 
 # Python
 COPY requirements.txt /
