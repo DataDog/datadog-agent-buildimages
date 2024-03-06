@@ -47,7 +47,7 @@ ENV GCC_VERSION $GCC_VERSION
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
-# The last two lines contain dependencies for build of newer libarchive and rpm
+# The last two lines contain dependencies for build of newer rpm
 RUN yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent \
@@ -56,7 +56,7 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python \
+  texinfo wget policycoreutils-python libarchive-devel \
   && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
