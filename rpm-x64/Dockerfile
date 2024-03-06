@@ -70,8 +70,7 @@ RUN git config --global user.email "package@datadoghq.com" && \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
+RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
@@ -81,13 +80,12 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
+    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
 
 # Rebuild RPM database with the new rpm
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    mkdir -p /usr/local/var/lib/rpm \
+RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
-    && /usr/local/bin/rpm --rebuilddb; fi
+    && /usr/local/bin/rpm --rebuilddb
 
 # Git
 RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
