@@ -47,12 +47,6 @@ ENV GCC_VERSION $GCC_VERSION
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
-# Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
-    sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    rm /etc/yum.repos.d/CentOS-Base.repo; fi
-
 # The last two lines contain dependencies for build of newer libarchive and rpm
 RUN yum -y install \
   @development \
