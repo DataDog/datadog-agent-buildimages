@@ -56,12 +56,8 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget \
+  texinfo wget policycoreutils-python \
   && yum clean all
-
-RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \
-     yum -y install policycoreutils-python; \
-    fi
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
