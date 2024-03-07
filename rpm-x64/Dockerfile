@@ -47,13 +47,7 @@ ENV GCC_VERSION $GCC_VERSION
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
-# Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
-    sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    rm /etc/yum.repos.d/CentOS-Base.repo; fi
-
-# The last two lines contain dependencies for build of newer libarchive and rpm
+# The last two lines contain dependencies for build of newer rpm
 RUN yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent \
@@ -62,51 +56,13 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget \
+  texinfo wget policycoreutils-python libarchive-devel \
   && yum clean all
-
-RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \
-     yum -y install policycoreutils-python; \
-    fi
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
-
-# Autoconf
-# We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
-    && echo "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969  /tmp/autoconf-2.69.tar.gz" | sha256sum --check \
-    && cd /tmp \
-    && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
-    && cd autoconf-2.69 \
-    && ./configure \
-    && make -j$(nproc) && make install \
-    && cd / \
-    && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
-
-# New libarchive is required for the new rpm version
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
-    && echo "9584008f5afe3fc18351c40c2cb627193f1d7c92480dea0161f11f6b63e575d2  /tmp/libarchive-3.1.2-12.el7.src.rpm" | sha256sum --check \
-    && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
-    && rpm -Uvh --nodeps /root/rpmbuild/RPMS/x86_64/* \
-    && rm -rf /tmp/libarchive-3.1.2-12.el7.src.rpm /root/rpmbuild; fi
-
-# Build liblzma 5.2+ which supports parallel compression
-# We still install xz-devel as the distribution provided package
-# is required when rebuilding libarchive just above
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/xz-5.2.11.tar.xz https://github.com/tukaani-project/xz/releases/download/v5.2.11/xz-5.2.11.tar.xz \
-    && cd /tmp \
-    && echo "503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc  /tmp/xz-5.2.11.tar.xz" | sha256sum --check \
-    && tar -xf /tmp/xz-5.2.11.tar.xz \
-    && cd xz-5.2.11 \
-    && ./configure --prefix=/usr --libdir=/usr/lib64 --disable-symbol-versions \
-    && make -j$(nproc) && make install \
-    && rm -rf /tmp/xz-5.2.11; fi
 
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
@@ -114,8 +70,7 @@ RUN git config --global user.email "package@datadoghq.com" && \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
+RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
@@ -125,13 +80,12 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
+    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
 
 # Rebuild RPM database with the new rpm
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    mkdir -p /usr/local/var/lib/rpm \
+RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
-    && /usr/local/bin/rpm --rebuilddb; fi
+    && /usr/local/bin/rpm --rebuilddb
 
 # Git
 RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
