@@ -117,6 +117,21 @@ get_agent_version:
     - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID; fi
 
+build_ci_image:
+  stage: build
+  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  tags: ["arch:amd64"]
+  script: |-
+    docker buildx build \
+      --file ci/Dockerfile \
+      --platform linux/amd64 \
+      --tag $CI_REGISTRY_IMAGE/docker:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --push
+      .
+  rules:
+    - changes: ["ci/Dockerfile"]
+    - when: manual
+
 build_deb_x64:
   extends: [.build, .x64]
   variables:
