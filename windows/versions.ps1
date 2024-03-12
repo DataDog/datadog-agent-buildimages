@@ -5,12 +5,12 @@ $SoftwareTable = @{
     "WINGIT_SHA256"="b0442f1b8ea40b6f94ef9a611121d2c204f6aa7f29c54315d2ce59876c3d134e";
     "SEVENZIP_VERSION"="19.0.0";
     "SEVENZIP_SHA256"="0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e";
-    
+
     ## VisualStudio build tools for containers
     # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
     "VS2017BUILDTOOLS_VERSION"="16.11.34";
     "VS2017BUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/30682086-8872-4c7d-b066-0446b278141b/6cc639a464629b62ece2b4b786880bd213ee371d89ffc7717dc08b7f68644f38/vs_BuildTools.exe";
-    
+
     # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/30682086-8872-4c7d-b066-0446b278141b/6cc639a464629b62ece2b4b786880bd213ee371d89ffc7717dc08b7f68644f38/vs_BuildTools.exe'))
     "VS2017BUILDTOOLS_SHA256"="6CC639A464629B62ECE2B4B786880BD213EE371D89FFC7717DC08B7F68644F38";
 
@@ -18,7 +18,7 @@ $SoftwareTable = @{
     # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
-    
+
     "RUBY_VERSION"="2.6.6-1";
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
     "IBM_MQ_VERSION"="9.2.4.0";
@@ -46,8 +46,8 @@ $SoftwareTable = @{
     "NINJA_SHA256"="d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b";
     "GCLOUD_SDK_VERSION"="315.0.0";
     "GCLOUD_SDK_SHA256"="c9b283c9db4ed472111ccf32e6689fd467daf18ce3a77b8e601f9c646a83d86b";
-    "CACERTS_VERSION"="2023-12-12";
-    "CACERTS_HASH"="ccbdfc2fe1a0d7bbbb9cc15710271acf1bb1afe4c8f1725fe95c4c7733fcbe5a";
+    "CACERTS_VERSION"="2024-03-11";
+    "CACERTS_HASH"="1794c1d4f7055b7d02c2170337b61b48a2ef6c90d77e95444fd2596f4cac609f";
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";
