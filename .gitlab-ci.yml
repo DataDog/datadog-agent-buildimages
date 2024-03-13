@@ -25,6 +25,7 @@ variables:
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
+  CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
 
 #
 # Workflow rules
