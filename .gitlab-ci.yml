@@ -125,7 +125,8 @@ build_ci_image:
     docker buildx build \
       --file ci/Dockerfile \
       --platform linux/amd64 \
-      --tag $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/docker:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --label target=build \
+      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
       --push \
       .
   rules:
