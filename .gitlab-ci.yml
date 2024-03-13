@@ -26,6 +26,7 @@ variables:
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
   CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
+  CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
 
 #
 # Workflow rules
@@ -120,7 +121,7 @@ get_agent_version:
 
 build_ci_image:
   stage: build
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "${CI_IMAGE}"
   tags: ["arch:amd64"]
   script: |-
     docker buildx build \
@@ -362,7 +363,7 @@ build_windows_ltsc2022_x64:
     - !reference [.on_default_branch_push]
   needs: ["trigger_tests"]
   tags: ["arch:amd64"]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "${CI_IMAGE}"
   script:
     - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     # Tag as latest in internal registry
@@ -481,7 +482,7 @@ release_circleci_runner:
   rules:
     - !reference [.on_default_branch_push]
   tags: ["arch:amd64"]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "${CI_IMAGE}"
   script:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
