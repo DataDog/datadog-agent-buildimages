@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
-ENV CONDA_PATH /root/miniconda3
+ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # CONDA
