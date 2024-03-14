@@ -31,24 +31,20 @@ ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518
 ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
-ARG PATCHELF_VERSION=0.13.1
-ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
 # The last two lines contain dependencies for build of newer rpm
-RUN yum -y install \
+RUN yum install -y epel-release && \
+  yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent \
   pkgconfig \
@@ -56,8 +52,12 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel \
-  && yum clean all
+  texinfo wget policycoreutils-python libarchive-devel patchelf \
+  && yum -y install centos-release-scl \
+  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
+  && yum -y install devtoolset-11 \
+  && yum clean all \
+  && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
@@ -180,36 +180,6 @@ RUN rm -r /usr/src/kernels/* \
     && tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Update GCC: CentOS6 gcc-4.4 is a little too far behind what we use with the debian builder
-# Copy (and import through the repo file) the CERN signing key:
-# pub   1024D/1D1E034B 2005-06-27
-# uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
-COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
-      && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
-      && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
-
-# HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
-#       on the centos version; only required for centos 6 based images.
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
-      && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
-
-# Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
-# an old mirror copy.
-# Copy (and import through the repo file) the CERN signing key:
-# pub   rsa2048 2015-05-21 [SCEA] [expired: 2020-05-19]
-#       143E840EC0D0AD21E646CDD8FBCE6502094D442C
-# uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
-COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
-
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
-      && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
-      && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
-
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
@@ -228,28 +198,6 @@ RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/Ap
     && perlbrew switch "${PERL_VERSION}" \
     && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
     && rm perlbrew-install.sh
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
-
-# Patchelf. This needs a compiler that can handle C++11
-RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
-    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
-    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
-    && cd patchelf-${PATCHELF_VERSION}  \
-    && ./bootstrap.sh \
-    && ./configure CC=/opt/gcc-${GCC_VERSION}/bin/gcc \
-        CXX=/opt/gcc-${GCC_VERSION}/bin/g++ \
-        CXXFLAGS='-static-libstdc++' \
-    && make -j$(nproc) \
-    && make install \
-    && cd - \
-    && rm -rf patchelf-${PATCHELF_VERSION} \
-    && rm patchelf-${PATCHELF_VERSION}.tar.gz
-
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

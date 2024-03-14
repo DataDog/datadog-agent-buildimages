@@ -17,8 +17,6 @@ ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df1
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
@@ -28,7 +26,6 @@ ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
@@ -125,12 +122,6 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

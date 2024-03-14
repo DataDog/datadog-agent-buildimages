@@ -24,8 +24,6 @@ ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df1
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
@@ -38,7 +36,6 @@ ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a7
 ENV GOPATH /go
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -164,13 +161,6 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz ht
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
-
-# gcc
-COPY ./build-gcc.sh /build-gcc.sh
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
-    chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh ; fi
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"

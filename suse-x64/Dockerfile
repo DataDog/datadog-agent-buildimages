@@ -27,8 +27,6 @@ ARG RUST_VERSION=1.64.0
 ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
@@ -38,7 +36,6 @@ ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
@@ -56,23 +53,23 @@ RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=htt
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
-      bison bzip2 curl flex gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
+      bison bzip2 curl flex gawk gcc5 gcc5-c++ gdbm-devel gettext-tools git \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel \
-      xz-devel patchelf makeinfo wget
+      xz-devel patchelf makeinfo wget && \
+      zypper --non-interactive remove gcc && \
+      update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20 && \
+      update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-5 20 && \
+      update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
 # which could then make builds fail. We shouldn't be installing any packages
 # later on anyway.
 RUN zypper clean -a && rm -rf /etc/zypp/repos.d/*
-
-# Make gcc 4.8 the default one
-RUN ln -sfn /usr/bin/gcc-4.8 /usr/bin/gcc
-RUN ln -sfn /usr/bin/g++-4.8 /usr/bin/g++
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
@@ -154,12 +151,6 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
 
 # Upgrade binutils
 RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
