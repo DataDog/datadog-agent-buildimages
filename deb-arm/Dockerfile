@@ -24,17 +24,18 @@ ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df1
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG DPKG_VERSION=1.18.4
+ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
+ARG LIBLZMA_VERSION=5.2.11
+ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 
 # Environment
 ENV GOPATH /go
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -42,7 +43,7 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre flex
+    selinux-basics default-jre flex wget
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64
@@ -62,8 +63,8 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 # Patchelf
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
@@ -112,6 +113,38 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    LIB_DEST="arm-linux-gnueabihf"; \
+    else \
+    LIB_DEST="aarch64-linux-gnu"; \
+    fi && \
+    curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
+    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
+    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
+    && cd xz-${LIBLZMA_VERSION} \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
+    && rm -rf /xz-${LIBLZMA_VERSION}
+
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    LIB_DEST="arm-linux-gnueabihf"; \
+    EXTRA_CONFIGURE_OPTIONS="--host=arm-linux-gnueabihf --build=arm-linux-gnueabihf"; \
+    else \
+    LIB_DEST="aarch64-linux-gnu"; \
+    fi && \
+    curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
+    && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
+    && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
+    && cd "dpkg-${DPKG_VERSION}" \
+    && echo 1.18.4 > .dist-version \
+    && autoreconf -vfi \
+    && mkdir build && cd build \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
+    && make -j$(nproc) \
+    && make install
+
 # CMake
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
@@ -128,13 +161,6 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz ht
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
-
-# gcc
-COPY ./build-gcc.sh /build-gcc.sh
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
-    chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh ; fi
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
