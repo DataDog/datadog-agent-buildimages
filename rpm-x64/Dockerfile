@@ -26,9 +26,6 @@ ARG RUST_VERSION=1.64.0
 ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
-ARG PERLBREW_VERSION=0.96
-ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
-ARG PERL_VERSION=5.36.0
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG BUNDLER_VERSION=2.4.20
@@ -46,7 +43,7 @@ RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/r
 RUN yum install -y epel-release && \
   yum -y install \
   @development \
-  which perl-ExtUtils-MakeMaker perl-parent \
+  which perl-ExtUtils-MakeMaker perl-parent perl-core \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
@@ -188,16 +185,6 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
-
-# Perl >= 5.14 is needed to compile the libxcrypt project
-RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
-    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
-    && bash ./perlbrew-install.sh \
-    && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install "perl-${PERL_VERSION}" \
-    && perlbrew switch "${PERL_VERSION}" \
-    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
-    && rm perlbrew-install.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
