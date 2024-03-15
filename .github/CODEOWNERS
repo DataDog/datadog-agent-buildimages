@@ -30,19 +30,19 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 /system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-ci-experience
 
 # CircleCI image
-/circleci/                           @DataDog/agent-developer-tools @DataDog/agent-ci-experience
+/circleci/                          @DataDog/agent-developer-tools @DataDog/agent-ci-experience
 
 # Linux test & build images
 /deb-arm/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
 /deb-x64/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
-/rpm-arm64/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
-/rpm-armhf/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
+/rpm-arm64/                         @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
+/rpm-armhf/                         @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
 /rpm-x64/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
-/suse-x64/                           @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
+/suse-x64/                          @DataDog/agent-developer-tools @DataDog/agent-build-and-releases @DataDog/agent-ci-experience
 
 # Windows test & build images
 /windows/                           @DataDog/windows-agent @DataDog/agent-ci-experience
 
 # Docker images
-/docker-arm64/                           @DataDog/container-integrations @DataDog/agent-ci-experience
-/docker-x64/                           @DataDog/container-integrations @DataDog/agent-ci-experience
+/docker-arm64/                      @DataDog/container-integrations @DataDog/agent-ci-experience
+/docker-x64/                        @DataDog/container-integrations @DataDog/agent-ci-experience
