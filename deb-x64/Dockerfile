@@ -106,7 +106,8 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
     && mkdir build && cd build \
     && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var \
     && make -j$(nproc) \
-    && make install
+    && make install \
+    && rm -rf /dpkg-${DPKG_VERSION}.tar.bz2 /dpkg-${DPKG_VERSION}
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
