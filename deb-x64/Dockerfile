@@ -11,6 +11,7 @@ FROM ubuntu:14.04
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
@@ -24,10 +25,6 @@ ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
-ARG BISON_VERSION="3.8"
-ARG BISON_SHA256="d5d184d421aee15603939973a6b0f372f908edfb24c5bc740697497021ad9458"
-ARG BINUTILS_VERSION="2.39"
-ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG BUNDLER_VERSION=2.4.20
 ARG DPKG_VERSION=1.18.4
 ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
@@ -62,7 +59,7 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
-  selinux-basics libtool software-properties-common default-jre texinfo pxz wget
+  selinux-basics libtool software-properties-common default-jre texinfo pxz wget binutils-2.26
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
@@ -71,6 +68,9 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
     && apt-get install -y gcc-9 g++-9 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 0
+
+# Ensure we're using the newest binutils
+ENV PATH "/usr/lib/binutils-2.26/bin:$PATH"
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /curl-amd64 /usr/local/bin/curl
@@ -177,17 +177,12 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
     && rm kernel-4.9-headers-deb-x64.tgz
 
 # Go
-# Starting with go1.16, we need to build go from source, as the publicly distributed
-# go binaries are built with a linker (binutils) version that's higher than what we have in
-# the deb_x64 builder (the builder has 2.22, while go1.16 uses 2.26). Therefore, we need to
-# build go manually in the builder for it to work with the linker present in the builder image.
-# See: https://github.com/golang/go/issues/43996#issuecomment-782547917
-# TODO: investigate if we could use gvm to do this for us.
-COPY setup_go.sh /
-RUN ./setup_go.sh
-
-ENV PATH="/usr/local/go/bin:$PATH"
-ENV PATH="/go/bin:$PATH"
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile some python libs
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
