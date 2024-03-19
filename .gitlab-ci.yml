@@ -207,12 +207,6 @@ build_system-probe_arm64:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
 
-build_datadog-ci-uploader:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: datadog-ci-uploader/Dockerfile
-    IMAGE: datadog-ci-uploader
-
 build_dd_agent_testing:
   extends: [.build, .x64]
   variables:

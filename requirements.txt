@@ -5,6 +5,7 @@
 awscli
 boto3
 codeowners
+datadog-api-client
 docker
 docker-squash
 dulwich
