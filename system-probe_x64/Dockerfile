@@ -3,6 +3,7 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
@@ -41,14 +42,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         openssh-client \
         patch \
         pkg-config \
-        python \
-        python3-distro \
-        python3-distutils \
-        python3-netaddr \
-        python3-setuptools \
-        python3-pip \
-        python3-pyroute2 \
-        python3-dev \
         default-jre \
         wget \
         xz-utils
@@ -59,6 +52,15 @@ COPY .curlrc .wgetrc /root/
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
+ENV CONDA_PATH /root/miniforge3
+ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+
+# CONDA
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
+RUN ./setup_python.sh
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
   && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
@@ -78,7 +80,3 @@ RUN echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
-
-COPY requirements.txt /
-COPY /requirements /requirements
-RUN python3 -m pip install -r requirements.txt
