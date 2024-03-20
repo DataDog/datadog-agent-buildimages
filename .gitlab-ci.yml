@@ -16,8 +16,8 @@ variables:
   # Thus, to release buildimages, we do the same thing as what we do in the Agent: we run the Docker publish script in
   # the buildimage for the highest Windows version supported.
   # This image must use the same Windows version as the Windows version of the Gitlab runner used in .winrelease
-  WINDOWS_RELEASE_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/windows_ltsc2022_x64
-  SETUP_IMAGE_NAME: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29 # Image used during setup task, must contains pyinvoke
+  WINDOWS_RELEASE_IMAGE: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+  SETUP_IMAGE_NAME: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29 # Image used during setup task, must contains pyinvoke
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
@@ -25,6 +25,8 @@ variables:
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
+  CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
+  CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
 
 #
 # Workflow rules
@@ -82,17 +84,17 @@ get_agent_version:
   artifacts:
     reports:
       dotenv: version.env
-  tags: ["runner:main"]
+  tags: ["arch:amd64"]
 
 .x64:
   tags: ["runner:docker"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
     DD_TARGET_ARCH: x64
 
 .arm:
   tags: ["runner:docker-arm", "platform:arm64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
     DD_TARGET_ARCH: aarch64
 
@@ -120,6 +122,22 @@ get_agent_version:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA})
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
+
+build_ci_image:
+  stage: build
+  image: "${CI_IMAGE}"
+  tags: ["arch:amd64"]
+  script: |-
+    docker buildx build \
+      --file ci/Dockerfile \
+      --platform linux/amd64 \
+      --label target=build \
+      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --push \
+      .
+  rules:
+    - changes: ["ci/Dockerfile"]
+    - when: manual
 
 build_deb_x64:
   extends: [.build, .x64]
@@ -188,12 +206,6 @@ build_system-probe_arm64:
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
-
-build_datadog-ci-uploader:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: datadog-ci-uploader/Dockerfile
-    IMAGE: datadog-ci-uploader
 
 build_dd_agent_testing:
   extends: [.build, .x64]
@@ -291,7 +303,7 @@ on_success:
     - !reference [.on_push]
   needs: ["trigger_tests"]
   tags: ["arch:amd64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   when: on_success
   script:
     - echo success > output.pipeline
@@ -305,7 +317,7 @@ wait_for_tests:
   rules:
     - !reference [.on_push]
   tags: ["arch:amd64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
+  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
   when: always
   script:
     - cat output.pipeline
@@ -348,21 +360,17 @@ build_windows_ltsc2022_x64:
   rules:
     - !reference [.on_default_branch_push]
   needs: ["trigger_tests"]
-  tags: ["runner:docker"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
+  tags: ["arch:amd64"]
+  image: "${CI_IMAGE}"
   script:
     - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker pull $SRC_IMAGE
-    - docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:latest
+    # Tag as latest in internal registry
+    - crane tag $SRC_IMAGE latest
+    # Copy to public dockerhub registry and also tag as latest
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker push datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
-    - docker push datadog/agent-buildimages-$IMAGE:latest
-  after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} datadog/agent-buildimages-$IMAGE:latest
+    - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - crane tag datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} latest
 
 .winrelease:
   stage: release
@@ -471,17 +479,14 @@ release_circleci_runner:
     IMAGE: circleci-runner
   rules:
     - !reference [.on_default_branch_push]
-  tags: ["runner:docker"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker-notary:0.6.1
+  tags: ["arch:amd64"]
+  image: "${CI_IMAGE}"
   script:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker pull $SRC_IMAGE
-    - docker tag $SRC_IMAGE datadog/agent-buildimages-$IMAGE:latest
-    - docker push datadog/agent-buildimages-$IMAGE:latest
-  after_script:
-    - docker rmi datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} datadog/agent-buildimages-$IMAGE:latest
+    # Tag as latest in dockerhub registry
+    - crane tag $SRC_IMAGE latest
 
 dev_release_circleci_runner_gcr:
   stage: release

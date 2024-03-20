@@ -111,4 +111,6 @@ fi
 # Add python3's invoke to the PATH even when ddpy3 is not active, since we want to use python3 invoke to run python2 tests
 ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
 
+conda clean -a
+
 echo "conda activate ddpy3" >> /root/.bashrc

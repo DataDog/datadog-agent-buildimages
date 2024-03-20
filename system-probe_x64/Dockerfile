@@ -4,6 +4,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG DD_TARGET_ARCH=x64
+ARG CI_UPLOADER_VERSION=2.30.1
+ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
@@ -44,6 +46,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         wget \
         xz-utils
 
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
+
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
 ENV CONDA_PATH /root/miniforge3
@@ -63,13 +69,14 @@ RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.g
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+    echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+    chmod +x /usr/local/bin/datadog-ci
+
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
 RUN echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp/clang.tar.xz" | sha256sum --check
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
-
-# External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
