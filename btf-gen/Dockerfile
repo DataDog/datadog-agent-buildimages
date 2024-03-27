@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DD_TARGET_ARCH=x64
