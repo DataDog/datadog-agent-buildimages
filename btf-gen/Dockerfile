@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -24,8 +24,6 @@ COPY .curlrc .wgetrc /root/
 RUN git clone --recurse-submodules https://github.com/brycekahle/bpftool.git
 WORKDIR bpftool
 RUN git reset --hard 1c25a06e38e9ff848ba66622d08a0147ed9ddc2e
-COPY btf-gen/Makefile.patch ./
-RUN git apply Makefile.patch
 
 RUN make -C src/ V=1 install
 
