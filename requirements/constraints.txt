@@ -16,6 +16,7 @@ invoke==2.2.0
 isort==5.10.1
 jira==3.5.2
 packaging==21.3
+python-gitlab==4.4.0
 reno==3.5.0
 requests==2.31.0
 semver==2.10.0
