@@ -31,7 +31,6 @@ ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG GETTEXT_VERSION=0.19.8
 ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 ARG LIBLZMA_VERSION=5.2.11
-ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
@@ -94,14 +93,13 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && rm -rf "gettext-${GETTEXT_VERSION}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
-    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
-    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
-    && cd xz-${LIBLZMA_VERSION} \
+RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+    && cd xz \
+    && autoreconf -vif \
     && ./configure --prefix=/usr/ \
     && make -j$(nproc) && make install \
     && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
-    && rm -rf /xz-${LIBLZMA_VERSION}
+    && rm -rf /xz
 
 RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
     && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
