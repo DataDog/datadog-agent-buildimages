@@ -92,6 +92,21 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && cd / \
     && rm -rf "gettext-${GETTEXT_VERSION}"
 
+# Git
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
+    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
+    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
+    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
+    && cd git-${GIT_VERSION} \
+    && make -j$(nproc) prefix=/usr/local all \
+    && make prefix=/usr/local install \
+    && cd .. \
+    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
+
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
+
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
     && cd xz \
@@ -117,20 +132,6 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
     echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci
-
-# Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
-    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
-    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
-    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
-    && cd git-${GIT_VERSION} \
-    && make -j$(nproc) prefix=/usr/local all \
-    && make prefix=/usr/local install \
-    && cd .. \
-    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
-
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
