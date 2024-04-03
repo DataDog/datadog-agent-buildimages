@@ -31,7 +31,6 @@ ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG GETTEXT_VERSION=0.19.8
 ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 ARG LIBLZMA_VERSION=5.2.11
-ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
@@ -93,15 +92,29 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && cd / \
     && rm -rf "gettext-${GETTEXT_VERSION}"
 
+# Git
+RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
+    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
+    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
+    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
+    && cd git-${GIT_VERSION} \
+    && make -j$(nproc) prefix=/usr/local all \
+    && make prefix=/usr/local install \
+    && cd .. \
+    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
+
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
+
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
-    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
-    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
-    && cd xz-${LIBLZMA_VERSION} \
+RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+    && cd xz \
+    && autoreconf -vif \
     && ./configure --prefix=/usr/ \
     && make -j$(nproc) && make install \
     && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
-    && rm -rf /xz-${LIBLZMA_VERSION}
+    && rm -rf /xz
 
 RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
     && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
@@ -119,20 +132,6 @@ RUN curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/d
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
     echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci
-
-# Git
-RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
-    && echo "${GIT_SHA256}  git-${GIT_VERSION}.tar.gz" | sha256sum --check \
-    # --no-same-owner: git tarball has a file with UID 110493 which makes pulling this image fail, because we use docker user namespacing and we can't have >65K UIDs. \
-    && tar xzf git-${GIT_VERSION}.tar.gz --no-same-owner \
-    && cd git-${GIT_VERSION} \
-    && make -j$(nproc) prefix=/usr/local all \
-    && make prefix=/usr/local install \
-    && cd .. \
-    && rm -rf git-${GIT_VERSION} git-${GIT_VERSION}.tar.gz
-
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
 
 # IBM MQ
 RUN mkdir -p /opt/mqm \
