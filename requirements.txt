@@ -11,9 +11,8 @@ docker-squash
 dulwich
 invoke
 packaging
-python-gitlab
 reno
 requests
-semver
 toml
 urllib3
+semver
