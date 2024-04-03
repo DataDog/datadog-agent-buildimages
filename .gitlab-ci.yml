@@ -138,6 +138,7 @@ build_ci_image:
   rules:
     - changes: ["ci/Dockerfile"]
     - when: manual
+      allow_failure: true
 
 build_deb_x64:
   extends: [.build, .x64]
