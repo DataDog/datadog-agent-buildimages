@@ -136,7 +136,10 @@ build_ci_image:
       --push \
       .
   rules:
-    - changes: ["ci/Dockerfile"]
+    - changes:
+        paths:
+          - "ci/Dockerfile"
+        compare_to: 'main'
     - when: manual
       allow_failure: true
 
