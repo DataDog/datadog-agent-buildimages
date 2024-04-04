@@ -125,13 +125,13 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-           export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
-        && export RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
-        && export RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
+               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
     ; else if [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
-           export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
-        && export RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
-        && export RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
+               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
     ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
