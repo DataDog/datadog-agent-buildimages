@@ -38,7 +38,6 @@ ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284
 ARG DPKG_VERSION=1.18.4
 ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG LIBLZMA_VERSION=5.2.11
-ARG LIBLZMA_SHA256=503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc
 
 # Environment
 ENV GOPATH /go
@@ -142,14 +141,13 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     else \
     LIB_DEST="aarch64-linux-gnu"; \
     fi && \
-    curl -LO https://github.com/tukaani-project/xz/releases/download/v${LIBLZMA_VERSION}/xz-${LIBLZMA_VERSION}.tar.xz \
-    && echo "${LIBLZMA_SHA256} /xz-5.2.11.tar.xz" | sha256sum --check \
-    && tar -xf /xz-${LIBLZMA_VERSION}.tar.xz \
-    && cd xz-${LIBLZMA_VERSION} \
+    git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+    && cd xz \
+    && autoreconf -vif \
     && ./configure --prefix=/usr/ \
     && make -j$(nproc) && make install \
     && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
-    && rm -rf /xz-${LIBLZMA_VERSION}
+    && rm -rf /xz
 
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     LIB_DEST="arm-linux-gnueabihf"; \
