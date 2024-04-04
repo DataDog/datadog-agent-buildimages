@@ -12,6 +12,11 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARMV6L
+ARG RUST_VERSION=1.76.0
+ARG RUSTC_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
+ARG RUSTUP_VERSION=1.26.0
+ARG RUSTUP_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
+ARG RUSTUP_ARCH="armv7-unknown-linux-gnueabihf"
 ARG DD_TARGET_ARCH=armhf
 ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.10.1
@@ -118,6 +123,17 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+
+# Rust is needed to compile the SDS library
+
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

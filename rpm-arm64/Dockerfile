@@ -12,6 +12,11 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG RUST_VERSION=1.76.0
+ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_VERSION=1.26.0
+ARG RUSTUP_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_ARCH="aarch64-unknown-linux-gnu"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -105,6 +110,15 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.t
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Rust is needed to compile the SDS library
+RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # CMake
 RUN set -ex \
