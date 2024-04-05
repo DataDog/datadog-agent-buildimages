@@ -25,6 +25,17 @@ ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
 ARG BUNDLER_VERSION=2.4.20
+ARG RUSTUP_VERSION=1.26.0
+ARG RUST_VERSION=1.76.0
+
+ARG RUSTC_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_ARCH_AARCH64="aarch64-unknown-linux-gnu"
+
+ARG RUSTC_SHA256_ARMHF="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
+ARG RUSTUP_SHA256_ARMHF="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
+ARG RUSTUP_ARCH_ARMHF="armv7-unknown-linux-gnueabihf"
+
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 ARG DPKG_VERSION=1.18.4
@@ -111,6 +122,23 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Rust is needed to compile the SDS library
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
+               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
+    ; else if [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
+               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
+    ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init; fi
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
