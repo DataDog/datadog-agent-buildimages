@@ -44,6 +44,9 @@ ARG LIBLZMA_VERSION=5.2.11
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
+ARG MS_GO_VERSION=1.21.9
+ARG MS_GO_SHA256="03512c52e5f41c75306963ae572a709407f74fba83ede39085ad2c844edd8e1f"
+
 # Environment
 ENV GOPATH /go
 ENV CONDA_PATH /root/miniforge3
@@ -127,8 +130,8 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-    && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
+    curl -sL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MS_GO_VERSION}.linux-arm64.tar.gz \
+    && echo "$MS_GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 

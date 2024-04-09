@@ -30,6 +30,9 @@ ARG BUNDLER_VERSION=2.4.20
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA="4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38"
 
+ARG MS_GO_VERSION=1.21.9
+ARG MS_GO_SHA256="498b98e793f0d958652bd0f2e369267e80cea9aca99c0c011ce4c402460e35d1"
+
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
@@ -142,8 +145,8 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+RUN curl -sL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MS_GO_VERSION}.linux-amd64.tar.gz \
+  && echo "$MS_GO_SHA256 /tmp/golang.tar.gz" | sha256sum --check \
   && tar -C /usr/local -xzf /tmp/golang.tar.gz \
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
