@@ -30,6 +30,7 @@ ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e
 ARG BUNDLER_VERSION=2.4.20
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG LIBLZMA_VERSION=5.2.11
 
 # Environment
 ENV GOPATH /go
@@ -165,6 +166,14 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 # Use our updated binutils version
 ENV PATH="/usr/local/binutils/bin:$PATH"
 
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+    && cd xz \
+    && autoreconf -vif \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
+    && rm -rf /xz
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \
