@@ -560,4 +560,4 @@ notify-on-failure:
     if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
       MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)"
     fi
-    postmessage "#agent-platform" "$MESSAGE_TEXT"
+    postmessage "#agent-platform-ops" "$MESSAGE_TEXT"
