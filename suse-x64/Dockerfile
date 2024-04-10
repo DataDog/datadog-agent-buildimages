@@ -30,6 +30,9 @@ ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e
 ARG BUNDLER_VERSION=2.4.20
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG LIBLZMA_VERSION=5.2.11
+ARG GETTEXT_VERSION=0.19.8
+ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 
 # Environment
 ENV GOPATH /go
@@ -59,7 +62,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel \
-      xz-devel patchelf makeinfo wget && \
+      patchelf makeinfo wget && \
       zypper --non-interactive remove gcc && \
       update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20 && \
       update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-5 20 && \
@@ -165,6 +168,22 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 # Use our updated binutils version
 ENV PATH="/usr/local/binutils/bin:$PATH"
 
+# xz needs gettext 0.19.6 or newer
+RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+    && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
+    && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
+    && cd "gettext-${GETTEXT_VERSION}" \
+    && ./configure --prefix=/usr && make -j$(nproc) && make install \
+    && cd / \
+    && rm -rf "gettext-${GETTEXT_VERSION}*"
+
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
+    && cd xz \
+    && autoreconf -vif \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && rm -rf /xz
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \
@@ -172,17 +191,15 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
     && cd rpm-4.14.3/ \
     && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
-    && make \
+    && make -j$(nproc) \
     && make install \
-    && ldconfig
+    && ldconfig \
+    && rm -rf /tmp/rpm-4.14.3*
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
-
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

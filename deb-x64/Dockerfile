@@ -90,7 +90,7 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && cd "gettext-${GETTEXT_VERSION}" \
     && ./configure --prefix=/usr && make -j$(nproc) && make install \
     && cd / \
-    && rm -rf "gettext-${GETTEXT_VERSION}"
+    && rm -rf "gettext-${GETTEXT_VERSION}*"
 
 # Git
 RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz \
