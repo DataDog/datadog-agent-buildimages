@@ -175,7 +175,7 @@ RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && cd "gettext-${GETTEXT_VERSION}" \
     && ./configure --prefix=/usr && make -j$(nproc) && make install \
     && cd / \
-    && rm -rf "gettext-${GETTEXT_VERSION}"
+    && rm -rf "gettext-${GETTEXT_VERSION}*"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
@@ -194,7 +194,7 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && make -j$(nproc) \
     && make install \
     && ldconfig \
-    && rm -rf /tmp/rpm-4.14.3
+    && rm -rf /tmp/rpm-4.14.3*
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
