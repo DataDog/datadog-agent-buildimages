@@ -191,9 +191,6 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
 
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
-
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 
