@@ -181,9 +181,10 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
     && cd rpm-4.14.3/ \
     && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
-    && make \
+    && make -j$(nproc) \
     && make install \
-    && ldconfig
+    && ldconfig \
+    && rm -rf /tmp/rpm-4.14.3
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
