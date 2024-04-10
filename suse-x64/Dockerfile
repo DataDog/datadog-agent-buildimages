@@ -183,7 +183,6 @@ RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
     && autoreconf -vif \
     && ./configure --prefix=/usr/ \
     && make -j$(nproc) && make install \
-    && cp /usr/lib/liblzma.so* /lib/x86_64-linux-gnu/ \
     && rm -rf /xz
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
