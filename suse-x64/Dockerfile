@@ -60,7 +60,7 @@ RUN zypper clean -a && zypper --non-interactive refresh && \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel \
-      xz-devel patchelf makeinfo wget && \
+      patchelf makeinfo wget && \
       zypper --non-interactive remove gcc && \
       update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20 && \
       update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-5 20 && \
@@ -167,7 +167,7 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 ENV PATH="/usr/local/binutils/bin:$PATH"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
     && cd xz \
     && autoreconf -vif \
     && ./configure --prefix=/usr/ \
