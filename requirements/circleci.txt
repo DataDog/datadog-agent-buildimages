@@ -7,5 +7,6 @@ flake8-comprehensions
 flake8-unused-arguments
 flake8-use-fstring
 isort
+ruff
 vulture
 wheel
