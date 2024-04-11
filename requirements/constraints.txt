@@ -19,6 +19,7 @@ packaging==21.3
 python-gitlab==4.4.0
 reno==3.5.0
 requests==2.31.0
+ruff==0.3.5
 semver==2.10.0
 toml==0.10.2
 # urllib3 major version 2, released on May 4th 2023, breaks botocore used
