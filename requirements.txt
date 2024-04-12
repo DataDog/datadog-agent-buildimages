@@ -14,6 +14,7 @@ packaging
 python-gitlab
 reno
 requests
+ruff
 semver
 toml
 urllib3
