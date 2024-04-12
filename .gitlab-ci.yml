@@ -162,13 +162,6 @@ build_suse_x64:
     DOCKERFILE: suse-x64/Dockerfile
     IMAGE: suse_x64
 
-build_rpm_x64_testing:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: rpm-x64/Dockerfile
-    IMAGE: rpm_x64_testing
-    BASE_IMAGE: centos:7
-
 build_deb_arm64:
   extends: [.build, .arm]
   variables:
