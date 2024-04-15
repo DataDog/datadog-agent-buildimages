@@ -7,8 +7,10 @@ ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
+
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
-RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
+RUN echo "deb https://archive.debian.org/debian/ buster-backports main" | tee -a /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
