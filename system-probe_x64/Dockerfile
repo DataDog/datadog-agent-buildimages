@@ -4,8 +4,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
+
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
-RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
+RUN echo "deb https://archive.debian.org/debian/ buster-backports main" | tee -a /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
