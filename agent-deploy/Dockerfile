@@ -66,7 +66,7 @@ RUN python2 -m pip install \
     pexpect==3.2
 
 # Python 3 deps
-COPY ./requirements.txt /requirements.txt
+COPY ./agent-deploy/requirements.txt /requirements.txt
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1 \
  && update-alternatives --config python3 \
  && python3 -m pip install pip \
