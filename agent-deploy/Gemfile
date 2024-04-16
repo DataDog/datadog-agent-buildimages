@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+ruby "2.4.10"
+
+gem "deb-s3", "0.9.1"
