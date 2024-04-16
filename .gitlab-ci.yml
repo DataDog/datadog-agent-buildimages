@@ -270,15 +270,6 @@ build_gitlab_agent_deploy:
     IMAGE: gitlab_agent_deploy
     BASE_IMAGE: registry.ddbuild.io/images/mirror/ubuntu:18.04
     DD_TARGET_ARCH: x64
-  rules:
-    - if: $CI_COMMIT_TAG != null
-      when: never
-    - <<: *if_not_main_nor_release_branch
-      variables:
-        # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
-        SUFFIX: "_test_only"
-    # Ensure we still match an if rule, otherwise the job won't be added to the pipeline
-    - <<: *if_main_or_release_branch
   script:
       - echo docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
       - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
