@@ -1,12 +1,5 @@
 -c constraints.txt
 
-black
-flake8
-flake8-bugbear
-flake8-comprehensions
-flake8-unused-arguments
-flake8-use-fstring
-isort
 ruff
 vulture
 wheel
