@@ -11,6 +11,7 @@ docker-squash
 dulwich
 invoke
 packaging
+parameterized
 python-gitlab
 reno
 requests
