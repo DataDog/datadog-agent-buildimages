@@ -259,33 +259,32 @@ build_circleci_runner:
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
 
-# TODO
-# build_gitlab_agent_deploy_old_build:
-#   extends: [.build, .x64]
-#   variables:
-#     DOCKERFILE: agent-deploy/Dockerfile
-#     IMAGE: gitlab_agent_deploy
+build_gitlab_agent_deploy:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: agent-deploy/Dockerfile
+    IMAGE: gitlab_agent_deploy
 
-build_gitlab_agent_deploy_new_build:
-  stage: build
-  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
-  tags: ["arch:amd64"]
-  # TODO
-  # rules:
-  #   - changes:
-  #       paths:
-  #         - "agent-deploy/Dockerfile"
-  #       compare_to: 'main'
-  #   - when: manual
-  #     allow_failure: true
-  script: |-
-    docker buildx build \
-      --file agent-deploy/Dockerfile \
-      --platform linux/amd64 \
-      --label target=build \
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
-      --push \
-      .
+# build_gitlab_agent_deploy_new_build:
+#   stage: build
+#   image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
+#   tags: ["arch:amd64"]
+#   # TODO
+#   # rules:
+#   #   - changes:
+#   #       paths:
+#   #         - "agent-deploy/Dockerfile"
+#   #       compare_to: 'main'
+#   #   - when: manual
+#   #     allow_failure: true
+#   script: |-
+#     docker buildx build \
+#       --file agent-deploy/Dockerfile \
+#       --platform linux/amd64 \
+#       --label target=build \
+#       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+#       --push \
+#       .
 
 trigger_build_kernels:
   stage: trigger_build_kernels

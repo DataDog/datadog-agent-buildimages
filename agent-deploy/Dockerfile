@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y \
     python2.7-dev \
     python3-distutils \
     python3-pip \
-    python3.8 \
+    python3.9 \
     shellcheck \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -67,7 +67,7 @@ RUN python2 -m pip install \
 
 # Python 3 deps
 COPY ./agent-deploy/requirements.txt /requirements.txt
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1 \
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 \
  && update-alternatives --config python3 \
  && python3 -m pip install pip \
  && python3 -m pip install --upgrade pip \
