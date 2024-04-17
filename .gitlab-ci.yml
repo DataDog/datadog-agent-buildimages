@@ -259,37 +259,33 @@ build_circleci_runner:
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
 
-build_gitlab_agent_deploy:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: agent-deploy/Dockerfile
-    IMAGE: gitlab_agent_deploy
-
-# # TODO : Use .build / .x64 + send package size metrics
-# build_gitlab_agent_deploy:
-#   stage: build
-#   tags: ["runner:docker"]
-#   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.03.1
+# TODO
+# build_gitlab_agent_deploy_old_build:
+#   extends: [.build, .x64]
 #   variables:
-#     SUFFIX: ""
 #     DOCKERFILE: agent-deploy/Dockerfile
 #     IMAGE: gitlab_agent_deploy
-#     BASE_IMAGE: registry.ddbuild.io/images/mirror/ubuntu:18.04
-#     DD_TARGET_ARCH: x64
-#   script:
-#       - tag=datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-#       - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag $tag --file $DOCKERFILE .
-#       - docker push $tag
 
-
-  # script: |
-  #   # docker build $BUILDARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}${SUFFIX} --file $DOCKERFILE .
-  #   docker build $BUILDARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}${SUFFIX} --file $DOCKERFILE .
-  #   docker push datadog/agent-buildimages-test_gitlab_agent_deploy${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-  #   # if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-  #     # docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHA:0:7}${SUFFIX}
-  #     # docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-  #   # fi
+build_gitlab_agent_deploy_new_build:
+  stage: build
+  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
+  tags: ["arch:amd64"]
+  # TODO
+  # rules:
+  #   - changes:
+  #       paths:
+  #         - "agent-deploy/Dockerfile"
+  #       compare_to: 'main'
+  #   - when: manual
+  #     allow_failure: true
+  script: |-
+    docker buildx build \
+      --file agent-deploy/Dockerfile \
+      --platform linux/amd64 \
+      --label target=build \
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --push \
+      .
 
 trigger_build_kernels:
   stage: trigger_build_kernels
