@@ -1,6 +1,6 @@
 setuptools==42.0.2
 virtualenv==16.7.9
--r ./requirements-buildimages.txt
+-r ./requirements.txt
 azure-mgmt-resource==23.0.1
 azure-identity==1.14.1
 PyGithub==1.59.1
