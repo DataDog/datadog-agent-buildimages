@@ -259,6 +259,12 @@ build_circleci_runner:
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
 
+build_gitlab_agent_deploy:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: agent-deploy/Dockerfile
+    IMAGE: gitlab_agent_deploy
+
 trigger_build_kernels:
   stage: trigger_build_kernels
   needs:

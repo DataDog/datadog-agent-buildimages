@@ -1,4 +1,7 @@
+PyGithub==1.59.1
 awscli==1.29.45
+azure-identity==1.14.1
+azure-mgmt-resource==23.0.1
 boto3==1.28.45
 codeowners==0.6.0
 datadog-api-client==2.16.0
@@ -15,9 +18,11 @@ reno==3.5.0
 requests==2.31.0
 ruff==0.3.5
 semver==2.10.0
+setuptools==42.0.2
 toml==0.10.2
 # urllib3 major version 2, released on May 4th 2023, breaks botocore used
 # by awscli (removed DEFAULT_CIPHERS list from urllib3.util.ssl_)
 urllib3==1.26.15
+virtualenv==16.7.9
 vulture==2.6
 wheel==0.40.0
