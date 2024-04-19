@@ -78,6 +78,32 @@ default:
       - unknown_failure
       - api_failure
 
+# Change path for "dynamic" generation of the pipeline
+.on_config_files: &on_config_files
+  changes:
+    paths:
+      - .awsconfig
+      - .curlrc
+      - .wgetrc
+      - .gitlab-ci.yml
+      - tasks/**
+    compare_to: 'main'
+
+.on_python_setup: &on_python_setup
+  changes:
+    paths:
+      - python-packages-versions.txt
+      - requirements-py2.txt
+      - requirements.txt
+      - requirements/constraints.txt
+      - setup_python.sh
+    compare_to: 'main'
+
+.manual: &manual
+    - when: manual
+      allow_failure: true
+
+# Jobs definitions
 get_agent_version:
   stage: setup
   image: $SETUP_IMAGE_NAME
@@ -180,17 +206,38 @@ build_ci_image:
         paths:
           - "ci/Dockerfile"
         compare_to: 'main'
-    - when: manual
-      allow_failure: true
+    - <<: *manual
 
 build_deb_x64:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - entrypoint.sh
+          - rvm/**
+          - deb-x64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
 
 build_rpm_x64:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
+          - rvm/**
+          - entrypoint.sh
+          - rpm-headers/**
+          - rpm-x64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
@@ -198,6 +245,16 @@ build_rpm_x64:
 
 build_deb_arm64:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - entrypoint.sh
+          - rmv/**
+          - deb-arm/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
@@ -205,6 +262,16 @@ build_deb_arm64:
 
 build_deb_armhf:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - entrypoint.sh
+          - rvm/**
+          - deb-arm/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
@@ -213,6 +280,17 @@ build_deb_armhf:
 
 build_rpm_arm64:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
+          - rvm/**
+          - entrypoint.sh
+          - rpm-arm64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
@@ -220,6 +298,17 @@ build_rpm_arm64:
 
 build_rpm_armhf:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
+          - rvm/**
+          - entrypoint.sh
+          - rpm-armhf/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: rpm-armhf/Dockerfile
     IMAGE: rpm_armhf
@@ -228,18 +317,43 @@ build_rpm_armhf:
 
 build_system-probe_x64:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - system-probe_x64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: system-probe_x64/Dockerfile
     IMAGE: system-probe_x64
 
 build_system-probe_arm64:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - <<: *on_python_setup
+    - changes:
+        paths:
+          - system-probe_arm64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
 
 build_dd_agent_testing:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements.txt
+          - requirements/constraints.txt
+          - dd-agent-testing/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: dd-agent-testing/Dockerfile
     IMAGE: dd-agent-testing
@@ -258,24 +372,59 @@ build_linux_glibc_2_23_arm64:
 
 build_docker_arm64:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements.txt
+          - requirements/constraints.txt
+          - docker-arm64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: docker-arm64/Dockerfile
     IMAGE: docker_arm64
 
 build_docker_x64:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements.txt
+          - requirements/constraints.txt
+          - docker-x64/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
 
 build_btf_gen:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements/btf_gen.txt
+          - requirements/constraints.txt
+          - btf-gen/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
 
 build_kernel_version_testing_x64:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - entrypoint-sysprobe.sh
+          - kernel-version-testing/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
@@ -283,6 +432,14 @@ build_kernel_version_testing_x64:
 
 build_kernel_version_testing_arm64:
   extends: [.build, .arm]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - entrypoint-sysprobe.sh
+          - kernel-version-testing/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
@@ -293,6 +450,15 @@ build_circleci_runner:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements.txt
+          - requirements/circleci.txt
+          - requirements/constraints.txt
+          - circleci/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: circleci/Dockerfile
     IMAGE: circleci-runner
@@ -318,6 +484,17 @@ build_circleci_runner:
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - requirements.txt
+          - requirements/agent-deploy.txt
+          - requirements/constraints.txt
+          - rvm/**
+          - agent-deploy/**
+        compare_to: 'main'
+    - <<: *manual
   variables:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
@@ -408,6 +585,18 @@ push_to_datadog_agent:
 
 build_windows_1809_x64:
   extends: .winbuild
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - go.env
+          - requirements.txt
+          - requirements-py2.txt
+          - requirements/constraints.txt
+          - python-packages-versions.txt
+          - windows/**
+        compare_to: 'main'
+    - <<: *manual
   tags: ["runner:windows-docker", "windowsversion:1809"]
   variables:
     DOCKERFILE: windows/Dockerfile
@@ -416,6 +605,18 @@ build_windows_1809_x64:
 
 build_windows_ltsc2022_x64:
   extends: .winbuild
+  rules:
+    - <<: *on_config_files
+    - changes:
+        paths:
+          - go.env
+          - requirements.txt
+          - requirements-py2.txt
+          - requirements/constraints.txt
+          - python-packages-versions.txt
+          - windows/**
+        compare_to: 'main'
+    - <<: *manual
   tags: ["runner:windows-docker", "windowsversion:2022"]
   variables:
     DOCKERFILE: windows/Dockerfile
