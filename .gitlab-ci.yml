@@ -123,6 +123,12 @@ get_agent_version:
     - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA})
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
 
+build_btf_gen:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: btf-gen/Dockerfile
+    IMAGE: btf-gen
+
 build_ci_image:
   stage: build
   image: "${CI_IMAGE}"
@@ -143,105 +149,6 @@ build_ci_image:
     - when: manual
       allow_failure: true
 
-build_deb_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: deb-x64/Dockerfile
-    IMAGE: deb_x64
-
-build_rpm_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: rpm-x64/Dockerfile
-    IMAGE: rpm_x64
-    BASE_IMAGE: centos:7
-
-build_suse_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: suse-x64/Dockerfile
-    IMAGE: suse_x64
-
-build_deb_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_arm64
-    BASE_IMAGE: arm64v8/ubuntu:16.04
-
-build_deb_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_armhf
-    BASE_IMAGE: arm32v7/ubuntu:16.04
-    DD_TARGET_ARCH: armhf
-
-build_rpm_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-arm64/Dockerfile
-    IMAGE: rpm_arm64
-    BASE_IMAGE: amazonlinux:2.0.20181114
-
-build_rpm_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-armhf/Dockerfile
-    IMAGE: rpm_armhf
-    BASE_IMAGE: arm32v7/centos:7
-    DD_TARGET_ARCH: armhf
-
-build_system-probe_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
-    IMAGE: system-probe_x64
-
-build_system-probe_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
-    IMAGE: system-probe_arm64
-
-build_dd_agent_testing:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: dd-agent-testing/Dockerfile
-    IMAGE: dd-agent-testing
-
-build_docker_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: docker-arm64/Dockerfile
-    IMAGE: docker_arm64
-
-build_docker_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: docker-x64/Dockerfile
-    IMAGE: docker_x64
-
-build_btf_gen:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: btf-gen/Dockerfile
-    IMAGE: btf-gen
-
-build_kernel_version_testing_x64:
-  extends: [.build, .x64]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-    IMAGE: kernel-version-testing_x64
-
-build_kernel_version_testing_arm64:
-  extends: [.build, .arm]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-    IMAGE: kernel-version-testing_arm64
-
 build_circleci_runner:
   extends: [.x64]
   stage: build
@@ -259,11 +166,137 @@ build_circleci_runner:
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
 
+build_dd_agent_testing:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: dd-agent-testing/Dockerfile
+    IMAGE: dd-agent-testing
+
+build_deb_arm64:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: deb-arm/Dockerfile
+    IMAGE: deb_arm64
+    BASE_IMAGE: arm64v8/ubuntu:16.04
+
+build_deb_armhf:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: deb-arm/Dockerfile
+    IMAGE: deb_armhf
+    BASE_IMAGE: arm32v7/ubuntu:16.04
+    DD_TARGET_ARCH: armhf
+
+build_deb_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: deb-x64/Dockerfile
+    IMAGE: deb_x64
+
+build_docker_arm64:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: docker-arm64/Dockerfile
+    IMAGE: docker_arm64
+
+build_docker_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: docker-x64/Dockerfile
+    IMAGE: docker_x64
+
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
   variables:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
+
+build_kernel_version_testing_arm64:
+  extends: [.build, .arm]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
+
+build_kernel_version_testing_x64:
+  extends: [.build, .x64]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_rpm_arm64:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: rpm-arm64/Dockerfile
+    IMAGE: rpm_arm64
+    BASE_IMAGE: amazonlinux:2.0.20181114
+
+build_rpm_armhf:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: rpm-armhf/Dockerfile
+    IMAGE: rpm_armhf
+    BASE_IMAGE: arm32v7/centos:7
+    DD_TARGET_ARCH: armhf
+
+build_rpm_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: rpm-x64/Dockerfile
+    IMAGE: rpm_x64
+    BASE_IMAGE: centos:7
+
+build_suse_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: suse-x64/Dockerfile
+    IMAGE: suse_x64
+
+build_system-probe_arm64:
+  extends: [.build, .arm]
+  variables:
+    DOCKERFILE: system-probe_arm64/Dockerfile
+    IMAGE: system-probe_arm64
+
+build_system-probe_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: system-probe_x64/Dockerfile
+    IMAGE: system-probe_x64
+
+.winbuild:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  timeout: 2h 00m
+  script:
+    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
+    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
+    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+  after_script:
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
+
+build_windows_1809_x64:
+  extends: .winbuild
+  tags: ["runner:windows-docker", "windowsversion:1809"]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_1809_x64
+    DD_TARGET_ARCH: x64
+
+build_windows_ltsc2022_x64:
+  extends: .winbuild
+  tags: ["runner:windows-docker", "windowsversion:2022"]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_ltsc2022_x64
+    DD_TARGET_ARCH: x64
 
 trigger_build_kernels:
   stage: trigger_build_kernels
@@ -324,39 +357,6 @@ wait_for_tests:
   when: always
   script:
     - cat output.pipeline
-
-.winbuild: &winbuild
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  timeout: 2h 00m
-  script:
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
-    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
-
-build_windows_1809_x64:
-  extends: .winbuild
-  tags: ["runner:windows-docker", "windowsversion:1809"]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x64
-    DD_TARGET_ARCH: x64
-
-build_windows_ltsc2022_x64:
-  extends: .winbuild
-  tags: ["runner:windows-docker", "windowsversion:2022"]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_ltsc2022_x64
-    DD_TARGET_ARCH: x64
 
 .release:
   stage: release
