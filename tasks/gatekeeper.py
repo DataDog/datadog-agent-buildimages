@@ -12,10 +12,9 @@ def control(ctx):
     build_jobs = [job for job in gl.keys() if job.startswith("build")]
     jobs = get_jobs(os.environ["CI_PIPELINE_ID"])
     for job in expected_jobs(ctx, gl, build_jobs):
-        print(f"Checking job {job}")
         job_info = next((j for j in jobs if j["name"] == job), None)
         if job_info and job_info["status"] != "success":
-            Exit(f"Job {job} failed and is required", 1)
+            raise Exit(f"Job {job} failed and is required", 1)
     print("All required jobs passed")
 
 class ReferenceTag(yaml.YAMLObject):
@@ -37,7 +36,6 @@ class ReferenceTag(yaml.YAMLObject):
 
 def expected_jobs(ctx, gl, build_jobs):
     modified_files = _get_modified_files(ctx, "main")
-    print("modified", modified_files)
     for job in build_jobs:
         change_paths = []
         for rule in gl[job]["rules"]:
@@ -48,6 +46,7 @@ def expected_jobs(ctx, gl, build_jobs):
             for file in modified_files:
                 if re.match(fnmatch.translate(path), file):
                     yield job
+                    break
 
 def _get_modified_files(ctx, base):
     last_main_commit = ctx.run(f"git merge-base HEAD origin/{base}", hide=True).stdout
