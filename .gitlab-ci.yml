@@ -6,7 +6,7 @@ include:
 stages:
   - setup
   - build
-  - availability_message
+  - monitoring
   - trigger_build_kernels
   - test
   - devcontainer
@@ -206,20 +206,20 @@ build_ci_image:
         paths:
           - "ci/Dockerfile"
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
 
 build_deb_x64:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - entrypoint.sh
           - rvm/**
           - deb-x64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: deb-x64/Dockerfile
     IMAGE: deb_x64
@@ -227,8 +227,8 @@ build_deb_x64:
 build_rpm_x64:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
@@ -237,7 +237,7 @@ build_rpm_x64:
           - rpm-headers/**
           - rpm-x64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
@@ -246,15 +246,15 @@ build_rpm_x64:
 build_deb_arm64:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - entrypoint.sh
           - rmv/**
           - deb-arm/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_arm64
@@ -263,15 +263,15 @@ build_deb_arm64:
 build_deb_armhf:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - entrypoint.sh
           - rvm/**
           - deb-arm/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
     IMAGE: deb_armhf
@@ -281,8 +281,8 @@ build_deb_armhf:
 build_rpm_arm64:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
@@ -290,7 +290,7 @@ build_rpm_arm64:
           - entrypoint.sh
           - rpm-arm64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
@@ -299,8 +299,8 @@ build_rpm_arm64:
 build_rpm_armhf:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - patches/rpm-4.15.1-fix-rpmbuild-segfault.patch
@@ -308,7 +308,7 @@ build_rpm_armhf:
           - entrypoint.sh
           - rpm-armhf/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: rpm-armhf/Dockerfile
     IMAGE: rpm_armhf
@@ -318,13 +318,13 @@ build_rpm_armhf:
 build_system-probe_x64:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - system-probe_x64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: system-probe_x64/Dockerfile
     IMAGE: system-probe_x64
@@ -346,14 +346,14 @@ build_system-probe_arm64:
 build_dd_agent_testing:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements.txt
           - requirements/constraints.txt
           - dd-agent-testing/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: dd-agent-testing/Dockerfile
     IMAGE: dd-agent-testing
@@ -373,14 +373,14 @@ build_linux_glibc_2_23_arm64:
 build_docker_arm64:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements.txt
           - requirements/constraints.txt
           - docker-arm64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: docker-arm64/Dockerfile
     IMAGE: docker_arm64
@@ -388,14 +388,14 @@ build_docker_arm64:
 build_docker_x64:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements.txt
           - requirements/constraints.txt
           - docker-x64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
@@ -403,14 +403,14 @@ build_docker_x64:
 build_btf_gen:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements/btf_gen.txt
           - requirements/constraints.txt
           - btf-gen/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
@@ -418,13 +418,13 @@ build_btf_gen:
 build_kernel_version_testing_x64:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - entrypoint-sysprobe.sh
           - kernel-version-testing/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
@@ -433,13 +433,13 @@ build_kernel_version_testing_x64:
 build_kernel_version_testing_arm64:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - entrypoint-sysprobe.sh
           - kernel-version-testing/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
@@ -450,7 +450,7 @@ build_circleci_runner:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements.txt
@@ -458,7 +458,7 @@ build_circleci_runner:
           - requirements/constraints.txt
           - circleci/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: circleci/Dockerfile
     IMAGE: circleci-runner
@@ -485,7 +485,7 @@ build_circleci_runner:
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - requirements.txt
@@ -494,7 +494,7 @@ build_gitlab_agent_deploy:
           - rvm/**
           - agent-deploy/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
@@ -606,7 +606,7 @@ build_windows_1809_x64:
 build_windows_ltsc2022_x64:
   extends: .winbuild
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - go.env
@@ -616,7 +616,7 @@ build_windows_ltsc2022_x64:
           - python-packages-versions.txt
           - windows/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   tags: ["runner:windows-docker", "windowsversion:2022"]
   variables:
     DOCKERFILE: windows/Dockerfile
@@ -764,9 +764,19 @@ release_circleci_runner_gcr:
     project: DataDog/public-images
     strategy: depend
 
+gatekeeper:
+  stage: monitoring
+  tags: ["arch:amd64"]
+  image: $SETUP_IMAGE_NAME
+  dependencies: []
+  script:
+    - echo "Gatekeeper job to ensure that the pipeline is running correctly"
+    - pip install invoke requests
+    - inv gatekeeper.control
+
 notify-images-available:
   extends: .slack-notifier-base
-  stage: availability_message # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
+  stage: monitoring # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
       when: never
@@ -785,7 +795,7 @@ notify-images-available:
 
 notify-images-failure:
   extends: .slack-notifier-base
-  stage: availability_message
+  stage: monitoring
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
       when: never
