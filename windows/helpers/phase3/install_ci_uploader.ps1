@@ -14,8 +14,10 @@ if($isInstalled -and -not $isCurrent){
     Remove-Item -Recurse -Force c:\datadog-ci -ErrorAction SilentlyContinue
 }
 $source="https://github.com/DataDog/datadog-ci/releases/download/v${Version}/datadog-ci_win-x64"
-$target = "c:\devtools\datadog-ci"
+$folder = "c:\devtools\datadog-ci"
+$target = "c:\devtools\datadog-ci\datadog-ci"
 
+New-Item -ItemType Directory -Path $target
 Get-RemoteFile -LocalFile $target -RemoteFile $source -VerifyHash $Sha256
 Add-ToPath -NewPath "c:\devtools\datadog-ci" -Global
 Set-InstalledVersionKey -Component "datadog-ci" -Keyname "version" -TargetValue $Version
