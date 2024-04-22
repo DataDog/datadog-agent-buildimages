@@ -11,7 +11,7 @@ if($isInstalled -and $isCurrent) {
     return
 }
 if($isInstalled -and -not $isCurrent){
-    Remove-Item -Recurse -Force c:\datadog-ci -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force c:\devtools\datadog-ci -ErrorAction SilentlyContinue
 }
 $source="https://github.com/DataDog/datadog-ci/releases/download/v${Version}/datadog-ci_win-x64"
 $folder = "c:\devtools\datadog-ci"
