@@ -16,7 +16,7 @@ if($isInstalled -and -not $isCurrent){
 $source="https://github.com/DataDog/datadog-ci/releases/download/v${Version}/datadog-ci_win-x64"
 $target = "c:\devtools\datadog-ci"
 
-DownloadAndExpandTo -TargetDir $target -SourceURL $source -Sha256 $Sha256
+Get-RemoteFile -LocalFile $target -RemoteFile $source -VerifyHash $Sha256
 Add-ToPath -NewPath "c:\devtools\datadog-ci" -Global
 Set-InstalledVersionKey -Component "datadog-ci" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with datadog-ci
