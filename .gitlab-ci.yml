@@ -27,6 +27,7 @@ variables:
   ECR_TEST_ONLY: "_test_only"
   CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
   CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
+  IMAGE_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
 
 #
 # Workflow rules
@@ -110,17 +111,17 @@ get_agent_version:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
-    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION} --file $DOCKERFILE .
+    - docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION}
     # For size debug purposes
-    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION}
+    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION}
     # For testing purposes
-    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
+    - docker tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION} 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID; fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
-    - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA})
+    - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${IMAGE_VERSION})
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
 
 build_ci_image:
@@ -132,7 +133,7 @@ build_ci_image:
       --file ci/Dockerfile \
       --platform linux/amd64 \
       --label target=build \
-      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:${IMAGE_VERSION} \
       --push \
       .
   rules:
@@ -256,8 +257,8 @@ build_circleci_runner:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
-    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION} --file $DOCKERFILE .
+    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -289,41 +290,41 @@ trigger_tests:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
     CI_IMAGE_AGENT_DEPLOY_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_AGENT_DEPLOY_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_AGENT_DEPLOY_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_BTF_GEN_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_BTF_GEN_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_BTF_GEN_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_DDA_TESTING_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_DDA_TESTING_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DDA_TESTING_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_DEB_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_DEB_ARM64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DEB_ARM64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_DEB_X64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_DEB_X64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DEB_X64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_DOCKER_X64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_DOCKER_X64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DOCKER_X64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_DOCKER_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_DOCKER_ARM64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DOCKER_ARM64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_RPM_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_RPM_ARM64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_ARM64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_RPM_ARMHF_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_RPM_ARMHF_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_ARMHF_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_RPM_X64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_RPM_X64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_X64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_SUSE_X64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_SUSE_X64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_SUSE_X64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_SYSPROBE_X64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_SYSPROBE_X64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_SYSPROBE_X64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_SYSPROBE_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_SYSPROBE_ARM64_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_SYSPROBE_ARM64_VERSION: "${IMAGE_VERSION}"
     CI_IMAGE_WINDOWS_SUFFIX: "${ECR_TEST_ONLY}"
-    CI_IMAGE_WINDOWS_VERSION: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_WINDOWS_VERSION: "${IMAGE_VERSION}"
+    DATADOG_AGENT_BUILDIMAGES: "${IMAGE_VERSION}"
     DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
     DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_WINBUILDIMAGES: "${IMAGE_VERSION}"
     DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_ARMBUILDIMAGES: "${IMAGE_VERSION}"
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "${IMAGE_VERSION}"
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
@@ -361,8 +362,7 @@ wait_for_tests:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
-    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
@@ -394,14 +394,14 @@ build_windows_ltsc2022_x64:
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   script:
-    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:${IMAGE_VERSION}
     # Tag as latest in internal registry
     - crane tag $SRC_IMAGE latest
     # Copy to public dockerhub registry and also tag as latest
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    - crane tag datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} latest
+    - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:${IMAGE_VERSION}
+    - crane tag datadog/agent-buildimages-$IMAGE:${IMAGE_VERSION} latest
 
 .winrelease:
   stage: release
@@ -412,8 +412,7 @@ build_windows_ltsc2022_x64:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
-    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
     - mkdir ci-scripts
     - docker pull $SRC_IMAGE
     - |
@@ -432,8 +431,8 @@ build_windows_ltsc2022_x64:
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
       If ("${DOCKERHUB_IMAGE}" -ne "") {
-        docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
-        docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
+        docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION}
+        docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION}
         If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
         docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
         docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
@@ -441,13 +440,12 @@ build_windows_ltsc2022_x64:
       }
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
-    - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS_DD_WCS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine ${WINDOWS_RELEASE_IMAGE}:${SRC_TAG} powershell -C C:\mnt\ci-scripts\docker-publish.ps1
+    - docker run --rm -w C:\mnt -e AWS_NETWORKING=true -e SIGN_WINDOWS_DD_WCS=true -v "$(Get-Location):C:\mnt" -v \\.\pipe\docker_engine:\\.\pipe\docker_engine ${WINDOWS_RELEASE_IMAGE}:${IMAGE_VERSION} powershell -C C:\mnt\ci-scripts\docker-publish.ps1
   after_script:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
-    - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${SRC_TAG}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
-    - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
+    - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
 
 release_deb_x64:
   extends: .release
@@ -510,7 +508,7 @@ release_circleci_runner:
   script:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:${IMAGE_VERSION}
     # Tag as latest in dockerhub registry
     - crane tag $SRC_IMAGE latest
 
@@ -520,8 +518,8 @@ dev_release_circleci_runner_gcr:
   rules:
     - !reference [.on_push]
   variables:
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:${IMAGE_VERSION}
+    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:${IMAGE_VERSION}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
@@ -533,8 +531,8 @@ release_circleci_runner_gcr:
   rules:
     - !reference [.on_default_branch_push]
   variables:
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:${IMAGE_VERSION}
+    IMG_DESTINATIONS: agent-circleci-runner:${IMAGE_VERSION}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
@@ -551,10 +549,10 @@ notify-images-available:
   script: |
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
-    export MESSAGE="Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` are ready.
+    export MESSAGE="Your :docker: images with tag \`${IMAGE_VERSION}\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     :idea: You can test them in the datadog-agent repository by running:
-    \`\`\`inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    \`\`\`inv pipeline.update-buildimages -i ${IMAGE_VERSION} [--no-test-version] [--branch-name <your_branch>]\`\`\`
     "
     /usr/local/bin/notify.sh
 
@@ -569,7 +567,7 @@ notify-images-failure:
   script: |
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
-    export MESSAGE=":warning: Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` failed to build. :warning:
+    export MESSAGE=":warning: Your :docker: images with tag \`${IMAGE_VERSION}\` failed to build. :warning:
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     More details :arrow_right:"
     /usr/local/bin/notify.sh
