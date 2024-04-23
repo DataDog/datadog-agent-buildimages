@@ -17,7 +17,7 @@ $source="https://github.com/DataDog/datadog-ci/releases/download/v${Version}/dat
 $folder = "c:\devtools\datadog-ci"
 $target = "c:\devtools\datadog-ci\datadog-ci"
 
-New-Item -ItemType Directory -Path $target
+New-Item -ItemType Directory -Path $folder
 Get-RemoteFile -LocalFile $target -RemoteFile $source -VerifyHash $Sha256
 Add-ToPath -NewPath "c:\devtools\datadog-ci" -Global
 Set-InstalledVersionKey -Component "datadog-ci" -Keyname "version" -TargetValue $Version
