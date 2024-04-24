@@ -11,12 +11,14 @@ if($isInstalled -and $isCurrent) {
     return
 }
 if($isInstalled -and -not $isCurrent){
-    Remove-Item -Recurse -Force c:\datadog-ci -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force c:\devtools\datadog-ci -ErrorAction SilentlyContinue
 }
 $source="https://github.com/DataDog/datadog-ci/releases/download/v${Version}/datadog-ci_win-x64"
-$target = "c:\devtools\datadog-ci"
+$folder = "c:\devtools\datadog-ci"
+$target = "c:\devtools\datadog-ci\datadog-ci"
 
-DownloadAndExpandTo -TargetDir $target -SourceURL $source -Sha256 $Sha256
+New-Item -ItemType Directory -Path $folder
+Get-RemoteFile -LocalFile $target -RemoteFile $source -VerifyHash $Sha256
 Add-ToPath -NewPath "c:\devtools\datadog-ci" -Global
 Set-InstalledVersionKey -Component "datadog-ci" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with datadog-ci
