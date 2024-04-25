@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pigz \
     python3 \
     python3-pip \
-    xz-utils
+    xz-utils \
+    zstd
 
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
