@@ -25,7 +25,7 @@ COPY .curlrc .wgetrc /root/
 # install bpftool from website
 RUN wget https://github.com/libbpf/bpftool/releases/download/v7.4.0/bpftool-v7.4.0-amd64.tar.gz -O /tmp/bpftool.tar.gz -o /dev/null
 RUN echo "68862a7038a269e1d4af5fed53d2b4d763f1cd82a96caa49b76596453bae0c3e  /tmp/bpftool.tar.gz" | sha256sum --check
-RUN mkdir -p /opt/ninja
+RUN mkdir -p /opt/bpftool
 RUN tar xf /tmp/bpftool.tar.gz --no-same-owner -C /opt/bpftool
 ENV PATH "/opt/bpftool:${PATH}"
 
