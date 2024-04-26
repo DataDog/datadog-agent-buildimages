@@ -22,13 +22,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
-WORKDIR bpftool
-RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff
-COPY btf-gen/Makefile.patch ./
-RUN git apply Makefile.patch
-
-RUN make -C src/ V=1 install
+# install bpftool from website
+RUN wget https://github.com/libbpf/bpftool/releases/download/v7.4.0/bpftool-v7.4.0-amd64.tar.gz -O /tmp/bpftool.tar.gz -o /dev/null
+RUN echo "68862a7038a269e1d4af5fed53d2b4d763f1cd82a96caa49b76596453bae0c3e  /tmp/bpftool.tar.gz" | sha256sum --check
+RUN mkdir -p /opt/ninja
+RUN tar xf /tmp/bpftool.tar.gz --no-same-owner -C /opt/bpftool
+ENV PATH "/opt/bpftool:${PATH}"
 
 # install ninja from website
 RUN wget https://github.com/ninja-build/ninja/releases/download/v1.12.0/ninja-linux.zip -O /tmp/ninja.zip -o /dev/null
