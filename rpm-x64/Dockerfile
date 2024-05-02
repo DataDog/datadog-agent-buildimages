@@ -15,8 +15,6 @@ ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ARG IBM_MQ_VERSION=9.2.4.0
-ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
@@ -150,13 +148,6 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
-
-# IBM MQ
-RUN mkdir -p /opt/mqm \
-    && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
-    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
-    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
-    && rm -rf /tmp/mq_client.tar.gz
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd

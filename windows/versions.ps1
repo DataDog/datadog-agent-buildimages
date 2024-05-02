@@ -21,8 +21,6 @@ $SoftwareTable = @{
 
     "RUBY_VERSION"="2.6.6-1";
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
-    "IBM_MQ_VERSION"="9.2.4.0";
-    "IBM_MQ_SHA256"="9cea7e1693d051437e78468fd5e915b7b7ed2baf36cdae4936bcf2b760f55daa";
     "PYTHON_VERSION"="3.11.8";
     "PYTHON_SHA256"="fd3428eb6c80901b877d036ffa2be127ccad9bbe036a43f00fc96a48b724f9c7";
     "WIX_VERSION"="3.11.2";
