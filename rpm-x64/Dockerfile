@@ -175,7 +175,7 @@ RUN rm -r /usr/src/kernels/* \
     && tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Rust is needed to compile some python libs
+# Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
