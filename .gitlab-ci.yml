@@ -31,6 +31,9 @@ variables:
   ECR_TEST_ONLY: "_test_only"
   CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
   CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
+  ## currently used only for the Windows build container.  By default, use Google's go.  However, also generate a
+  ## container with Microsoft's go for FIPS.
+  GO_COMPILER_VERSION: "google"
 
 #
 # Workflow rules
@@ -369,12 +372,21 @@ push_to_datadog_agent:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE -GoCompilerVersion $GO_COMPILER_VERSION
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
+
+build_windows_msgo_1809_x64:
+  extends: .winbuild
+  tags: ["runner:windows-docker", "windowsversion:1809"]
+  variables:
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_msgo_1809_x64
+    DD_TARGET_ARCH: x64
+    GO_COMPILER_VERSION: microsoft
 
 build_windows_1809_x64:
   extends: .winbuild

@@ -1,16 +1,17 @@
+
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 Write-Host -ForegroundColor Green "Installing go $ENV:GO_VERSION"
-
-## temporary for MS go
-$MS_GO_VERSION = "1.21.8-3"
-$MS_GO_LINK="https://aka.ms/golang/release/latest/go$($MS_GO_VERSION).windows-amd64.zip"
-
 $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
-$gozip = $MS_GO_LINK
+$gohash = $ENV:GO_SHA256_WINDOWS_AMD64
+
+if ($Env:GO_COMPILER_VERSION -eq "microsoft") {
+    $gozip="https://aka.ms/golang/release/latest/go$($ENV:MSGO_VERSION).windows-amd64.zip"
+    $gohash = $ENV:MSGO_SHA256_WINDOWS_AMD64
+}
 $out = "$($PSScriptRoot)\go.zip"
-$hash = "897e8d2b717f5e8d4d16febdcd6a600982d7eda7f352ec6518659b433fee90a5"
 ##
 ## because we want to allow multiple versions of GO, we need to handle
 ## the version check a bit differently.  Get all the installed versions

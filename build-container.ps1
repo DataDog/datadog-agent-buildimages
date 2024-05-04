@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $false)][string] $Arch = "x64",
     [Parameter(Mandatory = $false)][string] $Tag = $null,
-    [Parameter(Mandatory = $false)][switch] $Cache
+    [Parameter(Mandatory = $false)][switch] $Cache,
+    [Parameter(Mandatory = $false)][string] $GoCompilerVersion = "google"
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,7 +51,7 @@ if( -not $Cache) {
     $arglist += "--no-cache"
 }
 
-$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ." 
+$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg GO_COMPILER_VERSION=$GoCompilerVersion --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ." 
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
 filter timestamp {"$(Get-Date -Format o): $_"}
