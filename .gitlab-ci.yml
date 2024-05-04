@@ -372,7 +372,9 @@ push_to_datadog_agent:
     - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE -GoCompilerVersion $GO_COMPILER_VERSION
+    - $GO_COMPILER = ${GO_COMPILER_VERSION}
+    - Write-Host "Building with Go compiler version $GO_COMPILER"
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE -GoCompilerVersion $GO_COMPILER
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
