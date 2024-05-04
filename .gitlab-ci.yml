@@ -373,22 +373,23 @@ push_to_datadog_agent:
     - $SRC_TAG = "v$CI_PIPELINE_ID-$SHORT_CI_COMMIT_SHA"
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${SRC_TAG}"
     - $GO_COMPILER = ${GO_COMPILER_VERSION}
-    - Write-Host "Building with Go compiler version $GO_COMPILER"
+    - Write-Host "Building with Go compiler version $($GO_COMPILER)"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE -GoCompilerVersion $GO_COMPILER
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
-    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
+    - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${GO_COMPILER_TAG}v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
 
 build_windows_msgo_1809_x64:
   extends: .winbuild
   tags: ["runner:windows-docker", "windowsversion:1809"]
   variables:
     DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_msgo_1809_x64
+    IMAGE: windows_1809_x64
     DD_TARGET_ARCH: x64
     GO_COMPILER_VERSION: microsoft
+    GO_COMPILER_TAG: msgo-
 
 build_windows_1809_x64:
   extends: .winbuild
