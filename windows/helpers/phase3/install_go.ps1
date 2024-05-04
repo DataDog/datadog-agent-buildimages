@@ -24,7 +24,7 @@ if($installedVers -and $installedVers.Contains($ENV:GO_VERSION)) {
 }
 Write-Host -ForegroundColor Green "Downloading $gozip to $out"
 
-Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $hash
+Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $gohash
 
 ## set up proper output directory
 $godir = "c:\go\$ENV:GO_VERSION"
