@@ -180,17 +180,8 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh ; fi
 
-# Codecov
-ENV CODECOV_VERSION=0.6.1
-RUN curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov.SHA256SUM \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov.SHA256SUM.sig \
-    && gpgv codecov.SHA256SUM.sig codecov.SHA256SUM \
-    && shasum -a 256 -c codecov.SHA256SUM \
-    && rm codecov.SHA256SUM.sig codecov.SHA256SUM \
-    && mv codecov /usr/local/bin/codecov \
-    && chmod +x /usr/local/bin/codecov
+# Install Codecov uploader
+RUN setup_codecov.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
