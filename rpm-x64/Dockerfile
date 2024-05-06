@@ -171,6 +171,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install Codecov uploader
+COPY setup_codecov.sh /
 RUN setup_codecov.sh
 
 # Install clang and llvm version 8

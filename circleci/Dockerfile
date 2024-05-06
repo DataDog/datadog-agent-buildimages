@@ -63,6 +63,7 @@ RUN set -ex \
     && rm $CMAKE_ARCHIVE
 
 # Install Codecov uploader
+COPY setup_codecov.sh /
 RUN setup_codecov.sh
 
 # Other dependencies

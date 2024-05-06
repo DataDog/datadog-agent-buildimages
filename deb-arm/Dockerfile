@@ -181,6 +181,7 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && rm cmake.sh ; fi
 
 # Install Codecov uploader
+COPY setup_codecov.sh /
 RUN setup_codecov.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
