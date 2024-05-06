@@ -65,6 +65,7 @@ try {
         .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
         # # vcpkg depends on cmake
         .\helpers\phase1\install_vcpkg.ps1
+        .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256
     }
 
     if ($Phase -eq 0 -or $Phase -eq 2) {
