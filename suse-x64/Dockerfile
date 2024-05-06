@@ -16,8 +16,6 @@ FROM opensuse/archive:42.1
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ARG IBM_MQ_VERSION=9.2.4.0
-ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
@@ -93,13 +91,6 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
 
-# IBM MQ
-RUN mkdir -p /opt/mqm \
-    && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
-    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
-    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
-    && rm -rf /tmp/mq_client.tar.gz
-
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements
@@ -146,7 +137,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm
     && echo "1657ffa995654bc96405d4dbce0b17a55cd1eabd19479bc1611b0cb4f3c01fcc  kernel-4.9-headers-rpm-x64.tgz" | sha256sum --check \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Rust is needed to compile some python libs
+# Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
