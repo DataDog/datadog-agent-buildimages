@@ -38,12 +38,15 @@ def update_datadog_agent_buildimages(
     if go_version is None:
         go_version_env = os.environ.get("GO_VERSION")
         if go_version_env is None:
-            raise Exit("Either the '--go-version' argument or the GO_VERSION environment variable has to be provided")
+            raise Exit(
+                "Either the '--go-version' argument or the GO_VERSION environment variable has to be provided"
+            )
         go_version = go_version_env
 
     # get the installation auth token
     app_auth = github.Auth.AppAuth(
-        os.environ["GITHUB_APP_ID"], base64.b64decode(os.environ["GITHUB_KEY_B64"]).decode("ascii")
+        os.environ["GITHUB_APP_ID"],
+        base64.b64decode(os.environ["GITHUB_KEY_B64"]).decode("ascii"),
     )
     installation_id = os.environ["GITHUB_INSTALLATION_ID"]
     inst_auth = app_auth.get_installation_auth(
@@ -55,6 +58,9 @@ def update_datadog_agent_buildimages(
     repo = gh.get_repo(REPO_NAME)
     wf = repo.get_workflow(WORKFLOW_ID)
 
+    print(
+        f"execute create_dispatch workflow with images_id: {images_id}, branch: {branch}, test_version: {test_version}, go_version: {go_version}"
+    )
     res = wf.create_dispatch(
         ref=ref,
         inputs={
