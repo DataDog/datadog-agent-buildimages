@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -euo pipefail
 
 CODECOV_VERSION=0.6.1
 
