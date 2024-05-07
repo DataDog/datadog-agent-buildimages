@@ -308,7 +308,7 @@ wait_for_tests:
     - cat output.pipeline
 
 push_to_datadog_agent:
-  stage: setup #FIXME: setup stage so that it runs earlier, change to `test` once it works properly
+  stage: test #FIXME: setup stage so that it runs earlier, change to `test` once it works properly
   rules:
     # TODO: refactor this with !reference [.on_push] ?
     - if: $CI_PIPELINE_SOURCE == "schedule"
