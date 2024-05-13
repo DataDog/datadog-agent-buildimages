@@ -19,3 +19,4 @@ ruff
 semver
 toml
 urllib3
+vulture
