@@ -161,6 +161,10 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
+# Install Codecov uploader
+COPY setup_codecov.sh /
+RUN ./setup_codecov.sh
+
 # Install clang and llvm version 8
 RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz \
     && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz" | sha256sum --check \

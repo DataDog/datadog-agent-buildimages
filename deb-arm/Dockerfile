@@ -180,6 +180,10 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh ; fi
 
+# Install Codecov uploader
+COPY setup_codecov.sh /
+RUN ./setup_codecov.sh
+
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz \
