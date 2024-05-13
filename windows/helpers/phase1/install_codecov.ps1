@@ -24,15 +24,4 @@ if (Test-Path -Path "$CodecovPath\codecov.exe") {
 
 
 # Adding codecov folder to the system PATH
-$Path = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-
-# Checking if codecov folder is already in the path
-if ($Path -notlike "*$CodecovPath*")
-{
-    $Path += ";$CodecovPath"
-    [System.Environment]::SetEnvironmentVariable("PATH", $Path, "Machine")
-}
-else
-{
-    Write-Output "$CodecovPath already exists in the system PATH."
-}
+Add-ToPath -NewPath $CodecovPath -Local -Global
