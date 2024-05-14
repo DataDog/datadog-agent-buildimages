@@ -3,17 +3,20 @@ FROM ruby:2.7.5-bullseye
 ENV BUNDLER_VERSION=1.17.3
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
+ARG PYTHON_VERSION=3.11
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
+  add-apt-repository ppa:deadsnakes/ppa && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
   apt-transport-https autoconf automake bison curl \
   g++ gawk gcc git jq \
   libc6-dev libffi-dev libssl-dev libgdbm-dev libgmp-dev libncurses5-dev \
   libreadline6-dev libsqlite3-dev libtool libyaml-dev \
-  make openssh-client pkg-config python3.11 python3-pip rsync sqlite3 zlib1g-dev \
+  make openssh-client pkg-config python${PYTHON_VERSION} python3-pip rsync sqlite3 zlib1g-dev \
   && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ focal main" | \
       tee /etc/apt/sources.list.d/azure-cli.list && \
       curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \

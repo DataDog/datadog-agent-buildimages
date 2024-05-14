@@ -17,6 +17,7 @@ ARG GOLANG_VERSION=1.21.7
 ARG GOLANG_SHASUM=13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae03293702c
 ARG CI_UPLOADER_SHASUM=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 ARG CI_UPLOADER_VERSION=2.30.1
+ARG PYTHON_VERSION=3.11
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
@@ -26,7 +27,9 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get install -y \
     build-essential \
     createrepo \
     curl \
@@ -41,7 +44,7 @@ RUN apt-get update && apt-get install -y \
     python2.7-dev \
     python3-distutils \
     python3-pip \
-    python3.11 \
+    python${PYTHON_VERSION} \
     shellcheck \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
