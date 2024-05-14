@@ -13,7 +13,7 @@ fi
 
 ARCH=$1
 
-case $ARCHITECTURE in
+case $ARCH in
   arm64)
     CODECOV_ARCH="aarch64"
     ;;
@@ -21,7 +21,7 @@ case $ARCHITECTURE in
     CODECOV_ARCH="linux"
     ;;
   *)
-    echo "Invalid architecture: $ARCHITECTURE"
+    echo "Invalid architecture: $ARCH"
     echo "Supported architectures are: arm64, amd64"
     exit 1
     ;;
