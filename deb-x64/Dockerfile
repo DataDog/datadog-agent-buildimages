@@ -163,7 +163,7 @@ RUN set -ex \
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
-RUN ./setup_codecov.sh
+RUN ./setup_codecov.sh amd64
 
 # Install clang and llvm version 8
 RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz \
