@@ -29,6 +29,7 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 
 RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
     apt-get install -y \
     build-essential \
     createrepo \

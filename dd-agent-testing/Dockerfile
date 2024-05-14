@@ -11,6 +11,7 @@ COPY .curlrc .wgetrc /root/
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
   add-apt-repository ppa:deadsnakes/ppa && \
+  apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   apt-transport-https autoconf automake bison curl \
   g++ gawk gcc git jq \
