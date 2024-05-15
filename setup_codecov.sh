@@ -13,6 +13,9 @@ else
     aarch64)
       CODECOV_ARCH="aarch64"
       ;;
+    armhf)
+      CODECOV_ARCH="aarch64"
+      ;;
     x64)
       CODECOV_ARCH="linux"
       ;;
