@@ -10,10 +10,7 @@ if [[ -z "${DD_TARGET_ARCH}" ]]; then
   CODECOV_ARCH="linux"
 else
   case $DD_TARGET_ARCH in
-    aarch64)
-      CODECOV_ARCH="aarch64"
-      ;;
-    armhf)
+    aarch64|armhf)
       CODECOV_ARCH="aarch64"
       ;;
     x64)
