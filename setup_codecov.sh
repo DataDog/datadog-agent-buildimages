@@ -17,8 +17,8 @@ else
       CODECOV_ARCH="linux"
       ;;
     *)
-      echo "Invalid DD_TARGET_ARCH value: ${DD_TARGET_ARCH}"
-      echo "The DD_TARGET_ARCH values supported by the Codecov setup are: aarch64, x64 and armhf"
+      echo "Invalid DD_TARGET_ARCH value: ${DD_TARGET_ARCH}" >& 2
+      echo "The DD_TARGET_ARCH values supported by the Codecov setup are: aarch64, x64 and armhf" >& 2
       exit 1
       ;;
   esac
