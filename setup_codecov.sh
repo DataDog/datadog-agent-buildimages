@@ -18,7 +18,7 @@ else
       ;;
     *)
       echo "Invalid DD_TARGET_ARCH value: ${DD_TARGET_ARCH}"
-      echo "The DD_TARGET_ARCH values supported by the Codecov setup are: aarch64, x64"
+      echo "The DD_TARGET_ARCH values supported by the Codecov setup are: aarch64, x64 and armhf"
       exit 1
       ;;
   esac
