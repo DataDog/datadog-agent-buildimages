@@ -5,7 +5,7 @@ set -eo pipefail
 CODECOV_VERSION=0.6.1
 
 # Determine the Architecture to install the Codecov uploader
-if [[ -z "${DD_TARGET_ARCH}" ]]; then
+if [ -z "$DD_TARGET_ARCH" ]; then
   echo "DD_TARGET_ARCH environment variable is not set. The Codecov x64 uploader will be installed by default."
   CODECOV_ARCH="linux"
 else
