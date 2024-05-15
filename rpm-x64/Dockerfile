@@ -163,7 +163,7 @@ RUN set -ex \
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
-RUN ./setup_codecov.sh amd64
+RUN ./setup_codecov.sh
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image

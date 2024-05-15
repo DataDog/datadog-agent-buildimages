@@ -131,7 +131,7 @@ RUN set -ex \
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
-RUN ./setup_codecov.sh arm64
+RUN ./setup_codecov.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script

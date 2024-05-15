@@ -4,28 +4,25 @@ set -euo pipefail
 
 CODECOV_VERSION=0.6.1
 
-# Check if the architecture was provided
-if [ -z "$1" ]; then
-  echo "Usage: $0 <architecture>"
-  echo "Example: $0 arm64"
-  exit 1
+# Determine the Architecture to install the Codecov uploader.
+if [[ -z "${DD_TARGET_ARCH}" ]]; then
+  echo "DD_TARGET_ARCH environment variable is not set. The Codecov x64 uploader will be installed by default."
+  CODECOV_ARCH="linux"
+else
+  case $DD_TARGET_ARCH in
+    aarch64)
+      CODECOV_ARCH="aarch64"
+      ;;
+    x64)
+      CODECOV_ARCH="linux"
+      ;;
+    *)
+      echo "Invalid DD_TARGET_ARCH value: ${DD_TARGET_ARCH}"
+      echo "The DD_TARGET_ARCH values supported by the Codecov setup are: aarch64, x64"
+      exit 1
+      ;;
+  esac
 fi
-
-ARCH=$1
-
-case $ARCH in
-  arm64)
-    CODECOV_ARCH="aarch64"
-    ;;
-  amd64)
-    CODECOV_ARCH="linux"
-    ;;
-  *)
-    echo "Invalid architecture: $ARCH"
-    echo "Supported architectures are: arm64, amd64"
-    exit 1
-    ;;
-esac
 
 # Integrity checking the uploader
 curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import

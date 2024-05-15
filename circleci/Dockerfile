@@ -64,7 +64,7 @@ RUN set -ex \
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
-RUN ./setup_codecov.sh amd64
+RUN ./setup_codecov.sh
 
 # Other dependencies
 
