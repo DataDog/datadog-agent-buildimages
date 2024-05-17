@@ -17,6 +17,7 @@ ARG GOLANG_VERSION=1.21.7
 ARG GOLANG_SHASUM=13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae03293702c
 ARG CI_UPLOADER_SHASUM=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 ARG CI_UPLOADER_VERSION=2.30.1
+ARG PYTHON_VERSION=3.11.8
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
@@ -26,7 +27,7 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
     createrepo \
     curl \
@@ -39,10 +40,21 @@ RUN apt-get update && apt-get install -y \
     python-boto \
     python-deltarpm \
     python2.7-dev \
-    python3-distutils \
-    python3-pip \
-    python3.8 \
     shellcheck \
+    make  \
+    zlib1g-dev  \
+    libbz2-dev  \
+    libreadline-dev  \
+    libsqlite3-dev  \
+    wget  \
+    llvm  \
+    libncurses5-dev  \
+    xz-utils  \
+    tk-dev  \
+    libxml2-dev  \
+    libxmlsec1-dev  \
+    libffi-dev  \
+    liblzma-dev \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
@@ -65,14 +77,20 @@ RUN python2 -m pip install \
     boto3==1.14.7 \
     pexpect==3.2
 
+# Python install
+ENV PYENV_ROOT="/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+     pyenv install ${PYTHON_VERSION} && \
+     pyenv global ${PYTHON_VERSION}
+
 # Python 3 deps
 COPY requirements.txt /requirements.txt
 COPY requirements /requirements
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1 \
- && update-alternatives --config python3 \
- && python3 -m pip install pip \
- && python3 -m pip install --upgrade pip \
- && python3 -m pip install -r requirements.txt -r requirements/agent-deploy.txt
+RUN pip3 install pip \
+ && pip3 install --upgrade pip \
+ && pip3 install -r requirements.txt -r requirements/agent-deploy.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
