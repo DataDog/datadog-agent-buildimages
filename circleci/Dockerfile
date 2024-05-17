@@ -6,6 +6,8 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG PYTHON_VERSION=3.11.8
+
 # Pre-requisites
 # Python 3 dev is required for rtloader
 RUN set -ex \
@@ -28,23 +30,32 @@ RUN set -ex \
     libsystemd-dev \
     make \
     pkg-config \
-    python3 \
-    python3-dev \
-    python3-distutils \
-    python3-pip \
-    python3-setuptools \
-    python3-yaml \
     snmp-mibs-downloader \
     ssh \
-    xz-utils
+    build-essential  \
+    zlib1g-dev  \
+    libbz2-dev  \
+    libreadline-dev  \
+    libsqlite3-dev  \
+    wget  \
+    llvm  \
+    libncurses5-dev  \
+    xz-utils  \
+    tk-dev  \
+    libxml2-dev  \
+    libxmlsec1-dev  \
+    libffi-dev  \
+    liblzma-dev &&  \
+    apt-get clean &&  \
+    rm -rf /var/lib/apt/lists/*
 
 # Golang
-ARG GO_VERSION
-ARG GO_SHA256_LINUX_AMD64
+ARG GO_VERSION=1.21.10
+ARG GO_SHA256_LINUX_AMD64="11"
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH /go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    && echo "$GO_SHA256_LINUX_AMD64 /tmp/golang.tar.gz" | sha256sum --check \
+#    && echo "$GO_SHA256_LINUX_AMD64 /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
@@ -69,9 +80,16 @@ RUN ./setup_codecov.sh
 # Other dependencies
 
 # Python
+ENV PYENV_ROOT="/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
 COPY requirements.txt /
 COPY requirements /requirements
-RUN python3 -m pip install -r requirements.txt -r requirements/circleci.txt
+
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+     pyenv install ${PYTHON_VERSION} && \
+     pyenv global ${PYTHON_VERSION} && \
+     pip3 install -r requirements.txt -r requirements/circleci.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

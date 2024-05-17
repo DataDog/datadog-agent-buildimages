@@ -35,7 +35,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 # Python
 COPY requirements.txt /
 COPY requirements /requirements
-RUN python3 -m pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Ruby
 RUN gem install bundler --version ${BUNDLER_VERSION}

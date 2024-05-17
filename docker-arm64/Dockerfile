@@ -1,4 +1,4 @@
-FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 
 ARG PYTHON_VERSION=3.11.8
 
@@ -34,7 +34,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 COPY requirements.txt /
 COPY requirements /requirements
 
-RUN python3 -m pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

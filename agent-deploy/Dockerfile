@@ -88,9 +88,9 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 # Python 3 deps
 COPY requirements.txt /requirements.txt
 COPY requirements /requirements
-RUN python3 -m pip install pip \
- && python3 -m pip install --upgrade pip \
- && python3 -m pip install -r requirements.txt -r requirements/agent-deploy.txt
+RUN pip3 install pip \
+ && pip3 install --upgrade pip \
+ && pip3 install -r requirements.txt -r requirements/agent-deploy.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
