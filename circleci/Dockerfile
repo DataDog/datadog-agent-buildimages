@@ -50,8 +50,8 @@ RUN set -ex \
     rm -rf /var/lib/apt/lists/*
 
 # Golang
-ARG GO_VERSION=1.21.10
-ARG GO_SHA256_LINUX_AMD64="11"
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH /go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
