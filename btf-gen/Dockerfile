@@ -1,6 +1,7 @@
 FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.11.8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -14,9 +15,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     llvm-dev \
     lld \
     ninja-build \
-    python3 \
-    python3-pip \
-    xz-utils
+    software-properties-common \
+    make  \
+    zlib1g-dev  \
+    libbz2-dev  \
+    libreadline-dev  \
+    libsqlite3-dev  \
+    wget  \
+    libncurses5-dev  \
+    xz-utils  \
+    tk-dev  \
+    libxml2-dev  \
+    libxmlsec1-dev  \
+    libffi-dev  \
+    liblzma-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Python install
+ENV PYENV_ROOT="/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+     pyenv install ${PYTHON_VERSION} && \
+     pyenv global ${PYTHON_VERSION}
 
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
