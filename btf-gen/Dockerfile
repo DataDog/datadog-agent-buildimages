@@ -1,6 +1,6 @@
 FROM debian:bullseye
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.11.8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

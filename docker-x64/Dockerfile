@@ -3,7 +3,7 @@ FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 ARG PYTHON_VERSION=3.11.8
 
 RUN apt-get update &&  \
-    apt-get install -y make  \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
       build-essential  \
       libssl-dev  \
       zlib1g-dev  \
