@@ -68,6 +68,7 @@ def update_datadog_agent_buildimages(
             "branch": branch,
             "test_version": test_version,
             "go_version": go_version,
+            "include_otel_modules": False,
         },
     )
     if not res:
