@@ -308,7 +308,7 @@ wait_for_tests:
     - cat output.pipeline
 
 push_to_datadog_agent:
-  stage: setup
+  stage: test
   rules:
     - if: $CI_COMMIT_MESSAGE !~ /^\[push_to_datadog_agent\]/
       when: never
