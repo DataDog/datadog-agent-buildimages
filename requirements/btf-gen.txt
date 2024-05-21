@@ -3,3 +3,4 @@
 awscli
 requests
 invoke
+python-gitlab

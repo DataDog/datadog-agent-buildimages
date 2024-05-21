@@ -9,24 +9,18 @@ function detect_distro(){
     DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
 }
 
+PY2_VERSION=2
+PY3_VERSION=3.11.8
+DD_CONDA_VERSION=4.9.2-7
+
 case $DD_TARGET_ARCH in
 "x64")
-    DD_CONDA_VERSION=4.9.2
-    DD_CONDA_SHA256="536817d1b14cb1ada88900f5be51ce0a5e042bae178b5550e62f61e223deae7c"
-    CONDA_URL=https://repo.anaconda.com/miniconda/Miniconda3-py39_${DD_CONDA_VERSION}-Linux-x86_64.sh
-    # FIXME: Pinning specific zlib version as the latest one doesn't work in our old builders:
-    # version GLIBC_2.14 not found (required by /root/miniconda3/envs/ddpy2/lib/python2.7/lib-dynload/../../libz.so.1)
-    PY2_VERSION="2 zlib=1.2.11=h7b6447c_3"
-    # FIXME: Pinning specific build (Python 3.9.5, zlib, xz) since the last versions don't seem to work with the glibc in the base image
-    # FIXME: Pinning OpenSSL to a version that's compatible with the Python build we pin (we get `SSL module is not available` errors with OpenSSL 1.1.1l)
-    PY3_VERSION="3.9.5=hdb3f193_3 certifi=2022.12.7=py39h06a4308_0 ld_impl_linux-64=2.38=h1181459_0 libgcc-ng=9.1.0=hdf63c60_0 libstdcxx-ng=9.1.0=hdf63c60_0 openssl=1.1.1k=h27cfd23_0 xz=5.2.5=h7b6447c_0 zlib=1.2.11=h7b6447c_3"
+    DD_CONDA_SHA256="91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
+    CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-x86_64.sh
     ;;
 "aarch64")
-    DD_CONDA_VERSION=4.9.2-7
     DD_CONDA_SHA256="ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     CONDA_URL=https://github.com/conda-forge/miniforge/releases/download/${DD_CONDA_VERSION}/Miniforge3-Linux-aarch64.sh
-    PY2_VERSION=2
-    PY3_VERSION=3.9.5
     ;;
 "armhf")
     detect_distro
@@ -38,20 +32,31 @@ case $DD_TARGET_ARCH in
         libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
         libc6-dev libbz2-dev libffi-dev zlib1g-dev
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
-        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make
+        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make perl-IPC-Cmd
     fi
+    OPENSSL_VERSION="3.0.13"
+    OPENSSL_SHA256="88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"
+    PYTHON_SHA256="d3019a613b9e8761d260d9ebe3bd4df63976de30464e5c0189566e1ae3f61889"
 
-    wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz
-    echo "e0fbd5b6e1ee242524430dee3c91baf4cbbaba4a72dd1674b90fda87b713c7ab Python-3.9.5.tgz" | sha256sum --check
-    tar xzf Python-3.9.5.tgz
-    pushd /Python-3.9.5
-        ./configure
-        make -j 8
+    wget https://ftp.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
+    echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
+    tar xzf openssl-$OPENSSL_VERSION.tar.gz
+    pushd openssl-$OPENSSL_VERSION
+      ./config --prefix=/opt/openssl --openssldir=/usr/local/ssl -Wl,-Bsymbolic-functions -fPIC shared no-ssl2 no-ssl3 linux-generic32
+      make -j $(nproc)
+      make install
+    popd
+    rm -rf openssl-$OPENSSL_VERSION.tar.gz openssl-$OPENSSL_VERSION
+
+    wget https://www.python.org/ftp/python/$PY3_VERSION/Python-$PY3_VERSION.tgz
+    echo "$PYTHON_SHA256 Python-$PY3_VERSION.tgz" | sha256sum --check
+    tar xzf Python-$PY3_VERSION.tgz
+    pushd /Python-$PY3_VERSION
+        ./configure --with-openssl=/opt/openssl --with-openssl-rpath=auto
+        make -j $(nproc)
         make install
     popd
-    rm -rf Python-3.9.5
-    rm Python-3.9.5.tgz
-    ln -sf /usr/bin/python3.9 /usr/bin/python3
+    rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
@@ -105,5 +110,7 @@ fi
 
 # Add python3's invoke to the PATH even when ddpy3 is not active, since we want to use python3 invoke to run python2 tests
 ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
+
+conda clean -a
 
 echo "conda activate ddpy3" >> /root/.bashrc

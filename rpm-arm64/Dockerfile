@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2023-12-12
-ENV CACERT_BUNDLE_SHA256="ccbdfc2fe1a0d7bbbb9cc15710271acf1bb1afe4c8f1725fe95c4c7733fcbe5a"
+ENV CACERT_BUNDLE_VERSION=2024-03-11
+ENV CACERT_BUNDLE_SHA256="1794c1d4f7055b7d02c2170337b61b48a2ef6c90d77e95444fd2596f4cac609f"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -12,13 +12,16 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG RUST_VERSION=1.76.0
+ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_VERSION=1.26.0
+ARG RUSTUP_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUSTUP_ARCH="aarch64-unknown-linux-gnu"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
@@ -28,14 +31,13 @@ ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java wget \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -71,8 +73,8 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 # Patchelf
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
@@ -109,6 +111,15 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Rust is needed to compile the SDS library
+RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
+
 # CMake
 RUN set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
@@ -118,6 +129,10 @@ RUN set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
 
+# Install Codecov uploader
+COPY setup_codecov.sh /
+RUN ./setup_codecov.sh
+
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
 RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz \
@@ -125,12 +140,6 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

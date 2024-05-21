@@ -2,6 +2,7 @@
 
 -c constraints.txt
 
+codeowners
 docker
 docker-squash
 invoke
@@ -9,3 +10,4 @@ packaging
 reno
 requests
 toml
+python-gitlab

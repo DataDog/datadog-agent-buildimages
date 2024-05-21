@@ -1,8 +1,8 @@
-ARG BASE_IMAGE="centos:6"
+ARG BASE_IMAGE="centos:7"
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2023-12-12
-ENV CACERT_BUNDLE_SHA256="ccbdfc2fe1a0d7bbbb9cc15710271acf1bb1afe4c8f1725fe95c4c7733fcbe5a"
+ENV CACERT_BUNDLE_VERSION=2024-03-11
+ENV CACERT_BUNDLE_SHA256="1794c1d4f7055b7d02c2170337b61b48a2ef6c90d77e95444fd2596f4cac609f"
 RUN apt-get update && apt-get install -y wget
 RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -15,98 +15,55 @@ ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ARG IBM_MQ_VERSION=9.2.4.0
-ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=nightly-2022-05-15
-ARG RUSTC_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG RUSTUP_VERSION=1.24.3
-ARG RUSTUP_SHA256="3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338"
-ARG PERLBREW_VERSION=0.96
-ARG PERLBREW_SHA256="c3996e4fae37a0ae01839cdd73752fb7b17e81bac2a8b39712463a7d518c4945"
-ARG PERL_VERSION=5.36.0
+ARG RUST_VERSION=1.76.0
+ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+ARG RUSTUP_VERSION=1.26.0
+ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
-ARG PATCHELF_VERSION=0.13.1
-ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG CI_UPLOADER_VERSION=2.30.1
+ARG CI_UPLOADER_SHA="873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d"
 
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
-ENV CONDA_PATH /root/miniconda3
+ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
-# Enable the vault (archive) repos, as we are past CentOS6 EOL
-RUN if [[ $(cat /etc/redhat-release-major) == 6 ]]; then \
-    sed -is 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    sed -ie 's/6\.9/6.10/g' /etc/yum.repos.d/CentOS-Vault.repo && \
-    rm /etc/yum.repos.d/CentOS-Base.repo; fi
-
-# The last two lines contain dependencies for build of newer libarchive and rpm
-RUN yum -y install \
+# The last two lines contain dependencies for build of newer rpm
+RUN yum install -y epel-release && \
+  yum -y install \
   @development \
-  which perl-ExtUtils-MakeMaker perl-parent \
+  which perl-ExtUtils-MakeMaker perl-parent perl-core \
   pkgconfig \
   curl-devel expat-devel gettext-devel openssl-devel zlib-devel bzip2 \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo \
-  && yum clean all
-
-RUN if [[ $(cat /etc/redhat-release-major) != 6 ]]; then \
-     yum -y install policycoreutils-python; \
-    fi
+  texinfo wget policycoreutils-python libarchive-devel patchelf \
+  && yum -y install centos-release-scl \
+  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
+  && yum -y install devtoolset-11 \
+  && yum clean all \
+  && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
 
-# Autoconf
-# We need a newer version of autoconf to compile procps-ng and also new rpm version (installing 2.69 over 2.63).
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/autoconf-2.69.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz \
-    && echo "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969  /tmp/autoconf-2.69.tar.gz" | sha256sum --check \
-    && cd /tmp \
-    && tar -xvf /tmp/autoconf-2.69.tar.gz --no-same-owner \
-    && cd autoconf-2.69 \
-    && ./configure \
-    && make -j$(nproc) && make install \
-    && cd / \
-    && rm -rf /tmp/autoconf-2.69 /tmp/autoconf-2.69.tar.gz; fi
-
-# New libarchive is required for the new rpm version
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/libarchive-3.1.2-12.el7.src.rpm https://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm \
-    && echo "9584008f5afe3fc18351c40c2cb627193f1d7c92480dea0161f11f6b63e575d2  /tmp/libarchive-3.1.2-12.el7.src.rpm" | sha256sum --check \
-    && rpmbuild --rebuild /tmp/libarchive-3.1.2-12.el7.src.rpm \
-    && rpm -Uvh --nodeps /root/rpmbuild/RPMS/x86_64/* \
-    && rm -rf /tmp/libarchive-3.1.2-12.el7.src.rpm /root/rpmbuild; fi
-
-# Build liblzma 5.2+ which supports parallel compression
-# We still install xz-devel as the distribution provided package
-# is required when rebuilding libarchive just above
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/xz-5.2.11.tar.xz https://github.com/tukaani-project/xz/releases/download/v5.2.11/xz-5.2.11.tar.xz \
-    && cd /tmp \
-    && echo "503b4a9fb405e70e1d3912e418fdffe5de27e713e58925fb67e12d20d03a77bc  /tmp/xz-5.2.11.tar.xz" | sha256sum --check \
-    && tar -xf /tmp/xz-5.2.11.tar.xz \
-    && cd xz-5.2.11 \
-    && ./configure --prefix=/usr --libdir=/usr/lib64 --disable-symbol-versions \
-    && make -j$(nproc) && make install \
-    && rm -rf /tmp/xz-5.2.11; fi
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
@@ -114,8 +71,7 @@ RUN git config --global user.email "package@datadoghq.com" && \
 # Actually build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
+RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
     && echo "ddef45f9601cd12042edfc9b6e37efcca32814e1e0f4bb8682d08144a3e2d230  /tmp/rpm-4.15.1.tar.bz2" | sha256sum --check \
     && cd /tmp \
     && tar -xjf /tmp/rpm-4.15.1.tar.bz2 \
@@ -125,13 +81,17 @@ RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1; fi
+    && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
 
 # Rebuild RPM database with the new rpm
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-    mkdir -p /usr/local/var/lib/rpm \
+RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
-    && /usr/local/bin/rpm --rebuilddb; fi
+    && /usr/local/bin/rpm --rebuilddb
+
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
+    && chmod +x /usr/local/bin/datadog-ci
 
 # Git
 RUN curl -OL "https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
@@ -153,10 +113,6 @@ COPY requirements /requirements
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-
-# External calls configuration
-COPY .awsconfig $HOME/.aws/config
-COPY .curlrc .wgetrc $HOME/
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
@@ -193,13 +149,6 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# IBM MQ
-RUN mkdir -p /opt/mqm \
-    && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
-    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
-    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
-    && rm -rf /tmp/mq_client.tar.gz
-
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
 
@@ -211,6 +160,10 @@ RUN set -ex \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh
+
+# Install Codecov uploader
+COPY setup_codecov.sh /
+RUN ./setup_codecov.sh
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
@@ -226,37 +179,7 @@ RUN rm -r /usr/src/kernels/* \
     && tar xf kernel-4.9-headers-rpm-x64.tgz --no-same-owner --strip 1 -C /usr \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Update GCC: CentOS6 gcc-4.4 is a little too far behind what we use with the debian builder
-# Copy (and import through the repo file) the CERN signing key:
-# pub   1024D/1D1E034B 2005-06-27
-# uid                  CERN Linux Support (RPM signing key for CERN Linux Support) <linux.support@cern.ch>
-COPY rpm-x64/RPM-GPG-KEY-cern /etc/pki/rpm-gpg/RPM-GPG-KEY-cern
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      curl -o /etc/yum.repos.d/slc6-devtoolset.repo https://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo \
-      && echo "17a8cb10265d7c9ff285aa563c526ae0acc1871f54fcecd198ca9d3441322dfd  /etc/yum.repos.d/slc6-devtoolset.repo" | sha256sum --check \
-      && yum --enablerepo=slc6-devtoolset -y install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++ && yum clean all; fi
-
-# HACK: we need to resort to echo'ing to bashrc because these ENV vars are conditional
-#       on the centos version; only required for centos 6 based images.
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      echo "export CC=/opt/rh/devtoolset-1.1/root/usr/bin/gcc" >> /root/.bashrc \
-      && echo "export CPP=/opt/rh/devtoolset-1.1/root/usr/bin/cpp" >> /root/.bashrc \
-      && echo "export CXX=/opt/rh/devtoolset-1.1/root/usr/bin/c++" >> /root/.bashrc; fi
-
-# Update GCC: Get gcc 4.9.2 from devtoolset-3. devtoolset-3 is not maintained anymore, so we have to get it from
-# an old mirror copy.
-# Copy (and import through the repo file) the CERN signing key:
-# pub   rsa2048 2015-05-21 [SCEA] [expired: 2020-05-19]
-#       143E840EC0D0AD21E646CDD8FBCE6502094D442C
-# uid           rhscl_devtoolset-3 (None) <rhscl#devtoolset-3@copr.fedorahosted.org>COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
-COPY rpm-x64/RPM-GPG-KEY-fedora /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
-
-RUN if [[ "$(cat /etc/redhat-release-major)" == 6 ]]; then \
-      curl -o /etc/yum.repos.d/fedora-devtoolset-3.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo \
-      && echo "fa9186082638633fbae5229060c68b06875f58682fb7aa4941aa171fb638b78f  /etc/yum.repos.d/fedora-devtoolset-3.repo" | sha256sum --check \
-      && yum --enablerepo=copr:copr.fedorainfracloud.org:rhscl:devtoolset-3 -y install devtoolset-3-gcc && yum clean all; fi
-
-# Rust is needed to compile some python libs
+# Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
@@ -264,38 +187,6 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
-
-# Perl >= 5.14 is needed to compile the libxcrypt project
-RUN curl -sSL -o perlbrew-install.sh "https://raw.githubusercontent.com/gugod/App-perlbrew/release-${PERLBREW_VERSION}/perlbrew-install" \
-    && echo "${PERLBREW_SHA256}  perlbrew-install.sh" | sha256sum --check \
-    && bash ./perlbrew-install.sh \
-    && source /root/perl5/perlbrew/etc/bashrc \
-    && perlbrew install "perl-${PERL_VERSION}" \
-    && perlbrew switch "${PERL_VERSION}" \
-    && echo "source /root/perl5/perlbrew/etc/bashrc" >> /root/.bashrc \
-    && rm perlbrew-install.sh
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
-
-# Patchelf. This needs a compiler that can handle C++11
-RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
-    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
-    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
-    && cd patchelf-${PATCHELF_VERSION}  \
-    && ./bootstrap.sh \
-    && ./configure CC=/opt/gcc-${GCC_VERSION}/bin/gcc \
-        CXX=/opt/gcc-${GCC_VERSION}/bin/g++ \
-        CXXFLAGS='-static-libstdc++' \
-    && make -j$(nproc) \
-    && make install \
-    && cd - \
-    && rm -rf patchelf-${PATCHELF_VERSION} \
-    && rm patchelf-${PATCHELF_VERSION}.tar.gz
-
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
