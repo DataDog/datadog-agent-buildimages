@@ -325,6 +325,36 @@ wait_for_tests:
   script:
     - cat output.pipeline
 
+push_to_datadog_agent:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_MESSAGE !~ /^\[push_to_datadog_agent\]/
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: never
+    - !reference [.on_push]
+  tags: ["arch:amd64"]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  variables:
+    SSM_GITHUB_APP_KEY: ci.datadog-agent.platform-github-app-key
+    GITHUB_INSTALLATION_ID: 45116690
+    GITHUB_APP_ID: 682216
+    REF: main
+    BRANCH: buildimages/$CI_COMMIT_BRANCH
+    IMAGES_ID: v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+  script:
+    - set -o pipefail
+    # Get the current go version from the go.env file
+    - >
+      for line in $(cat go.env); do
+        export $line
+      done
+    # Read the Github app private token from AWS SSM
+    - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
+    - pip install -r requirements.txt
+    - pip install PyGithub -c requirements/constraints.txt
+    - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
+
 .winbuild: &winbuild
   stage: build
   rules:
