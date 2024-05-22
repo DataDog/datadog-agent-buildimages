@@ -58,6 +58,7 @@ RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
 # Ubuntu 16.04 comes with gcc 5.4 by default, which doesn't work with the race detector starting with Go 1.22
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
 # it and there's not way to prevent that. So leave it be and use update-alternatives to select 9
+RUN apt install software-properties-common
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
     && apt-get install -y gcc-9 g++-9 \
