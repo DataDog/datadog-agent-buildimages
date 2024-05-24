@@ -46,3 +46,4 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 # Docker images
 /docker-arm64/                      @DataDog/container-integrations @DataDog/agent-ci-experience
 /docker-x64/                        @DataDog/container-integrations @DataDog/agent-ci-experience
+/devcontainer/                      @DataDog/agent-developer-tools

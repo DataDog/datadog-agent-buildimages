@@ -1,0 +1,19 @@
+services:
+  agent-devenv-amd64:
+    hostname: agent-devenv-amd64
+    image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1-amd64
+    init: true
+    privileged: true
+    platform: linux/amd64
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - ${GOPATH}/src:/home/datadog/go/src:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+      - omnibus-cache-amd64:/var/cache/omnibus
+      - go-cache-amd64:/home/datadog/go
+      - home-directory:/home/datadog
+volumes:
+  omnibus-cache-amd64: {}
+  go-cache-amd64: {}
+  home-directory: {}
