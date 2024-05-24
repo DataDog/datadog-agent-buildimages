@@ -27,7 +27,7 @@ test-devcontainer:
   variables:
     PUSH: ""
 
-build-devcontainer-arm64:
+build-devcontainer:
   extends: .build_devcontainer
   stage: build
   needs: [lint_devcontainer]
