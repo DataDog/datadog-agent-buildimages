@@ -24,8 +24,8 @@ test-devcontainer:
   needs: [lint_devcontainer]
   rules:
     - if: '$CI_COMMIT_BRANCH != "main"'
-#  variables:
-#    PUSH: ""
+  variables:
+    PUSH: ""
 
 build-devcontainer:
   extends: .build_devcontainer
