@@ -455,54 +455,20 @@ build_windows_ltsc2022_x64:
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
     - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
 
-release_deb_x64:
-  extends: .release
-  variables:
-    IMAGE: deb_x64
 
-release_rpm_x64:
+release_linux:
   extends: .release
-  variables:
-    IMAGE: rpm_x64
+  parallel:
+    matrix:
+      - IMAGE: [ deb_x64,rpm_x64,suse_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64 ]
 
-release_suse_x64:
-  extends: .release
-  variables:
-    IMAGE: suse_x64
-
-release_deb_arm64:
-  extends: .release
-  variables:
-    IMAGE: deb_arm64
-
-release_rpm_arm64:
-  extends: .release
-  variables:
-    IMAGE: rpm_arm64
-
-release_system-probe_x64:
-  extends: .release
-  variables:
-    IMAGE: system-probe_x64
-
-release_system-probe_arm64:
-  extends: .release
-  variables:
-    IMAGE: system-probe_arm64
-
-release_windows_1809_x64:
+release_windows:
   extends: .winrelease
-  variables:
-    IMAGE: windows_1809_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "1809"
-
-release_windows_ltsc2022_x64:
-  extends: .winrelease
-  variables:
-    IMAGE: windows_ltsc2022_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "ltsc2022"
+  parallel:
+    matrix:
+      - IMAGE: windows_1809_x64
+        DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+        DOCKERHUB_TAG_PREFIX: [ 1809,ltsc2022 ]
 
 release_circleci_runner:
   stage: release
