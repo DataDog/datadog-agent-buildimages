@@ -17,6 +17,8 @@ ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc8
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_ARCH="aarch64-unknown-linux-gnu"
+ARG BINUTILS_VERSION="2.39"
+ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
 ARG CLANG_VERSION=8.0.0
@@ -35,12 +37,22 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
-    libtool autoconf policycoreutils-python \
+    libtool autoconf policycoreutils-python texinfo \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java wget \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
+
+# Upgrade binutils
+RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
+    && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
+    && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
+    && cd "binutils-${BINUTILS_VERSION}" \
+    && ./configure --prefix=/usr/local/binutils --disable-gprofng && make -j$(nproc) && make install \
+    && cd - \
+    && rm -rf "binutils-${BINUTILS_VERSION}" \
+    && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
@@ -102,6 +114,9 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+
+# Override updated linker system-wide
+RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
