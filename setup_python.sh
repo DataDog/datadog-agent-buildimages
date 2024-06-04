@@ -38,7 +38,7 @@ case $DD_TARGET_ARCH in
     OPENSSL_SHA256="88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"
     PYTHON_SHA256="d3019a613b9e8761d260d9ebe3bd4df63976de30464e5c0189566e1ae3f61889"
 
-    wget https://ftp.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
+    wget https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
