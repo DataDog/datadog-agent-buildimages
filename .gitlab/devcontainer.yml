@@ -16,7 +16,8 @@ lint_devcontainer:
     matrix:
       - PLATFORM: [ amd64,arm64 ]
   script:
-    - docker buildx build --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
+    - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - docker buildx build $GO_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
 
 test-devcontainer:
   extends: .build_devcontainer
