@@ -31,9 +31,6 @@ def _get_archive_extension(os: str) -> str:
 
 def _get_expected_sha256(version: str) -> List[Tuple[Platform, str]]:
     """returns a map from platform to sha of the archive"""
-    # weirdly, the stored sha256 for round versions don't have a ".0" in the version
-    # while the archives have the ".0" suffix
-    version = version.removesuffix(".0")
 
     shas: List[Tuple[Platform, str]] = []
     for os, arch in PLATFORMS:
@@ -44,7 +41,9 @@ def _get_expected_sha256(version: str) -> List[Tuple[Platform, str]]:
 
         sha = res.text.strip()
         if len(sha) != 64:
-            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'")
+            raise exceptions.Exit(
+                f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'"
+            )
         shas.append(((os, arch), sha))
     return shas
 
@@ -60,7 +59,9 @@ def _check_archive(version: str, shas: List[Tuple[Platform, str]]):
         req = requests.get(url)
         sha = hashlib.sha256(req.content).hexdigest()
         if sha != expected_sha:
-            raise exceptions.Exit(f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}")
+            raise exceptions.Exit(
+                f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
+            )
 
 
 @task(
@@ -83,7 +84,9 @@ def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
     if check_archive:
         _check_archive(version, shas)
 
-    print(f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:")
+    print(
+        f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
+    )
     for (os, arch), sha in shas:
         platform = f"[{os}/{arch}]"
         print(f"{platform : <15} {sha}")
