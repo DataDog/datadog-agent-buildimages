@@ -1,8 +1,6 @@
 . .\helpers.ps1
-$Version = "6.0.100"
-$url = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe"
 
-$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $url
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $env:DOTNETCORE_URL
 if($isInstalled -and $isCurrent){
     Write-Host -ForegroundColor Green ".NET Core Up to date"
     return
@@ -11,13 +9,12 @@ if(-not $isCurrent){
     Write-Host -ForegroundColor Yellow "Attempting to update .NET Core"
     ## presumably executable knows how to handle upgrade
 }
-Write-Host -ForegroundColor Green "Installing dotnetcore from $($Url)"
+Write-Host -ForegroundColor Green "Installing dotnetcore from $($env:DOTNETCORE_URL)"
 
 $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
-$sha256 = "1fcf6b9efd37d25e75b426cd8430eb3c006092bee07d748967f1dbfc3f9a0190"
 
-Get-RemoteFile -RemoteFile $url -LocalFile $out -VerifyHash $sha256
-Write-Host -ForegroundColor Green Downloading $Url to $out
+Get-RemoteFile -RemoteFile $env:DOTNETCORE_URL -LocalFile $out -VerifyHash $env:DOTNETCORE_SHA256
+Write-Host -ForegroundColor Green Downloading $env:DOTNETCORE_URL to $out
 
 
 # Skip extraction of XML docs - generally not useful within an image/container - helps performance
@@ -31,5 +28,5 @@ Remove-Item $out
 Reload-Path
 # Trigger first run experience by running arbitrary cmd
 dotnet help
-Set-InstalledVersionKey -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $url
-Write-Host -ForegroundColor Green Done with DotNet Core SDK $Version
+Set-InstalledVersionKey -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $env:DOTNETCORE_URL
+Write-Host -ForegroundColor Green Done with DotNet Core SDK $env:DOTNETCORE_VERSION
