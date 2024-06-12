@@ -18,8 +18,8 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
-ARG CLANG_VERSION=8.0.0
-ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
+ARG CLANG_VERSION=18.1.6
+ARG CLANG_SHA256="9ef854b71949f825362a119bf2597f744836cb571131ae6b721cd102ffea8cd0"
 ARG DD_TARGET_ARCH=x64
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
@@ -127,10 +127,10 @@ RUN set -ex \
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
-RUN curl -LO "https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" \
-    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" | sha256sum --check \
-    && tar -xf "clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
-    && rm "clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz"
+RUN curl -LO "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" | sha256sum --check \
+    && tar -xf "clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
+    && rm "clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz"
 
 # To build the EBPF code we need kernel headers for Linux 4.9
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm-x64.tgz \

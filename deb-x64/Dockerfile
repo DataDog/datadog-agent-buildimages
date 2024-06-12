@@ -13,8 +13,8 @@ ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG CMAKE_VERSION=3.23.0
-ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
-ARG CLANG_VERSION=8.0.0
+ARG CMAKE_SHA256="abdf9e930c0069b97cff69156c62e97056f8f9ec24d15cdea743ac555887436e"
+ARG CLANG_VERSION=18.1.6
 ARG CLANG_SHA256="9ef854b71949f825362a119bf2597f744836cb571131ae6b721cd102ffea8cd0"
 ARG DD_TARGET_ARCH=x64
 ARG RUST_VERSION=1.76.0
@@ -166,10 +166,10 @@ COPY setup_codecov.sh /
 RUN ./setup_codecov.sh
 
 # Install clang and llvm version 8
-RUN curl -LO https://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz \
-    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz" | sha256sum --check \
-    && tar -xf clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz --no-same-owner --strip 1 -kC /usr/ \
-    && rm clang+llvm-${CLANG_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+RUN curl -LO "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" | sha256sum --check \
+    && tar -xf "clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
+    && rm "clang+llvm-${CLANG_VERSION}-amd64-pc-solaris2.11.tar.xz"
 
 # To build the EBPF code we need kernel headers for Linux 4.9
 RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb-x64.tgz \

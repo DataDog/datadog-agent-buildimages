@@ -21,8 +21,8 @@ ARG GO_SHA256_LINUX_ARM64
 ARG GO_SHA256_LINUX_ARMV6L
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
-ARG CLANG_VERSION=8.0.0
-ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
+ARG CLANG_VERSION=18.1.6
+ARG CLANG_SHA256="bcb3d53d3bd1027bc7f26544dff8cdc5ff74776add6eb994047326b284147a90"
 ARG DD_TARGET_ARCH=aarch64
 ARG BUNDLER_VERSION=2.4.20
 ARG RUSTUP_VERSION=1.26.0
@@ -195,11 +195,11 @@ RUN ./setup_codecov.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz \
-    && echo "${CLANG_SHA256}  clang_llvm.tar.xz" | sha256sum --check \
-    && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
-    && rm clang_llvm.tar.xz ; fi
-ENV PATH="/opt/clang/bin:$PATH"
+RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -LO "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz
+" \
+    && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz" | sha256sum --check \
+    && tar -xf "clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
+    && rm "clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz"
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
