@@ -51,6 +51,7 @@ foreach($mirror in $mirrors) {
     try {
         Get-RemoteFile -RemoteFile $mirror/$msyszip -LocalFile $out -VerifyHash $Sha256
         $downloadSuccessful = $True
+        break;
     } catch {
     }
 }
