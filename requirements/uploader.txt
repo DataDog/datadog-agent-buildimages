@@ -1,8 +1,0 @@
--c constraints.txt
-
-awscli
-codeowners
-datadog-api-client
-invoke
-jira
-requests

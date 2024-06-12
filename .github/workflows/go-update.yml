@@ -55,7 +55,8 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         id: autocommit
         with:
-          commit_message: Update go version to ${{ inputs.go_version }}
+          # [push_to_datadog_agent] prefix trigger 'push_to_datadog_agent' gitlab job 
+          commit_message: "[push_to_datadog_agent] Update go version to ${{ inputs.go_version }}"
           branch: ${{ env.BRANCH_NAME }}
           create_branch: true
 

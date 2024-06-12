@@ -12,7 +12,9 @@ jobs:
     strategy:
       matrix:
         channel_variables:
-          - SLACK_AGENT_PLATFORM_REVIEWS_ID
+          - SLACK_AGENT_BUILD_AND_RELEASES_REVIEWS_ID
+          - SLACK_AGENT_CI_EXPERIENCE_REVIEWS_ID
+          - SLACK_AGENT_DEVELOPER_TOOLS_REVIEWS_ID
     steps:
       - uses: DataDog/slapr@master
         env:

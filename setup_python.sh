@@ -10,7 +10,7 @@ function detect_distro(){
 }
 
 PY2_VERSION=2
-PY3_VERSION=3.11.5
+PY3_VERSION=3.11.8
 DD_CONDA_VERSION=4.9.2-7
 
 case $DD_TARGET_ARCH in
@@ -34,11 +34,11 @@ case $DD_TARGET_ARCH in
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
         yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make perl-IPC-Cmd
     fi
-    OPENSSL_VERSION="3.0.12"
-    OPENSSL_SHA256="f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61"
-    PYTHON_SHA256="a12a0a013a30b846c786c010f2c19dd36b7298d888f7c4bd1581d90ce18b5e58"
+    OPENSSL_VERSION="3.0.13"
+    OPENSSL_SHA256="88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"
+    PYTHON_SHA256="d3019a613b9e8761d260d9ebe3bd4df63976de30464e5c0189566e1ae3f61889"
 
-    wget https://ftp.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
+    wget https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
     tar xzf openssl-$OPENSSL_VERSION.tar.gz
     pushd openssl-$OPENSSL_VERSION
@@ -110,5 +110,7 @@ fi
 
 # Add python3's invoke to the PATH even when ddpy3 is not active, since we want to use python3 invoke to run python2 tests
 ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
+
+conda clean -a
 
 echo "conda activate ddpy3" >> /root/.bashrc

@@ -2,8 +2,8 @@ FROM ubuntu as CURL_GETTER
 RUN apt-get update && apt-get install -y wget
 ENV CURL_VERSION=7.79.1
 ENV CURL_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
-ENV CACERT_BUNDLE_VERSION=2023-12-12
-ENV CACERT_BUNDLE_SHA256="ccbdfc2fe1a0d7bbbb9cc15710271acf1bb1afe4c8f1725fe95c4c7733fcbe5a"
+ENV CACERT_BUNDLE_VERSION=2024-03-11
+ENV CACERT_BUNDLE_SHA256="1794c1d4f7055b7d02c2170337b61b48a2ef6c90d77e95444fd2596f4cac609f"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
@@ -16,29 +16,27 @@ FROM opensuse/archive:42.1
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ARG IBM_MQ_VERSION=9.2.4.0
-ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG CMAKE_VERSION=3.23.0
 ARG CMAKE_SHA256="5eaf3ded8255b3d149c7aad68c473f01c2345dce872e03c92f2e9c0185dfa75a"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.64.0
+ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
-ARG GCC_VERSION=10.4.0
-ARG GCC_SHA256=ab1974017834430de27fd803ade4389602a7d6ca1362496c57bef384b2a4cb07
 ARG BUNDLER_VERSION=2.4.20
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG LIBLZMA_VERSION=5.2.11
+ARG GETTEXT_VERSION=0.19.8
+ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f
 
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
-ENV GCC_VERSION $GCC_VERSION
 
 ENV PATH="/opt/datadog/bin:${PATH}"
 
@@ -56,23 +54,23 @@ RUN sed -i "s/baseurl=http:\/\/download.opensuse.org\/update\/42.1\//baseurl=htt
 # Install all distro-level dependencies
 RUN zypper clean -a && zypper --non-interactive refresh && \
     zypper --non-interactive install \
-      bison bzip2 curl flex gawk gcc48 gcc48-c++ gdbm-devel gettext-tools git \
+      bison bzip2 curl flex gawk gcc5 gcc5-c++ gdbm-devel gettext-tools git \
       gettext-runtime less libffi-devel libtool libcurl-devel libexpat-devel \
       libopenssl1_0_0 libopenssl-devel make openssl perl perl-Module-Build \
       patch postgresql-devel procps rsync readline-devel rpm-build sqlite3-devel \
       tar xz which zlib-devel java mozilla-nspr-devel mozilla-nss-devel popt-devel \
       libbeecrypt-devel file-magic file-devel libarchive-devel libdb-4_8 libdb-4_8-devel \
-      xz-devel patchelf makeinfo wget
+      patchelf makeinfo wget && \
+      zypper --non-interactive remove gcc && \
+      update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 20 && \
+      update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-5 20 && \
+      update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 20
 
 # Remove all zypper repositories in the image to prevent errors when using zypper.
 # While the repos are available right now, they might go out of order in the future,
 # which could then make builds fail. We shouldn't be installing any packages
 # later on anyway.
 RUN zypper clean -a && rm -rf /etc/zypp/repos.d/*
-
-# Make gcc 4.8 the default one
-RUN ln -sfn /usr/bin/gcc-4.8 /usr/bin/gcc
-RUN ln -sfn /usr/bin/g++-4.8 /usr/bin/g++
 
 # Update curl with a statically linked binary
 COPY --from=CURL_GETTER /cacert.pem /etc/ssl/certs/ca-certificates.crt
@@ -92,13 +90,6 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
-
-# IBM MQ
-RUN mkdir -p /opt/mqm \
-    && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
-    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
-    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
-    && rm -rf /tmp/mq_client.tar.gz
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
@@ -146,7 +137,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-rpm
     && echo "1657ffa995654bc96405d4dbce0b17a55cd1eabd19479bc1611b0cb4f3c01fcc  kernel-4.9-headers-rpm-x64.tgz" | sha256sum --check \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
-# Rust is needed to compile some python libs
+# Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
@@ -154,12 +145,6 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
-
-# gcc
-COPY build-gcc.sh /
-RUN chmod +x /build-gcc.sh \
-    && /build-gcc.sh \
-    && rm /build-gcc.sh
 
 # Upgrade binutils
 RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
@@ -174,6 +159,22 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 # Use our updated binutils version
 ENV PATH="/usr/local/binutils/bin:$PATH"
 
+# xz needs gettext 0.19.6 or newer
+RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+    && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
+    && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
+    && cd "gettext-${GETTEXT_VERSION}" \
+    && ./configure --prefix=/usr && make -j$(nproc) && make install \
+    && cd / \
+    && rm -rf "gettext-${GETTEXT_VERSION}*"
+
+# Now install a recent enough liblzma (5.2+) which supports parallel compression
+RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
+    && cd xz \
+    && autoreconf -vif \
+    && ./configure --prefix=/usr/ \
+    && make -j$(nproc) && make install \
+    && rm -rf /xz
 
 RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/rpm-4.14.3.tar.bz2 \
     && cd /tmp \
@@ -181,17 +182,15 @@ RUN curl -sL -o /tmp/rpm-4.14.3.tar.bz2 http://ftp.rpm.org/releases/rpm-4.14.x/r
     && tar -xjf /tmp/rpm-4.14.3.tar.bz2 \
     && cd rpm-4.14.3/ \
     && ./configure --with-posixmutexes --with-external-db --without-lua CPPFLAGS="-I/usr/include/nspr4 -I/usr/include/nss3 -I/usr/include/db4"\
-    && make \
+    && make -j$(nproc) \
     && make install \
-    && ldconfig
+    && ldconfig \
+    && rm -rf /tmp/rpm-4.14.3*
 
 # Rebuild RPM database with the new rpm
 RUN mkdir -p /usr/local/var/lib/rpm \
     && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
     && /usr/local/bin/rpm --rebuilddb
-
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

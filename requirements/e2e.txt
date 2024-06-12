@@ -10,3 +10,4 @@ packaging
 reno
 requests
 toml
+python-gitlab

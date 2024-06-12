@@ -65,6 +65,7 @@ try {
         .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
         # # vcpkg depends on cmake
         .\helpers\phase1\install_vcpkg.ps1
+        .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256
     }
 
     if ($Phase -eq 0 -or $Phase -eq 2) {
@@ -78,7 +79,6 @@ try {
     }
 
     if ($Phase -eq 0 -or $Phase -eq 3) {
-        .\helpers\phase3\install_ibm_mq.ps1 -Version $ENV:IBM_MQ_VERSION -Sha256 $ENV:IBM_MQ_SHA256
         .\helpers\phase3\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
         .\helpers\phase3\install_go.ps1
         .\helpers\phase3\install_codeql.ps1
@@ -86,6 +86,7 @@ try {
         .\helpers\phase3\install_java.ps1
         .\helpers\phase3\install_winsign.ps1
         .\helpers\phase3\install_rust.ps1 -Rustup_Version $ENV:RUSTUP_VERSION -Rustup_Sha256 $ENV:RUSTUP_SHA256 -Rust_Version $ENV:RUST_VERSION
+        .\helpers\phase3\install_ci_uploader.ps1 -Version $ENV:CI_UPLOADER_VERSION -Sha256 $ENV:CI_UPLOADER_SHA256
         ## # Add signtool to path
         Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
         & .\set_cpython_compiler.cmd

@@ -6,6 +6,8 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG PYTHON_VERSION=3.11.8
+
 # Pre-requisites
 # Python 3 dev is required for rtloader
 RUN set -ex \
@@ -28,15 +30,24 @@ RUN set -ex \
     libsystemd-dev \
     make \
     pkg-config \
-    python3 \
-    python3-dev \
-    python3-distutils \
-    python3-pip \
-    python3-setuptools \
-    python3-yaml \
     snmp-mibs-downloader \
     ssh \
-    xz-utils
+    build-essential  \
+    zlib1g-dev  \
+    libbz2-dev  \
+    libreadline-dev  \
+    libsqlite3-dev  \
+    wget  \
+    llvm  \
+    libncurses5-dev  \
+    xz-utils  \
+    tk-dev  \
+    libxml2-dev  \
+    libxmlsec1-dev  \
+    libffi-dev  \
+    liblzma-dev &&  \
+    apt-get clean &&  \
+    rm -rf /var/lib/apt/lists/*
 
 # Golang
 ARG GO_VERSION
@@ -62,24 +73,23 @@ RUN set -ex \
     && mv $CMAKE_NAME $CMAKE_DEST_DIR \
     && rm $CMAKE_ARCHIVE
 
-# Codecov
-ENV CODECOV_VERSION=0.6.1
-RUN curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov.SHA256SUM \
-    && curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/linux/codecov.SHA256SUM.sig \
-    && gpgv codecov.SHA256SUM.sig codecov.SHA256SUM \
-    && shasum -a 256 -c codecov.SHA256SUM \
-    && rm codecov.SHA256SUM.sig codecov.SHA256SUM \
-    && mv codecov /usr/local/bin/codecov \
-    && chmod +x /usr/local/bin/codecov
+# Install Codecov uploader
+COPY setup_codecov.sh /
+RUN ./setup_codecov.sh
 
 # Other dependencies
 
 # Python
+ENV PYENV_ROOT="/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
 COPY requirements.txt /
 COPY requirements /requirements
-RUN python3 -m pip install -r requirements.txt -r requirements/circleci.txt
+
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+     pyenv install ${PYTHON_VERSION} && \
+     pyenv global ${PYTHON_VERSION} && \
+     pip3 install -r requirements.txt -r requirements/circleci.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

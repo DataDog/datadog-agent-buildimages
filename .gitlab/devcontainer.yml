@@ -1,0 +1,36 @@
+lint_devcontainer:
+  stage: lint
+  needs: []
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
+  script:
+    - hadolint devcontainer/Dockerfile
+  tags: ["arch:amd64"]
+
+.build_devcontainer:
+  tags: [ "arch:amd64" ]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10.3
+  variables:
+    DOCKER_TARGET: registry.ddbuild.io/ci/datadog-agent-devenv:1
+    PUSH: --push
+  parallel:
+    matrix:
+      - PLATFORM: [ amd64,arm64 ]
+  script:
+    - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - docker buildx build $GO_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
+
+test-devcontainer:
+  extends: .build_devcontainer
+  stage: test
+  needs: [lint_devcontainer]
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "main"'
+  variables:
+    PUSH: ""
+
+build-devcontainer:
+  extends: .build_devcontainer
+  stage: build
+  needs: [lint_devcontainer]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
