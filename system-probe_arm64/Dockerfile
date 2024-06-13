@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libzip-dev \
         $(apt-cache search --names-only linux-headers-5.* | \
           cut -d " " -f 1 | \
-          grep "\-arm64$" | \
+          grep "[0-9]-arm64$" | \
           sort -Vr | \
           head -n 1 | \
           cut -f 2-3 -d " ") \
