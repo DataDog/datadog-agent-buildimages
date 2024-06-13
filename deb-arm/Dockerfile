@@ -198,7 +198,7 @@ RUN ./setup_codecov.sh
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -LO "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz" \
     && echo "${CLANG_SHA256}  clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz" | sha256sum --check \
     && tar -xf "clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz" --no-same-owner --strip 1 -kC /usr/ \
-    && rm "clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz"
+    && rm "clang+llvm-${CLANG_VERSION}-aarch64-linux-gnu.tar.xz"; fi
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
