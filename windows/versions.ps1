@@ -19,6 +19,10 @@ $SoftwareTable = @{
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
 
+    "DOTNETCORE_VERSION"="8.0.302";
+    "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
+    "DOTNETCORE_URL"="https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe";
+
     "RUBY_VERSION"="2.6.6-1";
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
     "PYTHON_VERSION"="3.11.8";
