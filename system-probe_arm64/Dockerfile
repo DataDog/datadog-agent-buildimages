@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
@@ -8,8 +8,6 @@ ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
-# We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
-RUN echo "deb https://archive.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
@@ -24,21 +22,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libedit-dev \
         libelf-dev \
         libfl-dev \
-        libstdc++-8-dev \
+        libstdc++-9-dev \
         libtinfo-dev \
         libtinfo5 \
         libxml2-dev \
         libzip-dev \
         $(apt-cache search --names-only linux-headers-5.* | \
           cut -d " " -f 1 | \
-          grep "\-common$" | \
-          sed -rn 's/(.*deb10\.)([0-9]+)-common/\2 \0 \1\2-arm64/p' | \
-          sort -gr | \
+          grep "[0-9]-arm64$" | \
+          sort -Vr | \
           head -n 1 | \
           cut -f 2-3 -d " ") \
         linux-libc-dev \
         make \
-        ninja-build/buster-backports \
+        ninja-build \
         openssh-client \
         patch \
         pkg-config \
