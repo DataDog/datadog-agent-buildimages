@@ -184,6 +184,9 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest \
+    # For `inv generate-licenses`
+    && go install github.com/goware/modvendor@latest && go install github.com/frapposelli/wwhrd@latest
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
