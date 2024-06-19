@@ -1,7 +1,8 @@
 FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 
 ARG PYTHON_VERSION=3.11.8
-ARG CI_UPLOADER_VERSION=2.37.0
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 
 RUN apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \

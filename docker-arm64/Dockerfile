@@ -1,6 +1,8 @@
 FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 
 ARG PYTHON_VERSION=3.11.8
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 RUN apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
@@ -39,3 +41,8 @@ RUN pip install -r requirements.txt
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# CI uploader, to send tags for extra visibility into CI
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
+  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+  chmod +x /usr/local/bin/datadog-ci
