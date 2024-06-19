@@ -10,6 +10,7 @@ docker
 docker-squash
 dulwich
 invoke
+mypy
 packaging
 parameterized
 python-gitlab
@@ -18,5 +19,8 @@ requests
 ruff
 semver
 toml
+types-tabulate
+types-toml
+types-pyyaml
 urllib3
 vulture
