@@ -19,8 +19,9 @@ requests
 ruff
 semver
 toml
+types-pyyaml
+types-requests
 types-tabulate
 types-toml
-types-pyyaml
 urllib3
 vulture
