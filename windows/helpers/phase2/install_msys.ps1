@@ -35,13 +35,29 @@ if($isInstalled -and -not $isCurrent) {
     Write-Host -ForegroundColor Yellow "upgrading MSYS"
     Remove-Item -Recurse -Force "$($InstallPath)\msys64"
 }
-# https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20230318.tar.xz
-$msyszip = "https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
+
+# First mirror in the list is tried first
+$mirrors = @(
+    "https://mirror.umd.edu/msys2";
+    "https://repo.msys2.org"
+)
 
 Write-Host  -ForegroundColor Green starting with MSYS
 $out = "$($PSScriptRoot)\msys.tar.xz"
-
-Get-RemoteFile -RemoteFile $msyszip -LocalFile $out -VerifyHash $Sha256
+$msyszip = "distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
+$downloadSuccessful = $False
+foreach($mirror in $mirrors) {
+    Write-Host "Trying $mirror"
+    try {
+        Get-RemoteFile -RemoteFile $mirror/$msyszip -LocalFile $out -VerifyHash $Sha256
+        $downloadSuccessful = $True
+        break;
+    } catch {
+    }
+}
+if (!$downloadSuccessful) {
+    throw "Failed to download MSYS2 from all mirrors"
+}
 
 # uncompress the tar-xz into a tar
 $msystar = "msys.tar"
