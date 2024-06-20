@@ -4,6 +4,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG DD_TARGET_ARCH=aarch64
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
@@ -63,6 +65,11 @@ RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.g
   && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
+
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
+  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+  chmod +x /usr/local/bin/datadog-ci
 
 # install clang from the website since the package manager can change at any time
 RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
