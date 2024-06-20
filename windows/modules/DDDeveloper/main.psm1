@@ -1,6 +1,7 @@
 function Use-BuildEnv {
     param (
-        [Parameter(Mandatory = $false)][string] $GoVer
+        [Parameter(Mandatory = $false)][string] $GoVer,
+        [Parameter(Mandatory = $false)][switch] $NoCacheIntegrationsCore    
     )
 
     # put python in front of `working path`.  Windows 10 includes a dummy python in the path
@@ -65,6 +66,11 @@ function Use-BuildEnv {
     $Env:PATH=$newPathEntries -join ";"
     $Env:BUILDENV="Agent-Build"
 
+    # set the environment variables that default to ussing cached integrations-core
+    if(!$NoCacheIntegrationsCore) {
+        $Env:INTEGRATION_WHEELS_CACHE_BUCKET="dd-agent-omnibus" 
+        $Env:INTEGRATION_WHEELS_SKIP_CACHE_UPLOAD="1"
+    }
     # enable RIDK in this shell
     & $Env:RIDK enable
 
