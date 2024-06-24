@@ -4,7 +4,7 @@ param (
 )
 
 $CodecovPath = "c:\program files\codecov"
-$CodecovUrl = "https://uploader.codecov.io/$Version/windows/codecov.exe"
+$CodecovUrl = "https://cli.codecov.io/$Version/windows/codecov.exe"
 $OutFile = "$($PSScriptRoot)\codecov.exe"
 
 if (Test-Path -Path "$CodecovPath\codecov.exe") {
