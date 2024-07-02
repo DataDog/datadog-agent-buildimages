@@ -41,9 +41,22 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
-# The last two lines contain dependencies for build of newer rpm
-RUN yum install -y epel-release && \
-  yum -y install \
+# Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
+    sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
+    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo
+
+RUN yum -y install epel-release centos-release-scl \
+  && yum-config-manager --enable rhel-server-rhscl-7-rpms
+
+# Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
+# Do it again because the previous command added new repos
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
+    sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
+    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo
+
+    # The last two lines contain dependencies for build of newer rpm
+RUN yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent perl-core \
   pkgconfig \
@@ -51,16 +64,13 @@ RUN yum install -y epel-release && \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel patchelf \
-  && yum -y install centos-release-scl \
-  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
-  && yum -y install devtoolset-11 \
+  texinfo wget policycoreutils-python libarchive-devel patchelf devtoolset-11 \
   && yum clean all \
   && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
-# We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
+# We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
 
 # External calls configuration
