@@ -25,7 +25,7 @@ $VSPackages = @(
     "Microsoft.VisualStudio.Workload.NativeDesktop",
     "Microsoft.VisualStudio.Workload.NetCoreTools",
     "Microsoft.VisualStudio.Workload.WebBuildTools",
-    "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Workload.VCTools"
 )
 
 $VSPackagesDesktop = @(
