@@ -39,6 +39,11 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # persist RHEL major for readable output
 RUN echo $(cat /etc/redhat-release | cut -d'.' -f1 | awk '{print $NF}') > /etc/redhat-release-major
 
+# Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
+    sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
+    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo \
+
 RUN yum install -y epel-release
 
 # Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
