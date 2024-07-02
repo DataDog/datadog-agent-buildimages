@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.11.8
@@ -44,10 +44,8 @@ COPY .curlrc .wgetrc /root/
 
 RUN git clone https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
-RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff && \
+RUN git reset --hard 77a72987353fcae8ce330fd87d4c7afb7677a169 && \
     git submodule update --init
-COPY btf-gen/Makefile.patch ./
-RUN git apply Makefile.patch
 
 RUN make -C src/ V=1 install
 
