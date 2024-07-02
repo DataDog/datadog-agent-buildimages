@@ -3,32 +3,29 @@ param (
     [Parameter(Mandatory=$false)][switch]$NoQuiet
 )
 
-
 $VSPackages = @(
-    "Microsoft.VisualStudio.Workload.ManagedDesktop",
-    "Microsoft.VisualStudio.Workload.NetCoreTools",
-    "Microsoft.VisualStudio.Workload.NativeDesktop",
-    "Microsoft.VisualStudio.Workload.WebBuildTools",
-    "Microsoft.NetCore.Component.SDK",
-    "Microsoft.Net.Component.4.7.TargetingPack",
-    "Microsoft.Net.Component.4.5.TargetingPack",
-    "Microsoft.Net.Component.4.6.2.TargetingPack",
+    "Microsoft.Net.Component.4.7.2.TargetingPack",
     "Microsoft.Net.Component.4.8.SDK",
-    "Microsoft.VisualStudio.Component.FSharp",
-    "Microsoft.VisualStudio.Component.FSharp.WebTemplates",
-    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
-    "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.Net.Component.4.8.TargetingPack",
+    "Microsoft.Net.ComponentGroup.4.8.DeveloperTools",
+    "Microsoft.NetCore.Component.SDK",
     "Microsoft.VisualStudio.Component.VC.ATL",
-    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
-    "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
-    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
-    "Microsoft.VisualStudio.Component.Windows10SDK.18362", 
     "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
     "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre",
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",
+    "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64",
-    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64.Spectre"
+    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64.Spectre",
+    "Microsoft.VisualStudio.Component.Windows11SDK.22621",
+    "Microsoft.VisualStudio.Component.Windows10SDK.18362",
+    "Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64",
+    "Microsoft.VisualStudio.Workload.ManagedDesktop",
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
+    "Microsoft.VisualStudio.Workload.NetCoreTools",
+    "Microsoft.VisualStudio.Workload.WebBuildTools",
+    "Microsoft.VisualStudio.Workload.VCTools",
 )
 
 $VSPackagesDesktop = @(
