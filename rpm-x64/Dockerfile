@@ -44,16 +44,8 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
     sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
     sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo
 
-RUN yum install -y epel-release
-
-# Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
-# Do it again because epel-release adds new repos
-RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
-    sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
-    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo
-
-# The last two lines contain dependencies for build of newer rpm
-RUN yum -y install \
+    # The last two lines contain dependencies for build of newer rpm
+RUN yum install -y epel-release && yum -y install \
   @development \
   which perl-ExtUtils-MakeMaker perl-parent perl-core \
   pkgconfig \
@@ -61,10 +53,18 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel patchelf \
-  && yum -y install centos-release-scl \
-  && yum-config-manager --enable rhel-server-rhscl-7-rpms \
-  && yum -y install devtoolset-11 \
+  texinfo wget policycoreutils-python libarchive-devel patchelf
+
+RUN && yum -y install centos-release-scl \
+  && yum-config-manager --enable rhel-server-rhscl-7-rpms
+
+# Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
+# Do it again because epel-release adds new repos
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
+    sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
+    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo \
+
+RUN yum -y install devtoolset-11 \
   && yum clean all \
   && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 
