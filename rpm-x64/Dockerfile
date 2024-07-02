@@ -55,14 +55,14 @@ RUN yum install -y epel-release && yum -y install \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
   texinfo wget policycoreutils-python libarchive-devel patchelf
 
-RUN && yum -y install centos-release-scl \
+RUN yum -y install centos-release-scl \
   && yum-config-manager --enable rhel-server-rhscl-7-rpms
 
 # Centos 7 EOLed on July 1st, 2024. We need to switch to vault.centos.org to get the packages
 # Do it again because epel-release adds new repos
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
     sed -i 's/^#.*baseurl=http/baseurl=http/g' /etc/yum.repos.d/*.repo && \
-    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo \
+    sed -i 's/^mirrorlist=http/#mirrorlist=http/g' /etc/yum.repos.d/*.repo
 
 RUN yum -y install devtoolset-11 \
   && yum clean all \
