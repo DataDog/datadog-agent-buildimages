@@ -44,6 +44,10 @@ COPY .curlrc .wgetrc /root/
 
 RUN git clone https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
+
+# Pinned to the latest version to avoid having bpftool change under us when updating images.
+# Can be updated to a newer version if needed, no restrictions on the specific version
+# for now.
 RUN git reset --hard 77a72987353fcae8ce330fd87d4c7afb7677a169 && \
     git submodule update --init
 
