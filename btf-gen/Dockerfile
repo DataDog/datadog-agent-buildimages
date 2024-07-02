@@ -42,9 +42,10 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
+RUN git clone https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
-RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff
+RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff && \
+    git submodule update --init
 COPY btf-gen/Makefile.patch ./
 RUN git apply Makefile.patch
 
