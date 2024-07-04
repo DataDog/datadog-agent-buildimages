@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -23,10 +23,12 @@ COPY .curlrc .wgetrc /root/
 
 RUN git clone https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
-RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff && \
+
+# Pinned to the latest version to avoid having bpftool change under us when updating images.
+# Can be updated to a newer version if needed, no restrictions on the specific version
+# for now.
+RUN git reset --hard 77a72987353fcae8ce330fd87d4c7afb7677a169 && \
     git submodule update --init
-COPY btf-gen/Makefile.patch ./
-RUN git apply Makefile.patch
 
 RUN make -C src/ V=1 install
 
