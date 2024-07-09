@@ -2,9 +2,12 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Must be first, because if a developer already has installed the WDK
-# then the if condition for the `Get-InstallUpgradeStatus` call will cause this to not be executed.
+$buildTasksMissing = $False
 if (-Not (Test-Path "C:\Program Files (x86)\Windows Kits\10\build\bin\Microsoft.DriverKit.Build.Tasks.17.0.dll")) {
+    $buildTasksMissing = $True
+}
+
+function Install-MissingBuildTasks() {
     # Install missing build task
     Write-Host -ForegroundColor Green "Installing missing build tasks"
     if (-Not (test-path c:\tmp)) {
@@ -24,12 +27,16 @@ if (-Not (Test-Path "C:\Program Files (x86)\Windows Kits\10\build\bin\Microsoft.
 $wdk = 'https://go.microsoft.com/fwlink/?linkid=2085767' ## 1903 WDK link
 
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "wdk" -Keyname "DownloadFile" -TargetValue $wdk
-if($isInstalled) {
-    if(-not $isCurrent){
+if ($isInstalled) {
+    if (-not $isCurrent) {
         Write-Host -ForegroundColor Yellow "Not attempting to upgrade WDK"
+    }
+    if ($buildTasksMissing) {
+        Install-MissingBuildTasks()
     }
     return
 }
+
 Write-Host -ForegroundColor Green Installing WDK
 $out = "$($PSScriptRoot)\wdksetup.exe"
 $sha256 = "c35057cb294096c63bbea093e5024a5fb4120103b20c13fa755c92f227b644e5"
@@ -59,3 +66,7 @@ remove-item -Force -Path c:\tmp\wdk.vsix
 #.`clean_tmps.ps1
 Set-InstalledVersionKey -Component "wdk" -KeyName "DownloadFile" -TargetValue $wdk
 Write-Host -ForegroundColor Green Done with WDK
+
+if ($buildTasksMissing) {
+    Install-MissingBuildTasks()
+}
