@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.11.8
@@ -42,11 +42,14 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-RUN git clone --recurse-submodules https://github.com/libbpf/bpftool.git
+RUN git clone https://github.com/libbpf/bpftool.git
 WORKDIR bpftool
-RUN git reset --hard cb3deb23d34abdb33f6bcc5fadeee676e538e2ff
-COPY btf-gen/Makefile.patch ./
-RUN git apply Makefile.patch
+
+# Pinned to the latest version to avoid having bpftool change under us when updating images.
+# Can be updated to a newer version if needed, no restrictions on the specific version
+# for now.
+RUN git reset --hard 77a72987353fcae8ce330fd87d4c7afb7677a169 && \
+    git submodule update --init
 
 RUN make -C src/ V=1 install
 
