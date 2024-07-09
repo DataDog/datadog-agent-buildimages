@@ -7,6 +7,9 @@ $ProgressPreference = 'SilentlyContinue'
 if (-Not (Test-Path "C:\Program Files (x86)\Windows Kits\10\build\bin\Microsoft.DriverKit.Build.Tasks.17.0.dll")) {
     # Install missing build task
     Write-Host -ForegroundColor Green "Installing missing build tasks"
+    if (-Not (test-path c:\tmp)) {
+         New-Item -ItemType Directory c:\tmp
+    }
     # Avoid NuGet rate limits by using cached package in our S3 bucket
     # Get-RemoteFile -RemoteFile "https://www.nuget.org/api/v2/package/Microsoft.Windows.WDK.x64/10.0.26100.1" -LocalFile "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1.nupkg" -VerifyHash "247B2919AE451F65BA5F1CD51C7C39730FB0FC383D607F3E8AB317FDDC8A8239"
     Get-RemoteFile -RemoteFile "https://dd-agent-omnibus.s3.amazonaws.com/microsoft.windows.wdk.x64.10.0.26100.1.nupkg" -LocalFile "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1.nupkg" -VerifyHash "247B2919AE451F65BA5F1CD51C7C39730FB0FC383D607F3E8AB317FDDC8A8239"
@@ -16,7 +19,6 @@ if (-Not (Test-Path "C:\Program Files (x86)\Windows Kits\10\build\bin\Microsoft.
     Remove-Item -Force -Recurse "c:\tmp\*"
     Write-Host -ForegroundColor Green "Done with missing build tasks"
 }
-
 
 ## $wdk ='https://go.microsoft.com/fwlink/?linkid=2026156'
 $wdk = 'https://go.microsoft.com/fwlink/?linkid=2085767' ## 1903 WDK link
