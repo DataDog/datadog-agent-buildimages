@@ -32,7 +32,7 @@ if ($isInstalled) {
         Write-Host -ForegroundColor Yellow "Not attempting to upgrade WDK"
     }
     if ($buildTasksMissing) {
-        Install-MissingBuildTasks()
+        Install-MissingBuildTasks
     }
     return
 }
@@ -68,5 +68,5 @@ Set-InstalledVersionKey -Component "wdk" -KeyName "DownloadFile" -TargetValue $w
 Write-Host -ForegroundColor Green Done with WDK
 
 if ($buildTasksMissing) {
-    Install-MissingBuildTasks()
+    Install-MissingBuildTasks
 }
