@@ -42,3 +42,14 @@ remove-item -Force -Path c:\tmp\wdk.vsix
 #.`clean_tmps.ps1
 Set-InstalledVersionKey -Component "wdk" -KeyName "DownloadFile" -TargetValue $wdk
 Write-Host -ForegroundColor Green Done with WDK
+
+# Install missing build task
+Write-Host -ForegroundColor Installing missing build tasks
+# Avoid NuGet rate limits by using cached package in our S3 bucket
+# Get-RemoteFile -RemoteFile "https://www.nuget.org/api/v2/package/Microsoft.Windows.WDK.x64/10.0.26100.1" -LocalFile "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1.nupkg" -VerifyHash "247B2919AE451F65BA5F1CD51C7C39730FB0FC383D607F3E8AB317FDDC8A8239"
+Get-RemoteFile -RemoteFile"https://dd-agent-omnibus.s3.amazonaws.com/microsoft.windows.wdk.x64.10.0.26100.1.nupkg" -LocalFile "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1.nupkg" -VerifyHash "247B2919AE451F65BA5F1CD51C7C39730FB0FC383D607F3E8AB317FDDC8A8239"
+Start-Process "7z" -ArgumentList "x -oc:\tmp c:\tmp\microsoft.windows.wdk.x64.10.0.26100.1.nupkg" -wait
+Copy-Item "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1\c\build\10.0.26100.0\bin\Microsoft.DriverKit.Build.Tasks.17.0.dll" "C:\Program Files (x86)\Windows Kits\10\build\bin\"
+Copy-Item "c:\tmp\Microsoft.Windows.WDK.x64.10.0.26100.1\c\build\10.0.26100.0\bin\Microsoft.DriverKit.Build.Tasks.PackageVerifier.17.0.dll" "C:\Program Files (x86)\Windows Kits\10\build\bin\"
+Remove-Item -Force -Recurse "c:\tmp\microsoft.windows.wdk.x64.10.0.26100.1.nupkg"
+Write-Host -ForegroundColor Green Done with missing build tasks
