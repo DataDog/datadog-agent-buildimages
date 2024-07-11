@@ -22,10 +22,11 @@ function Install-MissingBuildTasks() {
     if (-Not (test-path c:\tmp)) {
          New-Item -ItemType Directory c:\tmp
     }
-    Copy-Item -Path $sdkLocation -Destination c:\tmp
+
+    Move-Item -Path $sdkLocation -Destination c:\tmp
     Get-ChildItem c:\tmp
     Write-Host -ForegroundColor Green "Done downloading SDK, extracting..."
-    Start-Process "7z" -ArgumentList "x -oc:\tmp $sdkLocation" -wait
+    Start-Process "7z" -ArgumentList "x -y -oc:\tmp c:\tmp\$sdkFileName" -wait
     Copy-Item "c:\tmp\c\build\10.0.26100.0\bin\Microsoft.DriverKit.Build.Tasks.17.0.dll" "C:\Program Files (x86)\Windows Kits\10\build\bin\"
     Copy-Item "c:\tmp\c\build\10.0.26100.0\bin\Microsoft.DriverKit.Build.Tasks.PackageVerifier.17.0.dll" "C:\Program Files (x86)\Windows Kits\10\build\bin\"
     Remove-Item -Force -Recurse "c:\tmp\*"
