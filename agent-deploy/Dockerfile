@@ -24,6 +24,8 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     AWSCLI_VERSION=$AWSCLI_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG
 
+COPY agent-deploy/get_github_token.py /get_github_token.py
+
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
@@ -141,6 +143,18 @@ RUN chmod +x /deploy_scripts/check_apt_pool.sh
 RUN chmod +x /deploy_scripts/fail_deb_is_pkg_already_exists.sh
 RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
                      bundle install"
+
+RUN export GITHUB_KEY_B64="$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.platform-github-app-key --with-decryption --query "Parameter.Value" --out text)" && \
+    export GITHUB_APP_ID=682216 && \
+    export GH_TOKEN="$(python3 /get_github_token.py)" && \
+    git config --global credential.helper "!f() { echo username=x-access-token; echo "password=$GH_TOKEN"; };f" && \
+    cd /tmp && \
+    git clone https://github.com/DataDog/rc-employee-configurations && \
+    cd rc-employee-configurations && \
+    go install && \
+    rm -rf /tmp/rc-employee-configurations
+
+ENV PATH="$PATH:/root/go/bin/"
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
