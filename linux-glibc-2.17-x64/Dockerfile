@@ -13,6 +13,9 @@ ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e
 ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH x64
 
+# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
+
 RUN apt update -qy && apt install -y \
     wget xz-utils gpg build-essential flex texinfo unzip \
     help2man file gawk libtool-bin bison libncurses-dev \
@@ -50,8 +53,6 @@ RUN mkdir -p /opt/mqm \
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements
-
-RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
@@ -94,7 +95,6 @@ RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
-ENV PATH=/usr/lib/go-1.20/bin:$PATH
 ENV PATH=/opt/toolchains/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
