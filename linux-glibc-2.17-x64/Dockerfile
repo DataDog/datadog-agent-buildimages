@@ -1,24 +1,28 @@
 FROM ubuntu:22.04
 
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ARG CTNG_VERSION=1.26.0
-ENV CONDA_PATH /root/miniconda3
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
+ARG RUST_VERSION=1.76.0
+ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+ARG RUSTUP_VERSION=1.26.0
+ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 
+ENV CONDA_PATH /root/miniconda3
 ENV DD_TARGET_ARCH x64
 
 RUN apt update -qy && apt install -y \
     wget xz-utils gpg build-essential flex texinfo unzip \
     help2man file gawk libtool-bin bison libncurses-dev \
-    python-is-python3
+    python-is-python3 git cmake curl fakeroot procps bzip2 \
+    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
+    rpm tar gettext autopoint autoconf clang libtool-bin \
+    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
-
-RUN apt update -y && apt install -y git cmake curl fakeroot procps bzip2 \
-    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-    rpm tar gettext autopoint autoconf clang golang-1.20 golang-1.20-go libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg zstd gnupg2
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -66,6 +70,23 @@ RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cle
 RUN /bin/bash -l -c "gem install bundler --no-document"
 RUN /bin/bash -l -c "gem install fpm --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+
+# Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Rust is needed to compile the SDS library
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
