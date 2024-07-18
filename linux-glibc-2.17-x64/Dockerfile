@@ -10,9 +10,9 @@ ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BUNDLER_VERSION=2.4.20
+ARG DD_TARGET_ARCH
 
 ENV CONDA_PATH /root/miniforge3
-ENV DD_TARGET_ARCH x64
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
