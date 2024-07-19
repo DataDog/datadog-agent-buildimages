@@ -44,6 +44,14 @@ RUN cd /build && \
     mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
     rm -rf /build
 
+# Shortcut to use our newly built toolchain as the main compiler for the system
+# Should we want to do things by the book, we should instead point various build systems
+# to our compiler using CC environment variable, --host, --toolchain, or similar
+RUN for bin in /opt/toolchains/bin/x86_64-unknown-linux-gnu-*; do \
+    ln -s $bin $(echo $bin | sed "s/x86_64-unknown-linux-gnu-//g"); \
+    done
+ENV PATH=/opt/toolchains/bin:$PATH
+
 # IBM MQ
 RUN mkdir -p /opt/mqm \
     && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
@@ -95,7 +103,6 @@ RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
-ENV PATH=/opt/toolchains/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR ""
