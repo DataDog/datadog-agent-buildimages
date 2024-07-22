@@ -155,7 +155,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     else \
     LIB_DEST="aarch64-linux-gnu"; \
     fi && \
-    git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+    git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
     && cd xz \
     && autoreconf -vif \
     && ./configure --prefix=/usr/ \
