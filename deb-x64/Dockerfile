@@ -109,7 +109,7 @@ RUN git config --global user.email "package@datadoghq.com" && \
 
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
+RUN git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
     && cd xz \
     && autoreconf -vif \
     && ./configure --prefix=/usr/ \
