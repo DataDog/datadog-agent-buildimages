@@ -3,7 +3,8 @@ $ProgressPreference = 'SilentlyContinue'
 
 Write-Host -ForegroundColor Green "Installing go $ENV:GO_VERSION"
 
-$gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
+$gozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION).windows-amd64.zip"
+$gohash = $ENV:MSGO_SHA256_WINDOWS_AMD64
 
 $out = "$($PSScriptRoot)\go.zip"
 
@@ -19,7 +20,7 @@ if($installedVers -and $installedVers.Contains($ENV:GO_VERSION)) {
 }
 Write-Host -ForegroundColor Green "Downloading $gozip to $out"
 
-Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $ENV:GO_SHA256_WINDOWS_AMD64
+Get-RemoteFile -RemoteFile $gozip -LocalFile $out -VerifyHash $gohash
 
 ## set up proper output directory
 $godir = "c:\go\$ENV:GO_VERSION"
