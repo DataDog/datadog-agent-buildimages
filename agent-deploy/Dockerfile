@@ -55,6 +55,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libxmlsec1-dev  \
     libffi-dev  \
     liblzma-dev \
+    unzip \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
@@ -134,6 +135,18 @@ RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz && \
     rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV PATH="$PATH:/usr/local/go/bin"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+ENV VAULT_VERSION=1.17.2
+ENV VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+RUN set -x \
+    && curl -OL https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && actual_sum=$(openssl sha256 $VAULT_FILENAME | awk '{print $2}') \
+    && if [ "$actual_sum" != "$VAULT_CHECKSUM" ] ; then exit 1; fi \
+    && unzip $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts
