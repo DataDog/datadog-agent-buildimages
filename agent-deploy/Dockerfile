@@ -18,6 +18,9 @@ ARG GOLANG_SHASUM=13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae0329370
 ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.11.8
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
@@ -137,14 +140,11 @@ RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
 ENV PATH="$PATH:/usr/local/go/bin"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
-ENV VAULT_VERSION=1.17.2
-ENV VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
-ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 RUN set -x \
     && curl -OL https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
-    && actual_sum=$(openssl sha256 $VAULT_FILENAME | awk '{print $2}') \
-    && if [ "$actual_sum" != "$VAULT_CHECKSUM" ] ; then exit 1; fi \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
     && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
     && mv vault /usr/bin/vault \
     && chmod +x /usr/bin/vault
 
