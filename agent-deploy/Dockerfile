@@ -140,8 +140,7 @@ RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
 ENV PATH="$PATH:/usr/local/go/bin"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
-RUN set -x \
-    && curl -OL https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
     && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
     && unzip $VAULT_FILENAME \
     && rm $VAULT_FILENAME \
