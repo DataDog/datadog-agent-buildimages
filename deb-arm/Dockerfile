@@ -41,6 +41,8 @@ ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284
 ARG DPKG_VERSION=1.18.4
 ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG LIBLZMA_VERSION=5.2.11
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 # Environment
 ENV GOPATH /go
@@ -73,6 +75,13 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         cp /usr/local/bin/curl-armv7 /usr/local/bin/curl; \
     fi
 RUN chmod +x /usr/local/bin/curl
+
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN if [ "${DD_TARGET_ARCH}" = "aarch64" ] ; then \
+    curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
+    echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+    chmod +x /usr/local/bin/datadog-ci ; \
+    fi
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /

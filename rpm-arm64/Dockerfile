@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2024-03-11
-ENV CACERT_BUNDLE_SHA256="1794c1d4f7055b7d02c2170337b61b48a2ef6c90d77e95444fd2596f4cac609f"
+ENV CACERT_BUNDLE_VERSION=2024-07-02
+ENV CACERT_BUNDLE_SHA256="1bf458412568e134a4514f5e170a328d11091e071c7110955c9884ed87972ac9"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -27,6 +27,8 @@ ARG DD_TARGET_ARCH=aarch64
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 # Environment
 ENV GOPATH /go
@@ -76,6 +78,11 @@ RUN mkdir -p /usr/local/var/lib/rpm \
 
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
+
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
+    && chmod +x /usr/local/bin/datadog-ci
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
