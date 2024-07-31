@@ -70,10 +70,12 @@ try {
 
     if ($Phase -eq 0 -or $Phase -eq 2) {
         .\helpers\phase2\install_docker.ps1
+        # install python before ruby so it's in front of ruby on the PATH
+        # they both have an `aws` command, and python's is the one we want
+        .\helpers\phase2\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
         .\helpers\phase2\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
         # msys depends on ruby
         .\helpers\phase2\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
-        .\helpers\phase2\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
         .\helpers\phase2\install_gcloud_sdk.ps1
         .\helpers\phase2\install_embedded_pythons.ps1
     }
