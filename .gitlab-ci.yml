@@ -460,15 +460,18 @@ release_linux:
   extends: .release
   parallel:
     matrix:
-      - IMAGE: [ deb_x64,rpm_x64,suse_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64 ]
+      - IMAGE: [deb_x64,rpm_x64,suse_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
 
 release_windows:
   extends: .winrelease
+  variables:
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
   parallel:
     matrix:
       - IMAGE: windows_1809_x64
-        DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-        DOCKERHUB_TAG_PREFIX: [ 1809,ltsc2022 ]
+        DOCKERHUB_TAG_PREFIX: 1809
+      - IMAGE: windows_ltsc2022_x64
+        DOCKERHUB_TAG_PREFIX: ltsc2022
 
 release_circleci_runner:
   stage: release
