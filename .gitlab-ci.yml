@@ -237,12 +237,20 @@ build_linux_glibc_2_17_x64:
   variables:
     DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
     IMAGE: linux-glibc-2-17-x64
+  artifacts:
+    when: on_failure
+    paths:
+      - build.log
 
 build_linux_glibc_2_23_arm64:
   extends: [.build, .arm]
   variables:
     DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
     IMAGE: linux-glibc-2-23-arm64
+  artifacts:
+    when: on_failure
+    paths:
+      - build.log
 
 build_docker_arm64:
   extends: [.build, .arm]
