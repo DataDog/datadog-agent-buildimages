@@ -32,7 +32,16 @@ COPY linux-glibc-2.17-x64/config.toml /root/.cargo/config.toml
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
-ENV CT_ALLOW_BUILD_AS_ROOT_SURE yes
+# Build texinfo to get a bugfix version
+# Otherwise generating glibc doc with a recent version
+# causes a segfault. The fix isn't yet released as a package
+# https://git.savannah.gnu.org/cgit/texinfo.git/commit/?id=60d3edc4b74b4e1e5ef55e53de394d3b65506c47
+RUN cd /build && \
+    git clone --depth=1 https://git.savannah.gnu.org/git/texinfo.git && \
+    cd texinfo && \
+    ./autogen.sh && \
+    ./configure && make -j$(ncproc) && make install && \
+    rm -rf /build/texinfo
 
 RUN cd /build && \
     wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz && \
@@ -43,11 +52,8 @@ RUN cd /build && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
-    ./ct-ng upgradeconfig
-
-RUN cd /build/crosstool-ng-${CTNG_VERSION} ; ./ct-ng build ; find -name build.log ; cp ./build.log ${CI_PROJECT_DIR}/ ; exit 1
-
-RUN \
+    ./ct-ng upgradeconfig && \
+    ./ct-ng build && \
     mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
     rm -rf /build
 
