@@ -32,6 +32,8 @@ COPY linux-glibc-2.17-x64/config.toml /root/.cargo/config.toml
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
+ENV CT_ALLOW_BUILD_AS_ROOT_SURE yes
+
 RUN cd /build && \
     wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz && \
     gpg --keyserver pgp.surfnet.nl --recv-keys 1F30EF2E && \
@@ -41,7 +43,11 @@ RUN cd /build && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
-    ./ct-ng upgradeconfig && ( ./ct-ng build.1 || cp build.log $CI_PROJECT_DIR/; exit 1) && \
+    ./ct-ng upgradeconfig
+
+RUN cd /build/crosstool-ng-${CTNG_VERSION} ; ./ct-ng build ; find -name build.log ; cp ./build.log ${CI_PROJECT_DIR}/ ; exit 1
+
+RUN \
     mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
     rm -rf /build
 
