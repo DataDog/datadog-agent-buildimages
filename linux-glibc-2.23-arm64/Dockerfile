@@ -39,7 +39,7 @@ RUN cd /build && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
-    ./ct-ng upgradeconfig && ./ct-ng build && \
+    ./ct-ng upgradeconfig && ( ./ct-ng build.1 || cat build.log ) && \
     mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/ && \
     rm -rf /build
 
