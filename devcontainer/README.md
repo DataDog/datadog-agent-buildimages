@@ -39,5 +39,7 @@ cat ~/.docker/config.json
 Option 2: Build the image locally
 
 ```
-DOCKER_BUILDKIT=1 docker build -t 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1 .
+DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.22.5" -t 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1 .
 ```
+
+The Go version currently in use in the default image can be found [here](https://github.com/DataDog/datadog-agent-buildimages/blob/main/go.env).
