@@ -6,6 +6,8 @@ on:
   pull_request:
     types: [closed]
 
+permissions: {}
+
 jobs:
   run_slapr_datadog_agent:
     runs-on: ubuntu-latest
