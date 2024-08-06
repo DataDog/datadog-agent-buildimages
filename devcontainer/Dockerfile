@@ -2,19 +2,24 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG GO_VERSION
+ARG PYTHON_VERSION=3.11
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
-    apt-get install -y build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
+    apt-get install -y wget build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
     # Python setup
-    python3 python3-dev python3-venv python3-pip \
+    python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv python3-pip \
     # Network feature tests
     openjdk-11-jre-headless \
     # System-probe dependencies
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
+
+# Setup python3.11 as default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 110 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 100
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
