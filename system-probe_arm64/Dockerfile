@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
-        cmake \
         curl \
         flex \
         g++ \
@@ -42,6 +41,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         default-jre \
         wget \
         xz-utils
+
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH=/go
@@ -75,6 +78,8 @@ RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
-# External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
+RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-aarch64.tar.gz" -O /tmp/cmake.tar.gz -o /dev/null
+RUN echo "d18f50f01b001303d21f53c6c16ff12ee3aa45df5da1899c2fe95be7426aa026  /tmp/cmake.tar.gz" | sha256sum --check
+RUN mkdir -p /opt/cmake
+RUN tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1
+ENV PATH "/opt/cmake/bin:${PATH}"

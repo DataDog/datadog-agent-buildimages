@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
-        cmake \
         curl \
         flex \
         g++ \
@@ -79,3 +78,9 @@ RUN echo "54ec30358afcc9fb8aa74307db3046f5187f9fb89fb37064cdde906e062ebf36  /tmp
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
+
+RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-x86_64.tar.gz" -O /tmp/cmake.tar.gz -o /dev/null
+RUN echo "cdd7fb352605cee3ae53b0e18b5929b642900e33d6b0173e19f6d4f2067ebf16  /tmp/cmake.tar.gz" | sha256sum --check
+RUN mkdir -p /opt/cmake
+RUN tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1
+ENV PATH "/opt/cmake/bin:${PATH}"
