@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libedit-dev \
         libelf-dev \
         libfl-dev \
-        libstdc++-11-dev \
+        libstdc++-9-dev \
         libtinfo-dev \
         libtinfo5 \
         libxml2-dev \
