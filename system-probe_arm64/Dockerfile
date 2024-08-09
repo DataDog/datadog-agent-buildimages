@@ -73,7 +73,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
   chmod +x /usr/local/bin/datadog-ci
 
 # install clang from the website since the package manager can change at any time
-RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \\
+RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \
   && echo "dcaa1bebbfbb86953fdfbdc7f938800229f75ad26c5c9375ef242edad737d999  /tmp/clang.tar.xz" | sha256sum --check \
   && mkdir -p /opt/clang \
   && tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1 \
