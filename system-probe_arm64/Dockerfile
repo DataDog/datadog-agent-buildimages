@@ -72,14 +72,16 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
   chmod +x /usr/local/bin/datadog-ci
 
 # install clang from the website since the package manager can change at any time
-RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null
-RUN echo "dcaa1bebbfbb86953fdfbdc7f938800229f75ad26c5c9375ef242edad737d999  /tmp/clang.tar.xz" | sha256sum --check
-RUN mkdir -p /opt/clang
-RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
+RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-aarch64-linux-gnu.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \\
+  && echo "dcaa1bebbfbb86953fdfbdc7f938800229f75ad26c5c9375ef242edad737d999  /tmp/clang.tar.xz" | sha256sum --check \
+  && mkdir -p /opt/clang \
+  && tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1 \
+  && rm -f /tmp/clang.tar.xz
 ENV PATH "/opt/clang/bin:${PATH}"
 
-RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-aarch64.tar.gz" -O /tmp/cmake.tar.gz -o /dev/null
-RUN echo "d18f50f01b001303d21f53c6c16ff12ee3aa45df5da1899c2fe95be7426aa026  /tmp/cmake.tar.gz" | sha256sum --check
-RUN mkdir -p /opt/cmake
-RUN tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1
+RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-aarch64.tar.gz" -O /tmp/cmake.tar.gz -o /dev/null \
+  && echo "d18f50f01b001303d21f53c6c16ff12ee3aa45df5da1899c2fe95be7426aa026  /tmp/cmake.tar.gz" | sha256sum --check \
+  && mkdir -p /opt/cmake \
+  && tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1 \
+  && rm -f /tmp/cmake.tar.gz
 ENV PATH "/opt/cmake/bin:${PATH}"
