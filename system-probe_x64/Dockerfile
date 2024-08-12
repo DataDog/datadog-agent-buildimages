@@ -89,7 +89,7 @@ RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.
 ENV PATH "/opt/cmake/bin:${PATH}"
 
 RUN git clone https://github.com/brycekahle/dwarves.git \
-  && pushd dwarves \
+  && cd dwarves \
   && git reset --hard 525a600eb26609176de8eda8fd70ad1fc096fe0a \
   && mkdir build \
   && cd build \
@@ -97,6 +97,6 @@ RUN git clone https://github.com/brycekahle/dwarves.git \
   && make install \
   && echo "/usr/local/lib" > /etc/ld.so.conf.d/pahole.conf \
   && ldconfig \
-  && popd \
+  && cd ../.. \
   && rm -rf dwarves
 ENV PATH "/usr/local/bin:${PATH}"
