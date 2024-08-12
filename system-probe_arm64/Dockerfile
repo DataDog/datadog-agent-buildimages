@@ -12,13 +12,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get dist-upgrade -y && apt-get install -y --no-install-recommends \
         bison \
         curl \
-        dwarves \
         flex \
         g++ \
         gcc \
         git \
         jq \
         libbpf-dev \
+        libdw-dev \
         libedit-dev \
         libelf-dev \
         libfl-dev \
@@ -86,3 +86,16 @@ RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.
   && tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1 \
   && rm -f /tmp/cmake.tar.gz
 ENV PATH "/opt/cmake/bin:${PATH}"
+
+RUN git clone https://github.com/brycekahle/dwarves.git \
+  && pushd dwarves \
+  && git reset --hard 525a600eb26609176de8eda8fd70ad1fc096fe0a \
+  && mkdir build \
+  && cd build \
+  && cmake -D__LIB=lib ..
+  && make install \
+  && echo "/usr/local/lib" > /etc/ld.so.conf.d/pahole.conf \
+  && ldconfig \
+  && popd \
+  && rm -rf dwarves
+ENV PATH "/usr/local/bin:${PATH}"
