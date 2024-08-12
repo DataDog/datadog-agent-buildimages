@@ -93,7 +93,7 @@ RUN git clone https://github.com/brycekahle/dwarves.git \
   && git reset --hard 525a600eb26609176de8eda8fd70ad1fc096fe0a \
   && mkdir build \
   && cd build \
-  && cmake -D__LIB=lib ..
+  && cmake -D__LIB=lib .. \
   && make install \
   && echo "/usr/local/lib" > /etc/ld.so.conf.d/pahole.conf \
   && ldconfig \
