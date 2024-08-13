@@ -58,6 +58,9 @@ case $DD_TARGET_ARCH in
     popd
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
 
+    # setuptools no longer packaged by default so we need to install it manually.
+    python3 -m pip install setuptools==68.0.0
+
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
     python3 -m pip install -r requirements.txt
