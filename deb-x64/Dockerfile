@@ -10,6 +10,9 @@ FROM ubuntu:14.04
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
+ARG GO_TOOLCHAIN
+ARG MSGO_VERSION
+ARG MSGO_SHA256_LINUX_AMD64
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG CMAKE_VERSION=3.23.0
@@ -35,6 +38,7 @@ ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
+ENV MSGO_VERSION $MSGO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
@@ -178,10 +182,17 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
     && rm kernel-4.9-headers-deb-x64.tgz
 
 # Go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+        && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-amd64.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 

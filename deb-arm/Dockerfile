@@ -16,6 +16,10 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
+ARG GO_TOOLCHAIN
+ARG MSGO_VERSION
+ARG MSGO_SHA256_LINUX_ARM64
+ARG MSGO_SHA256_LINUX_ARMV6L
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG GO_SHA256_LINUX_ARMV6L
@@ -127,14 +131,28 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-    && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
+    if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+        && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-arm64.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-    && echo "$GO_SHA256_LINUX_ARMV6L /tmp/golang.tar.gz" | sha256sum --check \
+    if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
+        && echo "$GO_SHA256_LINUX_ARMV6L /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-armv6l.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz ; fi
 

@@ -50,12 +50,23 @@ RUN set -ex \
     rm -rf /var/lib/apt/lists/*
 
 # Golang
+ARG GO_TOOLCHAIN
+ARG MSGO_VERSION
+ARG MSGO_SHA256_LINUX_AMD64
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ENV MSGO_VERSION $MSGO_VERSION
 ENV GO_VERSION $GO_VERSION
 ENV GOPATH /go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    && echo "$GO_SHA256_LINUX_AMD64 /tmp/golang.tar.gz" | sha256sum --check \
+RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+        && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-amd64.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"

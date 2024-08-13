@@ -31,6 +31,7 @@ variables:
   ECR_TEST_ONLY: "_test_only"
   CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
   CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
+  GO_TOOLCHAIN: "microsoft"
 
 #
 # Workflow rules

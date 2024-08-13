@@ -10,6 +10,9 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM ${BASE_IMAGE}
 
 # Build Args
+ARG GO_TOOLCHAIN
+ARG MSGO_VERSION
+ARG MSGO_SHA256_LINUX_ARMV6L
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARMV6L
 ARG RUST_VERSION=1.76.0
@@ -25,6 +28,7 @@ ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
+ENV MSGO_VERSION $MSGO_VERSION
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 ENV BUNDLER_VERSION $BUNDLER_VERSION
 
@@ -122,10 +126,17 @@ COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
 # Go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-  && echo "$GO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
+        && echo "$GO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-armv6l.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_ARMV6L  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 

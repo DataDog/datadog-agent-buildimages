@@ -1,6 +1,9 @@
 FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG GO_TOOLCHAIN
+ARG MSGO_VERSION
+ARG MSGO_SHA256_LINUX_ARM64
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG DD_TARGET_ARCH=aarch64
@@ -56,10 +59,17 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PATH "${CONDA_PATH}/envs/ddpy3/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
+        echo "Installing upstream Go" \
+        && wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+        && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check; \
+    else \
+        echo "Installing Microsoft Go" \
+        && wget -O /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-arm64.tar.gz \
+        && echo "$MSGO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check; \
+    fi \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 
