@@ -23,12 +23,12 @@ Write-Host -ForegroundColor Green Done downloading Python, installing
 
 Start-Process $out -ArgumentList '/quiet InstallAllUsers=1' -Wait
 
-Add-ToPath "c:\program files\Python311;c:\Program files\python311\scripts" -Global -Local
+Add-ToPath "c:\program files\Python312;c:\Program files\python312\scripts" -Global -Local
 
 Remove-Item $out
 
-$getpipurl = "https://raw.githubusercontent.com/pypa/get-pip/38e54e5de07c66e875c11a1ebbdb938854625dd8/public/get-pip.py"
-$getpipsha256 = "e235c437e5c7d7524fbce3880ca39b917a73dc565e0c813465b7a7a329bb279a"
+$getpipurl = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
+$getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
 $target = "$($PSScriptRoot)\get-pip.py"
 
 Get-RemoteFile -RemoteFile $getpipurl -LocalFile $target -VerifyHash $getpipsha256
