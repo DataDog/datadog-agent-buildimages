@@ -51,8 +51,8 @@ If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
 
 # Python 3
-$getpipurl = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
-$getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
+$py3getpip = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
+$py3getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
 Get-RemoteFile -LocalFile "get-pip.py" -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
 & "$py3Target\python" get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
