@@ -73,20 +73,41 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
     echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci
 
-# install clang from the website since the package manager can change at any time
-RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-linux-gnu-ubuntu-18.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null \
-  && echo "54ec30358afcc9fb8aa74307db3046f5187f9fb89fb37064cdde906e062ebf36  /tmp/clang.tar.xz" | sha256sum --check \
-  && mkdir -p /opt/clang \
-  && tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1 \
-  && rm -f /tmp/clang.tar.xz
-ENV PATH "/opt/clang/bin:${PATH}"
-
 RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-x86_64.tar.gz" -O /tmp/cmake.tar.gz -o /dev/null \
   && echo "cdd7fb352605cee3ae53b0e18b5929b642900e33d6b0173e19f6d4f2067ebf16  /tmp/cmake.tar.gz" | sha256sum --check \
   && mkdir -p /opt/cmake \
   && tar xf /tmp/cmake.tar.gz --no-same-owner -C /opt/cmake --strip-components=1 \
   && rm -f /tmp/cmake.tar.gz
 ENV PATH "/opt/cmake/bin:${PATH}"
+
+RUN git clone https://github.com/brycekahle/llvm-project \
+  && cd llvm-project \
+  && mkdir build \
+  && cd build \
+  && cmake -DLLVM_ENABLE_PROJECTS=clang \
+    -DLLVM_TARGETS_TO_BUILD="BPF" \
+    -DCMAKE_INSTALL_PREFIX=/opt/clang \
+    -G "Ninja" \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
+    -DLLVM_BUILD_TOOLS=ON \
+    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
+    -DLLVM_ENABLE_BINDINGS=OFF \
+    -DLLVM_PARALLEL_COMPILE_JOBS=4 \
+    -DLLVM_PARALLEL_LINK_JOBS=4 \
+    -DLLVM_ENABLE_UNWIND_TABLES=OFF \
+    -DLLVM_DISTRIBUTION_COMPONENTS="clang" \
+    -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="x86-64-unknown-linux-gnu" \
+    ../llvm \
+  && cmake --build . --target install-clang llc \
+  && cp bin/llc /opt/clang/bin/llc \
+  && cd ../.. \
+  && rm -rf llvm-project
+ENV PATH "/opt/clang/bin:${PATH}"
 
 RUN git clone https://github.com/brycekahle/dwarves.git \
   && cd dwarves \
