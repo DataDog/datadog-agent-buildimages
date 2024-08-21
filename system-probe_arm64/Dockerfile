@@ -79,7 +79,7 @@ RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.
   && rm -f /tmp/cmake.tar.gz
 ENV PATH "/opt/cmake/bin:${PATH}"
 
-RUN git clone https://github.com/brycekahle/llvm-project \
+RUN git clone --depth=1 https://github.com/brycekahle/llvm-project \
   && cd llvm-project \
   && mkdir build \
   && cd build \
