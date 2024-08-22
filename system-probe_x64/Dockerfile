@@ -105,6 +105,7 @@ RUN git clone --depth=1 https://github.com/brycekahle/llvm-project \
     ../llvm \
   && cmake --build . --target install \
   && cp bin/llc /opt/clang/bin/llc \
+  && cp bin/llvm-dis /opt/clang/bin/llvm-dis \
   && cd ../.. \
   && rm -rf llvm-project
 ENV PATH "/opt/clang/bin:${PATH}"
