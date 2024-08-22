@@ -101,7 +101,7 @@ RUN git clone --depth=1 https://github.com/brycekahle/llvm-project \
     -DLLVM_ENABLE_UNWIND_TABLES=OFF \
     -DLLVM_DISTRIBUTION_COMPONENTS="clang" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DLLVM_DEFAULT_TARGET_TRIPLE="x86-64-unknown-linux-gnu" \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-unknown-linux-gnu" \
     ../llvm \
   && cmake --build . --target install-clang llc llvm-strip \
   && cp bin/llc /opt/clang/bin/llc \
