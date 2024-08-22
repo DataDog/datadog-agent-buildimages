@@ -84,7 +84,7 @@ RUN git clone --depth=1 https://github.com/brycekahle/llvm-project \
   && mkdir build \
   && cd build \
   && cmake -DLLVM_ENABLE_PROJECTS=clang \
-    -DLLVM_TARGETS_TO_BUILD="AArch64,BPF" \
+    -DLLVM_TARGETS_TO_BUILD="AArch64;BPF" \
     -DCMAKE_INSTALL_PREFIX=/opt/clang \
     -G "Ninja" \
     -DCMAKE_BUILD_TYPE=MinSizeRel \
