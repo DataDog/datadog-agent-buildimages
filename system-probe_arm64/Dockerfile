@@ -102,7 +102,7 @@ RUN git clone --depth=1 https://github.com/brycekahle/llvm-project \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DLLVM_DEFAULT_TARGET_TRIPLE="aarch64-unknown-linux-gnu" \
     ../llvm \
-  && cmake --build . --target install-clang llc llvm-strip \
+  && cmake --build . --target install \
   && cp bin/llc /opt/clang/bin/llc \
   && cp bin/llvm-strip /opt/clang/bin/llvm-strip \
   && cd ../.. \
