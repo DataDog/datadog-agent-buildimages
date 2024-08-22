@@ -104,19 +104,19 @@ COPY .curlrc .wgetrc /root/
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
+# rbenv
+ENV RBENV_ROOT="/.rbenv"
+ENV PATH="$RBENV_ROOT/shims:$RBENV_ROOT/bin:$PATH"
+
 COPY ./agent-deploy/Gemfile ./agent-deploy/Gemfile.lock ./
 
-RUN gpg --import --no-tty /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
-RUN /bin/bash -l -c "rvm install ${RUBY_VERSION}"
-RUN /bin/bash -l -c "rvm --default use ${RUBY_VERSION} && \
-    gem install bundler --version 1.17.3 && \
+RUN git clone https://github.com/rbenv/rbenv.git ${RBENV_ROOT} && \
+    git clone https://github.com/rbenv/ruby-build.git ${RBENV_ROOT}/plugins/ruby-build && \
+    rbenv install ${RUBY_VERSION} && \
+    rbenv global ${RUBY_VERSION}
+
+RUN /bin/bash -l -c "gem install bundler -v ${BUNDLER_VERSION} && \
     bundle install"
-RUN /bin/bash -l -c "rvm alias create default ${RUBY_VERSION}"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # s3cmd
 RUN cd opt && curl -sSL https://downloads.sourceforge.net/project/s3tools/s3cmd/1.5.2/s3cmd-1.5.2.tar.gz > s3cmd-1.5.2.tar.gz && \
