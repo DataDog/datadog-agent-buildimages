@@ -47,3 +47,6 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 /docker-arm64/                      @DataDog/container-integrations @DataDog/agent-devx-infra
 /docker-x64/                        @DataDog/container-integrations @DataDog/agent-devx-infra
 /devcontainer/                      @DataDog/agent-devx-loops
+
+# Image used for agent-release-management CI
+/agent-release-management/          @DataDog/agent-delivery
