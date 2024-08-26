@@ -1,10 +1,7 @@
 # The gitlab-agent-deploy image is used in our Gitlab deploy and promotion pipelines.
 
 # NOTE: this image is used:
-# - in the datadog-agent repository, to promote A6/A7 packages to staging
-# - ["soon" as of 2020-09-29] in the mars-jenkins-scripts repository, to promote A5 packages to staging
-# When updating the gitlab-agent-deploy image, don't forget to update these three repos
-# and test that promotion jobs work as expected with the new image.
+# - in the agent-release-management repository, to promote A5/A6/A7 packages
 
 FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
@@ -67,9 +64,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && echo "${CI_UPLOADER_SHASUM} /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci \
     && rm -rf /var/lib/apt/lists/*
-
-# Use gnupg1 instead of gnupg2, our scripts and rpm-s3 are currently not compatible with gnupg2
-RUN rm /usr/bin/gpg && ln -s /usr/bin/gpg1 /usr/bin/gpg
 
 # Python 2 deps
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \

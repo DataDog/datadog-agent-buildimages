@@ -269,6 +269,12 @@ build_gitlab_agent_deploy:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
 
+build_agent_release_management:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: agent-release-management/Dockerfile
+    IMAGE: agent-release-management
+
 trigger_build_kernels:
   stage: trigger_build_kernels
   needs:
