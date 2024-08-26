@@ -69,7 +69,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Use gnupg1 instead of gnupg2, our scripts and rpm-s3 are currently not compatible with gnupg2
-RUN rm /usr/bin/gpg && ln -s /usr/bin/gpg1 /usr/bin/gpg
+#RUN rm /usr/bin/gpg && ln -s /usr/bin/gpg1 /usr/bin/gpg
 
 # Python 2 deps
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
