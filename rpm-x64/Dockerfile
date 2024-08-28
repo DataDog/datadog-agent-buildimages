@@ -62,7 +62,7 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel patchelf devtoolset-11 \
+  texinfo wget policycoreutils-python libarchive-devel patchelf devtoolset-11 imake \
   && yum clean all \
   && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 

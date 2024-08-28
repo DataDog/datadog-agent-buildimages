@@ -50,6 +50,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
+    imake \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
