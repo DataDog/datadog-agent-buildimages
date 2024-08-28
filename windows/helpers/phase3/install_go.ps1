@@ -8,9 +8,9 @@ $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
 $out = "$($PSScriptRoot)\go.zip"
 $gohash = $ENV:GO_SHA256_WINDOWS_AMD64
 
-if ($Env:GO_COMPILER_VERSION -eq "microsoft") {
+if ($Env:GOROOT -eq "/usr/local/msgo") {
     Write-Host -ForegroundColor Green "Installing Microsoft Go"
-    $gozip="https://aka.ms/golang/release/latest/go$($ENV:MSGO_VERSION).windows-amd64.zip"
+    $gozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION).windows-amd64.zip"
     $gohash = $ENV:MSGO_SHA256_WINDOWS_AMD64
 }
 

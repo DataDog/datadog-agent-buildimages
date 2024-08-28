@@ -1,11 +1,10 @@
 FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GO_TOOLCHAIN
-ARG MSGO_VERSION
-ARG MSGO_SHA256_LINUX_AMD64
+ARG GOROOT
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ARG MSGO_SHA256_LINUX_AMD64
 ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
@@ -64,19 +63,19 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PATH "${CONDA_PATH}/envs/ddpy3/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
-        echo "Installing upstream Go" \
-        && wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-        && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
-    else \
-        echo "Installing Microsoft Go" \
-        && wget -O /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-amd64.tar.gz \
-        && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
-    fi \
+RUN echo "Installing upstream Go" \
+    && wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+    && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz \
+    && echo "Installing Microsoft Go" \
+    && wget -O /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}.linux-amd64.tar.gz \
+    && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+    && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz
 ENV PATH "/usr/local/go/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
+ENV GOROOT ${GOROOT}
 
 # CI uploader, to send junit to ci-visibility during CI tests
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \

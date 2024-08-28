@@ -14,8 +14,7 @@ RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 FROM opensuse/archive:42.1
 
 # Build Args
-ARG GO_TOOLCHAIN
-ARG MSGO_VERSION
+ARG GOROOT
 ARG MSGO_SHA256_LINUX_AMD64
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
@@ -38,7 +37,6 @@ ARG GETTEXT_SHA256=9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd
 # Environment
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
-ENV MSGO_VERSION $MSGO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
@@ -85,19 +83,19 @@ RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # Go
-RUN if [ "$GO_TOOLCHAIN" = "google" ]; then \
-        echo "Installing upstream Go" \
-        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-        && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
-    else \
-        echo "Installing Microsoft Go" \
-        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${MSGO_VERSION}.linux-amd64.tar.gz \
-        && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check; \
-    fi \
+RUN echo "Installing upstream Go" \
+    && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+    && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
     && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz \
+    && echo "Installing Microsoft Go" \
+    && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}.linux-amd64.tar.gz \
+    && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+    && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+ENV GOROOT ${GOROOT}
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
