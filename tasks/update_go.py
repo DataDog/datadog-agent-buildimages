@@ -48,11 +48,11 @@ def _get_expected_sha256(version: str) -> List[Tuple[Platform, str]]:
     return shas
 
 
-def _check_archive(version: str, shas: List[Tuple[Platform, str]]):
+def _check_archive(version: str, shas: List[Tuple[Platform, str]], base_url: str):
     """checks that the archive sha is the same as the given one"""
     for (os, arch), expected_sha in shas:
         ext = _get_archive_extension(os)
-        url = f"https://go.dev/dl/go{version}.{os}-{arch}.{ext}"
+        url = f"{base_url}/go{version}.{os}-{arch}.{ext}"
         print(f"[check-archive] Fetching archive at {url}", file=sys.stderr)
         # Using `curl` through `ctx.run` takes way too much time due to the archive being huge
         # use `requests` as a workaround
@@ -63,6 +63,34 @@ def _check_archive(version: str, shas: List[Tuple[Platform, str]]):
                 f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
             )
 
+def _get_expected_msgo_sha256(version):
+
+    def _fetch_msgo_assets(version):
+        url = f"https://aka.ms/golang/release/latest/go{version}-1.assets.json"
+        # Send request and get json
+
+        res = requests.get(url)
+        res.raise_for_status()
+        return res.json()
+
+    def _get_msgo_sha256(version, assets):
+        shas = []
+        for data in assets["arches"]:
+            if "env" in data:
+                env = data["env"]
+                arch = env["GOARCH"] if "GOARM" not in env else "armv6l"
+                shas.append(((env["GOOS"], arch), data["sha256"]))
+        return shas
+
+    assets = _fetch_msgo_assets(version)
+    shas = _get_msgo_sha256(version, assets)
+    return shas
+
+
+def _display_shas(shas: List[Tuple[Platform, str]], toolchain: str):
+    print(f"--- {toolchain} ---")
+    for (os, arch), sha in shas:
+        print(f"[{os}/{arch}] {sha}")
 
 @task(
     help={
@@ -80,18 +108,22 @@ def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
             f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
         )
 
+    msgo_shas = _get_expected_msgo_sha256(version)
     shas = _get_expected_sha256(version)
     if check_archive:
-        _check_archive(version, shas)
+        _check_archive(version, shas, "https://go.dev/dl")
+        _check_archive(version, msgo_shas, "https://aka.ms/golang/release/latest")
 
     print(
         f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
     )
-    for (os, arch), sha in shas:
-        platform = f"[{os}/{arch}]"
-        print(f"{platform : <15} {sha}")
+
+    _display_shas(shas, "Upstream Go")
+    _display_shas(msgo_shas, "Microsoft Go")
 
     with open("go.env", "w") as writer:
         print(f"GO_VERSION={version}", file=writer)
         for (os, arch), sha in shas:
             print(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
+        for (os, arch), sha in msgo_shas:
+            print(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
