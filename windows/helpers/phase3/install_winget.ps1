@@ -32,7 +32,7 @@ Write-Host -ForegroundColor Green Done with Winget
 # Dotnet 6.0 **runtime** is necessary for wingetcreate, install it here
 . .\helpers.ps1
 
-$dotnetcore6url = "https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-6.0.33-windows-x64-installer"
+$dotnetcore6url = "https://download.visualstudio.microsoft.com/download/pr/3c01bbe6-a49d-468f-8335-f195588f582f/b935469e8480e611eae4d79b2e51965e/dotnet-runtime-6.0.33-win-x64.exe"
 $dotnetcore6hash = "276E151EEB37806C81ECF7A55A7B3A3AB4FD8AD0D2356104817F0608C0E7D1AC"
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnet" -Keyname "DownloadFile" -TargetValue $dotnetcore6url
 if($isInstalled -and $isCurrent){
