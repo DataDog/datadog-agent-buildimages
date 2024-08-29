@@ -33,7 +33,7 @@ Write-Host -ForegroundColor Green Done with Winget
 . .\helpers.ps1
 
 $dotnetcore6url = "https://download.visualstudio.microsoft.com/download/pr/3c01bbe6-a49d-468f-8335-f195588f582f/b935469e8480e611eae4d79b2e51965e/dotnet-runtime-6.0.33-win-x64.exe"
-$dotnetcore6hash = "276E151EEB37806C81ECF7A55A7B3A3AB4FD8AD0D2356104817F0608C0E7D1AC"
+$dotnetcore6hash = "DDF16712E509CC7575DB52CE116B004B270538646A098CBC51AB38E9E9CB45E1"
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnet" -Keyname "DownloadFile" -TargetValue $dotnetcore6url
 if($isInstalled -and $isCurrent){
     Write-Host -ForegroundColor Green ".NET Core 6 Up to date"
