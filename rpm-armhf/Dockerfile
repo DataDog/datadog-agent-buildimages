@@ -112,6 +112,15 @@ RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linu
 RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
+# Rust is needed to compile the SDS library
+RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init
+ENV PATH "~/.cargo/bin:${PATH}"
+
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements
@@ -128,17 +137,6 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
-
-
-# Rust is needed to compile the SDS library
-
-RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
-    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
-    && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

@@ -25,6 +25,8 @@ case $DD_TARGET_ARCH in
 "armhf")
     detect_distro
     echo "Installing Python from source (armhf)"
+    source /root/.bashrc
+
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
         DEBIAN_FRONTEND=noninteractive apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -57,6 +59,8 @@ case $DD_TARGET_ARCH in
         make install
     popd
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
+
+    export OPENSSL_DIR=/opt/openssl
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1

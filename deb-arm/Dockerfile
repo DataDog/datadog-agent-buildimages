@@ -83,6 +83,23 @@ RUN if [ "${DD_TARGET_ARCH}" = "aarch64" ] ; then \
     chmod +x /usr/local/bin/datadog-ci ; \
     fi
 
+# Rust is needed to compile the SDS library
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
+               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
+    ; elif [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
+               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
+    ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init;
+ENV PATH "~/.cargo/bin:${PATH}"
+
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements
@@ -140,23 +157,6 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
-
-# Rust is needed to compile the SDS library
-RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
-               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
-               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
-    ; else if [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
-        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
-               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
-               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
-    ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
-    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
-    && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init; fi
-ENV PATH "~/.cargo/bin:${PATH}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
