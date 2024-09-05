@@ -13,6 +13,7 @@ invoke
 mypy
 packaging
 parameterized
+PyGithub
 python-gitlab
 reno
 requests
