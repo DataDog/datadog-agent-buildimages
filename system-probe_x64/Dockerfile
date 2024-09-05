@@ -73,7 +73,7 @@ RUN echo "Installing upstream Go" \
     && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
     && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
     && rm -f /tmp/golang.tar.gz
-ENV PATH "/usr/local/go/bin:${PATH}"
+ENV PATH "${GOROOT}/bin:${PATH}"
 ENV PATH "${GOPATH}/bin:${PATH}"
 ENV GOROOT ${GOROOT}
 

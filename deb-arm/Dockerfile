@@ -155,7 +155,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
         && rm -f /tmp/golang.tar.gz; \
     fi
 
-ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOROOT}/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 ENV GOROOT=${GOROOT}
 
