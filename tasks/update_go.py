@@ -69,7 +69,7 @@ def _get_expected_msgo_sha256(version):
         url = f"https://aka.ms/golang/release/latest/go{version}-1.assets.json"
         # Send request and get json
 
-        res = requests.get(url)
+        res = requests.get(url, timeout=5)
         res.raise_for_status()
         return res.json()
 
