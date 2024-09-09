@@ -23,23 +23,14 @@ You may need to pull the image manually or build it locally before starting:
 Option 1: Pull the image from the CI registry (AMD64/ARM64)
 
 ```
-aws-vault exec sso-build-stable-developer -- docker pull 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1-<platform>
+docker pull registry.ddbuild.io/ci/datadog-agent-devenv:1-<platform>
 ```
 
-If it does not work, make sure you have proper credentials helpers set in Docker:
-```
-cat ~/.docker/config.json
-{
-  "credHelpers": {
-    "486234852809.dkr.ecr.us-east-1.amazonaws.com": "ecr-login"
-  }
-}
-```
 
 Option 2: Build the image locally
 
 ```
-DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.22.5" -t 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1 .
+DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.22.5" -t registry.ddbuild.io/ci/datadog-agent-devenv:1 .
 ```
 
 The Go version currently in use in the default image can be found [here](https://github.com/DataDog/datadog-agent-buildimages/blob/main/go.env).

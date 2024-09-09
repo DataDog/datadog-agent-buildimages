@@ -38,7 +38,6 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 /rpm-arm64/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
 /rpm-armhf/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
 /rpm-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/suse-x64/                          @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
 
 # Windows test & build images
 /windows/                           @DataDog/windows-agent @DataDog/agent-devx-infra

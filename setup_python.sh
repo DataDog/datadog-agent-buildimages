@@ -10,7 +10,7 @@ function detect_distro(){
 }
 
 PY2_VERSION=2
-PY3_VERSION=3.11.8
+PY3_VERSION=3.12.4
 DD_CONDA_VERSION=4.9.2-7
 
 case $DD_TARGET_ARCH in
@@ -25,6 +25,8 @@ case $DD_TARGET_ARCH in
 "armhf")
     detect_distro
     echo "Installing Python from source (armhf)"
+    source /root/.bashrc
+
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
         DEBIAN_FRONTEND=noninteractive apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -36,7 +38,7 @@ case $DD_TARGET_ARCH in
     fi
     OPENSSL_VERSION="3.0.13"
     OPENSSL_SHA256="88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"
-    PYTHON_SHA256="d3019a613b9e8761d260d9ebe3bd4df63976de30464e5c0189566e1ae3f61889"
+    PYTHON_SHA256="01b3c1c082196f3b33168d344a9c85fb07bfe0e7ecfe77fee4443420d1ce2ad9"
 
     wget https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz
     echo "$OPENSSL_SHA256 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check
@@ -57,6 +59,11 @@ case $DD_TARGET_ARCH in
         make install
     popd
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
+
+    # setuptools no longer packaged by default so we need to install it manually.
+    python3 -m pip install setuptools==68.0.0
+
+    export OPENSSL_DIR=/opt/openssl
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1

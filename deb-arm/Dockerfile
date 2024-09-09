@@ -22,8 +22,8 @@ ARG MSGO_SHA256_LINUX_ARM64
 ARG MSGO_SHA256_LINUX_ARMV6L
 ARG GO_SHA256_LINUX_ARM64
 ARG GO_SHA256_LINUX_ARMV6L
-ARG CMAKE_VERSION=3.23.0
-ARG CMAKE_SHA256="9f8d42ef0b33d1bea47afe15875435dac58503d6a3b58842b473fd811e6df172"
+ARG CMAKE_VERSION=3.30.2
+ARG CMAKE_SHA256="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
@@ -85,6 +85,23 @@ RUN if [ "${DD_TARGET_ARCH}" = "aarch64" ] ; then \
     echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci ; \
     fi
+
+# Rust is needed to compile the SDS library
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
+               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
+    ; elif [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
+        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
+               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
+               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
+    ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
+    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+    && chmod +x ./rustup-init \
+    && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
+    && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
+    && rm ./rustup-init;
+ENV PATH "~/.cargo/bin:${PATH}"
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
@@ -158,23 +175,6 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 ENV PATH="${GOROOT}/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 ENV GOROOT=${GOROOT}
-
-# Rust is needed to compile the SDS library
-RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-        export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
-               RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
-               RUSTC_SHA256=${RUSTC_SHA256_ARMHF} \
-    ; else if [ "$DD_TARGET_ARCH" = "aarch64" ]; then \
-        export RUSTUP_SHA256=${RUSTUP_SHA256_AARCH64} \
-               RUSTUP_ARCH=${RUSTUP_ARCH_AARCH64} \
-               RUSTC_SHA256=${RUSTC_SHA256_AARCH64} \
-    ; fi && curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
-    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
-    && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init; fi
-ENV PATH "~/.cargo/bin:${PATH}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
