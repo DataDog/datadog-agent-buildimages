@@ -23,7 +23,10 @@ on:
         type: string
         default: ''
 
-permissions: {}
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
 
 env:
   BRANCH_NAME: ${{ inputs.branch || format('gobot/go-update-{0}', inputs.go_version) }}
