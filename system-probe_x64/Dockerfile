@@ -6,6 +6,10 @@ ARG GO_SHA256_LINUX_AMD64
 ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
+ARG CLANG_VERSION=19.1.0-rc4
+ARG CLANG_SHA256SUM=b69713a45f5f2bfc35a0ccee1e85d105558e1fe4298efacdd18e755a4dac7449
+ARG LLVM_SHA256SUM=b3ed818e6cc8c8b20734106a908eee1012b682e02f9e383624fe2c676700c691
+ARG CLANG_CMAKE_SHA256SUM=3133936cc4a5dfc4bdb629e649d9d915b51a41b2941af45dc41972fd81669dfc
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
@@ -80,8 +84,12 @@ RUN wget "https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.
   && rm -f /tmp/cmake.tar.gz
 ENV PATH "/opt/cmake/bin:${PATH}"
 
-RUN git clone --depth=1 --branch bryce.kahle/bpf-intrinsic-willreturn https://github.com/brycekahle/llvm-project \
+RUN mkdir llvm-project \
   && cd llvm-project \
+  && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang-${CLANG_VERSION}.src.tar.xz" -O clang.src.tar.xz \
+  && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/llvm-${CLANG_VERSION}.src.tar.xz" -O llvm.src.tar.xz \
+  && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/cmake-${CLANG_VERSION}.src.tar.xz" -O cmake.src.tar.xz \
+  && echo -e "${CLANG_SHA256SUM}  clang.src.tar.xz\n${LLVM_SHA256SUM}  llvm.src.tar.xz\n${CLANG_CMAKE_SHA256SUM}  cmake.src.tar.xz" | sha256sum --check \
   && mkdir build \
   && cd build \
   && cmake -DLLVM_ENABLE_PROJECTS=clang \
