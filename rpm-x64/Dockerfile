@@ -13,7 +13,6 @@ ARG BASE_IMAGE
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
-ARG GOROOT
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_AMD64
@@ -154,19 +153,8 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
-RUN echo "Installing upstream Go" \
-        && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-        && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-        && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-        && rm -f /tmp/golang.tar.gz \
-        && echo "Installing Microsoft Go" \
-        && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}.linux-amd64.tar.gz \
-        && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-        && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
-        && rm -f /tmp/golang.tar.gz
-ENV PATH="${GOROOT}/bin:${PATH}"
-ENV PATH="${GOPATH}/bin:${PATH}"
-ENV GOROOT ${GOROOT}
+COPY setup_go.sh /
+RUN ./setup_go.sh
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd

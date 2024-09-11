@@ -1,7 +1,6 @@
 FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GOROOT
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_AMD64
@@ -63,19 +62,9 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PATH "${CONDA_PATH}/envs/ddpy3/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-RUN echo "Installing upstream Go" \
-    && wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz \
-    && echo "Installing Microsoft Go" \
-    && wget -O /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}.linux-amd64.tar.gz \
-    && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-    && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz
-ENV PATH "${GOROOT}/bin:${PATH}"
-ENV PATH "${GOPATH}/bin:${PATH}"
-ENV GOROOT ${GOROOT}
+# Go
+COPY setup_go.sh /
+RUN ./setup_go.sh
 
 # CI uploader, to send junit to ci-visibility during CI tests
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \

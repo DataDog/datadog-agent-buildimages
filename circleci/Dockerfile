@@ -50,24 +50,15 @@ RUN set -ex \
     rm -rf /var/lib/apt/lists/*
 
 # Golang
-ARG GOROOT
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_AMD64
 ENV GOPATH /go
-RUN echo "Installing upstream Go" \
-    && curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz
-RUN echo "Installing Microsoft Go" \
-    && curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}.linux-amd64.tar.gz \
-    && echo "$MSGO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-    && mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz
-ENV PATH="${GOROOT}/bin:${PATH}"
-ENV PATH="${GOPATH}/bin:${PATH}"
-ENV GOROOT ${GOROOT}
+
+# Go
+COPY setup_go.sh /
+RUN DD_TARGET_ARCH=x64 ./setup_go.sh
+
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 # CMake
