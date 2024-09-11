@@ -89,7 +89,11 @@ RUN mkdir llvm-project \
   && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/clang-${CLANG_VERSION}.src.tar.xz" -O clang.src.tar.xz \
   && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/llvm-${CLANG_VERSION}.src.tar.xz" -O llvm.src.tar.xz \
   && wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-${CLANG_VERSION}/cmake-${CLANG_VERSION}.src.tar.xz" -O cmake.src.tar.xz \
-  && echo -e "${CLANG_SHA256SUM}  clang.src.tar.xz\n${LLVM_SHA256SUM}  llvm.src.tar.xz\n${CLANG_CMAKE_SHA256SUM}  cmake.src.tar.xz" | sha256sum --check \
+  && echo -e "${CLANG_SHA256SUM} clang.src.tar.xz\n${LLVM_SHA256SUM} llvm.src.tar.xz\n${CLANG_CMAKE_SHA256SUM} cmake.src.tar.xz" | sha256sum --check \
+  && mkdir clang llvm cmake \
+  && tar xf clang.src.tar.xz --strip-components=1 --no-same-owner -C clang \
+  && tar xf llvm.src.tar.xz --strip-components=1 --no-same-owner -C llvm \
+  && tar xf cmake.src.tar.xz --strip-components=1 --no-same-owner -C cmake \
   && mkdir build \
   && cd build \
   && cmake -DLLVM_ENABLE_PROJECTS=clang \
