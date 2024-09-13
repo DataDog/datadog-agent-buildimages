@@ -5,13 +5,13 @@ $SoftwareTable = @{
     "WINGIT_SHA256"="b0442f1b8ea40b6f94ef9a611121d2c204f6aa7f29c54315d2ce59876c3d134e";
     "SEVENZIP_VERSION"="19.0.0";
     "SEVENZIP_SHA256"="0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e";
-    
+
     ## VisualStudio build tools for containers
     # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history
     # LTSC 17.8
     "VS2017BUILDTOOLS_VERSION"="17.8.7";
     "VS2017BUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe";
-    
+
     # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe'))
     "VS2017BUILDTOOLS_SHA256"="FC12F5B47AC9EC42064CFAD9E40EFE3B88EF5468E82BAFEC7839EF3296FD88A3";
 
@@ -19,7 +19,7 @@ $SoftwareTable = @{
     # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
-    
+
     "DOTNETCORE_VERSION"="8.0.302";
     "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
     "DOTNETCORE_URL"="https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe";
@@ -30,8 +30,8 @@ $SoftwareTable = @{
     "PYTHON_SHA256"="da5809df5cb05200b3a528a186f39b7d6186376ce051b0a393f1ddf67c995258";
     "WIX_VERSION"="3.14.1";
     "WIX_SHA256"="6BF6D03D6923D9EF827AE1D943B90B42B8EBB1B0F68EF6D55F868FA34C738A29";
-    "CMAKE_VERSION"="3.30.2";
-    "CMAKE_SHA256"="31f799a9e7756305f74cd821970a793e599ead230925392886f45aed897a3c0e";
+    "CMAKE_VERSION"="3.23.0";
+    "CMAKE_SHA256"="1e772025844f1cc648d28f42090038e5ca5cf72e2889de26d8d05ee25da17061";
     "MSYS_VERSION"="20230318";
     "MSYS_SHA256"="83B95C0787810B06AE2E30420C70126D2269B4A64D0702FC3D6B2BF24FC6D72D";
     "NUGET_VERSION"="5.8.0";
