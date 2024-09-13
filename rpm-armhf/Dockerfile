@@ -21,6 +21,7 @@ ARG DD_TARGET_ARCH=armhf
 ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
+ARG VAULT_VERSION=1.17.2
 
 # Environment
 ENV GOPATH /go
@@ -49,7 +50,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java yum-utils \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -137,6 +138,12 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Vault
+RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo \
+    # See supported distros: https://www.hashicorp.com/official-packaging-guide#:~:text=Framework%C2%A0documentation.-,Supported%20Distributions,-Distro
+    && sed -i -e 's/\$releasever/8/' -e 's/\$basearch/aarch64/' /etc/yum.repos.d/hashicorp.repo \
+    && yum -y install vault-${VAULT_VERSION} && yum clean all
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

@@ -19,8 +19,6 @@ ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.11.8
 ARG VAULT_VERSION=1.17.2
-ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
-ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
@@ -139,13 +137,10 @@ RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
     rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV PATH="$PATH:/usr/local/go/bin"
 
-# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
-RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
-    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
-    && unzip $VAULT_FILENAME \
-    && rm $VAULT_FILENAME \
-    && mv vault /usr/bin/vault \
-    && chmod +x /usr/bin/vault
+# Install vault: https://developer.hashicorp.com/vault/install
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com focal main" | tee /etc/apt/sources.list.d/hashicorp.list \
+    && apt update && apt install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts

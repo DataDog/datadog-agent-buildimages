@@ -6,6 +6,7 @@ ARG GO_SHA256_LINUX_AMD64
 ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
+ARG VAULT_VERSION=1.17.2
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
@@ -18,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         gcc \
         gcc-multilib \
         git \
+        gnupg2 \
         jq \
         libbpf-dev \
         libedit-dev \
@@ -79,3 +81,8 @@ RUN echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp
 RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
+
+# Install vault: https://developer.hashicorp.com/vault/install
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bullseye main" | tee /etc/apt/sources.list.d/hashicorp.list \
+    && apt update && apt install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
