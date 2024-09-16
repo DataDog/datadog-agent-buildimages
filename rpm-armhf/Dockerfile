@@ -143,7 +143,7 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo \
     # See supported distros: https://www.hashicorp.com/official-packaging-guide#:~:text=Framework%C2%A0documentation.-,Supported%20Distributions,-Distro
     && sed -i -e 's/\$releasever/8/' -e 's/\$basearch/aarch64/' /etc/yum.repos.d/hashicorp.repo \
-    && yum -y install vault-${VAULT_VERSION} && yum clean all
+    && yum -y install vault && yum clean all
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

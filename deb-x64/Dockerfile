@@ -213,7 +213,7 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/shar
     && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com focal main" | tee /etc/apt/sources.list.d/hashicorp.list \
     && gpg --keyserver keyserver.ubuntu.com --recv-keys AA16FCBCA621E701 \
     && gpg --export --armor AA16FCBCA621E701 | sudo apt-key add - \
-    && apt-get update && apt-get install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
+    && apt-get update && apt-get install -y vault=${VAULT_VERSION}-1 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
