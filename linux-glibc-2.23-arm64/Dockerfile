@@ -42,9 +42,9 @@ RUN cd /build && \
     rm -rf /build/texinfo
 
 RUN cd /build && \
-    wget https://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz && \
+    wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz && \
     gpg --keyserver pgp.surfnet.nl --recv-keys 1F30EF2E && \
-    wget https://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
+    wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
