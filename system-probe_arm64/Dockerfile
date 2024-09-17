@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         patch \
         pkg-config \
         default-jre \
+        unzip \
         wget \
         xz-utils
 
