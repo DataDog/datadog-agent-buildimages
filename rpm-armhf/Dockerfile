@@ -22,6 +22,8 @@ ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=e8fa3d269cf90cdaa6e8b4c7e9172c45dce87d0a96f04b041016e9d97c7b9bdc
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm.zip"
 
 # Environment
 ENV GOPATH /go
@@ -50,7 +52,7 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java yum-utils \
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt

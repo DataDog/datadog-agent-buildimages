@@ -4,6 +4,8 @@ ARG PYTHON_VERSION=3.11.8
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 RUN apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
@@ -39,10 +41,13 @@ COPY requirements /requirements
 
 RUN pip install -r requirements.txt
 
-# Install vault: https://developer.hashicorp.com/vault/install
-RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com focal main" | tee /etc/apt/sources.list.d/hashicorp.list \
-    && apt update && apt install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

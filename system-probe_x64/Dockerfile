@@ -7,6 +7,8 @@ ARG DD_TARGET_ARCH=x64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
@@ -19,7 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         gcc \
         gcc-multilib \
         git \
-        gnupg2 \
         jq \
         libbpf-dev \
         libedit-dev \
@@ -82,7 +83,10 @@ RUN mkdir -p /opt/clang
 RUN tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1
 ENV PATH "/opt/clang/bin:${PATH}"
 
-# Install vault: https://developer.hashicorp.com/vault/install
-RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bullseye main" | tee /etc/apt/sources.list.d/hashicorp.list \
-    && apt update && apt install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault

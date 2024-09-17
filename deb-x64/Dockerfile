@@ -32,6 +32,8 @@ ARG LIBLZMA_VERSION=5.2.11
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -208,12 +210,13 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
-# Install vault: https://developer.hashicorp.com/vault/install
-RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com focal main" | tee /etc/apt/sources.list.d/hashicorp.list \
-    && gpg --keyserver keyserver.ubuntu.com --recv-keys AA16FCBCA621E701 \
-    && gpg --export --armor AA16FCBCA621E701 | sudo apt-key add - \
-    && apt-get update && apt-get install -y vault=${VAULT_VERSION}-1 && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent

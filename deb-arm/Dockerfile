@@ -28,6 +28,8 @@ ARG BUNDLER_VERSION=2.4.20
 ARG RUSTUP_VERSION=1.26.0
 ARG RUST_VERSION=1.76.0
 ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 ARG RUSTC_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
@@ -211,10 +213,13 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz ht
     && rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
 
-# Install vault: https://developer.hashicorp.com/vault/install
-RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com focal main" | tee /etc/apt/sources.list.d/hashicorp.list \
-    && apt update && apt install -y vault=${VAULT_VERSION}-1 && apt clean && rm -rf /var/lib/apt/lists/*
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
