@@ -141,11 +141,13 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# Vault
-RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo \
-    # See supported distros: https://www.hashicorp.com/official-packaging-guide#:~:text=Framework%C2%A0documentation.-,Supported%20Distributions,-Distro
-    && sed -i -e 's/\$releasever/8/' -e 's/\$basearch/aarch64/' /etc/yum.repos.d/hashicorp.repo \
-    && yum -y install vault && yum clean all
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
