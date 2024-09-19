@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="centos:7"
+ARG BASE_IMAGE="centos:6"
 
 FROM ubuntu as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2024-07-02
@@ -20,10 +20,10 @@ ARG CMAKE_SHA256="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4ded
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.76.0
-ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
-ARG RUSTUP_VERSION=1.26.0
-ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+# ARG RUST_VERSION=1.76.0
+# ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+# ARG RUSTUP_VERSION=1.26.0
+# ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG BUNDLER_VERSION=2.4.20
@@ -190,13 +190,13 @@ RUN rm -r /usr/src/kernels/* \
     && rm kernel-4.9-headers-rpm-x64.tgz
 
 # Rust is needed to compile the SDS library
-RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
-    && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
-    && chmod +x ./rustup-init \
-    && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
+# RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
+#     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
+#     && chmod +x ./rustup-init \
+#     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
+#     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+#     && rm ./rustup-init
+# ENV PATH "~/.cargo/bin:${PATH}"
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
