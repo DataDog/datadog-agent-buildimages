@@ -90,7 +90,8 @@ def _get_expected_msgo_sha256(version):
 def _display_shas(shas: List[Tuple[Platform, str]], toolchain: str):
     print(f"--- {toolchain} ---")
     for (os, arch), sha in shas:
-        print(f"[{os}/{arch}] {sha}")
+        platform = f"[{os}/{arch}]"
+        print(f"{platform : <15} {sha}")
 
 @task(
     help={
