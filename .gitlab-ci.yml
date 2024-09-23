@@ -122,12 +122,16 @@ get_agent_version:
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
         docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-        echo "\033[0;32mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
       fi
   after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
+    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "Build failed, not sending metrics"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
+        echo -e "\033[0;32mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      fi
+
 
 .build_ddregistry:
   stage: build
@@ -146,12 +150,15 @@ get_agent_version:
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
         docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-        echo "\033[0;32mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
       fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
+        echo -e "\033[0;32mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      fi
 
 build_ci_image:
   stage: build
@@ -282,7 +289,7 @@ build_circleci_runner:
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
     - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - echo "\033[0;32mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+    - echo -e "\033[0;32mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -390,10 +397,12 @@ push_to_datadog_agent:
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE; Write-Host -ForegroundColor Green "Image $SRC_IMAGE is available." } else { exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE; } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host -ForegroundColor Green "Image $SRC_IMAGE is available." } else { exit 0 }
 
 build_windows_1809_x64:
   extends: .winbuild
@@ -454,16 +463,13 @@ build_windows_ltsc2022_x64:
       docker tag $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
       If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-      Write-Host -ForegroundColor Green "Image 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest is available."
       If ("${DOCKERHUB_IMAGE}" -ne "") {
         docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
         docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG}
         If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-        Write-Host -ForegroundColor Green "Image datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${SRC_TAG} is available."
         docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
         docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
         If (`$lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-        Write-Host -ForegroundColor Green "Image datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} is available."
       }
       "@ | out-file ci-scripts/docker-publish.ps1
     - cat ci-scripts/docker-publish.ps1
