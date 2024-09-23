@@ -32,3 +32,6 @@ Write-Host -ForegroundColor Green "Installing rust"
 & $out -y --default-toolchain $Rust_Version
 
 Set-InstalledVersionKey -Component "rust" -Keyname "version" -TargetValue $Rust_Version
+
+Write-Host -ForegroundColor Green "Installing cbindgen"
+& cargo install cbindgen
