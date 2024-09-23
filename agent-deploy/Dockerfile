@@ -127,8 +127,10 @@ RUN git clone https://github.com/chocolatey/choco.git \
     && cd choco \
     && ./build.sh \
     && cp -r ./code_drop/temp/_PublishedApps/choco /opt/chocolatey \
-    && export ChocolateyInstall=/opt/chocolatey \
-    && cp ./docker/choco_wrapper /usr/local/bin/choco
+    && cp ./docker/choco_wrapper /usr/local/bin/choco \
+    && rm -rf /choco
+
+ENV ChocolateyInstall=/opt/chocolatey 
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
