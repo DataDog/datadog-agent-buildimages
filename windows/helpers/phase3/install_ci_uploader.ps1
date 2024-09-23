@@ -19,6 +19,6 @@ $target = "c:\devtools\datadog-ci\datadog-ci"
 
 New-Item -ItemType Directory -Path $folder
 Get-RemoteFile -LocalFile $target -RemoteFile $source -VerifyHash $Sha256
-Add-ToPath -NewPath "c:\devtools\datadog-ci" -Global
+Add-ToPath -NewPath "c:\devtools\datadog-ci" -Local -Global
 Set-InstalledVersionKey -Component "datadog-ci" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with datadog-ci
