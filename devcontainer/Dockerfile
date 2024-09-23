@@ -25,6 +25,8 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
+    # Pin pyasn1 to 0.6.0 until the maintainers release a wheel for 0.6.1 version
+    pip3 install --no-cache-dir pyasn1==0.6.0 && \
     pip3 install --no-cache-dir -r https://raw.githubusercontent.com/DataDog/datadog-agent/master/requirements.txt && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
