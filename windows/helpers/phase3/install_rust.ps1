@@ -32,3 +32,12 @@ Write-Host -ForegroundColor Green "Installing rust"
 & $out -y --default-toolchain $Rust_Version
 
 Set-InstalledVersionKey -Component "rust" -Keyname "version" -TargetValue $Rust_Version
+
+## the installer adds to the user path.  But htat won't be refreshed here, so
+## need to add it manually.
+## also add to path for host install
+Add-ToPath -NewPath "$($Env:USERPROFILE)\.cargo\bin" -Local
+
+Write-Host -ForegroundColor Green "Installing cbindgen"
+& cargo install cbindgen
+If ($lastExitCode -ne "0") { throw "Failed to cargo install cbindgen $lastExitCode" }
