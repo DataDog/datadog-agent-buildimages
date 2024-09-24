@@ -155,6 +155,7 @@ RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 # Go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd

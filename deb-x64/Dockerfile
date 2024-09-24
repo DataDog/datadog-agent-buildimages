@@ -181,6 +181,7 @@ RUN curl -Sl -O https://dd-agent-omnibus.s3.amazonaws.com/kernel-4.9-headers-deb
 # Go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \

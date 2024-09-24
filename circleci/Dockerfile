@@ -58,6 +58,7 @@ ENV GOPATH /go
 # Go
 COPY setup_go.sh /
 RUN DD_TARGET_ARCH=x64 ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 

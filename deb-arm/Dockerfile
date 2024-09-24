@@ -147,6 +147,7 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 # Go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \

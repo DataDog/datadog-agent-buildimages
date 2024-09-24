@@ -65,6 +65,7 @@ ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 # Go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # CI uploader, to send junit to ci-visibility during CI tests
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \

@@ -129,6 +129,7 @@ RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 # Go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
