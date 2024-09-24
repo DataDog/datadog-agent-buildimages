@@ -13,8 +13,8 @@ ARG RUBY_VERSION_ARG=2.4.10
 ARG BUNDLER_VERSION_ARG=1.17.3
 ARG AWSCLI_VERSION_ARG=1.11.18
 ARG RPM_S3_VERSION_ARG=0.8.0
-ARG GOLANG_VERSION=1.21.7
-ARG GOLANG_SHASUM=13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae03293702c
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.11.8
@@ -133,10 +133,10 @@ RUN curl -fsSL https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux6
     chmod +x /usr/local/bin/jq
 
 # golang
-RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
-    echo "${GOLANG_SHASUM}  go${GOLANG_VERSION}.linux-amd64.tar.gz" | sha256sum --check && \
-    tar -C /usr/local -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz && \
-    rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz
+RUN curl -LO https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    echo "${GO_SHA256_LINUX_AMD64}  go${GO_VERSION}.linux-amd64.tar.gz" | sha256sum --check && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm -f go${GO_VERSION}.linux-amd64.tar.gz
 ENV PATH="$PATH:/usr/local/go/bin"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
