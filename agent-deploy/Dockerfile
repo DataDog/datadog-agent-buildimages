@@ -113,14 +113,11 @@ RUN gpg --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive
     && apt install -y mono-devel
 
 # Install .NET
-RUN mkdir -p /root/.dotnet \
-    && cd /root/.dotnet \
-    && wget https://download.visualstudio.microsoft.com/download/pr/17b6759f-1af0-41bc-ab12-209ba0377779/e8d02195dbf1434b940e0f05ae086453/dotnet-sdk-6.0.100-linux-x64.tar.gz \
-    && tar -xf dotnet-sdk-6.0.100-linux-x64.tar.gz \
-    && rm -rf dotnet-sdk-6.0.100-linux-x64.tar.gz 
-
-ENV DOTNET_ROOT=/root/.dotnet
-ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+RUN wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt update \
+    && apt install -y dotnet-sdk-6.0
 
 # Install Chocolatey
 RUN git clone https://github.com/chocolatey/choco.git \
