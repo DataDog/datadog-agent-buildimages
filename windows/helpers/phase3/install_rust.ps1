@@ -40,3 +40,4 @@ Add-ToPath -NewPath "$($Env:USERPROFILE)\.cargo\bin" -Local
 
 Write-Host -ForegroundColor Green "Installing cbindgen"
 & cargo install cbindgen
+If ($lastExitCode -ne "0") { throw "Failed to cargo install cbindgen $lastExitCode" }
