@@ -73,7 +73,7 @@ RUN yum remove -y ruby
 
 # Upgrade some perl modules since some of our dependencies require some "new" features
 # that were not available in centos 7
-RUN cpanp -i List::Util
+RUN cpanp -i List::Util 1.66
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

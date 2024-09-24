@@ -70,7 +70,7 @@ RUN apt-get update \
 
 # Upgrade some perl modules since some of our dependencies require some "new" features
 # that were not available in centos 7
-RUN cpanp -i List::Util
+RUN cpanp -i List::Util 1.66
 
 # Ensure we're using the newest binutils
 ENV PATH "/usr/lib/binutils-2.26/bin:$PATH"

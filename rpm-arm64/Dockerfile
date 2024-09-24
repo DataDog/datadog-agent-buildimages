@@ -58,7 +58,7 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 
 # Upgrade some perl modules since some of our dependencies require some "new" features
 # that were not available in centos 7
-RUN cpanp -i List::Util
+RUN cpanp -i List::Util 1.66
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
