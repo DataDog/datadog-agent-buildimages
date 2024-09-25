@@ -113,7 +113,8 @@ RUN gpg --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive
     && apt install -y mono-devel
 
 # Install .NET
-RUN wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+RUN UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | xargs) && \
+wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
     && rm packages-microsoft-prod.deb \
     && apt update \
