@@ -536,7 +536,7 @@ release_circleci_runner_gcr:
     # They are not expended recursively and end up provided verbatim to the
     # downstream pipeline which then extends the variable with its own CI
     # variables, which causes invalid image tags to be used
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
