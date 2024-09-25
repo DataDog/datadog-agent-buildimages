@@ -137,7 +137,9 @@ RUN curl -LO https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     echo "${GO_SHA256_LINUX_AMD64}  go${GO_VERSION}.linux-amd64.tar.gz" | sha256sum --check && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
     rm -f go${GO_VERSION}.linux-amd64.tar.gz
+ENV GOPATH /go
 ENV PATH="$PATH:/usr/local/go/bin"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
