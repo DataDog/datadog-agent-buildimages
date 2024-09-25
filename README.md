@@ -1,6 +1,6 @@
-![Docker Image Version](https://img.shields.io/docker/v/datadog/agent-buildimages-deb_x64)
 # Datadog Agent builders
 
+![Docker Image Version](https://img.shields.io/docker/v/datadog/agent-buildimages-deb_x64)
 This repo contains the Dockerfiles of the images used to build the rpm and deb
 packages for the Datadog [Agent][agent].
 
