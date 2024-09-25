@@ -124,12 +124,14 @@ get_agent_version:
         docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       fi
   after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "Build failed, not sending metrics"; exit 0; fi
+    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+        echo -e "\033[0;32m\033[1mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      else
+        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
 
 
@@ -152,12 +154,14 @@ get_agent_version:
         docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       fi
   after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
+    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+        echo -e "\033[0;32m\033[1mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      else
+        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
 
 build_ci_image:
@@ -288,8 +292,18 @@ build_circleci_runner:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
-    - docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - echo -e "\033[0;32mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
+        docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
+      fi
+  after_script:
+    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
+        echo -e "\033[0;32m\033[1mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      else
+        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
+      fi
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -402,7 +416,8 @@ push_to_datadog_agent:
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host -ForegroundColor Green "Image $SRC_IMAGE is available." } else { exit 0 }
+    - If ($CI_JOB_STATUS -ne "success") { Write-Host -ForegroundColor Red "Build failed."; exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host -ForegroundColor Green "Image $SRC_IMAGE is available." } else { Write-Host -ForegroundColor Yellow "Scheduled pipeline, image push skipped." }
 
 build_windows_1809_x64:
   extends: .winbuild
