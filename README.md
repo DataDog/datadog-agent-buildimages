@@ -1,6 +1,8 @@
 # Datadog Agent builders
 
 ![Docker Image Version](https://img.shields.io/docker/v/datadog/agent-buildimages-deb_x64)
+![GitHub License](https://img.shields.io/github/license/datadog/datadog-agent-buildimages)
+
 This repo contains the Dockerfiles of the images used to build the rpm and deb
 packages for the Datadog [Agent][agent].
 
