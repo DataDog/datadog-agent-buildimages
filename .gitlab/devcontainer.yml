@@ -1,5 +1,5 @@
 lint_devcontainer:
-  stage: lint
+  stage: devcontainer
   needs: []
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
   script:
@@ -19,18 +19,18 @@ lint_devcontainer:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker buildx build $GO_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
 
-test-devcontainer:
+test_devcontainer:
   extends: .build_devcontainer
-  stage: test
-  needs: []
+  stage: devcontainer
+  needs: [lint_devcontainer]
   rules:
     - if: '$CI_COMMIT_BRANCH != "main"'
   variables:
     PUSH: ""
 
-build-devcontainer:
+build_devcontainer:
   extends: .build_devcontainer
-  stage: build
-  needs: []
+  stage: devcontainer
+  needs: [lint_devcontainer]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -10,7 +10,7 @@ stages:
   - trigger_build_kernels
   - test
   - after_test
-  - lint
+  - devcontainer
   - release
   - notify
 
