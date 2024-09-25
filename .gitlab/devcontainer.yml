@@ -7,14 +7,14 @@ lint_devcontainer:
   tags: ["arch:amd64"]
 
 .build_devcontainer:
-  tags: [ "arch:amd64" ]
+  tags: ["arch:amd64"]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10.3
   variables:
     DOCKER_TARGET: registry.ddbuild.io/ci/datadog-agent-devenv:1
     PUSH: --push
   parallel:
     matrix:
-      - PLATFORM: [ amd64,arm64 ]
+      - PLATFORM: [amd64, arm64]
   script:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker buildx build $GO_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
