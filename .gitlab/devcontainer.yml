@@ -22,7 +22,7 @@ lint_devcontainer:
 test-devcontainer:
   extends: .build_devcontainer
   stage: test
-  needs: [lint_devcontainer]
+  needs: []
   rules:
     - if: '$CI_COMMIT_BRANCH != "main"'
   variables:
@@ -31,6 +31,6 @@ test-devcontainer:
 build-devcontainer:
   extends: .build_devcontainer
   stage: build
-  needs: [lint_devcontainer]
+  needs: []
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

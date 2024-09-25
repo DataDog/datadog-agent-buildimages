@@ -10,8 +10,8 @@ stages:
   - trigger_build_kernels
   - test
   - after_test
-  - release
   - lint
+  - release
   - notify
 
 variables:
