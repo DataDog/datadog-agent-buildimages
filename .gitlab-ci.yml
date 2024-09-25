@@ -527,7 +527,7 @@ release_circleci_runner_gcr:
     - !reference [.on_default_branch_push]
   variables:
     IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
-    IMG_DESTINATIONS: agent-circleci-runner:$IMAGE_VERSION
+    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
