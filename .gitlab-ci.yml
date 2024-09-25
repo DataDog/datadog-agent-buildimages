@@ -5,13 +5,13 @@ include:
 
 stages:
   - setup
-  - lint
   - build
   - availability_message
   - trigger_build_kernels
   - test
   - after_test
   - release
+  - lint
   - notify
 
 variables:
