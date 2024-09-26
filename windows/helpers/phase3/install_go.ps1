@@ -10,7 +10,7 @@ $gohash = $ENV:GO_SHA256_WINDOWS_AMD64
 
 if ($Env:GOROOT -eq "/usr/local/msgo") {
     Write-Host -ForegroundColor Green "Installing Microsoft Go"
-    $gozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION).windows-amd64.zip"
+    $gozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION)-1.windows-amd64.zip"
     $gohash = $ENV:MSGO_SHA256_WINDOWS_AMD64
 }
 
