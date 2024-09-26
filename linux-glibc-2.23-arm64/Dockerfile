@@ -37,6 +37,7 @@ RUN git config --global user.name "Bits"
 RUN cd /build && \
     git clone --depth=1 https://git.savannah.gnu.org/git/texinfo.git && \
     cd texinfo && \
+    git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
     ./autogen.sh && \
     ./configure && make -j$(ncproc) && make install && \
     rm -rf /build/texinfo
