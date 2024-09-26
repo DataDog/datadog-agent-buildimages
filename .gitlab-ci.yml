@@ -513,8 +513,13 @@ dev_release_circleci_runner_gcr:
   rules:
     - !reference [.on_push]
   variables:
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
+    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
+    # other variables here.
+    # They are not expended recursively and end up provided verbatim to the
+    # downstream pipeline which then extends the variable with its own CI
+    # variables, which causes invalid image tags to be used
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
@@ -526,8 +531,13 @@ release_circleci_runner_gcr:
   rules:
     - !reference [.on_default_branch_push]
   variables:
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:$IMAGE_VERSION
-    IMG_DESTINATIONS: agent-circleci-runner:$IMAGE_VERSION
+    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
+    # other variables here.
+    # They are not expended recursively and end up provided verbatim to the
+    # downstream pipeline which then extends the variable with its own CI
+    # variables, which causes invalid image tags to be used
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_REGISTRIES: gcr-datadoghq
   trigger:
     project: DataDog/public-images
