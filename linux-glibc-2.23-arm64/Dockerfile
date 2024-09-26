@@ -35,7 +35,7 @@ RUN git config --global user.name "Bits"
 # causes a segfault. The fix isn't yet released as a package
 # https://git.savannah.gnu.org/cgit/texinfo.git/commit/?id=60d3edc4b74b4e1e5ef55e53de394d3b65506c47
 RUN cd /build && \
-    git clone --depth=1 https://git.savannah.gnu.org/git/texinfo.git && \
+    git clone https://git.savannah.gnu.org/git/texinfo.git && \
     cd texinfo && \
     git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
     ./autogen.sh && \
