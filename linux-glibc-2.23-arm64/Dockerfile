@@ -25,7 +25,7 @@ RUN apt update -qy && apt install -y \
 
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.23-arm64/toolchain.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.23-arm64/config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.23-arm64/cargo-config.toml /root/.cargo/config.toml
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
