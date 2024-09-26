@@ -59,6 +59,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libffi-dev  \
     liblzma-dev \
     unzip \
+    ca-certificates \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
@@ -103,6 +104,31 @@ COPY .curlrc .wgetrc /root/
 # Setup git credentials so we can create commits
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
+
+# Install Mono
+RUN gpg --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
+    && echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
+    && chmod 644 /usr/share/keyrings/mono-official-archive-keyring.gpg \
+    && apt update \
+    && apt install -y mono-devel
+
+# Install .NET
+RUN UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | xargs) && \
+wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt update \
+    && apt install -y dotnet-sdk-6.0
+
+# Install Chocolatey
+RUN git clone https://github.com/chocolatey/choco.git \
+    && cd choco \
+    && ./build.sh \
+    && cp -r ./code_drop/temp/_PublishedApps/choco /opt/chocolatey \
+    && cp ./docker/choco_wrapper /usr/local/bin/choco \
+    && rm -rf /choco
+
+ENV ChocolateyInstall=/opt/chocolatey 
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
