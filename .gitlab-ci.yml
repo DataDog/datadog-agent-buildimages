@@ -411,13 +411,13 @@ push_to_datadog_agent:
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE; } else { exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
     - docker rmi 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}
     - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - If ($CI_JOB_STATUS -ne "success") { Write-Host -ForegroundColor Red "Build failed."; exit 0 }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host -ForegroundColor Green "Image $SRC_IMAGE is available." } else { Write-Host -ForegroundColor Yellow "Scheduled pipeline, image push skipped." }
+    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
 
 build_windows_1809_x64:
   extends: .winbuild
