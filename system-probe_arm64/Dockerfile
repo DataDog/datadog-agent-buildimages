@@ -77,3 +77,9 @@ ENV PATH "/opt/clang/bin:${PATH}"
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
