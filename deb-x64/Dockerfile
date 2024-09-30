@@ -223,6 +223,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
     && mv vault /usr/bin/vault \
     && chmod +x /usr/bin/vault
 
+# Install authanywhere to use the pr-commenter service https://datadoghq.atlassian.net/wiki/spaces/DEVX/pages/3047457932/Pull+Request+Commenting+Service
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && mv "authanywhere-linux-amd64" /bin/authanywhere && chmod +x /bin/authanywhere
+
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
