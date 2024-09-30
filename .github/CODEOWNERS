@@ -30,14 +30,14 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 /system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-devx-infra
 
 # CircleCI image
-/circleci/                          @DataDog/agent-devx-loops @DataDog/agent-devx-infra
+/circleci/                          @DataDog/agent-devx-infra
 
 # Linux test & build images
-/deb-arm/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/deb-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-arm64/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-armhf/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
+/deb-arm/                           @DataDog/agent-delivery @DataDog/agent-devx-infra
+/deb-x64/                           @DataDog/agent-delivery @DataDog/agent-devx-infra
+/rpm-arm64/                         @DataDog/agent-delivery @DataDog/agent-devx-infra
+/rpm-armhf/                         @DataDog/agent-delivery @DataDog/agent-devx-infra
+/rpm-x64/                           @DataDog/agent-delivery @DataDog/agent-devx-infra
 
 # Windows test & build images
 /windows/                           @DataDog/windows-agent @DataDog/agent-devx-infra
