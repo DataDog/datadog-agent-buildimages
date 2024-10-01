@@ -28,6 +28,7 @@ RUN apt update -qy && apt install -y \
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.17-x64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -51,6 +52,7 @@ RUN cd /build && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
+    patch -p1 < /root/ctng.patch && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && \
