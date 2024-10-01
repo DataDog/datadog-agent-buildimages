@@ -47,7 +47,7 @@ RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # Upgrade binutils
-RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
+RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
     && cd "binutils-${BINUTILS_VERSION}" \
@@ -55,6 +55,10 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
     && cd - \
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
+
+# Upgrade some perl modules since some of our dependencies require some "new" features
+# that were not available in centos 7
+RUN cpanp -i List::Util 1.66
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp

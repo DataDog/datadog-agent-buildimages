@@ -147,7 +147,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Upgrade binutils
-RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
+RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
     && cd "binutils-${BINUTILS_VERSION}" \
@@ -160,7 +160,7 @@ RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.t
 ENV PATH="/usr/local/binutils/bin:$PATH"
 
 # xz needs gettext 0.19.6 or newer
-RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+RUN curl -LO https://mirrors.ibiblio.org/pub/mirrors/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
     && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
     && cd "gettext-${GETTEXT_VERSION}" \
