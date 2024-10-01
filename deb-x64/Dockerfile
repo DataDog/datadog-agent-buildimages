@@ -86,7 +86,7 @@ COPY .curlrc .wgetrc /root/
 # The dpkg version we want to install requires a more recent version of
 # gettext than the one shipped in ubuntu 14.04. Even though we disable i18n,
 # their buildsystem still needs gettext
-RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+RUN curl -LO https://mirrors.ibiblio.org/pub/mirrors/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
     && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
     && cd "gettext-${GETTEXT_VERSION}" \
