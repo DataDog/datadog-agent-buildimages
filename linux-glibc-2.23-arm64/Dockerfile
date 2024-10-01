@@ -26,6 +26,7 @@ RUN apt update -qy && apt install -y \
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.23-arm64/toolchain.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.23-arm64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -35,7 +36,7 @@ RUN git config --global user.name "Bits"
 # causes a segfault. The fix isn't yet released as a package
 # https://git.savannah.gnu.org/cgit/texinfo.git/commit/?id=60d3edc4b74b4e1e5ef55e53de394d3b65506c47
 RUN cd /build && \
-    git clone https://git.savannah.gnu.org/git/texinfo.git && \
+    git clone https://gnu.googlesource.com/texinfo && \
     cd texinfo && \
     git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
     ./autogen.sh && \
@@ -49,6 +50,7 @@ RUN cd /build && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
+    patch -p1 < /root/ctng.patch && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && ./ct-ng build && \
