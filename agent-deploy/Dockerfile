@@ -13,8 +13,8 @@ ARG RUBY_VERSION_ARG=2.4.10
 ARG BUNDLER_VERSION_ARG=1.17.3
 ARG AWSCLI_VERSION_ARG=1.11.18
 ARG RPM_S3_VERSION_ARG=0.8.0
-ARG GOLANG_VERSION=1.21.7
-ARG GOLANG_SHASUM=13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae03293702c
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.11.8
@@ -59,6 +59,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libffi-dev  \
     liblzma-dev \
     unzip \
+    ca-certificates \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
@@ -104,6 +105,31 @@ COPY .curlrc .wgetrc /root/
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
+# Install Mono
+RUN gpg --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
+    && echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
+    && chmod 644 /usr/share/keyrings/mono-official-archive-keyring.gpg \
+    && apt update \
+    && apt install -y mono-devel
+
+# Install .NET
+RUN UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | xargs) && \
+wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt update \
+    && apt install -y dotnet-sdk-6.0
+
+# Install Chocolatey
+RUN git clone https://github.com/chocolatey/choco.git \
+    && cd choco \
+    && ./build.sh \
+    && cp -r ./code_drop/temp/_PublishedApps/choco /opt/chocolatey \
+    && cp ./docker/choco_wrapper /usr/local/bin/choco \
+    && rm -rf /choco
+
+ENV ChocolateyInstall=/opt/chocolatey 
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 COPY ./agent-deploy/Gemfile ./agent-deploy/Gemfile.lock ./
@@ -133,11 +159,14 @@ RUN curl -fsSL https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux6
     chmod +x /usr/local/bin/jq
 
 # golang
-RUN curl -LO https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
-    echo "${GOLANG_SHASUM}  go${GOLANG_VERSION}.linux-amd64.tar.gz" | sha256sum --check && \
-    tar -C /usr/local -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz && \
-    rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz
+RUN curl -LO https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    echo "${GO_SHA256_LINUX_AMD64}  go${GO_VERSION}.linux-amd64.tar.gz" | sha256sum --check && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm -f go${GO_VERSION}.linux-amd64.tar.gz
+ENV GOPATH /go
+ENV GO_VERSION $GO_VERSION
 ENV PATH="$PATH:/usr/local/go/bin"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \

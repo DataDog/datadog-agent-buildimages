@@ -39,6 +39,7 @@ ARG EMBEDDED_PYTHON_2_VERSION
 ARG EMBEDDED_PYTHON_3_VERSION
 ARG NUGET_VERSION
 ARG CODEQL_VERSION
+ARG VAULT_VERSION
 
 LABEL target_agent="Agent 6/7"
 LABEL target_arch=${TARGET_ARCH}
@@ -56,6 +57,7 @@ LABEL embedded_py2_version=${EMBEDDED_PYTHON_2_VERSION}
 LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
 LABEL nuget_version=${NUGET_VERSION}
 LABEL codeql_version=${CODEQL_VERSION}
+LABEL vault_version=${VAULT_VERSION}
 
 ## WORKDIR should automatically create the directory
 WORKDIR c:/scripts

@@ -5,13 +5,13 @@ $SoftwareTable = @{
     "WINGIT_SHA256"="b0442f1b8ea40b6f94ef9a611121d2c204f6aa7f29c54315d2ce59876c3d134e";
     "SEVENZIP_VERSION"="19.0.0";
     "SEVENZIP_SHA256"="0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e";
-    
+
     ## VisualStudio build tools for containers
     # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history
     # LTSC 17.8
     "VS2017BUILDTOOLS_VERSION"="17.8.7";
     "VS2017BUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe";
-    
+
     # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe'))
     "VS2017BUILDTOOLS_SHA256"="FC12F5B47AC9EC42064CFAD9E40EFE3B88EF5468E82BAFEC7839EF3296FD88A3";
 
@@ -19,7 +19,7 @@ $SoftwareTable = @{
     # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
-    
+
     "DOTNETCORE_VERSION"="8.0.302";
     "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
     "DOTNETCORE_URL"="https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe";
@@ -45,12 +45,14 @@ $SoftwareTable = @{
     "EMBEDDED_PIP_VERSION"="20.3.4";
     "CODEQL_VERSION"="2.10.3";
     "CODEQL_HASH"="46f64e21c74f41210ea3f2c433d1dc622e3eb0690b42373a73fba82122b929a1";
+    "VAULT_VERSION"="1.17.2";
+    "VAULT_HASH"="7ed488aa8bbae5da75cbb909d454c5e86d7ac18389bdd9f844ce58007c6e3ac3";
     "NINJA_VERSION"="1.11.0";
     "NINJA_SHA256"="d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b";
     "GCLOUD_SDK_VERSION"="315.0.0";
     "GCLOUD_SDK_SHA256"="c9b283c9db4ed472111ccf32e6689fd467daf18ce3a77b8e601f9c646a83d86b";
-    "CACERTS_VERSION"="2024-07-02";
-    "CACERTS_HASH"="1bf458412568e134a4514f5e170a328d11091e071c7110955c9884ed87972ac9";
+    "CACERTS_VERSION"="2024-09-24";
+    "CACERTS_HASH"="189d3cf6d103185fba06d76c1af915263c6d42225481a1759e853b33ac857540";
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";

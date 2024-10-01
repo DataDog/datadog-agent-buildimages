@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=arm32v7/centos:7
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2024-07-02
-ENV CACERT_BUNDLE_SHA256="1bf458412568e134a4514f5e170a328d11091e071c7110955c9884ed87972ac9"
+ENV CACERT_BUNDLE_VERSION=2024-09-24
+ENV CACERT_BUNDLE_SHA256="189d3cf6d103185fba06d76c1af915263c6d42225481a1759e853b33ac857540"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -22,6 +22,9 @@ ARG DD_TARGET_ARCH=armhf
 ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=e8fa3d269cf90cdaa6e8b4c7e9172c45dce87d0a96f04b041016e9d97c7b9bdc
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm.zip"
 
 # Environment
 ENV GOPATH /go
@@ -135,6 +138,14 @@ COPY .curlrc .wgetrc /root/
 COPY setup_go.sh /
 RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

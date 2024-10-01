@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2024-07-02
-ENV CACERT_BUNDLE_SHA256="1bf458412568e134a4514f5e170a328d11091e071c7110955c9884ed87972ac9"
+ENV CACERT_BUNDLE_VERSION=2024-09-24
+ENV CACERT_BUNDLE_SHA256="189d3cf6d103185fba06d76c1af915263c6d42225481a1759e853b33ac857540"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -30,6 +30,9 @@ ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -164,6 +167,14 @@ RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clan
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
