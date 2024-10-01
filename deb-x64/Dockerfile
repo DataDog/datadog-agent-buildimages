@@ -68,6 +68,10 @@ RUN apt-get update \
     && apt-get install -y gcc-9 g++-9 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 0
 
+# Upgrade some perl modules since some of our dependencies require some "new" features
+# that were not available in centos 7
+RUN cpanp -i List::Util 1.66
+
 # Ensure we're using the newest binutils
 ENV PATH "/usr/lib/binutils-2.26/bin:$PATH"
 
@@ -82,7 +86,7 @@ COPY .curlrc .wgetrc /root/
 # The dpkg version we want to install requires a more recent version of
 # gettext than the one shipped in ubuntu 14.04. Even though we disable i18n,
 # their buildsystem still needs gettext
-RUN curl -LO https://ftp.gnu.org/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
+RUN curl -LO https://mirrors.ibiblio.org/pub/mirrors/gnu/gettext/gettext-${GETTEXT_VERSION}.tar.xz \
     && echo "${GETTEXT_SHA256}  gettext-${GETTEXT_VERSION}.tar.xz" | sha256sum --check \
     && tar xf "gettext-${GETTEXT_VERSION}.tar.xz" \
     && cd "gettext-${GETTEXT_VERSION}" \
