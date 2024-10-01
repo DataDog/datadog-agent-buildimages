@@ -143,7 +143,7 @@ RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-documen
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Upgrade binutils
-RUN curl -sL -O "https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
+RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
     && cd "binutils-${BINUTILS_VERSION}" \
