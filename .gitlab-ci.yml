@@ -252,7 +252,7 @@ build_linux_glibc_2_17_x64:
     IMAGE: linux-glibc-2-17-x64
 
 build_linux_glibc_2_23_arm64:
-  extends: build_ddregistry .arm]
+  extends: [.build_ddregistry, .arm]
   variables:
     DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
     IMAGE: linux-glibc-2-23-arm64
