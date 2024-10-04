@@ -52,14 +52,14 @@ RUN set -ex \
 # Golang
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ENV GO_VERSION $GO_VERSION
+ARG MSGO_SHA256_LINUX_AMD64
 ENV GOPATH /go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-    && echo "$GO_SHA256_LINUX_AMD64 /tmp/golang.tar.gz" | sha256sum --check \
-    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Go
+COPY setup_go.sh /
+RUN DD_TARGET_ARCH=x64 ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
+
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 # CMake

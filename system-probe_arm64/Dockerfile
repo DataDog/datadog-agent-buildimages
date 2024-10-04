@@ -3,6 +3,7 @@ FROM debian:bullseye
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG MSGO_SHA256_LINUX_ARM64
 ARG DD_TARGET_ARCH=aarch64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
@@ -60,12 +61,10 @@ ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PATH "${CONDA_PATH}/envs/ddpy3/bin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-RUN wget -O /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
-ENV PATH "/usr/local/go/bin:${PATH}"
-ENV PATH "${GOPATH}/bin:${PATH}"
+# Go
+COPY setup_go.sh /
+RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # CI uploader, to send junit to ci-visibility during CI tests
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
@@ -90,3 +89,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

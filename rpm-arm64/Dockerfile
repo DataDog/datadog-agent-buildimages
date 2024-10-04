@@ -12,6 +12,7 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG MSGO_SHA256_LINUX_ARM64
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_VERSION=1.26.0
@@ -133,11 +134,8 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
 
 # Go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
+COPY setup_go.sh /
+RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
