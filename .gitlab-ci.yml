@@ -512,7 +512,7 @@ release_linux:
   extends: .release
   parallel:
     matrix:
-      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
+      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64,linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
 
 release_windows:
   extends: .winrelease
