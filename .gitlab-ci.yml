@@ -9,7 +9,6 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
-  - after_test
   - devcontainer
   - release
   - notify
@@ -342,7 +341,8 @@ trigger_build_kernels:
 trigger_tests:
   stage: test
   rules:
-    - !reference [.on_push]
+    - when: manual
+      allow_failure: true
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
@@ -357,31 +357,6 @@ trigger_tests:
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
-
-on_success:
-  stage: test
-  rules:
-    - !reference [.on_push]
-  needs: ["trigger_tests"]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: on_success
-  script:
-    - echo success > output.pipeline
-  artifacts:
-    paths:
-      - output.pipeline
-    expire_in: 1 week
-
-wait_for_tests:
-  stage: after_test
-  rules:
-    - !reference [.on_push]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: always
-  script:
-    - cat output.pipeline
 
 push_to_datadog_agent:
   stage: test
@@ -451,7 +426,6 @@ build_windows_ltsc2022_x64:
   stage: release
   rules:
     - !reference [.on_default_branch_push]
-  needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   variables:
@@ -602,8 +576,9 @@ notify-images-available:
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
     export MESSAGE="Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
-    :idea: You can test them in the datadog-agent repository by running:
+    :idea: You can test them in the \`datadog-agent\` repository by running:
     \`\`\`inv pipeline.update-buildimages -i $IMAGE_VERSION [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    Or run the \`trigger_tests\` manual job in your <$CI_PIPELINE_URL|pipeline>.
     "
     /usr/local/bin/notify.sh
 
