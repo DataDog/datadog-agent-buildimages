@@ -454,8 +454,9 @@ build_windows_ltsc2022_x64:
   needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
+  variables:
+    SRC_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
   script:
-    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
     # Tag as latest in internal registry
     - crane tag $SRC_IMAGE latest
     # Copy to public dockerhub registry and also tag as latest
