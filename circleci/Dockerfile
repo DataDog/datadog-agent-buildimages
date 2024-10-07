@@ -6,7 +6,7 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ARG PYTHON_VERSION=3.11.8
+ARG PYTHON_VERSION=3.12.6
 
 # Pre-requisites
 # Python 3 dev is required for rtloader
