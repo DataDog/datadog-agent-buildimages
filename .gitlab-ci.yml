@@ -9,7 +9,6 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
-  - after_test
   - devcontainer
   - release
   - notify
@@ -359,31 +358,6 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
-on_success:
-  stage: test
-  rules:
-    - !reference [.on_push]
-  needs: ["trigger_tests"]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: on_success
-  script:
-    - echo success > output.pipeline
-  artifacts:
-    paths:
-      - output.pipeline
-    expire_in: 1 week
-
-wait_for_tests:
-  stage: after_test
-  rules:
-    - !reference [.on_push]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: always
-  script:
-    - cat output.pipeline
-
 push_to_datadog_agent:
   stage: test
   rules:
@@ -452,7 +426,6 @@ build_windows_ltsc2022_x64:
   stage: release
   rules:
     - !reference [.on_default_branch_push]
-  needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   variables:
