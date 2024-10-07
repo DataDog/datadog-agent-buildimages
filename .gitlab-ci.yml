@@ -342,7 +342,8 @@ trigger_build_kernels:
 trigger_tests:
   stage: test
   rules:
-    - !reference [.on_push]
+    - when: manual
+      allow_failure: true
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
@@ -602,8 +603,9 @@ notify-images-available:
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
     export MESSAGE="Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
-    :idea: You can test them in the datadog-agent repository by running:
+    :idea: You can test them in the \`datadog-agent\` repository by running:
     \`\`\`inv pipeline.update-buildimages -i $IMAGE_VERSION [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    Or run the \`trigger_tests\` manual job in your <$CI_PIPELINE_URL|pipeline>.
     "
     /usr/local/bin/notify.sh
 
