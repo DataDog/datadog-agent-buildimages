@@ -9,9 +9,9 @@
 
 FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
-ARG RUBY_VERSION_ARG=2.4.10
-ARG BUNDLER_VERSION_ARG=1.17.3
-ARG AWSCLI_VERSION_ARG=1.11.18
+ARG RUBY_VERSION_ARG=2.7.8
+ARG BUNDLER_VERSION_ARG=2.5.21
+ARG AWSCLI_VERSION_ARG=1.34.33
 ARG RPM_S3_VERSION_ARG=0.8.0
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
@@ -75,7 +75,7 @@ RUN mv /usr/bin/gpg /usr/bin/gpg2 && ln -s /usr/bin/gpg1 /usr/bin/gpg
 
 # Python 2 deps
 RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
- && python2 get-pip.py
+    && python2 get-pip.py
 
 RUN python2 -m pip install \
     awscli==1.18.140 \
@@ -87,15 +87,15 @@ ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
-     pyenv install ${PYTHON_VERSION} && \
-     pyenv global ${PYTHON_VERSION}
+    pyenv install ${PYTHON_VERSION} && \
+    pyenv global ${PYTHON_VERSION}
 
 # Python 3 deps
 COPY requirements.txt /requirements.txt
 COPY requirements /requirements
 RUN pip3 install pip \
- && pip3 install --upgrade pip \
- && pip3 install -r requirements.txt -r requirements/agent-deploy.txt
+    && pip3 install --upgrade pip \
+    && pip3 install -r requirements.txt -r requirements/agent-deploy.txt
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
@@ -114,7 +114,7 @@ RUN gpg --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive
 
 # Install .NET
 RUN UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | xargs) && \
-wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
     && rm packages-microsoft-prod.deb \
     && apt update \
@@ -146,8 +146,8 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # s3cmd
 RUN cd opt && curl -sSL https://downloads.sourceforge.net/project/s3tools/s3cmd/1.5.2/s3cmd-1.5.2.tar.gz > s3cmd-1.5.2.tar.gz && \
-	tar -xzvf s3cmd-1.5.2.tar.gz && \
-	ln -s `pwd`/s3cmd-1.5.2/s3cmd /usr/bin/s3cmd
+    tar -xzvf s3cmd-1.5.2.tar.gz && \
+    ln -s `pwd`/s3cmd-1.5.2/s3cmd /usr/bin/s3cmd
 
 # rpm-s3
 RUN git clone --depth 1 --branch $RPM_S3_VERSION https://github.com/DataDog/rpm-s3 /opt/rpm-s3
@@ -181,7 +181,7 @@ COPY ./agent-deploy/deploy-scripts /deploy_scripts
 RUN chmod +x /deploy_scripts/check_apt_pool.sh
 RUN chmod +x /deploy_scripts/fail_deb_is_pkg_already_exists.sh
 RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
-                     bundle install"
+    bundle install"
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
