@@ -465,6 +465,11 @@ build_windows_ltsc2022_x64:
     - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
     - crane tag datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION latest
 
+.release_ddregistry:
+  extends: .release
+  variables:
+    SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
+
 .winrelease:
   stage: release
   rules:
@@ -513,7 +518,13 @@ release_linux:
   extends: .release
   parallel:
     matrix:
-      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64,linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
+      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
+
+release_linux_ddregistry:
+  extends: .release_ddregistry
+  parallel:
+    matrix:
+      - IMAGE: [linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
 
 release_windows:
   extends: .winrelease
