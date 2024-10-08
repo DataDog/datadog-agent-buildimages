@@ -9,7 +9,6 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
-  - after_test
   - devcontainer
   - release
   - notify
@@ -246,13 +245,13 @@ build_dd_agent_testing:
     IMAGE: dd-agent-testing
 
 build_linux_glibc_2_17_x64:
-  extends: [.build, .x64]
+  extends: [.build_ddregistry, .x64]
   variables:
     DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
     IMAGE: linux-glibc-2-17-x64
 
 build_linux_glibc_2_23_arm64:
-  extends: [.build, .arm]
+  extends: [.build_ddregistry, .arm]
   variables:
     DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
     IMAGE: linux-glibc-2-23-arm64
@@ -342,7 +341,8 @@ trigger_build_kernels:
 trigger_tests:
   stage: test
   rules:
-    - !reference [.on_push]
+    - when: manual
+      allow_failure: true
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
@@ -357,31 +357,6 @@ trigger_tests:
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
-
-on_success:
-  stage: test
-  rules:
-    - !reference [.on_push]
-  needs: ["trigger_tests"]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: on_success
-  script:
-    - echo success > output.pipeline
-  artifacts:
-    paths:
-      - output.pipeline
-    expire_in: 1 week
-
-wait_for_tests:
-  stage: after_test
-  rules:
-    - !reference [.on_push]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: always
-  script:
-    - cat output.pipeline
 
 push_to_datadog_agent:
   stage: test
@@ -451,11 +426,11 @@ build_windows_ltsc2022_x64:
   stage: release
   rules:
     - !reference [.on_default_branch_push]
-  needs: ["trigger_tests"]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
+  variables:
+    SRC_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
   script:
-    - SRC_IMAGE=486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
     # Tag as latest in internal registry
     - crane tag $SRC_IMAGE latest
     # Copy to public dockerhub registry and also tag as latest
@@ -463,6 +438,11 @@ build_windows_ltsc2022_x64:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
     - crane tag datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION latest
+
+.release_ddregistry:
+  extends: .release
+  variables:
+    SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
 
 .winrelease:
   stage: release
@@ -513,6 +493,12 @@ release_linux:
   parallel:
     matrix:
       - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
+
+release_linux_ddregistry:
+  extends: .release_ddregistry
+  parallel:
+    matrix:
+      - IMAGE: [linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
 
 release_windows:
   extends: .winrelease
@@ -590,8 +576,9 @@ notify-images-available:
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
     export MESSAGE="Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
-    :idea: You can test them in the datadog-agent repository by running:
+    :idea: You can test them in the \`datadog-agent\` repository by running:
     \`\`\`inv pipeline.update-buildimages -i $IMAGE_VERSION [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    Or run the \`trigger_tests\` manual job in your <$CI_PIPELINE_URL|pipeline>.
     "
     /usr/local/bin/notify.sh
 

@@ -11,6 +11,9 @@ ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BUNDLER_VERSION=2.4.20
 ARG DD_TARGET_ARCH
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 ENV CONDA_PATH /root/miniforge3
 
@@ -28,6 +31,7 @@ RUN apt update -qy && apt install -y \
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.17-x64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -37,7 +41,7 @@ RUN git config --global user.name "Bits"
 # causes a segfault. The fix isn't yet released as a package
 # https://git.savannah.gnu.org/cgit/texinfo.git/commit/?id=60d3edc4b74b4e1e5ef55e53de394d3b65506c47
 RUN cd /build && \
-    git clone https://git.savannah.gnu.org/git/texinfo.git && \
+    git clone https://gnu.googlesource.com/texinfo && \
     cd texinfo && \
     git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
     ./autogen.sh && \
@@ -51,6 +55,7 @@ RUN cd /build && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
     cd /build/crosstool-ng-${CTNG_VERSION} && \
+    patch -p1 < /root/ctng.patch && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && \
@@ -103,6 +108,14 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
