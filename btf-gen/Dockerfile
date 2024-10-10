@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG PYTHON_VERSION=3.11.8
+ARG PYTHON_VERSION=3.12.6
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
