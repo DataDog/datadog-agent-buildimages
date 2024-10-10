@@ -23,9 +23,7 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2
 
 # Install latest pip
-RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3 && \
-    python3 -c 'import sys; print(sys.version_info[:])'
-    
+RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
