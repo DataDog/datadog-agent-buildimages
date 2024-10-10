@@ -15,12 +15,17 @@ RUN apt-get update && apt-get upgrade -y && \
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
     # Python setup
     add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
-    apt-get install -y python${PYTHON_VERSION} python3.12 python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv python3-pip &&\
+    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
 # Setup python3.12 as default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2
+
+# Install latest pip
+RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3 && \
+    python3 -c 'import sys; print(sys.version_info[:])'
+    
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
