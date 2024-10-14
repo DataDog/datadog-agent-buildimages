@@ -117,6 +117,13 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
     && mv vault /usr/bin/vault \
     && chmod +x /usr/bin/vault
 
+RUN wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz" -O /tmp/clang.tar.xz  -o /dev/null && \
+    echo "6b3cc55d3ef413be79785c4dc02828ab3bd6b887872b143e3091692fc6acefe7  /tmp/clang.tar.xz" | sha256sum --check && \
+    mkdir -p /opt/clang && \
+    tar xf /tmp/clang.tar.xz --no-same-owner -C /opt/clang --strip-components=1 && \
+    rm -f /tmp/clang.tar.xz
+ENV PATH "/opt/clang/bin:${PATH}"
+
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
