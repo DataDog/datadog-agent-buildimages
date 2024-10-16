@@ -507,7 +507,7 @@ notify-images-available:
   extends: .slack-notifier-base
   stage: availability_message # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+    - <<: *if_release_or_main_branch
       when: never
     - when: on_success
   dependencies: []
@@ -525,7 +525,7 @@ notify-images-failure:
   extends: .slack-notifier-base
   stage: availability_message
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+    - <<: *if_release_or_main_branch
       when: never
     - when: on_failure
   dependencies: []
@@ -540,7 +540,7 @@ notify-images-failure:
 notify-on-failure:
   extends: .slack-notifier-base
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+    - <<: *if_release_or_main_branch
       when: on_failure
   dependencies: []
   script: |
