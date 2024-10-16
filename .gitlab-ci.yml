@@ -447,11 +447,6 @@ release_system-probe_arm64:
   variables:
     IMAGE: system-probe_arm64
 
-release_datadog-ci-uploader:
-  extends: .release
-  variables:
-    IMAGE: datadog-ci-uploader
-
 release_windows_1809_x64:
   extends: .winrelease
   variables:
