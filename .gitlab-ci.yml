@@ -6,7 +6,6 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
-  - after_test
   - release
   - notify
 
@@ -46,12 +45,12 @@ variables:
     when: never
   - when: always
 
-.on_default_branch_push:
+.on_default_branch_or_release_push:
   - if: $CI_PIPELINE_SOURCE == "schedule"
     when: never
   - if: $CI_COMMIT_TAG != null
     when: never
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - <<: *if_release_or_main_branch
     when: always
 
 workflow:
@@ -301,7 +300,8 @@ trigger_build_kernels:
 trigger_tests:
   stage: test
   rules:
-    - !reference [.on_push]
+    - when: manual
+      allow_failure: true
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
@@ -317,32 +317,7 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
-on_success:
-  stage: test
-  rules:
-    - !reference [.on_push]
-  needs: ["trigger_tests"]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: on_success
-  script:
-    - echo success > output.pipeline
-  artifacts:
-    paths:
-      - output.pipeline
-    expire_in: 1 week
-
-wait_for_tests:
-  stage: after_test
-  rules:
-    - !reference [.on_push]
-  tags: ["arch:amd64"]
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29
-  when: always
-  script:
-    - cat output.pipeline
-
-.winbuild: &winbuild
+.winbuild:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
@@ -378,8 +353,7 @@ build_windows_ltsc2022_x64:
 .release:
   stage: release
   rules:
-    - !reference [.on_default_branch_push]
-  needs: ["trigger_tests"]
+    - !reference [.on_default_branch_or_release_push]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   script:
@@ -395,7 +369,7 @@ build_windows_ltsc2022_x64:
 .winrelease:
   stage: release
   rules:
-    - !reference [.on_default_branch_push]
+    - !reference [.on_default_branch_or_release_push]
   ## this always needs to be the newest available builder version
   tags: ["runner:windows-docker", "windowsversion:2022"]
   script:
@@ -498,7 +472,7 @@ release_circleci_runner:
   variables:
     IMAGE: circleci-runner
   rules:
-    - !reference [.on_default_branch_push]
+    - !reference [.on_default_branch_or_release_push]
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   script:
@@ -525,7 +499,7 @@ release_circleci_runner_gcr:
   stage: release
   needs: ["build_circleci_runner"]
   rules:
-    - !reference [.on_default_branch_push]
+    - !reference [.on_default_branch_or_release_push]
   variables:
     IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-circleci-runner:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
@@ -548,7 +522,7 @@ notify-images-available:
     export MESSAGE="Your :docker: images with tag \`v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     :idea: You can test them in the datadog-agent repository by running:
-    \`\`\`inv pipeline.update-buildimages -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]\`\`\`
+    \`\`\`inv buildimages.update -i v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} [--no-test-version] [--branch-name <your_branch>]\`\`\`
     "
     /usr/local/bin/notify.sh
 
