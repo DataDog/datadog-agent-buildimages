@@ -90,6 +90,8 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
      pip3 install -r requirements.txt -r requirements/circleci.txt
+RUN echo "PKG_CONFIG_PATH=$(pyenv prefix)/lib/pkgconfig" >> /etc/environment
+ENV BASH_ENV="/etc/environment"
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
