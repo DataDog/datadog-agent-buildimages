@@ -224,6 +224,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
+# Make python available to pkg-config after we're done building everything in the image
+RUN echo 'export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${CONDA_PREFIX}/lib/pkgconfig' >> /root/.bashrc
+
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 

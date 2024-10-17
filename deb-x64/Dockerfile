@@ -226,6 +226,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
+# Make python available to pkg-config after we're done building everything in the image
+RUN echo 'export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${CONDA_PREFIX}/lib/pkgconfig' >> /root/.bashrc
+
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 

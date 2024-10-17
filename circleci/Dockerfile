@@ -90,6 +90,10 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
      pip3 install -r requirements.txt -r requirements/circleci.txt
+RUN echo "export PKG_CONFIG_PATH=$(pyenv prefix)/lib/pkgconfig" >> /root/dd.env
+# As circle CI runs in a non-login shell, it won't source bashrc or similar files
+# but it will source any file contained in the BASH_ENV environment variable
+ENV BASH_ENV="/root/dd.env"
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
