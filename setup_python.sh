@@ -118,4 +118,3 @@ ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
 conda clean -a
 
 echo "conda activate ddpy3" >> /root/.bashrc
-echo 'export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${CONDA_PREFIX}/lib/pkgconfig' >> /root/.bashrc
