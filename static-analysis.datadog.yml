@@ -1,0 +1,4 @@
+# https://docs.datadoghq.com/code_analysis/static_analysis/setup/#customize-your-configuration
+schema-version: v1
+ignore:
+- dev-envs
