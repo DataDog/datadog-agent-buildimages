@@ -12,3 +12,4 @@ $codesign_wheel_target = "c:\devtools\$($codesign_base)"
 Get-RemoteFile -RemoteFile $codesign_wheel -LocalFile $codesign_wheel_target -VerifyHash $ENV:WINSIGN_SHA256
 
 python -m pip install $codesign_wheel_target
+If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
