@@ -7,6 +7,7 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND noninteractive
 
 ARG PYTHON_VERSION=3.12.6
+ARG CMAKE_VERSION=3.30.5
 
 # Pre-requisites
 # Python 3 dev is required for rtloader
@@ -63,12 +64,12 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 # CMake
-ENV CMAKE_NAME cmake-3.13.3-Linux-x86_64
+ENV CMAKE_NAME cmake-$CMAKE_VERSION-linux-x86_64
 ENV CMAKE_ARCHIVE $CMAKE_NAME.tar.gz
 ENV CMAKE_DEST_DIR /cmake
 ENV PATH $CMAKE_DEST_DIR/bin/:$PATH
 RUN set -ex \
-    && curl -sL -O https://github.com/Kitware/CMake/releases/download/v3.13.3/$CMAKE_ARCHIVE \
+    && curl -sL -O https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/$CMAKE_ARCHIVE \
     && tar xzf $CMAKE_ARCHIVE \
     && mv $CMAKE_NAME $CMAKE_DEST_DIR \
     && rm $CMAKE_ARCHIVE
