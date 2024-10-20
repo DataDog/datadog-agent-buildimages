@@ -62,7 +62,7 @@ case $DD_TARGET_ARCH in
 
     export OPENSSL_DIR=/opt/openssl
     # setuptools no longer packaged by default so we need to install it manually.
-    python3 -m pip install setuptools==68.0.0
+    python3 -m pip install setuptools==74.1.3
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1

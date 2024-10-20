@@ -12,7 +12,8 @@ dulwich==0.21.6
 invoke==2.2.0
 jira==3.5.2
 mypy==1.10.0
-packaging==21.3
+# https://github.com/pypa/setuptools/issues/4501
+packaging==24.1
 parameterized==0.9.0
 python-gitlab==4.4.0
 reno==3.5.0
