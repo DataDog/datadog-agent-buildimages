@@ -2,6 +2,7 @@ FROM ubuntu:24.04
 
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ARG MSGO_SHA256_LINUX_AMD64
 ARG CTNG_VERSION=1.26.0
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
@@ -93,11 +94,8 @@ RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-documen
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
-RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
-  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
+COPY setup_go.sh /
+RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
