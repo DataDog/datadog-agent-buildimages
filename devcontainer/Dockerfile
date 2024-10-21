@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG GO_VERSION
-ARG PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.12
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 
@@ -15,12 +15,15 @@ RUN apt-get update && apt-get upgrade -y && \
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
     # Python setup
     add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
-    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv python3-pip &&\
+    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
-# Setup python3.11 as default
+# Setup python3.12 as default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2
+
+# Install latest pip
+RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
