@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "sevenzip" -Keyname "version" -TargetValue $Version
 
 if($isInstalled -and $isCurrent){
-    Write-Host "SevenZip already installed and current.  Skipping"
+    Write-Host "SevenZip already installed and current. Skipping"
     return
 }
 # assuming that exe installer would properly handle upgrade if we ever needed to
