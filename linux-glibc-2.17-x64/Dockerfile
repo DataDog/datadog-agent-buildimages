@@ -11,6 +11,9 @@ ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BUNDLER_VERSION=2.4.20
 ARG DD_TARGET_ARCH
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 ENV CONDA_PATH /root/miniforge3
 
@@ -105,6 +108,14 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
