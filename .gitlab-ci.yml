@@ -220,8 +220,6 @@ build_arm64:
 
 trigger_build_kernels:
   stage: trigger_build_kernels
-  needs:
-    ["build_kernel_version_testing_x64", "build_kernel_version_testing_arm64"]
   rules:
     - when: manual
       allow_failure: true
