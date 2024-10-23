@@ -27,7 +27,7 @@ variables:
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
   S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
-  ECR_TEST_ONLY: "_test_only"
+  TEST_ONLY: "_test_only"
   CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
   CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
@@ -63,11 +63,11 @@ workflow:
     - <<: *if_release_or_main_branch
       variables:
         # Don't use the `*_test_only` ECR for images built from commits that are on main or on a release branch
-        ECR_TEST_ONLY: ""
+        TEST_ONLY: ""
     - <<: *if_not_release_nor_main_branch
       variables:
         # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
-        ECR_TEST_ONLY: "_test_only"
+        TEST_ONLY: "_test_only"
 
 default:
   retry:
@@ -111,54 +111,27 @@ get_agent_version:
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # ECR login
-    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
+    - |
+      if [[ "${REGISTRY%%.*}" == "486234852809" ]]; then
+        eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
+      fi
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
     # For size debug purposes
-    - docker images 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - docker history --no-trunc 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+    - docker images ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION
+    - docker history --no-trunc ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+        docker push ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION
       fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
+    - export SIZE=$(docker inspect -f "{{ .Size }}" ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
-      else
-        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
-      fi
-
-
-.build_ddregistry:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Build
-    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --label target=none --file $DOCKERFILE .
-    # For size debug purposes
-    - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      fi
-  after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
-    - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+        echo -e "\033[0;32m\033[1mImage ${REGISTRY}/$IMAGE${TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
@@ -183,144 +156,67 @@ build_ci_image:
     - when: manual
       allow_failure: true
 
-build_deb_x64:
+build_x64:
   extends: [.build, .x64]
   variables:
-    DOCKERFILE: deb-x64/Dockerfile
-    IMAGE: deb_x64
+    REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/deb_x64
+      - DOCKERFILE: rpm-x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/rpm_x64
+        BASE_IMAGE: centos:7
+      - DOCKERFILE: system-probe_x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/system-probe_x64
+      - DOCKERFILE: dd-agent-testing/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/dd-agent-testing
+      - DOCKERFILE: docker-x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/docker_x64
+      - DOCKERFILE: btf-gen/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/btf-gen
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/kernel-version-testing_x64
+      - DOCKERFILE: agent-deploy/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/gitlab_agent_deploy
+      - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/linux-glibc-2-17-x64
+        REGISTRY: registry.ddbuild.io
+      - DOCKERFILE: circleci/Dockerfile
+        IMAGE: agent-buildimages-circleci-runner
+        REGISTRY: datadog
 
-build_rpm_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: rpm-x64/Dockerfile
-    IMAGE: rpm_x64
-    BASE_IMAGE: centos:7
-
-build_deb_arm64:
+build_arm64:
   extends: [.build, .arm]
   variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_arm64
-    BASE_IMAGE: arm64v8/ubuntu:16.04
-
-build_deb_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_armhf
-    BASE_IMAGE: arm32v7/ubuntu:16.04
-    DD_TARGET_ARCH: armhf
-
-build_rpm_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-arm64/Dockerfile
-    IMAGE: rpm_arm64
-    BASE_IMAGE: amazonlinux:2.0.20181114
-
-build_rpm_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-armhf/Dockerfile
-    IMAGE: rpm_armhf
-    BASE_IMAGE: arm32v7/centos:7
-    DD_TARGET_ARCH: armhf
-
-build_system-probe_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
-    IMAGE: system-probe_x64
-
-build_system-probe_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
-    IMAGE: system-probe_arm64
-
-build_dd_agent_testing:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: dd-agent-testing/Dockerfile
-    IMAGE: dd-agent-testing
-
-build_linux_glibc_2_17_x64:
-  extends: [.build_ddregistry, .x64]
-  variables:
-    DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
-    IMAGE: linux-glibc-2-17-x64
-
-build_linux_glibc_2_23_arm64:
-  extends: [.build_ddregistry, .arm]
-  variables:
-    DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
-    IMAGE: linux-glibc-2-23-arm64
-
-build_docker_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: docker-arm64/Dockerfile
-    IMAGE: docker_arm64
-
-build_docker_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: docker-x64/Dockerfile
-    IMAGE: docker_x64
-
-build_btf_gen:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: btf-gen/Dockerfile
-    IMAGE: btf-gen
-
-build_kernel_version_testing_x64:
-  extends: [.build, .x64]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-    IMAGE: kernel-version-testing_x64
-
-build_kernel_version_testing_arm64:
-  extends: [.build, .arm]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-    IMAGE: kernel-version-testing_arm64
-
-build_circleci_runner:
-  extends: [.x64]
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  variables:
-    DOCKERFILE: circleci/Dockerfile
-    IMAGE: circleci-runner
-  script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Build
-    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
-      fi
-  after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
-      else
-        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
-      fi
-
-build_gitlab_agent_deploy:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: agent-deploy/Dockerfile
-    IMAGE: gitlab_agent_deploy
+    REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/deb_arm64
+        BASE_IMAGE: arm64v8/ubuntu:16.04
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/deb_armhf
+        BASE_IMAGE: arm32v7/ubuntu:16.04
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: rpm-arm64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/rpm_arm64
+        BASE_IMAGE: amazonlinux:2.0.20181114
+      - DOCKERFILE: rpm-armhf/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/rpm_armhf
+        BASE_IMAGE: arm32v7/centos:7
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: system-probe_arm64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/system-probe_arm64
+      - DOCKERFILE: docker-arm64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/docker_arm64
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/kernel-version-testing_arm64
+      - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+        IMAGE: ci/datadog-agent-buildimages/linux-glibc-2-23-arm64
+        REGISTRY: registry.ddbuild.io
 
 trigger_build_kernels:
   stage: trigger_build_kernels
@@ -347,12 +243,12 @@ trigger_tests:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
     DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${TEST_ONLY}"
+    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${TEST_ONLY}"
     DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${TEST_ONLY}"
     DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${TEST_ONLY}"
     DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   trigger:
     project: DataDog/datadog-agent
@@ -388,20 +284,20 @@ push_to_datadog_agent:
     - pip install PyGithub -c requirements/constraints.txt
     - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
 
-.winbuild: &winbuild
+.winbuild:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
   timeout: 2h 00m
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${TEST_ONLY}:${IMAGE_VERSION}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${TEST_ONLY}:${IMAGE_VERSION}"
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
@@ -429,7 +325,7 @@ build_windows_ltsc2022_x64:
   tags: ["arch:amd64"]
   image: "${CI_IMAGE}"
   variables:
-    SRC_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
+    SRC_IMAGE: ${REGISTRY}/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
   script:
     # Tag as latest in internal registry
     - crane tag $SRC_IMAGE latest
@@ -439,10 +335,23 @@ build_windows_ltsc2022_x64:
     - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
     - crane tag datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION latest
 
-.release_ddregistry:
+release_linux:
   extends: .release
   variables:
-    SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
+    REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
+  parallel:
+    matrix:
+      - IMAGE:
+          - ci/datadog-agent-buildimages/deb_x64
+          - ci/datadog-agent-buildimages/rpm_x64
+          - ci/datadog-agent-buildimages/deb_arm64
+          - ci/datadog-agent-buildimages/rpm_arm64
+          - ci/datadog-agent-buildimages/system-probe_x64
+          - ci/datadog-agent-buildimages/system-probe_arm64
+      - IMAGE: [linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
+        REGISTRY: registry.ddbuild.io
+      - IMAGE: agent-buildimages-circleci-runner
+        REGISTRY: datadog
 
 .winrelease:
   stage: release
@@ -487,19 +396,6 @@ build_windows_ltsc2022_x64:
     - docker rmi $SRC_IMAGE 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}:latest
     - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
 
-
-release_linux:
-  extends: .release
-  parallel:
-    matrix:
-      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
-
-release_linux_ddregistry:
-  extends: .release_ddregistry
-  parallel:
-    matrix:
-      - IMAGE: [linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
-
 release_windows:
   extends: .winrelease
   variables:
@@ -511,57 +407,30 @@ release_windows:
       - IMAGE: windows_ltsc2022_x64
         DOCKERHUB_TAG_PREFIX: ltsc2022
 
-release_circleci_runner:
+.release_gcr:
   stage: release
-  needs: ["build_circleci_runner"]
   variables:
-    IMAGE: circleci-runner
-  rules:
-    - !reference [.on_default_branch_push]
-  tags: ["arch:amd64"]
-  image: "${CI_IMAGE}"
-  script:
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
-    # Tag as latest in dockerhub registry
-    - crane tag $SRC_IMAGE latest
+    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
+    # other variables here.
+    # They are not expended recursively and end up provided verbatim to the
+    # downstream pipeline which then extends the variable with its own CI
+    # variables, which causes invalid image tags to be used
+    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-circleci-runner${TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_REGISTRIES: gcr-datadoghq
+  trigger:
+    project: DataDog/public-images
+    strategy: depend
 
 dev_release_circleci_runner_gcr:
-  stage: release
-  needs: ["build_circleci_runner"]
+  extends: .release_gcr
   rules:
     - !reference [.on_push]
-  variables:
-    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
-    # other variables here.
-    # They are not expended recursively and end up provided verbatim to the
-    # downstream pipeline which then extends the variable with its own CI
-    # variables, which causes invalid image tags to be used
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_REGISTRIES: gcr-datadoghq
-  trigger:
-    project: DataDog/public-images
-    strategy: depend
 
 release_circleci_runner_gcr:
-  stage: release
-  needs: ["build_circleci_runner"]
+  extends: .release_gcr
   rules:
     - !reference [.on_default_branch_push]
-  variables:
-    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
-    # other variables here.
-    # They are not expended recursively and end up provided verbatim to the
-    # downstream pipeline which then extends the variable with its own CI
-    # variables, which causes invalid image tags to be used
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_REGISTRIES: gcr-datadoghq
-  trigger:
-    project: DataDog/public-images
-    strategy: depend
 
 notify-images-available:
   extends: .slack-notifier-base
