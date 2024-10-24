@@ -63,7 +63,7 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 # CMake
-ENV CMAKE_NAME cmake-3.30.2-Linux-x86_64
+ENV CMAKE_NAME cmake-3.30.2-linux-x86_64
 ENV CMAKE_ARCHIVE $CMAKE_NAME.tar.gz
 ENV CMAKE_DEST_DIR /cmake
 ENV PATH $CMAKE_DEST_DIR/bin/:$PATH
