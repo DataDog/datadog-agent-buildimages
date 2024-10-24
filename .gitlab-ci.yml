@@ -80,7 +80,7 @@ default:
       - api_failure
 
 # Change path for "dynamic" generation of the pipeline
-.on_config_files: &on_config_files
+.on_config_files:
   changes:
     paths:
       - .awsconfig
@@ -90,7 +90,7 @@ default:
       - tasks/**
     compare_to: 'main'
 
-.on_python_setup: &on_python_setup
+.on_python_setup:
   changes:
     paths:
       - python-packages-versions.txt
@@ -100,7 +100,7 @@ default:
       - setup_python.sh
     compare_to: 'main'
 
-.manual: &manual
+.manual:
     - when: manual
       allow_failure: true
 
@@ -352,13 +352,13 @@ build_system-probe_x64:
 build_system-probe_arm64:
   extends: [.build, .arm]
   rules:
-    - <<: *on_config_files
-    - <<: *on_python_setup
+    - !reference [.on_config_files]
+    - !reference [.on_python_setup]
     - changes:
         paths:
           - system-probe_arm64/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
     IMAGE: system-probe_arm64
@@ -606,7 +606,7 @@ push_to_datadog_agent:
 build_windows_1809_x64:
   extends: .winbuild
   rules:
-    - <<: *on_config_files
+    - !reference [.on_config_files]
     - changes:
         paths:
           - go.env
@@ -616,7 +616,7 @@ build_windows_1809_x64:
           - python-packages-versions.txt
           - windows/**
         compare_to: 'main'
-    - <<: *manual
+    - !reference [.manual]
   tags: ["runner:windows-docker", "windowsversion:1809"]
   variables:
     DOCKERFILE: windows/Dockerfile
