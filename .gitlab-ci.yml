@@ -168,6 +168,10 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
+    - touch $CI_WORKING_DIR/built_$IMAGE.txt
+  artifacts:
+    paths:
+      - $CI_WORKING_DIR/built_$IMAGE.txt
 
 
 .build_ddregistry:
@@ -208,19 +212,27 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
+    - touch $CI_WORKING_DIR/built_$IMAGE.txt
+  artifacts:
+    paths:
+      - $CI_WORKING_DIR/built_$IMAGE.txt
 
 build_ci_image:
   stage: build
   image: "${CI_IMAGE}"
   tags: ["arch:amd64"]
-  script: |-
-    docker buildx build \
+  script:
+    - docker buildx build \
       --file ci/Dockerfile \
       --platform linux/amd64 \
       --label target=build \
       --tag registry.ddbuild.io/${CI_IMAGE_REPO}:$IMAGE_VERSION \
       --push \
       .
+    - touch $CI_WORKING_DIR/built_$CI_IMAGE.txt
+  artifacts:
+    paths:
+      - $CI_WORKING_DIR/built_$CI_IMAGE.txt
   rules:
     - changes:
         paths:
@@ -501,6 +513,10 @@ build_circleci_runner:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
+    - touch $CI_WORKING_DIR/built_$IMAGE.txt
+  artifacts:
+    paths:
+      - $CI_WORKING_DIR/built_$IMAGE.txt
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -534,6 +550,25 @@ trigger_build_kernels:
     include:
       - local: .gitlab/kernel_version_testing.yml
     strategy: depend
+
+generate_tests:
+  stage: test
+  tags: ["arch:amd64"]
+  image: $SETUP_IMAGE_NAME
+  script:
+    - inv -e gitlab.generate-tests -t $ECR_TEST_ONLY
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/datadog-agent-trigger-gitlab-ci.yml
+
+trigger_datadog_agent_tests:
+  stage: test
+  needs: [generate_tests]
+  trigger:
+    include:
+      - artifact: datadog-agent-trigger-gitlab-ci.yml
+        job: generate_tests
+  allow_failure: true
 
 trigger_tests:
   stage: test
@@ -602,6 +637,10 @@ push_to_datadog_agent:
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
+    - New-Item -Path $CI_WORKING_DIR -Name "built_$IMAGE.txt" -ItemType "file"
+  artifacts:
+    paths:
+      - $CI_WORKING_DIR/built_$IMAGE.txt
 
 build_windows_1809_x64:
   extends: .winbuild
@@ -784,15 +823,6 @@ release_circleci_runner_gcr:
     project: DataDog/public-images
     strategy: depend
 
-gatekeeper:
-  stage: monitoring
-  tags: ["arch:amd64"]
-  image: $SETUP_IMAGE_NAME
-  dependencies: []
-  script:
-    - echo "Gatekeeper job to ensure that the pipeline is running correctly"
-    - pip install invoke requests
-    - inv gatekeeper.control
 
 notify-images-available:
   extends: .slack-notifier-base
