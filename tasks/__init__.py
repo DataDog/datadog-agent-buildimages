@@ -5,7 +5,7 @@ import os
 
 from invoke import Collection
 
-from tasks import agent
+from tasks import agent, gitlab
 from tasks.datadog_agent import update_datadog_agent_buildimages
 from tasks.update_go import update_go
 
@@ -15,7 +15,7 @@ ns = Collection()
 # add single tasks to the root
 
 ns.add_collection(agent)
-ns.add_collection(gatekeeper)
+ns.add_collection(gitlab)
 ns.add_task(update_go)
 ns.add_task(update_datadog_agent_buildimages)
 ns.configure(
