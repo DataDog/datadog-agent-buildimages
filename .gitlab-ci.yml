@@ -168,7 +168,7 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-    - touch $CI_WORKING_DIR/built_$IMAGE.txt
+    - touch built_$IMAGE.txt
   artifacts:
     paths:
       - $CI_WORKING_DIR/built_$IMAGE.txt
@@ -212,7 +212,7 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-    - touch $CI_WORKING_DIR/built_$IMAGE.txt
+    - touch built_$IMAGE.txt
   artifacts:
     paths:
       - $CI_WORKING_DIR/built_$IMAGE.txt
@@ -229,7 +229,7 @@ build_ci_image:
       --tag registry.ddbuild.io/${CI_IMAGE_REPO}:$IMAGE_VERSION \
       --push \
       .
-    - touch $CI_WORKING_DIR/built_$CI_IMAGE.txt
+    - touch built_$CI_IMAGE.txt
   artifacts:
     paths:
       - $CI_WORKING_DIR/built_$CI_IMAGE.txt
@@ -513,10 +513,6 @@ build_circleci_runner:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-    - touch $CI_WORKING_DIR/built_$IMAGE.txt
-  artifacts:
-    paths:
-      - $CI_WORKING_DIR/built_$IMAGE.txt
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -556,7 +552,7 @@ generate_tests:
   tags: ["arch:amd64"]
   image: $SETUP_IMAGE_NAME
   script:
-    - inv -e gitlab.generate-tests -t $ECR_TEST_ONLY
+    - inv -e gitlab.generate-test -t $ECR_TEST_ONLY
   artifacts:
     paths:
       - $CI_PROJECT_DIR/datadog-agent-trigger-gitlab-ci.yml
@@ -637,10 +633,10 @@ push_to_datadog_agent:
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
-    - New-Item -Path $CI_WORKING_DIR -Name "built_$IMAGE.txt" -ItemType "file"
+    - New-Item -Name "built_$IMAGE.txt" -ItemType "file"
   artifacts:
     paths:
-      - $CI_WORKING_DIR/built_$IMAGE.txt
+      - built_$IMAGE.txt
 
 build_windows_1809_x64:
   extends: .winbuild
