@@ -158,10 +158,10 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-    - touch built_$IMAGE.txt
+    - touch $CI_PROJECT_DIR/built_$IMAGE.txt
   artifacts:
     paths:
-      - $CI_WORKING_DIR/built_$IMAGE.txt
+      - $CI_PROJECT_DIR/built_$IMAGE.txt
 
 
 .build_ddregistry:
@@ -192,10 +192,10 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-    - touch built_$IMAGE.txt
+    - touch $CI_PROJECT_DIR/built_$IMAGE.txt
   artifacts:
     paths:
-      - $CI_WORKING_DIR/built_$IMAGE.txt
+      - $CI_PROJECT_DIR/built_$IMAGE.txt
 
 build_ci_image:
   stage: build
@@ -209,10 +209,10 @@ build_ci_image:
       --tag registry.ddbuild.io/${CI_IMAGE_REPO}:$IMAGE_VERSION \
       --push \
       .
-    - touch built_$CI_IMAGE.txt
+    - touch $CI_PROJECT_DIR/built_$CI_IMAGE.txt
   artifacts:
     paths:
-      - $CI_WORKING_DIR/built_$CI_IMAGE.txt
+      - $CI_PROJECT_DIR/built_$CI_IMAGE.txt
   rules:
     - changes:
         paths:
