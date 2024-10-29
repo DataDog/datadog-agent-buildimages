@@ -7,7 +7,7 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND noninteractive
 
 ARG PYTHON_VERSION=3.12.6
-ARG CMAKE_VERSION=3.30.5
+ARG CMAKE_VERSION=3.30.2
 
 # Pre-requisites
 # Python 3 dev is required for rtloader
