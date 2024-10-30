@@ -128,11 +128,12 @@ get_agent_version:
       fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
+    # - export SIZE=$(docker inspect -f "{{ .Size }}" 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
+    - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+        echo -e "\033[0;32m\033[1mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
