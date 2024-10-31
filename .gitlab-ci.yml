@@ -114,7 +114,7 @@ get_agent_version:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION,486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
     # TODO - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -149,7 +149,7 @@ get_agent_version:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION,registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --label target=none --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --label target=none --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
     - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -178,7 +178,8 @@ build_ci_image:
       --file ci/Dockerfile \
       --platform linux/amd64 \
       --label target=build \
-      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},486234852809.dkr.ecr.us-east-1.amazonaws.com/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
+      --tag 486234852809.dkr.ecr.us-east-1.amazonaws.com/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
       --push \
       .
   rules:
@@ -401,13 +402,15 @@ push_to_datadog_agent:
   timeout: 2h 00m
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    # - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
     - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   after_script:
-    - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    # - $SRC_IMAGE = "486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
