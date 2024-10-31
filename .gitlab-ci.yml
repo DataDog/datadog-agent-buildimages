@@ -566,26 +566,6 @@ trigger_datadog_agent_tests:
         job: generate_tests
   allow_failure: true
 
-trigger_tests:
-  stage: test
-  rules:
-    - when: manual
-      allow_failure: true
-  variables:
-    RUN_KITCHEN_TESTS: "false"
-    BUCKET_BRANCH: "dev"
-    DATADOG_AGENT_BUILDIMAGES: "$IMAGE_VERSION"
-    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES: "$IMAGE_VERSION"
-    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_ARMBUILDIMAGES: "$IMAGE_VERSION"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "$IMAGE_VERSION"
-  trigger:
-    project: DataDog/datadog-agent
-    strategy: depend
-
 push_to_datadog_agent:
   stage: test
   rules:
