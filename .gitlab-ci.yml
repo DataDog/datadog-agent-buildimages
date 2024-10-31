@@ -7,7 +7,7 @@ include:
 stages:
   - setup
   - build
-  - monitoring
+  - notify_slack
   - test
   - dev_envs
   - devcontainer
@@ -802,7 +802,7 @@ release_circleci_runner_gcr:
 
 notify-images-available:
   extends: .slack-notifier-base
-  stage: monitoring # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
+  stage: notify_slack # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
       when: never
@@ -820,7 +820,7 @@ notify-images-available:
 
 notify-images-failure:
   extends: .slack-notifier-base
-  stage: monitoring
+  stage: notify_slack
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
       when: never
