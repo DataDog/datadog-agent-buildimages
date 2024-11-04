@@ -197,6 +197,12 @@ build_rpm_x64:
     IMAGE: rpm_x64
     BASE_IMAGE: centos:7
 
+build_suse_x64:
+  extends: [.build, .x64]
+  variables:
+    DOCKERFILE: suse-x64/Dockerfile
+    IMAGE: suse_x64
+
 build_deb_arm64:
   extends: [.build, .arm]
   variables:
@@ -497,7 +503,7 @@ release_linux:
   extends: .release
   parallel:
     matrix:
-      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
+      - IMAGE: [deb_x64,rpm_x64,suse_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
 
 release_linux_ddregistry:
   extends: .release_ddregistry
