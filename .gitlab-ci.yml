@@ -87,7 +87,7 @@ default:
       - .wgetrc
       - .gitlab-ci.yml
       - tasks/**
-    compare_to: 'main'
+    compare_to: 'nschweitzer/dynamic_build'
 
 .on_python_setup:
   changes:
@@ -97,7 +97,7 @@ default:
       - requirements.txt
       - requirements/constraints.txt
       - setup_python.sh
-    compare_to: 'main'
+    compare_to: 'nschweitzer/dynamic_build'
 
 .manual:
     - when: manual
@@ -217,7 +217,7 @@ build_ci_image:
     - changes:
         paths:
           - "ci/Dockerfile"
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
 
 build_deb_x64:
@@ -230,7 +230,7 @@ build_deb_x64:
           - entrypoint.sh
           - rvm/**
           - deb-x64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: deb-x64/Dockerfile
@@ -248,7 +248,7 @@ build_rpm_x64:
           - entrypoint.sh
           - rpm-headers/**
           - rpm-x64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
@@ -265,7 +265,7 @@ build_deb_arm64:
           - entrypoint.sh
           - rmv/**
           - deb-arm/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
@@ -282,7 +282,7 @@ build_deb_armhf:
           - entrypoint.sh
           - rvm/**
           - deb-arm/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: deb-arm/Dockerfile
@@ -301,7 +301,7 @@ build_rpm_arm64:
           - rvm/**
           - entrypoint.sh
           - rpm-arm64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
@@ -319,7 +319,7 @@ build_rpm_armhf:
           - rvm/**
           - entrypoint.sh
           - rpm-armhf/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: rpm-armhf/Dockerfile
@@ -335,7 +335,7 @@ build_system-probe_x64:
     - changes:
         paths:
           - system-probe_x64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: system-probe_x64/Dockerfile
@@ -349,7 +349,7 @@ build_system-probe_arm64:
     - changes:
         paths:
           - system-probe_arm64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: system-probe_arm64/Dockerfile
@@ -364,7 +364,7 @@ build_dd_agent_testing:
           - requirements.txt
           - requirements/constraints.txt
           - dd-agent-testing/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: dd-agent-testing/Dockerfile
@@ -391,7 +391,7 @@ build_docker_arm64:
           - requirements.txt
           - requirements/constraints.txt
           - docker-arm64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: docker-arm64/Dockerfile
@@ -406,7 +406,7 @@ build_docker_x64:
           - requirements.txt
           - requirements/constraints.txt
           - docker-x64/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: docker-x64/Dockerfile
@@ -421,7 +421,7 @@ build_btf_gen:
           - requirements/btf_gen.txt
           - requirements/constraints.txt
           - btf-gen/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: btf-gen/Dockerfile
@@ -435,7 +435,7 @@ build_kernel_version_testing_x64:
         paths:
           - entrypoint-sysprobe.sh
           - kernel-version-testing/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -450,7 +450,7 @@ build_kernel_version_testing_arm64:
         paths:
           - entrypoint-sysprobe.sh
           - kernel-version-testing/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -469,7 +469,7 @@ build_circleci_runner:
           - requirements/circleci.txt
           - requirements/constraints.txt
           - circleci/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: circleci/Dockerfile
@@ -505,7 +505,7 @@ build_gitlab_agent_deploy:
           - requirements/constraints.txt
           - rvm/**
           - agent-deploy/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   variables:
     DOCKERFILE: agent-deploy/Dockerfile
@@ -610,7 +610,7 @@ build_windows_1809_x64:
           - requirements/constraints.txt
           - python-packages-versions.txt
           - windows/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   tags: ["runner:windows-docker", "windowsversion:1809"]
   variables:
@@ -630,7 +630,7 @@ build_windows_ltsc2022_x64:
           - requirements/constraints.txt
           - python-packages-versions.txt
           - windows/**
-        compare_to: 'main'
+        compare_to: 'nschweitzer/dynamic_build'
     - !reference [.manual]
   tags: ["runner:windows-docker", "windowsversion:2022"]
   variables:
