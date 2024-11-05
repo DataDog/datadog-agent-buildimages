@@ -7,6 +7,7 @@ RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
 FROM ubuntu:14.04
 
+#comment
 # Build Args
 ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
