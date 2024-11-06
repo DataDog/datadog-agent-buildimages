@@ -582,9 +582,8 @@ notify-images-available:
     export MESSAGE="Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     :idea: You can test them in the \`datadog-agent\` repository by running:
-    \`\`\`inv buildimages.update -i $IMAGE_VERSION [--no-test-version] [--branch-name <your_branch>]\`\`\`
-    Or run the \`trigger_tests\` manual job in your <$CI_PIPELINE_URL|pipeline>.
-    "
+    \`\`\`inv buildimages.update -t $IMAGE_VERSION [--no-test] [-i <image_name>]\`\`\`
+    Or run the \`trigger_tests\` manual job in your \`datadog-agent-buildimages\` <$CI_PIPELINE_URL|pipeline>."
     /usr/local/bin/notify.sh
 
 notify-images-failure:
