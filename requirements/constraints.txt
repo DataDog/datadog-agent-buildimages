@@ -4,7 +4,7 @@ azure-identity==1.14.1
 azure-mgmt-resource==23.0.1
 boto3==1.28.45
 codeowners==0.6.0
-datadog-api-client==2.16.0
+datadog-api-client==2.29.0
 docker-squash==1.1.0
 docker==5.0.3; python_version < '3.7'
 docker==6.1.3; python_version >= '3.7'
@@ -12,7 +12,8 @@ dulwich==0.21.6
 invoke==2.2.0
 jira==3.5.2
 mypy==1.10.0
-packaging==21.3
+# https://github.com/pypa/setuptools/issues/4501
+packaging==24.1
 parameterized==0.9.0
 python-gitlab==4.4.0
 reno==3.5.0
