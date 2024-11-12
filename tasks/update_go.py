@@ -29,17 +29,24 @@ def _get_archive_extension(os: str) -> str:
     return "tar.gz"
 
 
-def _get_expected_sha256(version: str) -> List[Tuple[Platform, str]]:
+def _get_expected_sha256(version: str, base_url: str) -> List[Tuple[Platform, str]]:
     """returns a map from platform to sha of the archive"""
 
     shas: List[Tuple[Platform, str]] = []
     for os, arch in PLATFORMS:
         ext = _get_archive_extension(os)
-        url = f"https://storage.googleapis.com/golang/go{version}.{os}-{arch}.{ext}.sha256"
+        url = f"{base_url}/go{version}.{os}-{arch}.{ext}.sha256"
         res = requests.get(url)
         res.raise_for_status()
 
-        sha = res.text.strip()
+        # Handle both format "<sha256>" and "<sha256>..<filename>"
+        sha_elts = res.text.strip().split("  ")
+        if sha_elts == [] or len(sha_elts) > 2:
+            raise exceptions.Exit(
+                f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{res.text}'"
+            )
+
+        sha = sha_elts[0]
         if len(sha) != 64:
             raise exceptions.Exit(
                 f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'"
@@ -47,12 +54,17 @@ def _get_expected_sha256(version: str) -> List[Tuple[Platform, str]]:
         shas.append(((os, arch), sha))
     return shas
 
+def _get_go_upstream_sha256(version):
+    return _get_expected_sha256(version, "https://storage.googleapis.com/golang")
 
-def _check_archive(version: str, shas: List[Tuple[Platform, str]]):
+def _get_msgo_sha256(version):
+    return _get_expected_sha256(f"{version}-1", "https://aka.ms/golang/release/latest")
+
+def _check_archive(version: str, shas: List[Tuple[Platform, str]], base_url: str):
     """checks that the archive sha is the same as the given one"""
     for (os, arch), expected_sha in shas:
         ext = _get_archive_extension(os)
-        url = f"https://go.dev/dl/go{version}.{os}-{arch}.{ext}"
+        url = f"{base_url}/go{version}.{os}-{arch}.{ext}"
         print(f"[check-archive] Fetching archive at {url}", file=sys.stderr)
         # Using `curl` through `ctx.run` takes way too much time due to the archive being huge
         # use `requests` as a workaround
@@ -63,6 +75,11 @@ def _check_archive(version: str, shas: List[Tuple[Platform, str]]):
                 f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
             )
 
+def _display_shas(shas: List[Tuple[Platform, str]], toolchain: str):
+    print(f"--- {toolchain} ---")
+    for (os, arch), sha in shas:
+        platform = f"[{os}/{arch}]"
+        print(f"{platform : <15} {sha}")
 
 @task(
     help={
@@ -80,18 +97,23 @@ def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
             f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
         )
 
-    shas = _get_expected_sha256(version)
+    shas = _get_go_upstream_sha256(version)
+    msgo_shas = _get_msgo_sha256(version)
     if check_archive:
-        _check_archive(version, shas)
+        _check_archive(version, shas, "https://go.dev/dl")
+        _check_archive(version, msgo_shas, "https://aka.ms/golang/release/latest")
 
     print(
         f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
     )
-    for (os, arch), sha in shas:
-        platform = f"[{os}/{arch}]"
-        print(f"{platform : <15} {sha}")
+
+    _display_shas(shas, "Upstream Go")
+    _display_shas(msgo_shas, "Microsoft Go")
 
     with open("go.env", "w") as writer:
         print(f"GO_VERSION={version}", file=writer)
         for (os, arch), sha in shas:
             print(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
+        for (os, arch), sha in msgo_shas:
+            print(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
+
