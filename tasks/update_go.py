@@ -39,7 +39,7 @@ def _get_expected_sha256(version: str, base_url: str) -> List[Tuple[Platform, st
         res = requests.get(url)
         res.raise_for_status()
 
-        # Handle both format "<sha256>" and "<sha256> <filename>"
+        # Handle both format "<sha256>" and "<sha256>..<filename>"
         sha_elts = res.text.strip().split("  ")
         if sha_elts == [] or len(sha_elts) > 2:
             raise exceptions.Exit(
