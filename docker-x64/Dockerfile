@@ -1,6 +1,8 @@
 FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 
 ARG PYTHON_VERSION=3.12.6
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_AMD64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG VAULT_VERSION=1.17.2
@@ -40,6 +42,15 @@ COPY requirements.txt /
 COPY requirements /requirements
 
 RUN pip install -r requirements.txt
+
+# Install Go
+RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz \
+  && echo "$GO_SHA256_LINUX_AMD64  /tmp/golang.tar.gz" | sha256sum --check \
+  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+  && rm -f /tmp/golang.tar.gz
+ENV GOPATH /go
+ENV GO_VERSION $GO_VERSION
+ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
