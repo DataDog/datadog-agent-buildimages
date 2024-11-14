@@ -51,8 +51,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
   && rm -f /tmp/golang.tar.gz
 ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
-ENV PATH="/usr/local/go/bin:${PATH}"
-ENV PATH="${GOPATH}/bin:${PATH}"
+ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
