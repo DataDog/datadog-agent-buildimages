@@ -5,11 +5,25 @@ set -euxo pipefail
 VERSION="0.99.1"
 
 arch=$(uname -m)
+if [[ "${arch}" == "aarch64" ]]; then
+    DIGEST="7dfc447641e32e42e37ea09f3c9df253c4fb8f87fe2c7c44919b791460d8d242"
+else
+    DIGEST="bf1224c7866a670022232c2e832a9f63141378d1f1c3552defa4200902c4379a"
+fi
 url="https://github.com/nushell/nushell/releases/download/${VERSION}/nu-${VERSION}-${arch}-unknown-linux-musl.tar.gz"
 install_dir="${HOME}/.nushell"
 
 mkdir -p "${install_dir}"
 curl "${url}" -Lo archive.tar.gz
+
+digest="$(openssl dgst -sha256 archive.tar.gz | cut -d' ' -f2)"
+if [[ "${digest}" != "${DIGEST}" ]]; then
+    echo "Digest mismatch"
+    echo "Expected: ${DIGEST}"
+    echo "Got: ${digest}"
+    exit 1
+fi
+
 tar -xzf archive.tar.gz -C "${install_dir}" --strip-components=1
 rm archive.tar.gz
 

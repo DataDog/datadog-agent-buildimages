@@ -13,9 +13,11 @@ VERSION="1.85.2"
 
 arch=$(uname -m)
 if [[ $arch == "aarch64" ]]; then
-  arch="arm64"
+    DIGEST="d7926acd4608fcdb908d41ae04e8e2cf1e8b9433242667d4e87e0b5958768549"
+    arch="arm64"
 else
-  arch="x64"
+    DIGEST="a0c7d5e39709619882df9b29c62e3d3cd8778b2b54a5d56377f0b72f894b58bd"
+    arch="x64"
 fi
 metadata_url="https://update.code.visualstudio.com/api/versions/${VERSION}/linux-${arch}/stable"
 
@@ -29,6 +31,14 @@ vscode_install_dir="${vscode_root_dir}/cli/servers/Stable-${commit}"
 vscode_unpack_dir="${vscode_install_dir}/server"
 
 curl "${server_download_url}" -Lo "vscode-server-linux-${arch}.tar.gz"
+digest=$(openssl dgst -sha256 "vscode-server-linux-${arch}.tar.gz" | cut -d' ' -f2)
+if [[ "${digest}" != "${DIGEST}" ]]; then
+    echo "Digest mismatch"
+    echo "Expected: ${DIGEST}"
+    echo "Got: ${digest}"
+    exit 1
+fi
+
 mkdir -p "${vscode_unpack_dir}"
 tar --no-same-owner -xf "vscode-server-linux-${arch}.tar.gz" -C "${vscode_unpack_dir}" --strip-components 1
 rm "vscode-server-linux-${arch}.tar.gz"

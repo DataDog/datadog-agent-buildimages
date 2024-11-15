@@ -11,82 +11,101 @@ else
   rtarget="${arch}-unknown-linux-musl"
 fi
 
-GITUI_VERSION="0.26.3"
-curl "https://github.com/extrawurst/gitui/releases/download/v${GITUI_VERSION}/gitui-linux-${arch}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/gitui"
-chmod +x /usr/local/bin/gitui
-rm archive.tar.gz
+install-binary \
+    --version "0.26.3" \
+    --digest "95a9570dd98789e710e27a00f60413a959d9448d8a0a945af5b7c3c0883fe2df" \
+    --digest "0f08d966bb6d3774a5045f22ec8389073a650d331b26d88fb7a228ed780ac6a6" \
+    --url "https://github.com/extrawurst/gitui/releases/download/v{{version}}/gitui-linux-${arch}.tar.gz" \
+    --name "gitui"
 
-JQ_VERSION="1.7.1"
-curl "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${short_arch}" -Lo /usr/local/bin/jq
-chmod +x /usr/local/bin/jq
+install-binary \
+    --version "1.7.1" \
+    --digest "5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5" \
+    --digest "4dd2d8a0661df0b22f1bb9a1f9830f06b6f3b8f7d91211a1ef5d7c4f06a8b4a5" \
+    --url "https://github.com/jqlang/jq/releases/download/jq-{{version}}/jq-linux-${short_arch}" \
+    --name "jq"
 
-RG_VERSION="14.1.1"
-curl "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/ripgrep-${RG_VERSION}-${rtarget}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/rg"
-chmod +x /usr/local/bin/rg
-rm archive.tar.gz
+install-binary \
+    --version "14.1.1" \
+    --digest "4cf9f2741e6c465ffdb7c26f38056a59e2a2544b51f7cc128ef28337eeae4d8e" \
+    --digest "c827481c4ff4ea10c9dc7a4022c8de5db34a5737cb74484d62eb94a95841ab2f" \
+    --url "https://github.com/BurntSushi/ripgrep/releases/download/{{version}}/ripgrep-{{version}}-${rtarget}.tar.gz" \
+    --name "rg"
 
-FD_VERSION="10.2.0"
-curl "https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd-v${FD_VERSION}-${arch}-unknown-linux-musl.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/fd"
-chmod +x /usr/local/bin/fd
-rm archive.tar.gz
+install-binary \
+    --version "10.2.0" \
+    --digest "d9bfa25ec28624545c222992e1b00673b7c9ca5eb15393c40369f10b28f9c932" \
+    --digest "4e8e596646d047d904f2c5ca74b39dccc69978b6e1fb101094e534b0b59c1bb0" \
+    --url "https://github.com/sharkdp/fd/releases/download/v{{version}}/fd-v{{version}}-${arch}-unknown-linux-musl.tar.gz" \
+    --name "fd"
 
-BTM_VERSION="0.10.2"
-curl "https://github.com/ClementTsang/bottom/releases/download/${BTM_VERSION}/bottom_${arch}-unknown-linux-musl.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin btm
-chmod +x /usr/local/bin/btm
-rm archive.tar.gz
+install-binary \
+    --version "0.10.2" \
+    --digest "520c9e3f1c2e9f076693b59277b680806670af8fb5bea2a9feecc6176dc6a151" \
+    --digest "6ac953d3d95d06aa1864c85ba99bdca2e9d9b8f1ff0619213c980714b1a641f7" \
+    --url "https://github.com/ClementTsang/bottom/releases/download/{{version}}/bottom_${arch}-unknown-linux-musl.tar.gz" \
+    --name "btm" \
+    --top-level
 
-YAZI_VERSION="0.3.3"
-curl "https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/yazi-${arch}-unknown-linux-musl.zip" -Lo archive.zip
-unzip -j archive.zip "yazi-${arch}-unknown-linux-musl/ya*" -d /usr/local/bin
-chmod +x /usr/local/bin/{ya,yazi}
-rm archive.zip
+install-binary \
+    --version "0.3.3" \
+    --digest "fca5dad0c292864c4725fc15a4c29292797fc65d9d89015db771c961dbe30a9b" \
+    --digest "23c211c13fb6129c6b9b018594ae8e4a8ef3cb9401a9bcbe24e2cdfa58593bfa" \
+    --url "https://github.com/sxyazi/yazi/releases/download/v{{version}}/yazi-${arch}-unknown-linux-musl.zip" \
+    --name "ya" \
+    --name "yazi" \
+    --unpack-command "unzip -j \"{{file_path}}\" \"yazi-${arch}-unknown-linux-musl/ya*\" -d /usr/local/bin"
 
-FZF_VERSION="0.55.0"
-curl "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_${short_arch}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin fzf
-chmod +x /usr/local/bin/fzf
-rm archive.tar.gz
+install-binary \
+    --version "0.55.0" \
+    --digest "4df2393776942780ddab2cea713ddaac06cd5c3886cd23bc9119a6d3aa1e02bd" \
+    --digest "7affbfb35ed2da650da7b62a9590eb9bc2fb083cfe055c9f4c794b0bbfeaefcc" \
+    --url "https://github.com/junegunn/fzf/releases/download/v{{version}}/fzf-{{version}}-linux_${short_arch}.tar.gz" \
+    --name "fzf" \
+    --top-level
 
-EZA_VERSION="0.20.2"
-curl "https://github.com/eza-community/eza/releases/download/v${EZA_VERSION}/eza_${rtarget}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/eza"
-chmod +x /usr/local/bin/eza
-rm archive.tar.gz
+install-binary \
+    --version "0.20.2" \
+    --digest "5bdf1a4b63783962ff99629ea6e06b08cff812b4b564ba3982ab73d053a7d7fd" \
+    --digest "720b00b9f1244253600aecbc3377d5e5df886a6d0301d8a3c3ee917961586718" \
+    --url "https://github.com/eza-community/eza/releases/download/v{{version}}/eza_${rtarget}.tar.gz" \
+    --name "eza"
 
-HYPERFINE_VERSION="1.18.0"
-curl "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/hyperfine-v${HYPERFINE_VERSION}-${rtarget}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/hyperfine"
-chmod +x /usr/local/bin/hyperfine
-rm archive.tar.gz
+install-binary \
+    --version "1.18.0" \
+    --digest "ef3855ad6a1bf97055a90dc3dfc5d4a48494cb80344027db932a96341d415193" \
+    --digest "1174db3a55247a89d8f6161101e15455a2ebdca6948d42e9bc50b78c1d771e4a" \
+    --url "https://github.com/sharkdp/hyperfine/releases/download/v{{version}}/hyperfine-v{{version}}-${rtarget}.tar.gz" \
+    --name "hyperfine"
 
-BAT_VERSION="0.24.0"
-curl "https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat-v${BAT_VERSION}-${rtarget}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/bat"
-chmod +x /usr/local/bin/bat
-rm archive.tar.gz
+install-binary \
+    --version "0.24.0" \
+    --digest "d39a21e3da57fe6a3e07184b3c1dc245f8dba379af569d3668b6dcdfe75e3052" \
+    --digest "feccae9a0576d97609c57e32d3914c5116136eab0df74c2ab74ef397d42c5b10" \
+    --url "https://github.com/sharkdp/bat/releases/download/v{{version}}/bat-v{{version}}-${rtarget}.tar.gz" \
+    --name "bat"
 
 AMBR_VERSION="0.6.0"
 if [[ $arch == "x86_64" ]]; then
-    curl "https://github.com/dalance/amber/releases/download/v${AMBR_VERSION}/amber-v${AMBR_VERSION}-${arch}-lnx.zip" -Lo archive.zip
-    unzip -j archive.zip ambr ambs -d /usr/local/bin
-    chmod +x /usr/local/bin/{ambr,ambs}
-    rm archive.zip
+    install-binary \
+        --version "${AMBR_VERSION}" \
+        --digest "139630ebdbd1170efc92892b64bf2e48d18f1cd38e48c501c045af1e5852ad66" \
+        --url "https://github.com/dalance/amber/releases/download/v{{version}}/amber-v{{version}}-${arch}-lnx.zip" \
+        --name "ambr" \
+        --name "ambs"
 else
-  cargo install amber@${AMBR_VERSION}
+    cargo install amber@${AMBR_VERSION}
 fi
 
 PROCS_VERSION="0.14.6"
 if [[ $arch == "x86_64" ]]; then
-    curl "https://github.com/dalance/procs/releases/download/v${PROCS_VERSION}/procs-v${PROCS_VERSION}-${arch}-linux.zip" -Lo archive.zip
-    unzip -j archive.zip procs -d /usr/local/bin
-    chmod +x /usr/local/bin/procs
-    rm archive.zip
+    install-binary \
+        --version "${PROCS_VERSION}" \
+        --digest "90d4d9dd6d1f9894169632c8316e46ff2e696ad0e3b950698aa1c52d74c013dd" \
+        --url "https://github.com/dalance/procs/releases/download/v{{version}}/procs-v{{version}}-${arch}-linux.zip" \
+        --name "procs"
 else
-  cargo install procs@${PROCS_VERSION}
+    cargo install procs@${PROCS_VERSION}
 fi
 procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
@@ -94,17 +113,21 @@ sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.t
 
 PDU_VERSION="0.9.3"
 if [[ $arch == "x86_64" ]]; then
-    curl "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/${PDU_VERSION}/pdu-${arch}-unknown-linux-musl" -Lo /usr/local/bin/pdu
-    chmod +x /usr/local/bin/pdu
+    install-binary \
+        --version "${PDU_VERSION}" \
+        --digest "55346371fbffe0e095af335f20dba5c47289562c9fb2f3b0ecf2b3a6125ef158" \
+        --url "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/{{version}}/pdu-${arch}-unknown-linux-musl" \
+        --name "pdu"
 else
-  cargo install parallel-disk-usage@${PDU_VERSION}
+    cargo install parallel-disk-usage@${PDU_VERSION}
 fi
 
-DELTA_VERSION="0.18.2"
-curl "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/delta-${DELTA_VERSION}-${rtarget}.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/delta"
-chmod +x /usr/local/bin/delta
-rm archive.tar.gz
+install-binary \
+    --version "0.18.2" \
+    --digest "b7ea845004762358a00ef9127dd9fd723e333c7e4b9cb1da220c3909372310ee" \
+    --digest "adf7674086daa4582f598f74ce9caa6b70c1ba8f4a57d2911499b37826b014f9" \
+    --url "https://github.com/dandavison/delta/releases/download/{{version}}/delta-{{version}}-${rtarget}.tar.gz" \
+    --name "delta"
 # Configure Git to use delta as the pager:
 # https://dandavison.github.io/delta/get-started.html
 git config --global core.pager delta
@@ -134,8 +157,9 @@ gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
 GOPLS_VERSION="0.16.2"
 go install "golang.org/x/tools/gopls@v${GOPLS_VERSION}"
 
-STATICCHECK_VERSION="2024.1.1"
-curl "https://github.com/dominikh/go-tools/releases/download/${STATICCHECK_VERSION}/staticcheck_linux_amd64.tar.gz" -Lo archive.tar.gz
-tar -xzf archive.tar.gz -C /usr/local/bin --strip-components=1 --wildcards "*/staticcheck"
-chmod +x /usr/local/bin/staticcheck
-rm archive.tar.gz
+install-binary \
+    --version "2024.1.1" \
+    --digest "6e9398fcaff2b36e1d15e84a647a3a14733b7c2dd41187afa2c182a4c3b32180" \
+    --digest "4cf69c1f5cdd86810a07d830ff90c253e8da8a5817bb57caee8c9807493fc557" \
+    --url "https://github.com/dominikh/go-tools/releases/download/{{version}}/staticcheck_linux_${short_arch}.tar.gz" \
+    --name "staticcheck"

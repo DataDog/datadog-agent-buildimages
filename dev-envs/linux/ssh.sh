@@ -3,24 +3,14 @@ IFS=$'\n\t'
 set -euxo pipefail
 
 # New versions require OpenSSL >= 1.1.1
-VERSION="V_9_3_P2"
-url="https://github.com/openssh/openssh-portable/archive/refs/tags/${VERSION}.tar.gz"
-
-archive_name=$(basename "${url}")
-workdir="/tmp/setup-${archive_name}"
-mkdir -p "${workdir}"
-curl "${url}" -Lo "${workdir}/${archive_name}"
-tar -xf "${workdir}/${archive_name}" -C "${workdir}" --strip-components 1
+install-from-source \
+    --version "V_9_3_P2" \
+    --digest "db2463f84e50bd2f3c1a0dd6cc9b652f48b024d65ba43cca29ae451087dd6738" \
+    --url "https://github.com/openssh/openssh-portable/archive/refs/tags/{{version}}.tar.gz" \
+    --relative-path "openssh-portable-{{version}}" \
+    --configure-script "autoreconf && ./configure"
 
 useradd -r -s /sbin/nologin sshd
-
-pushd "${workdir}"
-autoreconf
-./configure
-make -j "$(nproc)"
-make install
-popd
-rm -rf "${workdir}"
 
 # Ameliorate transient network issues for things that can
 # retry like Visual Studio Code's Remote - SSH extension
