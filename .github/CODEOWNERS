@@ -45,4 +45,5 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 # Docker images
 /docker-arm64/                      @DataDog/container-integrations @DataDog/agent-devx-infra
 /docker-x64/                        @DataDog/container-integrations @DataDog/agent-devx-infra
+/dev-envs/                          @DataDog/agent-devx-loops
 /devcontainer/                      @DataDog/agent-devx-loops
