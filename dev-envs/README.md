@@ -7,7 +7,7 @@ This directory contains the environments used by all Agent developers, both inte
 ***Table of contents***
 
 - [Utilities](#utilities)
-- [Git extensions](#git-extensions)
+- [Git](#git)
 - [Repositories](#repositories)
 - [Shells](#shells)
 - [Fonts](#fonts)
@@ -32,7 +32,7 @@ This is a non-exhaustive list of utilities that are available in every image:
 - [`rg`](https://github.com/BurntSushi/ripgrep) - search file contents like `grep`
 - [`yazi`](https://github.com/sxyazi/yazi) - file manager UI
 
-## Git extensions
+## Git
 
 Each of the following subcommands are available via `git <subcommand> ...` in every image:
 
@@ -40,6 +40,8 @@ Each of the following subcommands are available via `git <subcommand> ...` in ev
     - `git dd-clone datadog-agent`
     - `git dd-clone datadog-agent user/feature`
 - `dd-switch` - Emulates the behavior of `git switch` but smart enough to handle shallow clones. The branch name is the only argument.
+
+[Delta](https://github.com/dandavison/delta) is the default pager which provides, as an example, syntax highlighting for `git diff` and `git log` commands.
 
 ## Repositories
 
