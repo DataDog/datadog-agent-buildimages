@@ -1,6 +1,7 @@
 ---
 include:
   - https://gitlab-templates.ddbuild.io/slack-notifier/v3-sdm/template.yml
+  - .gitlab/dev_envs.yml
   - .gitlab/devcontainer.yml
 
 stages:
@@ -9,6 +10,7 @@ stages:
   - availability_message
   - trigger_build_kernels
   - test
+  - dev_envs
   - devcontainer
   - release
   - notify
