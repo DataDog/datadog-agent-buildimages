@@ -85,6 +85,7 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
 COPY setup_go.sh /
+COPY patches/linker-poc.patch /
 RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 

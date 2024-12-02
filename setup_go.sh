@@ -23,10 +23,18 @@ case $DD_TARGET_ARCH in
     exit -1
 esac
 
-echo "Installing upstream Go"
+echo "Installing upstream Go for bootstrap"
 curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${GOARCH}.tar.gz
 echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
-tar -C /usr/local -xzf /tmp/golang.tar.gz && rm -f /tmp/golang.tar.gz
+mkdir -p /tmp/bootstrap
+tar -C /tmp/bootstrap -xzf /tmp/golang.tar.gz && rm -f /tmp/golang.tar.gz
+
+curl -sL -o /tmp/golang-src.tar.gz https://go.dev/dl/go${GO_VERSION}.src.tar.gz
+tar -C /usr/local -xzf /tmp/golang-src.tar.gz && rm -f /tmp/golang-src.tar.gz
+pushd /usr/local/go/src
+patch -p2 < /linker-poc.patch
+PATH="/tmp/bootstrap/go/bin:$PATH" ./make.bash
+popd
 
 echo "Installing Microsoft Go"
 curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}-1.linux-${GOARCH}.tar.gz
