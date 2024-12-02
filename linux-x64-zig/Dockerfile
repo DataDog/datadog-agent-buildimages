@@ -30,8 +30,8 @@ RUN apt update -qy && apt install -y \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio
 
-COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.17-x64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-x64-zig/toolchain.cmake /opt/cmake/zigcc.toolchain.cmake
+COPY linux-x64-zig/cargo-config.toml /root/.cargo/config.toml
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
