@@ -29,6 +29,7 @@ echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
 mkdir -p /tmp/bootstrap
 tar -C /tmp/bootstrap -xzf /tmp/golang.tar.gz && rm -f /tmp/golang.tar.gz
 
+echo "Installing upstream Go with linker patch"
 curl -sL -o /tmp/golang-src.tar.gz https://go.dev/dl/go${GO_VERSION}.src.tar.gz
 tar -C /usr/local -xzf /tmp/golang-src.tar.gz && rm -f /tmp/golang-src.tar.gz
 pushd /usr/local/go/src
