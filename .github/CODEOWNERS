@@ -29,9 +29,6 @@ tasks/update_go.py                  @DataDog/agent-shared-components
 /system-probe_arm64/                @DataDog/ebpf-platform @DataDog/agent-devx-infra
 /system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-devx-infra
 
-# CircleCI image
-/circleci/                          @DataDog/agent-devx-loops @DataDog/agent-devx-infra
-
 # Linux test & build images
 /deb-arm/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
 /deb-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
