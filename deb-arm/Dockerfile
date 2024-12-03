@@ -217,8 +217,7 @@ ENV PATH="/opt/clang/bin:$PATH"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME} && \
-  chmod +x /usr/bin/vault
+  rm ${VAULT_FILENAME}
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"

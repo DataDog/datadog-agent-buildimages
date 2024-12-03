@@ -219,8 +219,7 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME} && \
-  chmod +x /usr/bin/vault
+  rm ${VAULT_FILENAME}
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
