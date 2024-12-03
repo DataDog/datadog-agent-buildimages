@@ -98,12 +98,11 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
-RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
-    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
-    && unzip $VAULT_FILENAME \
-    && rm $VAULT_FILENAME \
-    && mv vault /usr/bin/vault \
-    && chmod +x /usr/bin/vault
+RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
+  echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
+  unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
+  rm ${VAULT_FILENAME} && \
+  chmod +x /usr/bin/vault
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
