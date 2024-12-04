@@ -1,4 +1,4 @@
-From 9c58cb4ada40e0a5b2b1e117e1afb31f20d2f91b Mon Sep 17 00:00:00 2001
+From a56c31337403f3608c0ff660b5005bed62d89241 Mon Sep 17 00:00:00 2001
 From: Paul Cacheux <paul.cacheux@datadoghq.com>
 Date: Mon, 2 Dec 2024 21:06:55 +0100
 Subject: [PATCH 1/2] reflect: print reflected method
@@ -8,10 +8,10 @@ Subject: [PATCH 1/2] reflect: print reflected method
  1 file changed, 27 insertions(+)
 
 diff --git a/src/reflect/type.go b/src/reflect/type.go
-index 89c5015530..39f94d9075 100644
+index 07e2bf1644..f43d55ce72 100644
 --- a/src/reflect/type.go
 +++ b/src/reflect/type.go
-@@ -619,10 +619,12 @@ func (t *rtype) Method(i int) (m Method) {
+@@ -644,10 +644,12 @@ func (t *rtype) Method(i int) (m Method) {
  	m.Func = Value{&mt.(*rtype).t, fn, fl}
  
  	m.Index = i
@@ -24,7 +24,7 @@ index 89c5015530..39f94d9075 100644
  	if t.Kind() == Interface {
  		tt := (*interfaceType)(unsafe.Pointer(t))
  		return tt.MethodByName(name)
-@@ -851,6 +853,7 @@ func (t *interfaceType) Method(i int) (m Method) {
+@@ -987,6 +989,7 @@ func (t *interfaceType) Method(i int) (m Method) {
  	}
  	m.Type = toType(t.typeOff(p.Typ))
  	m.Index = i
@@ -32,7 +32,7 @@ index 89c5015530..39f94d9075 100644
  	return
  }
  
-@@ -859,6 +862,7 @@ func (t *interfaceType) NumMethod() int { return len(t.Methods) }
+@@ -995,6 +998,7 @@ func (t *interfaceType) NumMethod() int { return len(t.Methods) }
  
  // MethodByName method with the given name in the type's method set.
  func (t *interfaceType) MethodByName(name string) (m Method, ok bool) {
@@ -40,9 +40,9 @@ index 89c5015530..39f94d9075 100644
  	if t == nil {
  		return
  	}
-@@ -2883,3 +2887,26 @@ func addTypeBits(bv *bitVector, offset uintptr, t *abi.Type) {
- func TypeFor[T any]() Type {
- 	return TypeOf((*T)(nil)).Elem()
+@@ -3084,3 +3088,26 @@ func TypeFor[T any]() Type {
+ 	}
+ 	return TypeOf((*T)(nil)).Elem() // only for an interface kind
  }
 +
 +var (
@@ -71,7 +71,7 @@ index 89c5015530..39f94d9075 100644
 2.47.1
 
 
-From a9ef7acc40851c412e6aceb8275354445bdf3821 Mon Sep 17 00:00:00 2001
+From 29f3bc66bc5a98d31118d9649a67f6500b9466b4 Mon Sep 17 00:00:00 2001
 From: Paul Cacheux <paul.cacheux@datadoghq.com>
 Date: Mon, 2 Dec 2024 15:34:54 +0100
 Subject: [PATCH 2/2] deadcode: allow removal of more code in ld deadcode pass
@@ -82,18 +82,18 @@ Subject: [PATCH 2/2] deadcode: allow removal of more code in ld deadcode pass
  2 files changed, 23 insertions(+), 1 deletion(-)
 
 diff --git a/src/cmd/link/internal/ld/deadcode.go b/src/cmd/link/internal/ld/deadcode.go
-index 70b4a7ca30..964ec81ed4 100644
+index 20609ed7bf..6bde0f0845 100644
 --- a/src/cmd/link/internal/ld/deadcode.go
 +++ b/src/cmd/link/internal/ld/deadcode.go
-@@ -12,6 +12,7 @@ import (
- 	"cmd/link/internal/sym"
+@@ -13,6 +13,7 @@ import (
  	"fmt"
+ 	"internal/abi"
  	"internal/buildcfg"
 +	"slices"
  	"strings"
  	"unicode"
  )
-@@ -445,7 +446,9 @@ func deadcode(ctxt *Link) {
+@@ -452,7 +453,9 @@ func deadcode(ctxt *Link) {
  		// in the last pass.
  		rem := d.markableMethods[:0]
  		for _, m := range d.markableMethods {
@@ -104,7 +104,7 @@ index 70b4a7ca30..964ec81ed4 100644
  				d.markMethod(m)
  			} else {
  				rem = append(rem, m)
-@@ -464,6 +467,24 @@ func deadcode(ctxt *Link) {
+@@ -471,6 +474,24 @@ func deadcode(ctxt *Link) {
  	}
  }
  
@@ -130,10 +130,10 @@ index 70b4a7ca30..964ec81ed4 100644
  type methodsig struct {
  	name string
 diff --git a/src/cmd/link/internal/ld/main.go b/src/cmd/link/internal/ld/main.go
-index feb4ba5c17..a13c17e37a 100644
+index 12bc896c66..e17f8f2f08 100644
 --- a/src/cmd/link/internal/ld/main.go
 +++ b/src/cmd/link/internal/ld/main.go
-@@ -194,6 +194,7 @@ func Main(arch *sys.Arch, theArch Arch) {
+@@ -200,6 +200,7 @@ func Main(arch *sys.Arch, theArch Arch) {
  	objabi.Flagfn1("L", "add specified `directory` to library path", func(a string) { Lflag(ctxt, a) })
  	objabi.AddVersionFlag() // -V
  	objabi.Flagfn1("X", "add string value `definition` of the form importpath.name=value", func(s string) { addstrdata1(ctxt, s) })
