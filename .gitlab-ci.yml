@@ -290,33 +290,6 @@ build_kernel_version_testing_arm64:
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
-build_circleci_runner:
-  extends: [.x64]
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  variables:
-    DOCKERFILE: circleci/Dockerfile
-    IMAGE: circleci-runner
-  script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Build
-    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
-      fi
-  after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
-      else
-        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
-      fi
 
 build_gitlab_agent_deploy:
   extends: [.build, .x64]
@@ -512,58 +485,6 @@ release_windows:
         DOCKERHUB_TAG_PREFIX: 1809
       - IMAGE: windows_ltsc2022_x64
         DOCKERHUB_TAG_PREFIX: ltsc2022
-
-release_circleci_runner:
-  stage: release
-  needs: ["build_circleci_runner"]
-  variables:
-    IMAGE: circleci-runner
-  rules:
-    - !reference [.on_default_branch_push]
-  tags: ["arch:amd64"]
-  image: "${CI_IMAGE}"
-  script:
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - SRC_IMAGE=datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
-    # Tag as latest in dockerhub registry
-    - crane tag $SRC_IMAGE latest
-
-dev_release_circleci_runner_gcr:
-  stage: release
-  needs: ["build_circleci_runner"]
-  rules:
-    - !reference [.on_push]
-  variables:
-    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
-    # other variables here.
-    # They are not expended recursively and end up provided verbatim to the
-    # downstream pipeline which then extends the variable with its own CI
-    # variables, which causes invalid image tags to be used
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_REGISTRIES: gcr-datadoghq
-  trigger:
-    project: DataDog/public-images
-    strategy: depend
-
-release_circleci_runner_gcr:
-  stage: release
-  needs: ["build_circleci_runner"]
-  rules:
-    - !reference [.on_default_branch_push]
-  variables:
-    # Don't rely on ${IMAGE_VERSION} or any variables that is referencing
-    # other variables here.
-    # They are not expended recursively and end up provided verbatim to the
-    # downstream pipeline which then extends the variable with its own CI
-    # variables, which causes invalid image tags to be used
-    IMG_SOURCES: datadog/agent-buildimages-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_DESTINATIONS: agent-circleci-runner${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
-    IMG_REGISTRIES: gcr-datadoghq
-  trigger:
-    project: DataDog/public-images
-    strategy: depend
 
 notify-images-available:
   extends: .slack-notifier-base
