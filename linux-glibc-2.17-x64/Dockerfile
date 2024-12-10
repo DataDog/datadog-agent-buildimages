@@ -110,7 +110,7 @@ ENV PATH "~/.cargo/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME} \
+  rm ${VAULT_FILENAME}
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
