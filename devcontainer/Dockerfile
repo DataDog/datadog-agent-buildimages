@@ -15,7 +15,7 @@ RUN apt-get update && apt-get upgrade -y && \
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
     # Python setup
     add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
-    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
+    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
 # Setup python3.12 as default
