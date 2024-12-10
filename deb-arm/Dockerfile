@@ -214,12 +214,10 @@ RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz ht
 ENV PATH="/opt/clang/bin:$PATH"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
-RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
-    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
-    && unzip $VAULT_FILENAME \
-    && rm $VAULT_FILENAME \
-    && mv vault /usr/bin/vault \
-    && chmod +x /usr/bin/vault
+RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
+  echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
+  unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
+  rm ${VAULT_FILENAME}
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
