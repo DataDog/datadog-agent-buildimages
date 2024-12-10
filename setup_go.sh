@@ -32,13 +32,3 @@ echo "Installing Microsoft Go"
 curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}-1.linux-${GOARCH}.tar.gz
 echo "$MSGO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
 mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz && rm -f /tmp/golang.tar.gz;
-
-cat << EOF >> /root/.bashrc
-if [ "\$DD_GO_TOOLCHAIN" = "msgo" ]; then
-    export PATH="/usr/local/msgo/bin:\$PATH"
-    export GOROOT="/usr/local/msgo"
-else
-   export PATH="/usr/local/go/bin:\$PATH"
-   export GOROOT="/usr/local/go"
-fi
-EOF
