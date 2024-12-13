@@ -1,3 +1,5 @@
 .vscode/settings.json
 **/__pycache__
 venv
+.python-version
+datadog-agent-trigger-gitlab-ci.yml
