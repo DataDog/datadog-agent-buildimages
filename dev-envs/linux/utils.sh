@@ -105,7 +105,7 @@ if [[ $arch == "x86_64" ]]; then
         --url "https://github.com/dalance/procs/releases/download/v{{version}}/procs-v{{version}}-${arch}-linux.zip" \
         --name "procs"
 else
-    cargo install procs@${PROCS_VERSION}
+    cargo install --locked procs@${PROCS_VERSION}
 fi
 procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
