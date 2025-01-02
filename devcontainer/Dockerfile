@@ -2,35 +2,32 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG GO_VERSION
-ARG PYTHON_VERSION=3.12
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
+ENV CONDA_PATH=/root/miniforge3
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
-    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
+    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build python3-pip \
     # Network feature tests
     openjdk-11-jre-headless \
     # System-probe dependencies
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
     # Python setup
     add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
-    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
-# Setup python3.12 as default
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2
-
-# Install latest pip
-RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3
+# CONDA
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY requirements /requirements
+RUN if [ "${TARGETARCH}" = "amd64" ]; then DD_TARGET_ARCH=x64; elif [ "${TARGETARCH}" = "arm64" ]; then DD_TARGET_ARCH=aarch64; fi &&\
+    DD_TARGET_ARCH=$DD_TARGET_ARCH ./setup_python.sh
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
-    # Pin pyasn1 to 0.6.0 until the maintainers release a wheel for 0.6.1 version
-    pip3 install --no-cache-dir pyasn1==0.6.0 && \
-    pip3 install --no-cache-dir -r https://raw.githubusercontent.com/DataDog/datadog-agent/master/requirements.txt && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
     # Omnibus setup
