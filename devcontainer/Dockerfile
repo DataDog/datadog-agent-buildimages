@@ -6,6 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 ENV CONDA_PATH=/root/miniforge3
 
+SHELL ["/bin/bash", "-c"]
+
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
     apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build python3-pip \
