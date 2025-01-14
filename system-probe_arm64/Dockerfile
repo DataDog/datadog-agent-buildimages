@@ -3,6 +3,8 @@ FROM debian:bullseye
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG DEVA_VERSION
+ARG DEVA_NO_DYNAMIC_DEPS=1
 ARG DD_TARGET_ARCH=aarch64
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
@@ -55,6 +57,8 @@ ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
 COPY requirements /requirements
+ENV DEVA_VERSION=$DEVA_VERSION
+ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PATH "${CONDA_PATH}/envs/ddpy3/bin:${PATH}"
