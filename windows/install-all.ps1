@@ -27,6 +27,13 @@ foreach ($line in $lines) {
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
 }
 
+# Read deva variables from deva.env file
+$lines = Get-Content -Path '..\deva.env'
+foreach ($line in $lines) {
+    $key, $val = $line.split('=')
+    [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
+}
+
 foreach ($h in $SoftwareTable.GetEnumerator()){
     $key = $($h.Key)
     $val = $($h.Value)
@@ -95,7 +102,7 @@ try {
     }
 
     if ($Phase -eq 0 -or $Phase -eq 4) {
-        
+
     }
 }
 catch {
