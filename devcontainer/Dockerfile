@@ -4,9 +4,6 @@ ARG TARGETARCH
 ARG GO_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
-ENV CONDA_PATH=/root/miniforge3
-
-SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
@@ -15,17 +12,9 @@ RUN apt-get update && apt-get upgrade -y && \
     openjdk-11-jre-headless \
     # System-probe dependencies
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
-    # Python setup
-    add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
+    # Cleanup
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
-# CONDA
-COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
-COPY requirements /requirements
-RUN if [ "${TARGETARCH}" = "amd64" ]; then DD_TARGET_ARCH=x64; elif [ "${TARGETARCH}" = "arm64" ]; then DD_TARGET_ARCH=aarch64; fi &&\
-    DD_TARGET_ARCH=$DD_TARGET_ARCH ./setup_python.sh
-ENV PATH "${CONDA_PATH}/condabin:${PATH}"
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
@@ -48,7 +37,9 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
 USER datadog
 ENV GOPATH=/home/datadog/go \
     GOROOT=/usr/local/go \
-    PATH="/home/datadog/.local/bin:/home/datadog/go/bin:/usr/local/go/bin:${PATH}"
+    CONDA_PATH=/home/datadog/miniforge3
+ENV PATH="${CONDA_PATH}/condabin:${PATH}:/home/datadog/.local/bin:/home/datadog/go/bin:/usr/local/go/bin:${PATH}" \
+    PKG_CONFIG_LIBDIR="${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 RUN mkdir -p /home/datadog/go/bin
 # Golang tooling: install common tooling use by code editors
 RUN go install golang.org/x/tools/gopls@latest && \
@@ -60,4 +51,14 @@ RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
     go install gotest.tools/gotestsum@latest
 WORKDIR /home/datadog
+
+# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
+RUN grep -v return /home/datadog/.bashrc >> /home/datadog/newbashrc && cp /home/datadog/newbashrc /home/datadog/.bashrc
+
+# CONDA
+COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /home/datadog/
+COPY requirements /home/datadog/requirements
+RUN if [ "${TARGETARCH}" = "amd64" ]; then DD_TARGET_ARCH=x64; elif [ "${TARGETARCH}" = "arm64" ]; then DD_TARGET_ARCH=aarch64; fi &&\
+    DD_TARGET_ARCH=$DD_TARGET_ARCH ./setup_python.sh
+
 CMD [ "sleep", "infinity" ]

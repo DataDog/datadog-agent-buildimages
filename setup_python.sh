@@ -9,7 +9,6 @@ function detect_distro(){
     DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
 }
 
-PY2_VERSION=2
 PY3_VERSION=3.12.6
 DD_CONDA_VERSION=4.9.2-7
 
@@ -81,19 +80,10 @@ rm miniconda.sh
 
 PATH="${CONDA_PATH}/condabin:${PATH}"
 conda init bash
-source /root/.bashrc
+source $HOME/.bashrc
 
 # Setup pythons
-conda create -n ddpy2 python python=$PY2_VERSION
 conda create -n ddpy3 python python=$PY3_VERSION
-
-# Update pip, setuptools and misc deps
-conda activate ddpy2
-pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION}
-pip install setuptools==${DD_SETUPTOOLS_VERSION}
-pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
-pip install -r requirements-py2.txt
-pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
@@ -103,15 +93,6 @@ pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install -r requirements.txt
 pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
-
-if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then
-    # Conda creates "lib" but on Amazon Linux, the embedded Python2 we use in unit tests will look in "lib64" instead
-    ln -s "${CONDA_PATH}/envs/ddpy2/lib" "${CONDA_PATH}/envs/ddpy2/lib64"
-fi
-
-# Add python3's invoke to the PATH even when ddpy3 is not active, since we want to use python3 invoke to run python2 tests
-ln -s ${CONDA_PATH}/envs/ddpy3/bin/inv /usr/local/bin
-
 conda clean -a
 
-echo "conda activate ddpy3" >> /root/.bashrc
+echo "conda activate ddpy3" >> $HOME/.bashrc
