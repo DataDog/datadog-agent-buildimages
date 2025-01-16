@@ -39,6 +39,13 @@ foreach ($line in $lines) {
     $arglist += "$line"
 }
 
+# Read arguments from deva.env file
+$lines = Get-Content -Path 'deva.env'
+foreach ($line in $lines) {
+    $arglist += "--build-arg"
+    $arglist += "$line"
+}
+
 foreach ($h in $SoftwareTable.GetEnumerator()){
     if( -not ($($h.Key) -like "*SHA256")){
         $arglist += "--build-arg"
@@ -50,7 +57,7 @@ if( -not $Cache) {
     $arglist += "--no-cache"
 }
 
-$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ." 
+$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
 filter timestamp {"$(Get-Date -Format o): $_"}
