@@ -127,7 +127,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
 ENV PATH "~/.cargo/bin:${PATH}"
 
 # CONDA
-COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
+COPY python-packages-versions.txt setup_python.sh requirements.txt /
 COPY requirements /requirements
 ENV DEVA_VERSION=$DEVA_VERSION
 ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
