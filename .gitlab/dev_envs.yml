@@ -20,7 +20,12 @@
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
-    - docker build dev-envs/$PLATFORM --build-arg ARCH=$BASE_IMAGE_ARCH --build-arg TAG=$BASE_IMAGE_TAG
+    - DEVA_VERSION_ARG=$(grep DEVA_VERSION deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - >-
+      docker build dev-envs/$PLATFORM
+      --build-arg ARCH=$BASE_IMAGE_ARCH
+      --build-arg TAG=$BASE_IMAGE_TAG
+      $DEVA_VERSION_ARG
 
 .publish_dev_env:
   script:
@@ -28,7 +33,13 @@
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build and push
-    - docker build dev-envs/$PLATFORM --build-arg ARCH=$BASE_IMAGE_ARCH --build-arg TAG=$BASE_IMAGE_TAG --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$TARGET_IMAGE_ARCH
+    - DEVA_VERSION_ARG=$(grep DEVA_VERSION deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - >-
+      docker build dev-envs/$PLATFORM
+      --build-arg ARCH=$BASE_IMAGE_ARCH
+      --build-arg TAG=$BASE_IMAGE_TAG
+      $DEVA_VERSION_ARG
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$TARGET_IMAGE_ARCH
     - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$TARGET_IMAGE_ARCH
 
 lint_dev_envs:

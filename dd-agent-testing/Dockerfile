@@ -3,6 +3,8 @@ FROM ruby:2.7.5-bullseye
 ENV BUNDLER_VERSION=1.17.3
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
+ARG DEVA_VERSION
+ARG DEVA_NO_DYNAMIC_DEPS
 ARG PYTHON_VERSION=3.12.6
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
@@ -30,15 +32,16 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # Python install
 ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION}
 
 # Python
-COPY requirements.txt /
-COPY requirements /requirements
-RUN pip3 install -r requirements.txt
+RUN pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" \
+ && deva -v self dep sync -f legacy-build \
+ && pyenv rehash
 
 # Ruby
 RUN gem install bundler --version ${BUNDLER_VERSION}

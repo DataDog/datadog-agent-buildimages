@@ -322,7 +322,16 @@ build_circleci_runner:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
+    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - >-
+      docker build
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
+      $GO_BUILD_ARGS
+      $DEVA_BUILD_ARGS
+      $CUSTOM_BUILD_ARGS
+      --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --file $DOCKERFILE .
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
         docker push datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -404,8 +413,9 @@ push_to_datadog_agent:
       done
     # Read the Github app private token from AWS SSM
     - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
-    - pip install -r requirements.txt
-    - pip install PyGithub -c requirements/constraints.txt
+    - export DEVA_VERSION=$(grep DEVA_VERSION deva.env)
+    - pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
+    - deva -v self dep sync -f legacy-build
     - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
 
 .winbuild: &winbuild

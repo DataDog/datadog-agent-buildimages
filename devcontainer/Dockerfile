@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG GO_VERSION
+ARG DEVA_VERSION
 ARG PYTHON_VERSION=3.12
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
@@ -30,7 +31,8 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
     # Pin pyasn1 to 0.6.0 until the maintainers release a wheel for 0.6.1 version
     pip3 install --no-cache-dir pyasn1==0.6.0 && \
-    pip3 install --no-cache-dir -r https://raw.githubusercontent.com/DataDog/datadog-agent/master/requirements.txt && \
+    pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" && \
+    deva -v self dep sync -f legacy-tasks && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
     # Omnibus setup
