@@ -4,7 +4,7 @@ param (
 )
 
 
-# https://www.python.org/ftp/python/3.9.1/python-3.9.1-amd64.exe
+# https://www.python.org/ftp/python/X.Y.Z/python-X.Y.Z-amd64.exe
 $pyexe = "https://www.python.org/ftp/python/$($Version)/python-$($Version)-amd64.exe"
 
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "Python" -Keyname "version" -TargetValue $Version
