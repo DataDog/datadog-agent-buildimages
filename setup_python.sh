@@ -65,6 +65,7 @@ case $DD_TARGET_ARCH in
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
+    python3 -m pip install -r requirements.txt
     exit 0
     ;;
 *)
@@ -89,8 +90,7 @@ conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
-pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
-deva -v self dep sync -f legacy-build
+pip install -r requirements.txt
 pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 conda clean -a

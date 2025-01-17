@@ -12,8 +12,6 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS=1
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_VERSION=1.26.0
@@ -96,8 +94,6 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt /
 COPY requirements /requirements
-ENV DEVA_VERSION=$DEVA_VERSION
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
