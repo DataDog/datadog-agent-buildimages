@@ -116,16 +116,7 @@ get_agent_version:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - >-
-      docker build
-      --build-arg BASE_IMAGE=$BASE_IMAGE
-      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
-      $GO_BUILD_ARGS
-      $DEVA_BUILD_ARGS
-      $CUSTOM_BUILD_ARGS
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
     - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -155,17 +146,7 @@ get_agent_version:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - >-
-      docker build
-      --build-arg BASE_IMAGE=$BASE_IMAGE
-      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
-      $GO_BUILD_ARGS
-      $DEVA_BUILD_ARGS
-      $CUSTOM_BUILD_ARGS
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --label target=none
-      --file $DOCKERFILE .
+    - docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --label target=none --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
     - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
