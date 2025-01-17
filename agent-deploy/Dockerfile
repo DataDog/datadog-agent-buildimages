@@ -40,6 +40,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libgmp-dev \
     libssl-dev \
     procps \
+    python-boto \
+    python-deltarpm \
+    python2.7-dev \
     shellcheck \
     make  \
     zlib1g-dev  \
@@ -69,6 +72,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Use gnupg1 instead of gnupg2, our scripts and rpm-s3 are currently not compatible with gnupg2
 RUN mv /usr/bin/gpg /usr/bin/gpg2 && ln -s /usr/bin/gpg1 /usr/bin/gpg
+
+# Python 2 deps
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
+    && python2 get-pip.py
+
+RUN python2 -m pip install \
+    awscli==1.18.140 \
+    boto3==1.14.7 \
+    pexpect==3.2
 
 # Python install
 ENV PYENV_ROOT="/.pyenv"
