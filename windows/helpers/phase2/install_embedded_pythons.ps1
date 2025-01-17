@@ -41,5 +41,3 @@ $py3getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117
 Get-RemoteFile -LocalFile "get-pip.py" -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
 & "$py3Target\python" get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-& "$py3Target\python" -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
-If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
