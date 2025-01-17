@@ -12,8 +12,6 @@ FROM ${BASE_IMAGE}
 # Build Args
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARMV6L
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS=1
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
 ARG RUSTUP_VERSION=1.26.0
@@ -129,8 +127,6 @@ ENV PATH "~/.cargo/bin:${PATH}"
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt /
 COPY requirements /requirements
-ENV DEVA_VERSION=$DEVA_VERSION
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 
 # External calls configuration

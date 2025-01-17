@@ -28,8 +28,6 @@ ARG SEVENZIP_VERSION
 ARG VS2017BUILDTOOLS_VERSION
 ARG GO_VERSION
 ARG GO_SHA256_WINDOWS_AMD64
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS
 ARG RUBY_VERSION
 ARG WIX_VERSION
 ARG CMAKE_VERSION
@@ -63,7 +61,6 @@ COPY ./windows/*.ps1 ./
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 
 COPY go.env c:/
-COPY deva.env c:/
 
 COPY python-packages-versions.txt requirements.txt /
 COPY requirements /requirements
