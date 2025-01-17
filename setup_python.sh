@@ -65,6 +65,8 @@ case $DD_TARGET_ARCH in
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
+    python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
+    python3 -m deva -v self dep sync -f legacy-build
     exit 0
     ;;
 *)
