@@ -8,7 +8,6 @@ stages:
   - setup
   - build
   - availability_message
-  - trigger_build_kernels
   - test
   - dev_envs
   - devcontainer
@@ -325,7 +324,7 @@ build_gitlab_agent_deploy:
     IMAGE: gitlab_agent_deploy
 
 trigger_build_kernels:
-  stage: trigger_build_kernels
+  stage: test
   needs:
     ["build_kernel_version_testing_x64", "build_kernel_version_testing_arm64"]
   rules:
