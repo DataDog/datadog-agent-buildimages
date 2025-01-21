@@ -358,25 +358,29 @@ trigger_build_kernels:
       - local: .gitlab/kernel_version_testing.yml
     strategy: depend
 
-trigger_tests:
+generate_datadog_agent_trigger:
   stage: test
-  rules:
-    - when: manual
-      allow_failure: true
+  when: manual
+  allow_failure: true
   variables:
-    RUN_KITCHEN_TESTS: "false"
-    BUCKET_BRANCH: "dev"
-    DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    BRANCH: main
+  script:
+    - |
+      sed -i -e "s/CI_PIPELINE_ID/${CI_PIPELINE_ID}/g" \
+             -e "s/CI_COMMIT_SHORT_SHA/${CI_COMMIT_SHORT_SHA}" \
+             -e "s/ECR_TEST_ONLY/${ECR_TEST_ONLY}/g" \
+             -e "s/BRANCH/${BRANCH}/g".gitlab/trigger_datadog_agent.yml
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/.gitlab/trigger_datadog_agent.yml
+
+trigger_datadog_agent_pipeline:
+  stage: test
+  needs: ["generate_datadog_agent_trigger"]
   trigger:
-    project: DataDog/datadog-agent
-    strategy: depend
+    include:
+     - artifact: $CI_PROJECT_DIR/.gitlab/trigger_datadog_agent.yml
+       job: generate_datadog_agent_trigger
 
 push_to_datadog_agent:
   stage: test
