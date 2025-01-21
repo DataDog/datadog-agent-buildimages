@@ -39,6 +39,13 @@ foreach ($line in $lines) {
     $arglist += "$line"
 }
 
+# Read arguments from deva.env file
+$lines = Get-Content -Path 'deva.env'
+foreach ($line in $lines) {
+    $arglist += "--build-arg"
+    $arglist += "$line"
+}
+
 foreach ($h in $SoftwareTable.GetEnumerator()){
     if( -not ($($h.Key) -like "*SHA256")){
         $arglist += "--build-arg"
