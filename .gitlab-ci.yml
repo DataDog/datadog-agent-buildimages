@@ -360,27 +360,29 @@ trigger_build_kernels:
 
 generate_datadog_agent_trigger:
   stage: test
+  tags: ["arch:arm64"]
+  image: registry.ddbuild.io/images/mirror/ubuntu:latest
   when: manual
   allow_failure: true
   variables:
-    BRANCH: main
+    GIT_BRANCH: main
   script:
     - |
       sed -i -e "s/CI_PIPELINE_ID/${CI_PIPELINE_ID}/g" \
-             -e "s/CI_COMMIT_SHORT_SHA/${CI_COMMIT_SHORT_SHA}" \
+             -e "s/CI_COMMIT_SHORT_SHA/${CI_COMMIT_SHORT_SHA}/g" \
              -e "s/ECR_TEST_ONLY/${ECR_TEST_ONLY}/g" \
-             -e "s/BRANCH/${BRANCH}/g".gitlab/trigger_datadog_agent.yml
+             -e "s/GIT_BRANCH/${GIT_BRANCH}/g" .gitlab/trigger_datadog_agent.yml
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/.gitlab/trigger_datadog_agent.yml
+      - .gitlab/trigger_datadog_agent.yml
 
 trigger_datadog_agent_pipeline:
   stage: test
   needs: ["generate_datadog_agent_trigger"]
   trigger:
     include:
-     - artifact: $CI_PROJECT_DIR/.gitlab/trigger_datadog_agent.yml
-       job: generate_datadog_agent_trigger
+      - artifact: .gitlab/trigger_datadog_agent.yml
+        job: generate_datadog_agent_trigger
 
 push_to_datadog_agent:
   stage: test
