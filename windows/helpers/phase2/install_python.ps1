@@ -41,15 +41,17 @@ Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { 
     $var = $_.Split('=')
     Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
  }
- 
+
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
 if($Env:DD_DEV_TARGET -eq "Container") {
-    python -m pip install -r /requirements.txt
+    python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
+    python -m deva -v self dep sync -f legacy-build
 } else {
     ## When installing for local use, set up the virtual environment first
     python -m venv "$($Env:USERPROFILE)\.ddbuild\agentdev"
     &  "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
-    python -m pip install -r "$($PSScriptRoot)\..\..\..\requirements.txt"
+    python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
+    python -m deva -v self dep sync -f legacy-build
 }
 
 

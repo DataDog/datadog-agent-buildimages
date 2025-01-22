@@ -12,6 +12,8 @@ ARG GIT_VERSION=2.10.1
 ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2"
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ARG DEVA_VERSION
+ARG DEVA_NO_DYNAMIC_DEPS=1
 ARG CMAKE_VERSION=3.30.2
 ARG CMAKE_SHA256="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
 ARG CLANG_VERSION=8.0.0
@@ -34,6 +36,9 @@ ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG PROTOBUF_VERSION=29.3
+ARG PROTOBUF_CHECKSUM=3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a
+ARG PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -142,6 +147,8 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
 # CONDA
 COPY python-packages-versions.txt setup_python.sh requirements.txt /
 COPY requirements /requirements
+ENV DEVA_VERSION=$DEVA_VERSION
+ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
@@ -220,6 +227,16 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
+
+
+# Install protobuf
+RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME} \
+    && echo "${PROTOBUF_CHECKSUM}  ${PROTOBUF_FILENAME}" | sha256sum --check \
+    && unzip -o ${PROTOBUF_FILENAME} -d protoc3 \
+    && mv protoc3/bin/* /usr/bin/ \
+    && mv protoc3/include/* /usr/include/ \
+    && rm -rf protoc3 \
+    && rm ${PROTOBUF_FILENAME}
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
