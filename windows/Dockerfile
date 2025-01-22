@@ -65,8 +65,7 @@ COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
 COPY go.env c:/
 COPY deva.env c:/
 
-COPY python-packages-versions.txt requirements.txt /
-COPY requirements /requirements
+COPY python-packages-versions.txt /
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 
 RUN .\helpers\update_root_certs.ps1
