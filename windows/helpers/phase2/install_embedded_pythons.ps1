@@ -1,5 +1,5 @@
 #
-# Installs embedded python2 and python3 for use in unit testing.
+# Installs embedded python for use in unit testing.
 # Be careful to use unique environment variables indicating location
 # of the python files.
 #
@@ -8,7 +8,6 @@
 #
 
 # Uses:
-# EMBEDDED_PYTHON_2_VERSION
 # EMBEDDED_PYTHON_3_VERSION
 
 # this downloads the necessary file
@@ -22,17 +21,12 @@ if($Env:DD_DEV_TARGET -ne "Container") {
    return
 }
 
-$py2 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_2_VERSION}-amd64.zip"
 $py3 = "https://s3.amazonaws.com/dd-agent-omnibus/python-windows-${Env:EMBEDDED_PYTHON_3_VERSION}-amd64.zip"
 
-$py2Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_2_VERSION}"
 $py3Target = "c:\embeddedpy\py${Env:EMBEDDED_PYTHON_3_VERSION}"
-
-DownloadAndExpandTo -TargetDir $py2Target -SourceURL $py2 -Sha256 "$Env:EMBEDDED_PYTHON_2_SHA256"
 
 DownloadAndExpandTo -TargetDir $py3Target -SourceURL $py3 -Sha256 "$Env:EMBEDDED_PYTHON_3_SHA256"
 
-Add-EnvironmentVariable -Variable "TEST_EMBEDDED_PY2" -Value $py2Target -Global
 Add-EnvironmentVariable -Variable "TEST_EMBEDDED_PY3" -Value $py3Target -Global
 
 # Read DD_PIP_VERSION{,_PY3} and DD_SETUPTOOLS_VERSION{,_PY3} to variables
@@ -41,20 +35,9 @@ Get-Content \python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } | 
    Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
 }
 
-# Python 2
-$py2getpip = "https://raw.githubusercontent.com/pypa/get-pip/38e54e5de07c66e875c11a1ebbdb938854625dd8/public/2.7/get-pip.py"
-$py2getpipsha256 = "40ee07eac6674b8d60fce2bbabc148cf0e2f1408c167683f110fd608b8d6f416"
-Get-RemoteFile -LocalFile "get-pip.py" -RemoteFile $py2getpip -VerifyHash $py2getpipsha256
-& "$py2Target\python" get-pip.py pip==${Env:DD_PIP_VERSION}
-If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-& "$py2Target\python" -m pip install -r ../requirements-py2.txt
-If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-
 # Python 3
 $py3getpip = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
 $py3getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
 Get-RemoteFile -LocalFile "get-pip.py" -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
 & "$py3Target\python" get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
-If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-& "$py3Target\python" -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }

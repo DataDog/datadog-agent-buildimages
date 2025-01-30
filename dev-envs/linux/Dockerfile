@@ -2,6 +2,11 @@ ARG ARCH=arm64
 ARG TAG=latest
 FROM datadog/agent-buildimages-deb_${ARCH}:${TAG}
 
+ARG DEVA_VERSION
+
+# Allow dynamic dependencies again as they are disabled in build images
+ENV DEVA_NO_DYNAMIC_DEPS=0
+
 # Set up scripts
 COPY scripts /root/.scripts
 COPY scripts.sh /setup/scripts.sh
@@ -39,9 +44,13 @@ RUN /setup/env-vars.sh
 COPY utils.sh /setup/utils.sh
 RUN /setup/utils.sh
 
+# Set up Git
+COPY git.sh /setup/git.sh
+RUN /setup/git.sh
+
 # Set up Python
 COPY python.sh /setup/python.sh
-RUN /setup/python.sh
+RUN DEVA_VERSION=${DEVA_VERSION} /setup/python.sh
 
 # Set up fonts
 COPY fonts.sh /setup/fonts.sh
@@ -51,18 +60,15 @@ RUN /setup/fonts.sh
 COPY starship.sh /setup/starship.sh
 RUN /setup/starship.sh
 
-# Set up OpenSSH server
-COPY ssh.sh /setup/ssh.sh
-RUN /setup/ssh.sh
-
-# Set up Git
-COPY git.sh /setup/git.sh
-RUN /setup/git.sh
-
 # Set up Visual Studio Code
 COPY default-vscode-extensions.txt /setup/default-vscode-extensions.txt
 COPY vscode.sh /setup/vscode.sh
 RUN /setup/vscode.sh
+
+# Set up OpenSSH server
+# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
+COPY ssh.sh /setup/ssh.sh
+RUN /setup/ssh.sh
 
 # Remove setup files
 # hadolint ignore=DL3059

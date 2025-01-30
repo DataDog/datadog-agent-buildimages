@@ -4,6 +4,10 @@ set -euxo pipefail
 
 git_dir="${HOME}/git"
 
+# Temporarily required for the ARM image, see:
+# https://confluence.atlassian.com/bitbucketserverkb/bitbucket-server-repository-import-fails-with-error-remote-https-is-not-a-git-command-1103438202.html
+apt-get update && apt-get install -y libcurl4-openssl-dev
+
 # https://git-scm.com/book/en/v2/Getting-Started-Installing-Git#_installing_from_source
 install-from-source \
     --version "2.37.3" \
@@ -16,12 +20,6 @@ install-from-source \
 # The Agent build defines an older version but we require a newer one for SSH signing so we
 # install at a different path so as to not conflict with the build process
 path-prepend "${git_dir}/bin"
-
-# Force SSH for Go dependencies
-cat <<'EOF' >> "${HOME}/.gitconfig"
-[url "ssh://git@github.com/"]
-insteadOf = https://github.com/
-EOF
 
 # Set up signing:
 # https://github.blog/open-source/git/highlights-from-git-2-34/#tidbits

@@ -69,7 +69,6 @@ try {
         .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
         .\helpers\phase1\install_dotnetcore.ps1
         .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
-        .\helpers\phase1\install_vcpython.ps1
         .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
         # # vcpkg depends on cmake
         .\helpers\phase1\install_vcpkg.ps1

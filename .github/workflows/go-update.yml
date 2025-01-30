@@ -48,7 +48,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install -r requirements.txt
+          DEVA_VERSION=$(grep DEVA_VERSION deva.env)
+          python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
+          python3 -m deva -v self dep sync -f legacy-build
 
       - name: Update Go version
         run: |

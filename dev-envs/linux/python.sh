@@ -30,6 +30,7 @@ rm cpython.tar.gz
 
 /tools/python/bin/python -m venv "${HOME}/.venv"
 
-"${HOME}/.venv/bin/pip" install -r https://raw.githubusercontent.com/DataDog/datadog-agent/main/requirements.txt
+"${HOME}/.venv/bin/pip" install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
+"${HOME}/.venv/bin/deva" -v self dep sync -f legacy-tasks
 
 path-prepend "${HOME}/.venv/bin"

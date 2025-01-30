@@ -4,7 +4,7 @@ param (
 )
 
 
-# https://www.python.org/ftp/python/3.9.1/python-3.9.1-amd64.exe
+# https://www.python.org/ftp/python/X.Y.Z/python-X.Y.Z-amd64.exe
 $pyexe = "https://www.python.org/ftp/python/$($Version)/python-$($Version)-amd64.exe"
 
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "Python" -Keyname "version" -TargetValue $Version
@@ -45,11 +45,13 @@ Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { 
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
 if($Env:DD_DEV_TARGET -eq "Container") {
     python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
+    python -m deva -v self dep sync -f legacy-build
 } else {
     ## When installing for local use, set up the virtual environment first
     python -m venv "$($Env:USERPROFILE)\.ddbuild\agentdev"
     &  "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
     python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DEVA_VERSION}"
+    python -m deva -v self dep sync -f legacy-build
 }
 
 

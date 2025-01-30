@@ -15,6 +15,8 @@ ARG AWSCLI_VERSION_ARG=1.34.33
 ARG RPM_S3_VERSION_ARG=0.8.0
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
+ARG DEVA_VERSION
+ARG DEVA_NO_DYNAMIC_DEPS
 ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.12.6
@@ -25,7 +27,8 @@ ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
     AWSCLI_VERSION=$AWSCLI_VERSION_ARG \
-    RPM_S3_VERSION=$RPM_S3_VERSION_ARG
+    RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
+    DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -91,11 +94,11 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
     pyenv global ${PYTHON_VERSION}
 
 # Python 3 deps
-COPY requirements.txt /requirements.txt
-COPY requirements /requirements
 RUN pip3 install pip \
     && pip3 install --upgrade pip \
-    && pip3 install -r requirements.txt -r requirements/agent-deploy.txt
+    && pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" \
+    && deva -v self dep sync -f legacy-build -f legacy-agent-deploy \
+    && pyenv rehash
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
@@ -128,7 +131,7 @@ RUN git clone https://github.com/chocolatey/choco.git \
     && cp ./docker/choco_wrapper /usr/local/bin/choco \
     && rm -rf /choco
 
-ENV ChocolateyInstall=/opt/chocolatey 
+ENV ChocolateyInstall=/opt/chocolatey
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys

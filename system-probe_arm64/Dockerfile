@@ -55,8 +55,7 @@ ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
 # CONDA
-COPY python-packages-versions.txt setup_python.sh requirements.txt requirements-py2.txt /
-COPY requirements /requirements
+COPY python-packages-versions.txt setup_python.sh /
 ENV DEVA_VERSION=$DEVA_VERSION
 ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
