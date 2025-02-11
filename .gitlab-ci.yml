@@ -413,7 +413,7 @@ push_to_datadog_agent:
       done
     # Read the Github app private token from AWS SSM
     - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
-    - export DEVA_VERSION=$(grep DEVA_VERSION deva.env)
+    - export DEVA_VERSION=$(grep DEVA_VERSION deva.env | awk -F= '/^DEVA_VERSION=/ {print $2}')
     - pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
     - deva -v self dep sync -f legacy-build
     - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
