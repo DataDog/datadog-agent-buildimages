@@ -18,7 +18,7 @@ jobs:
           - SLACK_AGENT_CI_EXPERIENCE_REVIEWS_ID
           - SLACK_AGENT_DEVELOPER_TOOLS_REVIEWS_ID
     steps:
-      - uses: DataDog/slapr@master
+      - uses: DataDog/slapr@09a47ae5bb58e2983f1616cdb33bcef8e2dae521 # master
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SLACK_CHANNEL_ID: "${{ secrets[matrix.channel_variables] }}"
