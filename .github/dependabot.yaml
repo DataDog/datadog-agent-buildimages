@@ -1,7 +1,8 @@
+---
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/"
+  - package-ecosystem: pip
+    directory: /
     labels:
       - dependencies
       - python
@@ -11,3 +12,9 @@ updates:
       # pyyaml 6 is incompatible with awscli
       # see https://github.com/DataDog/datadog-agent-buildimages/pull/207
       - dependency-name: pyyaml
+  - package-ecosystem: github-actions
+    directory: /
+    labels:
+      - dependencies
+    schedule:
+      interval: monthly
