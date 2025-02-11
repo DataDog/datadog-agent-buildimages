@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          DEVA_VERSION=$(grep DEVA_VERSION deva.env)
+          DEVA_VERSION=$(grep DEVA_VERSION deva.env | awk -F= '/^DEVA_VERSION=/ {print $2}')
           python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
           python3 -m deva -v self dep sync -f legacy-build
 
