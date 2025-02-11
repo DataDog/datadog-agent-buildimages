@@ -46,6 +46,15 @@ Write-Host -ForegroundColor Green "Removing temporary file $out and $msgo_out"
 Remove-Item $out
 Remove-Item $msgo_out
 
+# Patch memory leak in msgo
+# https://github.com/microsoft/go-crypto-winnative/issues/87
+# need --unsafe-paths since file is outside git repo
+git apply --unsafe-paths  --verbose --directory $msgodir\go\src\vendor\github.com\microsoft\go-crypto-winnative\cng $PSScriptRoot\patch-memleak.tls1prf.go
+if ($LASTEXITCODE -ne 0) {
+    Write-Host -ForegroundColor Red "Failed to patch memory leak in msgo"
+    exit 1
+}
+
 Add-EnvironmentVariable -Variable GOROOT -VALUE "$($GODIR)\go" -Local -Global
 Add-EnvironmentVariable -Variable GOPATH -VALUE "c:\dev\go" -Global
 Add-ToPath -NewPath "$($GODIR)\go\bin" -Local -Global
