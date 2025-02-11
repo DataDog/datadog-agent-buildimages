@@ -28,8 +28,8 @@ RUN apt-get update &&  \
       libxml2-dev  \
       libxmlsec1-dev  \
       libffi-dev  \
-      liblzma-dev &&  \
-      rpm2cpio && \
+      liblzma-dev \
+      rpm2cpio \
       cpio && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
