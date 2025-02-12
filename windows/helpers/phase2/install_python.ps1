@@ -40,7 +40,11 @@ if($Env:DD_DEV_TARGET -ne "Container") {
 Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
     $var = $_.Split('=')
     Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
- }
+}
+
+# Disable caching until the following issue is fixed because junctions do not persist properly:
+# https://github.com/astral-sh/uv/issues/11263
+$env:UV_NO_CACHE = "1"
 
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
 if($Env:DD_DEV_TARGET -eq "Container") {
