@@ -4,7 +4,7 @@ $ProgressPreference = 'SilentlyContinue'
 Write-Host -ForegroundColor Green "Installing go $ENV:GO_VERSION"
 
 $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
-$msgozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION)-1.windows-amd64.zip"
+$msgozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION)-$(ENV:MSGO_PATCH).windows-amd64.zip"
 
 $out = "$($PSScriptRoot)\go.zip"
 $msgo_out = "$($PSScriptRoot)\msgo.zip"

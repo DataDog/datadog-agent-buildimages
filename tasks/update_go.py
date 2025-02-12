@@ -54,11 +54,16 @@ def _get_expected_sha256(version: str, base_url: str) -> List[Tuple[Platform, st
         shas.append(((os, arch), sha))
     return shas
 
+
 def _get_go_upstream_sha256(version):
     return _get_expected_sha256(version, "https://storage.googleapis.com/golang")
 
-def _get_msgo_sha256(version):
-    return _get_expected_sha256(f"{version}-1", "https://aka.ms/golang/release/latest")
+
+def _get_msgo_sha256(version, msgo_patch):
+    return _get_expected_sha256(
+        f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest"
+    )
+
 
 def _check_archive(version: str, shas: List[Tuple[Platform, str]], base_url: str):
     """checks that the archive sha is the same as the given one"""
@@ -75,19 +80,27 @@ def _check_archive(version: str, shas: List[Tuple[Platform, str]], base_url: str
                 f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
             )
 
+
 def _display_shas(shas: List[Tuple[Platform, str]], toolchain: str):
     print(f"--- {toolchain} ---")
     for (os, arch), sha in shas:
         platform = f"[{os}/{arch}]"
-        print(f"{platform : <15} {sha}")
+        print(f"{platform: <15} {sha}")
+
 
 @task(
     help={
         "version": "The version of Go to use.",
+        "msgo_patch": "The patch version of the Microsoft Go distribution.",
         "check_archive": "If specified, download Go archives and check the SHA256.",
     }
 )
-def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
+def update_go(
+    _: Context,
+    version: str,
+    msgo_patch: str = "1",
+    check_archive: Optional[bool] = False,
+):
     """
     Update Go versions and SHA256 of Go archives.
     """
@@ -98,7 +111,7 @@ def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
         )
 
     shas = _get_go_upstream_sha256(version)
-    msgo_shas = _get_msgo_sha256(version)
+    msgo_shas = _get_msgo_sha256(version, msgo_patch)
     if check_archive:
         _check_archive(version, shas, "https://go.dev/dl")
         _check_archive(version, msgo_shas, "https://aka.ms/golang/release/latest")
@@ -106,14 +119,13 @@ def update_go(_: Context, version: str, check_archive: Optional[bool] = False):
     print(
         f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
     )
-
     _display_shas(shas, "Upstream Go")
     _display_shas(msgo_shas, "Microsoft Go")
 
     with open("go.env", "w") as writer:
         print(f"GO_VERSION={version}", file=writer)
+        print(f"MSGO_PATCH={msgo_patch}", file=writer)
         for (os, arch), sha in shas:
             print(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
         for (os, arch), sha in msgo_shas:
             print(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}", file=writer)
-
