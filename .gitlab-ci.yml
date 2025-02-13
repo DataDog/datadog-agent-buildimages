@@ -436,14 +436,6 @@ push_to_datadog_agent:
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
 
-build_windows_1809_x64:
-  extends: .winbuild
-  tags: ["runner:windows-docker", "windowsversion:1809"]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x64
-    DD_TARGET_ARCH: x64
-
 build_windows_ltsc2022_x64:
   extends: .winbuild
   tags: ["runner:windows-docker", "windowsversion:2022"]
@@ -536,8 +528,6 @@ release_windows:
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
   parallel:
     matrix:
-      - IMAGE: windows_1809_x64
-        DOCKERHUB_TAG_PREFIX: 1809
       - IMAGE: windows_ltsc2022_x64
         DOCKERHUB_TAG_PREFIX: ltsc2022
 
