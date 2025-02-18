@@ -224,7 +224,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 
 # Install linter tools
 RUN apt-get update \
-    && apt-get install -y shellcheck batcat
+    && apt-get install -y shellcheck
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
