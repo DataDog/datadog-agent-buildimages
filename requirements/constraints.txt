@@ -34,3 +34,5 @@ virtualenv==16.7.9
 vulture==2.6
 wheel==0.40.0
 pyright==1.1.391
+google-api-python-client==2.160.0
+oauth2client==4.1.3
