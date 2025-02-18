@@ -237,6 +237,10 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
     && rm -rf protoc3 \
     && rm ${PROTOBUF_FILENAME}
 
+# Install linter tools
+RUN apt-get update \
+    && apt-get install -y shellcheck batcat
+
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
