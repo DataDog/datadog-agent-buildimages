@@ -94,7 +94,7 @@ if [[ $arch == "x86_64" ]]; then
         --name "ambr" \
         --name "ambs"
 else
-    cargo install amber@${AMBR_VERSION}
+    cargo install --locked amber@${AMBR_VERSION}
 fi
 
 PROCS_VERSION="0.14.6"
@@ -119,7 +119,7 @@ if [[ $arch == "x86_64" ]]; then
         --url "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/{{version}}/pdu-${arch}-unknown-linux-musl" \
         --name "pdu"
 else
-    cargo install parallel-disk-usage@${PDU_VERSION} --locked
+    cargo install --locked parallel-disk-usage@${PDU_VERSION}
 fi
 
 install-binary \
