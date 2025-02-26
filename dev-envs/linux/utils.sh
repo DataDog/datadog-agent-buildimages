@@ -143,9 +143,9 @@ GFOLD_VERSION="4.5.0"
 #     curl "https://github.com/nickgerace/gfold/releases/download/${GFOLD_VERSION}/gfold-linux-gnu-${short_arch}" -Lo /usr/local/bin/gfold
 #     chmod +x /usr/local/bin/gfold
 # else
-#   cargo install gfold@${GFOLD_VERSION}
+#   cargo install --locked gfold@${GFOLD_VERSION}
 # fi
-cargo install gfold@${GFOLD_VERSION}
+cargo install --locked gfold@${GFOLD_VERSION}
 mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
