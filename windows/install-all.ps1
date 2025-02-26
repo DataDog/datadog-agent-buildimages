@@ -27,8 +27,8 @@ foreach ($line in $lines) {
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
 }
 
-# Read deva variables from deva.env file
-$lines = Get-Content -Path '..\deva.env'
+# Read dda variables from dda.env file
+$lines = Get-Content -Path '..\dda.env'
 foreach ($line in $lines) {
     $key, $val = $line.split('=')
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
