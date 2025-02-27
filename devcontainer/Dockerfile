@@ -2,14 +2,17 @@ FROM ubuntu:22.04
 
 ARG TARGETARCH
 ARG GO_VERSION
-ARG DEVA_VERSION
+ARG DDA_VERSION
 ARG PYTHON_VERSION=3.12
+ARG CMAKE_VERSION=3.30.2
+ARG CMAKE_SHA256_AMD64="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
+ARG CMAKE_SHA256_ARM64="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
-    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev cmake sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
+    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
     # Network feature tests
     openjdk-11-jre-headless \
     # System-probe dependencies
@@ -26,13 +29,30 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 # Install latest pip
 RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python3
 
+# CMake setup
+RUN if [ "$TARGETARCH" = "arm64" ] ; then set -ex \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
+    && echo "${CMAKE_SHA256_ARM64}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && rm cmake.sh ; fi
+
+RUN if [ "$TARGETARCH" = "amd64" ] ; then set -ex \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh \
+    && echo "${CMAKE_SHA256_AMD64}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && rm cmake.sh ; fi
+
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
     # Pin pyasn1 to 0.6.0 until the maintainers release a wheel for 0.6.1 version
     pip3 install --no-cache-dir pyasn1==0.6.0 && \
-    pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" && \
-    deva -v self dep sync -f legacy-tasks && \
+    pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
+    dda -v self dep sync -f legacy-tasks && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
     # Omnibus setup

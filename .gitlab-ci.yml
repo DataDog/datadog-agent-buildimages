@@ -115,13 +115,13 @@ get_agent_version:
     - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - >-
       docker build
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
-      $DEVA_BUILD_ARGS
+      $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       --file $DOCKERFILE .
@@ -154,13 +154,13 @@ get_agent_version:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - >-
       docker build
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
-      $DEVA_BUILD_ARGS
+      $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       --label target=none
@@ -322,13 +322,13 @@ build_circleci_runner:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DEVA_BUILD_ARGS=$(cat deva.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - >-
       docker build
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
-      $DEVA_BUILD_ARGS
+      $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:$IMAGE_VERSION
       --file $DOCKERFILE .
@@ -413,9 +413,9 @@ push_to_datadog_agent:
       done
     # Read the Github app private token from AWS SSM
     - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
-    - export DEVA_VERSION=$(grep DEVA_VERSION deva.env | awk -F= '/^DEVA_VERSION=/ {print $2}')
-    - pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
-    - deva -v self dep sync -f legacy-build
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    - dda -v self dep sync -f legacy-build
     - inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
 
 .winbuild: &winbuild
@@ -435,14 +435,6 @@ push_to_datadog_agent:
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
-
-build_windows_1809_x64:
-  extends: .winbuild
-  tags: ["runner:windows-docker", "windowsversion:1809"]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x64
-    DD_TARGET_ARCH: x64
 
 build_windows_ltsc2022_x64:
   extends: .winbuild
@@ -536,8 +528,6 @@ release_windows:
     DOCKERHUB_IMAGE: agent-buildimages-windows_x64
   parallel:
     matrix:
-      - IMAGE: windows_1809_x64
-        DOCKERHUB_TAG_PREFIX: 1809
       - IMAGE: windows_ltsc2022_x64
         DOCKERHUB_TAG_PREFIX: ltsc2022
 
