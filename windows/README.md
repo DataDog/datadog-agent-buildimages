@@ -23,7 +23,7 @@ You need only the script itself and the Dockerfile (and [requirements.txt](requi
   .\dockerfile-to-powershell.py 
        -d .\Dockerfile 
        -p .\dockerfile-to-powershell-generated-sample.ps1
-       -a WINDOWS_VERSION=1809
+       -a WINDOWS_VERSION=2022
        -a DD_TARGET_ARCH=x64 
 ```
 
