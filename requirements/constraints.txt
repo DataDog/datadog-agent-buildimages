@@ -34,4 +34,3 @@ virtualenv==16.7.9
 vulture==2.6
 wheel==0.40.0
 pyright==1.1.391
-setuptools==75.8.2

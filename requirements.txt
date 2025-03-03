@@ -27,4 +27,3 @@ types-toml
 urllib3
 vulture
 pyright
-setuptools
