@@ -44,8 +44,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv global ${PYTHON_VERSION}
 
 RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
- && pip install slack_sdk==3.27.2 \
- && dda -v self dep sync -f legacy-build \
+ && dda -v self dep sync -f legacy-build legacy-notifications \
  && pyenv rehash
 
 # Install Go
