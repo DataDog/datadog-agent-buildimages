@@ -105,7 +105,7 @@ conda create -n ddpy3 python python=$PY3_VERSION
 # Update pip, setuptools and misc deps
 conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
-pip uninstall setuptools -f
+pip uninstall setuptools -y
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
