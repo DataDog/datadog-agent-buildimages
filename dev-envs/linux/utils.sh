@@ -135,17 +135,17 @@ git config --global interactive.diffFilter "delta --color-only"
 git config --global delta.navigate true
 git config --global merge.conflictStyle zdiff3
 
-GFOLD_VERSION="4.5.0"
-# https://github.com/nickgerace/gfold/issues/260
-# Eventually try to download to improve build time, currently the only available
-# Linux binary was built on a newer version of glibc and there is no musl build
+# TODO: Uncomment this once we have a binary for arm64
+# GFOLD_VERSION="2025.2.1"
 # if [[ $arch == "x86_64" ]]; then
-#     curl "https://github.com/nickgerace/gfold/releases/download/${GFOLD_VERSION}/gfold-linux-gnu-${short_arch}" -Lo /usr/local/bin/gfold
-#     chmod +x /usr/local/bin/gfold
+#     install-binary \
+#         --version "${GFOLD_VERSION}" \
+#         --digest "a31acf651750ab9e139ad58893115c67288fed3bb8c12c3601fff33759905e9d" \
+#         --url "https://github.com/nickgerace/gfold/releases/download/{{version}}/gfold-linux-musl-x86-64" \
+#         --name "gfold"
 # else
-#   cargo install --locked gfold@${GFOLD_VERSION}
+#     cargo install --locked gfold@${GFOLD_VERSION}
 # fi
-cargo install --locked gfold@${GFOLD_VERSION}
 mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"

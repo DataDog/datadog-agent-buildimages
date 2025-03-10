@@ -2,16 +2,16 @@
   tags: ["runner:docker"]
   image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
-    BASE_IMAGE_TAG: v47431157-7a59834c
-    BASE_IMAGE_ARCH: x64
+    BASE_IMAGE: datadog/agent-buildimages-linux-glibc-2-17-x64
+    BASE_IMAGE_TAG: v58028397-44fec785
     TARGET_IMAGE_ARCH: amd64
 
 .linux_dev_env_arm64:
   tags: ["runner:docker-arm", "platform:arm64"]
   image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
-    BASE_IMAGE_TAG: v47431157-7a59834c
-    BASE_IMAGE_ARCH: arm64
+    BASE_IMAGE: datadog/agent-buildimages-linux-glibc-2-23-arm64
+    BASE_IMAGE_TAG: v58028397-44fec785
     TARGET_IMAGE_ARCH: arm64
 
 .build_dev_env:
@@ -20,12 +20,10 @@
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
-    - DDA_VERSION_ARG=$(grep DDA_VERSION dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - >-
       docker build dev-envs/$PLATFORM
-      --build-arg ARCH=$BASE_IMAGE_ARCH
-      --build-arg TAG=$BASE_IMAGE_TAG
-      $DDA_VERSION_ARG
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
 
 .publish_dev_env:
   script:
@@ -33,12 +31,10 @@
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build and push
-    - DDA_VERSION_ARG=$(grep DDA_VERSION dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - >-
       docker build dev-envs/$PLATFORM
-      --build-arg ARCH=$BASE_IMAGE_ARCH
-      --build-arg TAG=$BASE_IMAGE_TAG
-      $DDA_VERSION_ARG
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$TARGET_IMAGE_ARCH
     - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$TARGET_IMAGE_ARCH
 
