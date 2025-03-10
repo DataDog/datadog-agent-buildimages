@@ -2,28 +2,21 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-# glibc version 2.28 or higher is now required and support for older machines ends in February 2025.
-# Building from source is difficult on this very old architecture and I was unable to get cross
-# compilation to work without build errors. This needs to happen sometime in the next few months.
-# - https://aka.ms/vscode-remote/faq/old-linux
-# - https://github.com/microsoft/vscode/issues/203967#issuecomment-1923440629
-# - https://github.com/microsoft/vscode/issues/203375
-# - https://github.com/microsoft/vscode/wiki/How-to-Contribute#prerequisites
-VERSION="1.85.2"
+VS_CODE_VERSION="1.98.0"
 
 arch=$(uname -m)
 if [[ $arch == "aarch64" ]]; then
-    DIGEST="d7926acd4608fcdb908d41ae04e8e2cf1e8b9433242667d4e87e0b5958768549"
+    DIGEST="1deb69c76288fb2f60a65fdcd0e5e4a484318cb822b88bc3f82ea51e36492460"
     arch="arm64"
 else
-    DIGEST="a0c7d5e39709619882df9b29c62e3d3cd8778b2b54a5d56377f0b72f894b58bd"
+    DIGEST="7ac5717e59b09ac86b04786f6ff713e83d3744a0d936aeee0608917a765d986c"
     arch="x64"
 fi
-metadata_url="https://update.code.visualstudio.com/api/versions/${VERSION}/linux-${arch}/stable"
+metadata_url="https://update.code.visualstudio.com/api/versions/${VS_CODE_VERSION}/linux-${arch}/stable"
 
 commit=$(curl -s "${metadata_url}" | jq -r .version)
 server_download_url="https://update.code.visualstudio.com/commit:${commit}/server-linux-${arch}/stable"
-cli_download_url="https://update.code.visualstudio.com/${VERSION}/cli-linux-x64/stable"
+cli_download_url="https://update.code.visualstudio.com/${VS_CODE_VERSION}/cli-linux-x64/stable"
 
 vscode_root_dir="${HOME}/.vscode-server"
 vscode_binary="${vscode_root_dir}/code-${commit}"
@@ -49,13 +42,5 @@ mv "${vscode_root_dir}/code" "${vscode_binary}"
 rm "vscode_cli_alpine_${arch}_cli.tar.gz"
 
 ln -s "${vscode_root_dir}/cli/servers/Stable-${commit}/server/bin/code-server" /usr/local/bin/code-server
-
-# Found in:
-# https://github.com/microsoft/vscode/blob/1.94.2/resources/server/bin/helpers/check-requirements-linux.sh#L21
-#
-# It appears to be doing nothing, https://github.com/microsoft/vscode/issues/231537
-#
-# We still install during the build to install extensions which are persisted across VS Code versions.
-touch "/tmp/vscode-skip-server-requirements-check"
 
 install-vscode-extensions /setup/default-vscode-extensions.txt
