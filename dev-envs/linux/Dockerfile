@@ -1,8 +1,8 @@
-ARG ARCH=arm64
-ARG TAG=latest
-FROM datadog/agent-buildimages-deb_${ARCH}:${TAG}
+ARG BASE_IMAGE=datadog/agent-buildimages-linux-glibc-2-23-arm64
+ARG BASE_IMAGE_TAG=latest
+FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
-ARG DDA_VERSION
+ARG DDA_VERSION=""
 
 # Allow dynamic dependencies again as they are disabled in build images
 ENV DDA_NO_DYNAMIC_DEPS=0
@@ -50,7 +50,11 @@ RUN /setup/git.sh
 
 # Set up Python
 COPY python.sh /setup/python.sh
-RUN DDA_VERSION=${DDA_VERSION} /setup/python.sh
+RUN /setup/python.sh
+
+# Set up dda
+COPY dda.sh /setup/dda.sh
+RUN DDA_VERSION=${DDA_VERSION} /setup/dda.sh
 
 # Set up fonts
 COPY fonts.sh /setup/fonts.sh
