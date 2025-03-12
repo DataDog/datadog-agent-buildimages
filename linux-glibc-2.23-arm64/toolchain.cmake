@@ -1,4 +1,4 @@
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_RANLIB aarch64-unknown-linux-gnu-ranlib)
