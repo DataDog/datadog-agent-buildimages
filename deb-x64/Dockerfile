@@ -46,10 +46,6 @@ ENV GO_VERSION $GO_VERSION
 ENV CONDA_PATH /root/miniforge3
 ENV DD_TARGET_ARCH $DD_TARGET_ARCH
 
-# Install custom datadog-ci
-RUN curl -fsSL 'https://productionresultssa7.blob.core.windows.net/actions-results/c88ef473-2d8f-4e7a-8e2c-31a5509e6d06/workflow-job-run-4423c1e0-002d-5e20-8e08-3922a79ea964/artifacts/c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c.zip?rscd=attachment%3B+filename%3D%22artifact.zip%22&se=2025-03-13T12%3A53%3A04Z&sig=hJzqJ1A78ESE8Txi8fCZ6YMUHNWZSXjbD5jYYEkFgB4%3D&ske=2025-03-14T00%3A22%3A03Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2025-03-13T12%3A22%3A03Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-01-05&sp=r&spr=https&sr=b&st=2025-03-13T12%3A42%3A59Z&sv=2025-01-05' -o /usr/local/bin/datadog-ci && \
-    chmod +x /usr/local/bin/datadog-ci
-
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
@@ -72,6 +68,13 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics libtool software-properties-common default-jre texinfo pxz wget \
   binutils-2.26 unzip
+
+# Install custom datadog-ci
+RUN curl -fsSL 'https://productionresultssa7.blob.core.windows.net/actions-results/c88ef473-2d8f-4e7a-8e2c-31a5509e6d06/workflow-job-run-4423c1e0-002d-5e20-8e08-3922a79ea964/artifacts/c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c.zip?rscd=attachment%3B+filename%3D%22artifact.zip%22&se=2025-03-13T12%3A53%3A04Z&sig=hJzqJ1A78ESE8Txi8fCZ6YMUHNWZSXjbD5jYYEkFgB4%3D&ske=2025-03-14T00%3A22%3A03Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2025-03-13T12%3A22%3A03Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-01-05&sp=r&spr=https&sr=b&st=2025-03-13T12%3A42%3A59Z&sv=2025-01-05' -o artifacts.zip && \
+    unzip artifacts.zip && \
+    mv datadog-ci_linux-x64 /usr/local/bin/datadog-ci && \
+    chmod +x /usr/local/bin/datadog-ci && \
+    rm artifacts.zip
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
