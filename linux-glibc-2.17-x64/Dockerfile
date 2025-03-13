@@ -30,7 +30,8 @@ RUN apt update -qy && apt install -y \
     python-is-python3 git cmake curl fakeroot procps bzip2 \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio
+    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
+    linux-headers
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
