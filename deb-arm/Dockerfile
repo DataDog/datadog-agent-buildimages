@@ -103,7 +103,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init;
-ENV PATH "~/.cargo/bin:${PATH}"
+ENV PATH "/root/.cargo/bin:${PATH}"
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh /
