@@ -87,6 +87,7 @@ RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-documen
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
+ENV GOPATH=/go
 COPY setup_go.sh /
 RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"

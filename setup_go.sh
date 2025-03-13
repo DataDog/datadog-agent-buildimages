@@ -38,7 +38,7 @@ if [ "\$DD_GO_TOOLCHAIN" = "msgo" ]; then
     export PATH="/usr/local/msgo/bin:\$PATH"
     export GOROOT="/usr/local/msgo"
 else
-   export PATH="/usr/local/go/bin:\$PATH"
-   export GOROOT="/usr/local/go"
+    export PATH="/usr/local/go/bin:\$PATH"
+    export GOROOT="/usr/local/go"
 fi
 EOF
