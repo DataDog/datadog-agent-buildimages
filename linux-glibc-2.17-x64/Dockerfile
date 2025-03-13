@@ -34,7 +34,7 @@ RUN apt update -qy && apt install -y \
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.17-x64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
@@ -107,7 +107,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
-ENV PATH "/root/.cargo/bin:${PATH}"
+ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
