@@ -16,6 +16,8 @@ ARG DD_TARGET_ARCH
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
 ENV CONDA_PATH /root/miniforge3
 
@@ -107,6 +109,11 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
+
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
+  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+  chmod +x /usr/local/bin/datadog-ci
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
