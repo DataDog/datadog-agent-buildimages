@@ -6,8 +6,7 @@ WORKDIR /w
 RUN apk add --update npm git nodejs
 RUN npm install -g yarn
 # TODO: Branch
-# RUN git clone git@github.com:DataDog/datadog-ci.git -b celian/innovation-week-25q1-custom-span
-RUN git clone https://github.com/DataDog/datadog-ci.git -b celian/innovation-week-25q1-custom-span /w
+RUN git clone https://github.com/DataDog/datadog-ci.git -b celian/innovation-week-25-q1-span-payload /w
 
 RUN yarn install --immutable && yarn build
 RUN yarn dist-standalone -t node18-linux-x64 -o datadog-ci_linux-x64
