@@ -396,7 +396,7 @@ push_to_datadog_agent:
       when: never
     - !reference [.on_push]
   tags: ["arch:amd64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/python:3.12.8
   variables:
     SSM_GITHUB_APP_KEY: ci.datadog-agent.platform-github-app-key
     GITHUB_INSTALLATION_ID: 45116690
