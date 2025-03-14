@@ -1,3 +1,17 @@
+# Build custom datadog-ci
+FROM alpine as DATADOG_CI_BUILDER
+
+WORKDIR /w
+
+RUN apk add --update npm git nodejs
+RUN npm install -g yarn
+# TODO: Branch
+# RUN git clone git@github.com:DataDog/datadog-ci.git -b celian/innovation-week-25q1-custom-span
+RUN git clone https://github.com/DataDog/datadog-ci.git -b celian/innovation-week-25q1-custom-span /w
+
+RUN yarn install --immutable && yarn build
+RUN yarn dist-standalone -t node18-linux-x64 -o datadog-ci_linux-x64
+
 FROM ubuntu as CURL_GETTER
 ENV CURL_VERSION=7.79.1
 ENV CURL_SHA256="0a89440848db3ba21d38b93b450d90fb84d4d0fa5562aa9c6933070b0eddc960"
@@ -5,7 +19,13 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
-FROM ubuntu:14.04
+FROM ubuntu:14.04 as BASE
+
+# Get datadog-ci binary
+COPY --from=DATADOG_CI_BUILDER /w/datadog-ci_linux-x64 /usr/local/bin/datadog-ci
+# TODO: Useful?
+RUN chmod +x /usr/local/bin/datadog-ci
+RUN /usr/local/bin/datadog-ci --help
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -92,12 +112,19 @@ RUN chmod +x /usr/local/bin/curl
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-# Install custom datadog-ci
-RUN curl -fsSL 'https://productionresultssa7.blob.core.windows.net/actions-results/c88ef473-2d8f-4e7a-8e2c-31a5509e6d06/workflow-job-run-4423c1e0-002d-5e20-8e08-3922a79ea964/artifacts/c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c.zip?rscd=attachment%3B+filename%3D%22artifact.zip%22&se=2025-03-13T12%3A53%3A04Z&sig=hJzqJ1A78ESE8Txi8fCZ6YMUHNWZSXjbD5jYYEkFgB4%3D&ske=2025-03-14T00%3A22%3A03Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2025-03-13T12%3A22%3A03Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-01-05&sp=r&spr=https&sr=b&st=2025-03-13T12%3A42%3A59Z&sv=2025-01-05' -o artifacts.zip && \
-    unzip artifacts.zip && \
-    mv datadog-ci_linux-x64 /usr/local/bin/datadog-ci && \
-    chmod +x /usr/local/bin/datadog-ci && \
-    rm artifacts.zip
+# # Install custom datadog-ci
+# RUN curl -fsSL 'https://productionresultssa7.blob.core.windows.net/actions-results/c88ef473-2d8f-4e7a-8e2c-31a5509e6d06/workflow-job-run-4423c1e0-002d-5e20-8e08-3922a79ea964/artifacts/c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c.zip?rscd=attachment%3B+filename%3D%22artifact.zip%22&se=2025-03-13T12%3A53%3A04Z&sig=hJzqJ1A78ESE8Txi8fCZ6YMUHNWZSXjbD5jYYEkFgB4%3D&ske=2025-03-14T00%3A22%3A03Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2025-03-13T12%3A22%3A03Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-01-05&sp=r&spr=https&sr=b&st=2025-03-13T12%3A42%3A59Z&sv=2025-01-05' -o artifacts.zip && \
+#     unzip artifacts.zip && \
+#     mv datadog-ci_linux-x64 /usr/local/bin/datadog-ci && \
+#     chmod +x /usr/local/bin/datadog-ci && \
+#     rm artifacts.zip
+
+
+
+
+
+
+
 
 # The dpkg version we want to install requires a more recent version of
 # gettext than the one shipped in ubuntu 14.04. Even though we disable i18n,
