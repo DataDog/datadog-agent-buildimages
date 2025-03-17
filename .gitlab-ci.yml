@@ -405,6 +405,7 @@ push_to_datadog_agent:
     BRANCH: buildimages/$CI_COMMIT_BRANCH
     IMAGES_ID: v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   script:
+    - source /root/.bashrc
     - set -o pipefail
     # Get the current go version from the go.env file
     - >
