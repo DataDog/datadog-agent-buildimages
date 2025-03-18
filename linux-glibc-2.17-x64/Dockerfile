@@ -36,6 +36,7 @@ RUN apt update -qy && apt install -y \
     linux-headers-generic libc6-dev-i386 jq
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux-glibc-2.17-x64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config-aarch64
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
@@ -68,6 +69,10 @@ RUN cd /build && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
     mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
+    mv .config-aarch64 .config && \
+    ./ct-ng upgradeconfig && \
+    ./ct-ng build && \
+    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
     rm -rf /build
 
 
