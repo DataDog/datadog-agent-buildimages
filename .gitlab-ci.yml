@@ -472,7 +472,12 @@ build_windows_ltsc2022_x64:
   rules:
     - !reference [.on_default_branch_push]
   ## this always needs to be the newest available builder version
-  tags: ["runner:windows-docker", "windowsversion:2022"]
+  tags: ["windows-v2:2022"]
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
+  variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
