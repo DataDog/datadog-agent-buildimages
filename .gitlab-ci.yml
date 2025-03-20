@@ -439,8 +439,12 @@ push_to_datadog_agent:
 
 build_windows_ltsc2022_x64:
   extends: .winbuild
-  tags: ["runner:windows-docker", "windowsversion:2022"]
+  tags: ["windows-v2:2022"]
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
   variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
