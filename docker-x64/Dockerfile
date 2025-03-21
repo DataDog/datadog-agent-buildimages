@@ -79,9 +79,9 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
 # Apply fix for openssl from the following issue
 # https://github.com/mackyle/xar/issues/18#issuecomment-379841536
 RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master.tar.gz && \ 
-    && echo "$XAR_CHECKSUM /tmp/master.tar.gz" | sha256sum --check \
-    && tar -C /tmp -xzf /tmp/master.tar.gz \
-    && cd /tmp/xar-master/xar && chmod +x autogen.sh \
-    && sed -i -e "s/OpenSSL_add_all_ciphers/OPENSSL_init_crypto/g" \
-    && ./autogen.sh && make install \
-    && rm /tmp/master.tar.gz && rm -rf /tmp/xar-master/
+    echo "$XAR_CHECKSUM /tmp/master.tar.gz" | sha256sum --check && \
+    tar -C /tmp -xzf /tmp/master.tar.gz && \
+    cd /tmp/xar-master/xar && chmod +x autogen.sh && \
+    sed -i -e "s/OpenSSL_add_all_ciphers/OPENSSL_init_crypto/g" configure.ac && \
+    ./autogen.sh && make install && \
+    rm /tmp/master.tar.gz && rm -rf /tmp/xar-master/
