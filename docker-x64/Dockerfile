@@ -31,9 +31,9 @@ RUN apt-get update &&  \
       libffi-dev  \
       liblzma-dev \
       rpm2cpio \
-      cpio && \
-      dmg2img && \
-      autoconf && \
+      cpio \
+      dmg2img \
+      autoconf \
       p7zip-full && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
