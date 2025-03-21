@@ -35,6 +35,10 @@ RUN apt update -qy && apt install -y \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
     linux-headers-generic libc6-dev-i386 jq
 
+RUN curl -LO https://github.com/bazelbuild/bazelisk/releases/download/v1.25.0/bazelisk-amd64.deb && \
+    dpkg -i bazelisk-amd64.deb && \
+    rm bazelisk-amd64.deb
+
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
