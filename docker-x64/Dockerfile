@@ -83,5 +83,5 @@ RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master
     tar -C /tmp -xzf /tmp/master.tar.gz && \
     cd /tmp/xar-master/xar && chmod +x autogen.sh && \
     sed -i -e "s/OpenSSL_add_all_ciphers/OPENSSL_init_crypto/g" configure.ac && \
-    ./autogen.sh && make install && \
+    ./autogen.sh && make && make install && \
     rm /tmp/master.tar.gz && rm -rf /tmp/xar-master/
