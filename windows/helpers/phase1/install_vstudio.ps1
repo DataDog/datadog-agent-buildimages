@@ -4,6 +4,7 @@ param (
 )
 
 $VSPackages = @(
+    "Microsoft.Net.Component.4.6.2.TargetingPack",
     "Microsoft.Net.Component.4.7.2.TargetingPack",
     "Microsoft.Net.Component.4.8.SDK",
     "Microsoft.Net.Component.4.8.TargetingPack",
