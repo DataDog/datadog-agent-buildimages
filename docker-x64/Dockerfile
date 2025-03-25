@@ -10,6 +10,7 @@ ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG XAR_CHECKSUM=9bd417fe646fc0c6ded939521d9f6adb2455cc778d46f95a8e6f751e41b70ac3
 
 RUN apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
@@ -30,7 +31,10 @@ RUN apt-get update &&  \
       libffi-dev  \
       liblzma-dev \
       rpm2cpio \
-      cpio && \
+      cpio \
+      dmg2img \
+      autoconf \
+      p7zip-full && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
@@ -70,3 +74,14 @@ COPY .curlrc .wgetrc /root/
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
   echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
+
+# Build xar to open macOS pkg files
+# Apply fix for openssl from the following issue
+# https://github.com/mackyle/xar/issues/18#issuecomment-379841536
+RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master.tar.gz && \ 
+    echo "$XAR_CHECKSUM /tmp/master.tar.gz" | sha256sum --check && \
+    tar -C /tmp -xzf /tmp/master.tar.gz && \
+    cd /tmp/xar-master/xar && chmod +x autogen.sh && \
+    sed -i -e "s/OpenSSL_add_all_ciphers/OPENSSL_init_crypto/g" configure.ac && \
+    ./autogen.sh && make && make install && \
+    rm /tmp/master.tar.gz && rm -rf /tmp/xar-master/
