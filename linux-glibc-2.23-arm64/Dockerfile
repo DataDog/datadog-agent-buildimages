@@ -34,7 +34,8 @@ RUN apt update -qy && apt install -y \
     linux-headers-generic jq
 
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc-2.23-arm64/toolchain.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc-2.23-arm64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config-x86
+COPY linux-glibc-2.23-arm64/toolchain_aarch64.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.23-arm64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
@@ -64,7 +65,12 @@ RUN cd /build && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && ./ct-ng build && \
-    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/ && \
+    mkdir -p /opt/toolchains/ && \
+    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
+    mv .config-x86 .config && \
+    ./ct-ng upgradeconfig && \
+    ./ct-ng build && \
+    mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/x86_64 && \
     rm -rf /build
 
 
@@ -121,7 +127,7 @@ RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
-ENV PATH=/opt/toolchains/bin:$PATH
+ENV PATH=/opt/toolchains/aarch64/bin:/opt/toolchains/x86_64/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR ""
