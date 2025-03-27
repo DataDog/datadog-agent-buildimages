@@ -68,7 +68,7 @@ RUN cd /build && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
-    mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
+    mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/x86_64 && \
     mv .config-aarch64 .config && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
