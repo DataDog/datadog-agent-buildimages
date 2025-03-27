@@ -126,7 +126,7 @@ RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
-ENV PATH=/opt/toolchains/bin:$PATH
+ENV PATH=/opt/toolchains/aarch64/bin:/opt/toolchains/x86_64/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR ""
