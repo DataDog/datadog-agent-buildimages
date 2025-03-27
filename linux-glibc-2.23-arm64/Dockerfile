@@ -65,6 +65,7 @@ RUN cd /build && \
     ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && ./ct-ng build && \
+    mkdir -p /opt/toolchains/ && \
     mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
     mv .config-x86 .config && \
     ./ct-ng upgradeconfig && \
