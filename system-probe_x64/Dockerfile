@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         libtinfo5 \
         libxml2-dev \
         libzip-dev \
-        $(apt-cache search --names-only linux-headers-5.* | \
+        $(apt-cache search --names-only linux-headers-6.* | \
           cut -d " " -f 1 | \
           grep "[0-9]-amd64$" | \
           sort -Vr | \
