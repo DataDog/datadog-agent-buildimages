@@ -2,10 +2,9 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-# New versions require OpenSSL >= 1.1.1
 install-from-source \
-    --version "V_9_3_P2" \
-    --digest "db2463f84e50bd2f3c1a0dd6cc9b652f48b024d65ba43cca29ae451087dd6738" \
+    --version "V_9_9_P2" \
+    --digest "082dffcf651b9db762ddbe56ca25cc75a0355a7bea41960b47f3c139974c5e3e" \
     --url "https://github.com/openssh/openssh-portable/archive/refs/tags/{{version}}.tar.gz" \
     --relative-path "openssh-portable-{{version}}" \
     --configure-script "autoreconf && ./configure"

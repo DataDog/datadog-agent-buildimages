@@ -4,8 +4,8 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_AMD64
 ARG MSGO_PATCH
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS=1
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
 ARG CTNG_VERSION=1.26.0
 ARG IBM_MQ_VERSION=9.2.4.0
 ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
@@ -18,6 +18,8 @@ ARG DD_TARGET_ARCH
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG CI_UPLOADER_VERSION=2.38.1
+ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 
 ENV CONDA_PATH /root/miniforge3
 
@@ -30,11 +32,13 @@ RUN apt update -qy && apt install -y \
     python-is-python3 git cmake curl fakeroot procps bzip2 \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio
+    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
+    linux-headers-generic libc6-dev-i386 jq
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc-2.17-x64/toolchain.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.17-x64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.17-x64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config-aarch64
+COPY linux-glibc-2.17-x64/toolchain_x86-64.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
@@ -64,7 +68,12 @@ RUN cd /build && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
-    mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/ && \
+    mkdir -p /opt/toolchains/ && \
+    mv /root/x-tools/x86_64-unknown-linux-gnu/ /opt/toolchains/x86_64 && \
+    mv .config-aarch64 .config && \
+    ./ct-ng upgradeconfig && \
+    ./ct-ng build && \
+    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
     rm -rf /build
 
 
@@ -77,8 +86,8 @@ RUN mkdir -p /opt/mqm \
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh /
-ENV DEVA_VERSION=$DEVA_VERSION
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+ENV DDA_VERSION=$DDA_VERSION
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 
@@ -97,8 +106,10 @@ RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-documen
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Go
+ENV GOPATH=/go
 COPY setup_go.sh /
 RUN ./setup_go.sh
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
@@ -107,7 +118,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
+ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
@@ -115,13 +126,18 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
 
+# CI uploader, to send junit to ci-visibility during CI tests
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
+  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+  chmod +x /usr/local/bin/datadog-ci
+
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
-ENV PATH=/opt/toolchains/bin:$PATH
+ENV PATH=/opt/toolchains/x86_64/bin:/opt/toolchains/aarch64/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR ""

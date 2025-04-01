@@ -19,8 +19,8 @@ FROM ${BASE_IMAGE}
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG GO_SHA256_LINUX_ARMV6L
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS=1
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
 ARG CMAKE_VERSION=3.30.2
 ARG CMAKE_SHA256="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
 ARG CLANG_VERSION=8.0.0
@@ -103,12 +103,12 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init;
-ENV PATH "~/.cargo/bin:${PATH}"
+ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh /
-ENV DEVA_VERSION=$DEVA_VERSION
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+ENV DDA_VERSION=$DDA_VERSION
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
@@ -221,6 +221,10 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
+
+# Install linter tools
+RUN apt-get update \
+    && apt-get install -y shellcheck
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"

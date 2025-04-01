@@ -61,12 +61,28 @@ case $DD_TARGET_ARCH in
 
     export OPENSSL_DIR=/opt/openssl
     # setuptools no longer packaged by default so we need to install it manually.
-    python3 -m pip install setuptools==74.1.3
+    python3 -m pip install setuptools==$DD_SETUPTOOLS_VERSION_PY3
 
     python3 -m pip install distro==1.4.0 wheel==0.40.0
     python3 -m pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
-    python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
-    python3 -m deva -v self dep sync -f legacy-build
+
+    # TODO: remove this once we upgrade toolchains
+    # building ada-url is failing because it requires a newer C++ compiler e.g.:
+    # ada_url/ada.h:21:23: fatal error: string_view: No such file or directory
+    #
+    # so we download the required packages and install them manually except for ada-url
+    # as it's only used for developer telemetry
+    python3 -m pip download -v -d /tmp/dda-install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    cd /tmp/dda-install
+    for dist in *; do
+        if [[ ! "$dist" =~ ^ada_url ]]; then
+            python3 -m pip install --no-deps "$dist"
+        fi
+    done
+    cd ..
+    rm -rf /tmp/dda-install
+    # python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    python3 -m dda -v self dep sync -f legacy-build
     exit 0
     ;;
 *)
@@ -91,8 +107,8 @@ conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
-pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
-deva -v self dep sync -f legacy-build
+pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+dda -v self dep sync -f legacy-build
 pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
 conda clean -a

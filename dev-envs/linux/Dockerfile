@@ -1,11 +1,19 @@
-ARG ARCH=arm64
-ARG TAG=latest
-FROM datadog/agent-buildimages-deb_${ARCH}:${TAG}
+ARG BASE_IMAGE=datadog/agent-buildimages-linux-glibc-2-23-arm64
+ARG BASE_IMAGE_TAG=latest
 
-ARG DEVA_VERSION
+FROM rust:alpine AS tool-builder
+
+RUN apk add --no-cache build-base=0.5-r3 zlib-dev=1.3.1-r2 zlib-static=1.3.1-r2 \
+ && cargo install gfold@2025.2.1 --locked --root /tools
+
+FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
+
+COPY --from=tool-builder /tools/bin/gfold /usr/local/bin/gfold
+
+ARG DDA_VERSION=""
 
 # Allow dynamic dependencies again as they are disabled in build images
-ENV DEVA_NO_DYNAMIC_DEPS=0
+ENV DDA_NO_DYNAMIC_DEPS=0
 
 # Set up scripts
 COPY scripts /root/.scripts
@@ -50,7 +58,11 @@ RUN /setup/git.sh
 
 # Set up Python
 COPY python.sh /setup/python.sh
-RUN DEVA_VERSION=${DEVA_VERSION} /setup/python.sh
+RUN /setup/python.sh
+
+# Set up dda
+COPY dda.sh /setup/dda.sh
+RUN DDA_VERSION=${DDA_VERSION} /setup/dda.sh
 
 # Set up fonts
 COPY fonts.sh /setup/fonts.sh

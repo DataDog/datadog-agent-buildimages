@@ -94,7 +94,7 @@ if [[ $arch == "x86_64" ]]; then
         --name "ambr" \
         --name "ambs"
 else
-    cargo install amber@${AMBR_VERSION}
+    cargo install --locked amber@${AMBR_VERSION}
 fi
 
 PROCS_VERSION="0.14.6"
@@ -111,15 +111,15 @@ procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
 sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
 
-PDU_VERSION="0.9.3"
+PDU_VERSION="0.11.0"
 if [[ $arch == "x86_64" ]]; then
     install-binary \
         --version "${PDU_VERSION}" \
-        --digest "55346371fbffe0e095af335f20dba5c47289562c9fb2f3b0ecf2b3a6125ef158" \
+        --digest "7da2abd0c438e0317271b34e4122d1d5818b124e3d70867309d4a92bfb34ac69" \
         --url "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/{{version}}/pdu-${arch}-unknown-linux-musl" \
         --name "pdu"
 else
-    cargo install parallel-disk-usage@${PDU_VERSION}
+    cargo install --locked parallel-disk-usage@${PDU_VERSION}
 fi
 
 install-binary \
@@ -135,17 +135,17 @@ git config --global interactive.diffFilter "delta --color-only"
 git config --global delta.navigate true
 git config --global merge.conflictStyle zdiff3
 
-GFOLD_VERSION="4.5.0"
-# https://github.com/nickgerace/gfold/issues/260
-# Eventually try to download to improve build time, currently the only available
-# Linux binary was built on a newer version of glibc and there is no musl build
+# TODO: Uncomment this once we have a binary for arm64
+# GFOLD_VERSION="2025.2.1"
 # if [[ $arch == "x86_64" ]]; then
-#     curl "https://github.com/nickgerace/gfold/releases/download/${GFOLD_VERSION}/gfold-linux-gnu-${short_arch}" -Lo /usr/local/bin/gfold
-#     chmod +x /usr/local/bin/gfold
+#     install-binary \
+#         --version "${GFOLD_VERSION}" \
+#         --digest "a31acf651750ab9e139ad58893115c67288fed3bb8c12c3601fff33759905e9d" \
+#         --url "https://github.com/nickgerace/gfold/releases/download/{{version}}/gfold-linux-musl-x86-64" \
+#         --name "gfold"
 # else
-#   cargo install gfold@${GFOLD_VERSION}
+#     cargo install --locked gfold@${GFOLD_VERSION}
 # fi
-cargo install gfold@${GFOLD_VERSION}
 mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
