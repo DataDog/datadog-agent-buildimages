@@ -4,8 +4,8 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG MSGO_SHA256_LINUX_ARM64
 ARG MSGO_PATCH
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS=1
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
 ARG CTNG_VERSION=1.26.0
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
@@ -32,7 +32,7 @@ RUN apt update -qy && apt install -y \
 
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.23-arm64/toolchain.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.23-arm64/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc-2.23-arm64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN git config --global user.email "package@datadoghq.com"
@@ -67,8 +67,8 @@ RUN cd /build && \
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh /
-ENV DEVA_VERSION=$DEVA_VERSION
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+ENV DDA_VERSION=$DDA_VERSION
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 
@@ -98,7 +98,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
-ENV PATH "~/.cargo/bin:${PATH}"
+ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \

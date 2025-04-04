@@ -1,8 +1,8 @@
 FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10
 
 ARG PYTHON_VERSION=3.12.6
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG CI_UPLOADER_VERSION=2.38.1
@@ -35,14 +35,14 @@ RUN apt-get update &&  \
 # Python install
 ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION}
 
-RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" \
- && deva -v self dep sync -f legacy-build \
+RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
+ && dda -v self dep sync -f legacy-build \
  && pyenv rehash
 
 # Install Go

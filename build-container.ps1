@@ -39,8 +39,8 @@ foreach ($line in $lines) {
     $arglist += "$line"
 }
 
-# Read arguments from deva.env file
-$lines = Get-Content -Path 'deva.env'
+# Read arguments from dda.env file
+$lines = Get-Content -Path 'dda.env'
 foreach ($line in $lines) {
     $arglist += "--build-arg"
     $arglist += "$line"

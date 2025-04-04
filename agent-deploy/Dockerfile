@@ -15,8 +15,8 @@ ARG AWSCLI_VERSION_ARG=1.34.33
 ARG RPM_S3_VERSION_ARG=0.8.0
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
 ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG PYTHON_VERSION=3.12.6
@@ -28,7 +28,7 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
     AWSCLI_VERSION=$AWSCLI_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
-    DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+    DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -96,8 +96,8 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
 # Python 3 deps
 RUN pip3 install pip \
     && pip3 install --upgrade pip \
-    && pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" \
-    && deva -v self dep sync -f legacy-build -f legacy-agent-deploy \
+    && pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
+    && dda -v self dep sync -f legacy-build -f legacy-agent-deploy \
     && pyenv rehash
 
 # External calls configuration

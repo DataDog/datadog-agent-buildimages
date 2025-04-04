@@ -2,10 +2,10 @@ ARG ARCH=arm64
 ARG TAG=latest
 FROM datadog/agent-buildimages-deb_${ARCH}:${TAG}
 
-ARG DEVA_VERSION
+ARG DDA_VERSION
 
 # Allow dynamic dependencies again as they are disabled in build images
-ENV DEVA_NO_DYNAMIC_DEPS=0
+ENV DDA_NO_DYNAMIC_DEPS=0
 
 # Set up scripts
 COPY scripts /root/.scripts
@@ -50,7 +50,7 @@ RUN /setup/git.sh
 
 # Set up Python
 COPY python.sh /setup/python.sh
-RUN DEVA_VERSION=${DEVA_VERSION} /setup/python.sh
+RUN DDA_VERSION=${DDA_VERSION} /setup/python.sh
 
 # Set up fonts
 COPY fonts.sh /setup/fonts.sh

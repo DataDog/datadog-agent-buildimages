@@ -44,13 +44,13 @@ jobs:
       - name: Setup Python and pip
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
-          python-version: 3.x
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
-          DEVA_VERSION=$(grep DEVA_VERSION deva.env | awk -F= '/^DEVA_VERSION=/ {print $2}')
-          python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}"
-          python3 -m deva -v self dep sync -f legacy-build
+          DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+          python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+          python3 -m dda -v self dep sync -f legacy-build
 
       - name: Update Go version
         run: |

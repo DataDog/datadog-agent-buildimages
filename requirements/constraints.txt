@@ -20,7 +20,7 @@ reno==3.5.0
 requests==2.31.0
 ruff==0.3.5
 semver==2.10.0
-setuptools==42.0.2
+setuptools==75.8.2
 toml==0.10.2
 # mypy
 types-pyyaml==6.0.12.20240311

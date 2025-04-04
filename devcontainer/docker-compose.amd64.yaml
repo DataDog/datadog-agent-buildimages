@@ -1,7 +1,7 @@
 services:
   agent-devenv-amd64:
     hostname: agent-devenv-amd64
-    image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-devenv:1-amd64
+    image: registry.ddbuild.io/ci/datadog-agent-devenv:1-amd64
     init: true
     privileged: true
     platform: linux/amd64

@@ -8,8 +8,8 @@ ENV DEBIAN_FRONTEND noninteractive
 
 ARG PYTHON_VERSION=3.12.6
 ARG CMAKE_VERSION=3.30.2
-ARG DEVA_VERSION
-ARG DEVA_NO_DYNAMIC_DEPS
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
 
 # Pre-requisites
 # Python 3 dev is required for rtloader
@@ -85,13 +85,13 @@ RUN ./setup_codecov.sh
 # Python
 ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
-ENV DEVA_NO_DYNAMIC_DEPS=$DEVA_NO_DYNAMIC_DEPS
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
-     pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DEVA_VERSION}" && \
-     deva -v self dep sync -f legacy-build -f legacy-circleci && \
+     pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
+     dda -v self dep sync -f legacy-build -f legacy-circleci && \
      pyenv rehash
 
 # External calls configuration
