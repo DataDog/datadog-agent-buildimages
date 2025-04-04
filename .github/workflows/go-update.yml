@@ -54,7 +54,7 @@ jobs:
 
       - name: Update Go version
         run: |
-          inv update-go -v "${{ inputs.go_version }}" --check-archive
+          dda run update go "${{ inputs.go_version }}" --check-archive
 
       - uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5.1.0
         id: autocommit
