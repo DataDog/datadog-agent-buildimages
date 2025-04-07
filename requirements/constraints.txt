@@ -16,7 +16,7 @@ mypy==1.10.0
 packaging==24.1
 parameterized==0.9.0
 python-gitlab==4.4.0
-reno==3.5.0
+reno==4.1.0
 requests==2.31.0
 ruff==0.3.5
 semver==2.10.0
