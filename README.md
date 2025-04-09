@@ -20,6 +20,7 @@ of the [datadog-agent repository][agent] to use the newly created images.
 ## If you're modifying both datadog-agent and buildimages repositories
 
 If your changes affect both [datadog-agent][agent] and buildimages, you have two option :
+
 ### If you need multiple test commits in agent-buildimages
 In your datadog-agent-buildimages's PR:
   - Add `branch: your/datadog-agent-branch` in your [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent-buildimages/blob/fcc4843103d3bfdb976da845133ad3edc48754b2/.gitlab-ci.yml#L261-L263) file.
