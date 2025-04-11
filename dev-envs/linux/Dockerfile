@@ -1,14 +1,7 @@
 ARG BASE_IMAGE=datadog/agent-buildimages-linux-glibc-2-23-arm64
 ARG BASE_IMAGE_TAG=latest
 
-FROM rust:alpine AS tool-builder
-
-RUN apk add --no-cache build-base=0.5-r3 zlib-dev=1.3.1-r2 zlib-static=1.3.1-r2 \
- && cargo install gfold@2025.2.1 --locked --root /tools
-
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
-
-COPY --from=tool-builder /tools/bin/gfold /usr/local/bin/gfold
 
 ARG DDA_VERSION=""
 
@@ -19,6 +12,10 @@ ENV DDA_NO_DYNAMIC_DEPS=0
 COPY scripts /root/.scripts
 COPY scripts.sh /setup/scripts.sh
 RUN /setup/scripts.sh
+
+# Set up build dependencies
+COPY build-deps.sh /setup/build-deps.sh
+RUN /setup/build-deps.sh
 
 # We set up shells first so that config can be modified as part of subsequent steps.
 # Shells require scripts to set environment variables and add to PATH. These same

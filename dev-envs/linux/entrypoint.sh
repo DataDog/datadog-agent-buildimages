@@ -25,7 +25,8 @@ if ! [[ -f "${startup_indicator}" ]]; then
     env | grep -Ev "^(USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
 
     # Enable telemetry if the API key is set
-    if [[ -n "${DDA_TELEMETRY_API_KEY}" ]]; then
+    if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
+        set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"
         dda self telemetry enable
     fi
 

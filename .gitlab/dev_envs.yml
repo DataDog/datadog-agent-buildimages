@@ -3,7 +3,7 @@
   image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
     BASE_IMAGE: datadog/agent-buildimages-linux-glibc-2-17-x64
-    BASE_IMAGE_TAG: v58028397-44fec785
+    BASE_IMAGE_TAG: v60640225-75d77edb
     TARGET_IMAGE_ARCH: amd64
 
 .linux_dev_env_arm64:
@@ -11,7 +11,7 @@
   image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
   variables:
     BASE_IMAGE: datadog/agent-buildimages-linux-glibc-2-23-arm64
-    BASE_IMAGE_TAG: v58028397-44fec785
+    BASE_IMAGE_TAG: v60640225-75d77edb
     TARGET_IMAGE_ARCH: arm64
 
 .build_dev_env:
