@@ -1,7 +1,6 @@
 ---
 include:
   - https://gitlab-templates.ddbuild.io/slack-notifier/v3-sdm/template.yml
-  - .gitlab/dev_envs.yml
   - .gitlab/devcontainer.yml
 
 stages:
@@ -9,7 +8,6 @@ stages:
   - build
   - availability_message
   - test
-  - dev_envs
   - devcontainer
   - release
   - notify
@@ -91,6 +89,14 @@ get_agent_version:
     reports:
       dotenv: version.env
   tags: ["arch:amd64"]
+
+lint_dockerfiles:
+  tags: ["arch:amd64"]
+  stage: setup
+  needs: []
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
+  script:
+    - hadolint dev-envs/linux/Dockerfile
 
 .x64:
   tags: ["runner:docker"]
@@ -183,6 +189,20 @@ get_agent_version:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
+
+.build_dev_env:
+  stage: build
+  script:
+    # Docker Hub login
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # Build and push
+    - >-
+      docker build dev-envs/$PLATFORM
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
+    - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
 
 build_ci_image:
   stage: build
@@ -315,6 +335,22 @@ build_gitlab_agent_deploy:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
 
+build_dev_env_linux_x64:
+  extends: [.build_dev_env, .x64]
+  needs: [build_linux_glibc_2_17_x64]
+  variables:
+    PLATFORM: linux
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION
+
+build_dev_env_linux_arm64:
+  extends: [.build_dev_env, .arm]
+  needs: [build_linux_glibc_2_23_arm64]
+  variables:
+    PLATFORM: linux
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION
+
 trigger_build_kernels:
   stage: test
   needs:
@@ -435,6 +471,18 @@ build_windows_ltsc2022_x64:
   variables:
     SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
 
+.release_dev_env:
+  stage: release
+  rules:
+    - !reference [.on_default_branch_push]
+  trigger:
+    project: DataDog/public-images
+    branch: main
+    strategy: depend
+  variables:
+    IMG_REGISTRIES: dockerhub
+    IMG_SIGNING: "false"
+
 .winrelease:
   stage: release
   rules:
@@ -504,6 +552,12 @@ release_windows:
     matrix:
       - IMAGE: windows_ltsc2022_x64
         DOCKERHUB_TAG_PREFIX: ltsc2022
+
+release_dev_env_linux:
+  extends: .release_dev_env
+  variables:
+    IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:x64,registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:aarch64
+    IMG_DESTINATIONS: agent-dev-env-linux:latest,agent-dev-env-linux:v$IMAGE_VERSION
 
 notify-images-available:
   extends: .slack-notifier-base
