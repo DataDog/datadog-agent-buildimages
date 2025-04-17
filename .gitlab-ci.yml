@@ -192,6 +192,9 @@ lint_dockerfiles:
 
 .build_dev_env:
   stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
   script:
     # Docker Hub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
