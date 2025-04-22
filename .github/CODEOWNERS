@@ -27,8 +27,6 @@ dda.env                             @DataDog/agent-devx-loops
 # eBPF / KMT images
 /btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx-infra
 /kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx-infra
-/system-probe_arm64/                @DataDog/ebpf-platform @DataDog/agent-devx-infra
-/system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-devx-infra
 
 # Linux test & build images
 /deb-arm/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
