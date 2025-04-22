@@ -135,17 +135,12 @@ git config --global interactive.diffFilter "delta --color-only"
 git config --global delta.navigate true
 git config --global merge.conflictStyle zdiff3
 
-# TODO: Uncomment this once we have a binary for arm64
-# GFOLD_VERSION="2025.2.1"
-# if [[ $arch == "x86_64" ]]; then
-#     install-binary \
-#         --version "${GFOLD_VERSION}" \
-#         --digest "a31acf651750ab9e139ad58893115c67288fed3bb8c12c3601fff33759905e9d" \
-#         --url "https://github.com/nickgerace/gfold/releases/download/{{version}}/gfold-linux-musl-x86-64" \
-#         --name "gfold"
-# else
-#     cargo install --locked gfold@${GFOLD_VERSION}
-# fi
+install-binary \
+    --version "2025.2.1-ofek-1" \
+    --digest "f12e13b8e2a64595491a340a46b19f545de55be1be396fcb745a1494103f0ac6" \
+    --digest "4e9f6d84eb774ef192639b72f4d2f2db70556ffd77d2816d34efc19a7d271703" \
+    --url "https://github.com/nickgerace/gfold/releases/download/{{version}}/gfold-linux-musl-${arch//_/-}" \
+    --name "gfold"
 mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"

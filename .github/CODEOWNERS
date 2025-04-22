@@ -12,12 +12,13 @@
 *                                   @DataDog/agent-devx-infra
 
 go.env                              @DataDog/agent-runtimes
+dda.env                             @DataDog/agent-devx-loops
 
 .gitlab/kernel-version-testing.yml  @DataDog/ebpf-platform @DataDog/agent-devx-infra
 
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
 
-tasks/update_go.py                  @DataDog/agent-runtimes
+.dda/scripts/run/update/go/         @DataDog/agent-runtimes
 
 /entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-devx-infra
 
@@ -28,9 +29,6 @@ tasks/update_go.py                  @DataDog/agent-runtimes
 /kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx-infra
 /system-probe_arm64/                @DataDog/ebpf-platform @DataDog/agent-devx-infra
 /system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-devx-infra
-
-# CircleCI image
-/circleci/                          @DataDog/agent-devx-loops @DataDog/agent-devx-infra
 
 # Linux test & build images
 /deb-arm/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
