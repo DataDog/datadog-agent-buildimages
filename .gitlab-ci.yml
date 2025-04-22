@@ -270,18 +270,6 @@ build_rpm_armhf:
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: armhf
 
-build_system-probe_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: system-probe_x64/Dockerfile
-    IMAGE: system-probe_x64
-
-build_system-probe_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: system-probe_arm64/Dockerfile
-    IMAGE: system-probe_arm64
-
 build_dd_agent_testing:
   extends: [.build, .x64]
   variables:
@@ -384,8 +372,6 @@ trigger_tests:
     DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
     DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
     DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_SYSPROBE_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
@@ -539,13 +525,19 @@ release_linux:
   extends: .release
   parallel:
     matrix:
-      - IMAGE: [deb_x64,rpm_x64,deb_arm64,rpm_arm64,system-probe_x64,system-probe_arm64]
+      - IMAGE:
+        - deb_x64
+        - rpm_x64
+        - deb_arm64
+        - rpm_arm64
 
 release_linux_ddregistry:
   extends: .release_ddregistry
   parallel:
     matrix:
-      - IMAGE: [linux-glibc-2-17-x64,linux-glibc-2-23-arm64]
+      - IMAGE:
+        - linux-glibc-2-17-x64
+        - linux-glibc-2-23-arm64
 
 release_windows:
   extends: .winrelease
