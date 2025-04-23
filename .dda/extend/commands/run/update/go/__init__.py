@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, TypeAlias
 
 import click
 
-from dda.cli.base import dynamic_command
+from dda.cli.base import dynamic_command, pass_app
 
 if TYPE_CHECKING:
     from dda.cli.application import Application
@@ -101,14 +101,14 @@ def _display_shas(app: Application, shas: list[tuple[Platform, str]], toolchain:
 @click.argument("version")
 @click.option("--msgo-patch", default="1", help="The patch version of the Microsoft Go distribution")
 @click.option("--check-archive", is_flag=True, help="Download Go archives and check the SHA256")
-@click.pass_obj
+@pass_app
 def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool) -> None:
     """
     Update Go.
     """
     import re
 
-    from _utils.constants import PROJECT_ROOT
+    from utils.constants import PROJECT_ROOT
 
     if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
         app.abort(

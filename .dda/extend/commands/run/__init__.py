@@ -7,7 +7,7 @@ from dda.cli.base import dynamic_group
 
 
 @dynamic_group(
-    short_help="Execute scripts",
+    short_help="Execute local commands",
 )
 def cmd() -> None:
     pass
