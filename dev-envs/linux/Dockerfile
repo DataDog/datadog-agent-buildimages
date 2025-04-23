@@ -13,10 +13,6 @@ COPY scripts /root/.scripts
 COPY scripts.sh /setup/scripts.sh
 RUN /setup/scripts.sh
 
-# Set up build dependencies
-COPY build-deps.sh /setup/build-deps.sh
-RUN /setup/build-deps.sh
-
 # We set up shells first so that config can be modified as part of subsequent steps.
 # Shells require scripts to set environment variables and add to PATH. These same
 # scripts require the shells to be set up, leaving us with a cyclical dependency.
