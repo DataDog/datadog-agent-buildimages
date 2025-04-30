@@ -118,8 +118,6 @@ lint_dockerfiles:
     # Dockerhub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # ECR login
-    - eval "$(aws ecr get-login --region us-east-1 --no-include-email --registry-ids 486234852809)"
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -131,46 +129,6 @@ lint_dockerfiles:
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --file $DOCKERFILE .
-    # For size debug purposes
-    - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      fi
-  after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
-    - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
-    - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        echo -e "\033[0;32m\033[1mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
-      else
-        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
-      fi
-
-
-.build_ddregistry:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Build
-    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - >-
-      docker build
-      --build-arg BASE_IMAGE=$BASE_IMAGE
-      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
-      $GO_BUILD_ARGS
-      $DDA_BUILD_ARGS
-      $CUSTOM_BUILD_ARGS
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --label target=none
       --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -228,104 +186,58 @@ build_ci_image:
     - when: manual
       allow_failure: true
 
-build_deb_x64:
+build_x64:
   extends: [.build, .x64]
-  variables:
-    DOCKERFILE: deb-x64/Dockerfile
-    IMAGE: deb_x64
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-x64/Dockerfile
+        IMAGE: deb_x64
+      - DOCKERFILE: rpm-x64/Dockerfile
+        IMAGE: rpm_x64
+        BASE_IMAGE: centos:7
+      - DOCKERFILE: system-probe_x64/Dockerfile
+        IMAGE: system-probe_x64
+      - DOCKERFILE: dd-agent-testing/Dockerfile
+        IMAGE: dd-agent-testing
+      - DOCKERFILE: docker-x64/Dockerfile
+        IMAGE: docker_x64
+      - DOCKERFILE: btf-gen/Dockerfile
+        IMAGE: btf-gen
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+        IMAGE: kernel-version-testing_x64
+      - DOCKERFILE: agent-deploy/Dockerfile
+        IMAGE: gitlab_agent_deploy
+      - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+        IMAGE: linux-glibc-2-17-x64
 
-build_rpm_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: rpm-x64/Dockerfile
-    IMAGE: rpm_x64
-    BASE_IMAGE: centos:7
-
-build_deb_arm64:
+build_arm64:
   extends: [.build, .arm]
-  variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_arm64
-    BASE_IMAGE: arm64v8/ubuntu:16.04
-
-build_deb_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: deb-arm/Dockerfile
-    IMAGE: deb_armhf
-    BASE_IMAGE: arm32v7/ubuntu:16.04
-    DD_TARGET_ARCH: armhf
-
-build_rpm_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-arm64/Dockerfile
-    IMAGE: rpm_arm64
-    BASE_IMAGE: amazonlinux:2.0.20181114
-
-build_rpm_armhf:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: rpm-armhf/Dockerfile
-    IMAGE: rpm_armhf
-    BASE_IMAGE: arm32v7/centos:7
-    DD_TARGET_ARCH: armhf
-
-build_dd_agent_testing:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: dd-agent-testing/Dockerfile
-    IMAGE: dd-agent-testing
-
-build_linux_glibc_2_17_x64:
-  extends: [.build_ddregistry, .x64]
-  variables:
-    DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
-    IMAGE: linux-glibc-2-17-x64
-
-build_linux_glibc_2_23_arm64:
-  extends: [.build_ddregistry, .arm]
-  variables:
-    DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
-    IMAGE: linux-glibc-2-23-arm64
-
-build_docker_arm64:
-  extends: [.build, .arm]
-  variables:
-    DOCKERFILE: docker-arm64/Dockerfile
-    IMAGE: docker_arm64
-
-build_docker_x64:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: docker-x64/Dockerfile
-    IMAGE: docker_x64
-
-build_btf_gen:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: btf-gen/Dockerfile
-    IMAGE: btf-gen
-
-build_kernel_version_testing_x64:
-  extends: [.build, .x64]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-    IMAGE: kernel-version-testing_x64
-
-build_kernel_version_testing_arm64:
-  extends: [.build, .arm]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-    IMAGE: kernel-version-testing_arm64
-
-build_gitlab_agent_deploy:
-  extends: [.build, .x64]
-  variables:
-    DOCKERFILE: agent-deploy/Dockerfile
-    IMAGE: gitlab_agent_deploy
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: deb_arm64
+        BASE_IMAGE: arm64v8/ubuntu:16.04
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: deb_armhf
+        BASE_IMAGE: arm32v7/ubuntu:16.04
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: rpm-arm64/Dockerfile
+        IMAGE: rpm_arm64
+        BASE_IMAGE: amazonlinux:2.0.20181114
+      - DOCKERFILE: rpm-armhf/Dockerfile
+        IMAGE: rpm_armhf
+        BASE_IMAGE: arm32v7/centos:7
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: system-probe_arm64/Dockerfile
+        IMAGE: system-probe_arm64
+      - DOCKERFILE: docker-arm64/Dockerfile
+        IMAGE: docker_arm64
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+        IMAGE: kernel-version-testing_arm64
+      - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+        IMAGE: linux-glibc-2-23-arm64
 
 build_dev_env_linux_x64:
   extends: [.build_dev_env, .x64]
@@ -409,11 +321,20 @@ push_to_datadog_agent:
     - dda -v self dep sync -f legacy-build
     - dda inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
 
-.winbuild: &winbuild
+build_windows_ltsc2022_x64:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
   timeout: 2h 00m
+  tags: ["windows-v2:2022"]
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
+  variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_ltsc2022_x64
+    DD_TARGET_ARCH: x64
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
@@ -426,18 +347,6 @@ push_to_datadog_agent:
     - docker rmi $SRC_IMAGE
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
-
-build_windows_ltsc2022_x64:
-  extends: .winbuild
-  tags: ["windows-v2:2022"]
-  id_tokens:
-    CI_IDENTITY_GITLAB_JWT:
-      aud: https://vault.us1.ddbuild.io
-  variables:
-    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_ltsc2022_x64
-    DD_TARGET_ARCH: x64
 
 .release:
   stage: release
@@ -456,34 +365,19 @@ build_windows_ltsc2022_x64:
     - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
     - crane tag datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION latest
 
-.release_ddregistry:
-  extends: .release
-  variables:
-    SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
-
-.release_dev_env:
+release_windows:
   stage: release
   rules:
     - !reference [.on_default_branch_push]
-  trigger:
-    project: DataDog/public-images
-    branch: main
-    strategy: depend
-  variables:
-    IMG_REGISTRIES: dockerhub
-    IMG_SIGNING: "false"
-
-.winrelease:
-  stage: release
-  rules:
-    - !reference [.on_default_branch_push]
-  ## this always needs to be the newest available builder version
   tags: ["windows-v2:2022"]
   id_tokens:
     CI_IDENTITY_GITLAB_JWT:
       aud: https://vault.us1.ddbuild.io
   variables:
     CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
+    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
+    IMAGE: windows_ltsc2022_x64
+    DOCKERHUB_TAG_PREFIX: ltsc2022
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
@@ -521,7 +415,6 @@ build_windows_ltsc2022_x64:
     - docker rmi $SRC_IMAGE registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:latest
     - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
 
-
 release_linux:
   extends: .release
   parallel:
@@ -531,27 +424,20 @@ release_linux:
         - rpm_x64
         - deb_arm64
         - rpm_arm64
-
-release_linux_ddregistry:
-  extends: .release_ddregistry
-  parallel:
-    matrix:
-      - IMAGE:
         - linux-glibc-2-17-x64
         - linux-glibc-2-23-arm64
 
-release_windows:
-  extends: .winrelease
-  variables:
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-  parallel:
-    matrix:
-      - IMAGE: windows_ltsc2022_x64
-        DOCKERHUB_TAG_PREFIX: ltsc2022
-
 release_dev_env_linux:
-  extends: .release_dev_env
+  stage: release
+  rules:
+    - !reference [.on_default_branch_push]
+  trigger:
+    project: DataDog/public-images
+    branch: main
+    strategy: depend
   variables:
+    IMG_REGISTRIES: dockerhub
+    IMG_SIGNING: "false"
     IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:x64,registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:aarch64
     IMG_DESTINATIONS: agent-dev-env-linux:latest,agent-dev-env-linux:v$IMAGE_VERSION
 
