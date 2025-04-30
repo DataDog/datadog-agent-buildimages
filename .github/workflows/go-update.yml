@@ -56,29 +56,15 @@ jobs:
         run: |
           dda run update go "${{ inputs.go_version }}" --check-archive
 
-      - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
-        id: autocommit
-        with:
-          # [push_to_datadog_agent] prefix trigger 'push_to_datadog_agent' gitlab job
-          commit_message: "[push_to_datadog_agent] Update go version to ${{ inputs.go_version }}"
-          branch: ${{ env.BRANCH_NAME }}
-          create_branch: true
-
       - name: Create Pull Request
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: ${{ inputs.open_pr && steps.autocommit.outputs.changes_detected }}
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        if: ${{ inputs.open_pr }}
         with:
-          # TODO: if minor update, add changelog to the PR body: https://tip.golang.org/doc/go1.21
-          script: |
-            github.rest.pulls.create({
-              title: `Update Go version to ${{ inputs.go_version }}`,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: "${{ env.BRANCH_NAME }}",
-              base: context.ref,
-              draft: ${{ inputs.draft }},
-              body: [
-                '## Update docker images to Go ${{ inputs.go_version }}',
-                'For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved).',
-              ].join('\n')
-            });
+          commit-message: "[push_to_datadog_agent] Update go version to ${{ inputs.go_version }}"
+          branch: ${{ env.BRANCH_NAME }}
+          sign-commits: true
+          title: "Update Go version to ${{ inputs.go_version }}"
+          body: |
+              ## Update docker images to Go ${{ inputs.go_version }}',
+              For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved)
+          draft: ${{ inputs.draft }}
