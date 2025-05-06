@@ -171,6 +171,8 @@ ENV GO_VERSION $GO_VERSION
 ENV PATH="$PATH:/usr/local/go/bin"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+RUN go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
+
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
