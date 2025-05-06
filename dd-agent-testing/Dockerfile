@@ -30,6 +30,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   && chmod +x /usr/local/bin/datadog-ci
 
 # Python install
+ENV PYTHONUTF8 1
 ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS

@@ -28,6 +28,7 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
     AWSCLI_VERSION=$AWSCLI_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
+    PYTHONUTF8=1 \
     DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
