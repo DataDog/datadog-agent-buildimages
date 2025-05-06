@@ -21,6 +21,7 @@ ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
 
+ENV PYTHONUTF8 1
 ENV CONDA_PATH /root/miniforge3
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
