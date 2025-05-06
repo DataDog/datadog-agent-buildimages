@@ -65,6 +65,6 @@ jobs:
           sign-commits: true
           title: "Update Go version to ${{ inputs.go_version }}"
           body: |
-              ## Update docker images to Go ${{ inputs.go_version }}',
+              ## Update docker images to Go ${{ inputs.go_version }}
               For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved)
           draft: ${{ inputs.draft }}
