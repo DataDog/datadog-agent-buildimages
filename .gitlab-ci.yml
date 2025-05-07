@@ -195,8 +195,6 @@ build_x64:
       - DOCKERFILE: rpm-x64/Dockerfile
         IMAGE: rpm_x64
         BASE_IMAGE: centos:7
-      - DOCKERFILE: system-probe_x64/Dockerfile
-        IMAGE: system-probe_x64
       - DOCKERFILE: dd-agent-testing/Dockerfile
         IMAGE: dd-agent-testing
       - DOCKERFILE: docker-x64/Dockerfile
@@ -229,8 +227,6 @@ build_arm64:
         IMAGE: rpm_armhf
         BASE_IMAGE: arm32v7/centos:7
         DD_TARGET_ARCH: armhf
-      - DOCKERFILE: system-probe_arm64/Dockerfile
-        IMAGE: system-probe_arm64
       - DOCKERFILE: docker-arm64/Dockerfile
         IMAGE: docker_arm64
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -241,7 +237,12 @@ build_arm64:
 
 build_dev_env_linux_x64:
   extends: [.build_dev_env, .x64]
-  # needs: [build_linux_glibc_2_17_x64]
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+            IMAGE: linux-glibc-2-17-x64
   variables:
     PLATFORM: linux
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64$ECR_TEST_ONLY
@@ -249,7 +250,12 @@ build_dev_env_linux_x64:
 
 build_dev_env_linux_arm64:
   extends: [.build_dev_env, .arm]
-  # needs: [build_linux_glibc_2_23_arm64]
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+            IMAGE: linux-glibc-2-23-arm64
   variables:
     PLATFORM: linux
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
@@ -257,8 +263,19 @@ build_dev_env_linux_arm64:
 
 trigger_build_kernels:
   stage: test
-  # needs:
-    # ["build_kernel_version_testing_x64", "build_kernel_version_testing_arm64"]
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+        - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+          DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+          IMAGE: kernel-version-testing_x64
+    - job: build_arm64
+      parallel:
+        matrix:
+        - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+          DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+          IMAGE: kernel-version-testing_arm64
   rules:
     - when: manual
       allow_failure: true
