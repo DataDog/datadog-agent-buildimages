@@ -32,7 +32,7 @@ RUN apt update -qy && apt install -y \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic jq
+    linux-headers-generic jq clang-format-3.9
 
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.23-arm64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config-x86
