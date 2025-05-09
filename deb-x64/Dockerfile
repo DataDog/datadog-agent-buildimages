@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 # Build Args
 ARG GIT_VERSION=2.10.1
