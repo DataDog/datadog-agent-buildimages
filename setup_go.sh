@@ -28,6 +28,8 @@ curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${GOARCH}
 echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
 tar -C /usr/local -xzf /tmp/golang.tar.gz && rm -f /tmp/golang.tar.gz
 
+go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
+
 echo "Installing Microsoft Go"
 curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GOARCH}.tar.gz
 echo "$MSGO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
