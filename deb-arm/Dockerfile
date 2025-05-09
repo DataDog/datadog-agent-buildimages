@@ -164,7 +164,11 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
+RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    export GOARCH=arm GOHOSTARCH=arm \
+    else \
+    export GOARCH=arm64 GOHOSTARCH=arm64 \
+    fi && go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \

@@ -144,7 +144,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
+RUN go install golang.org/dl/gotip@latest && GOARCH=arm GOHOSTARCH=arm gotip download && mv $(which gotip) $(which go)
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
