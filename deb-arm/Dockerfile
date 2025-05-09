@@ -165,7 +165,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-    export GOARCH=arm GOHOSTARCH=arm \
+    export GOARCH=arm GOHOSTARCH=arm; \
     else \
     export GOARCH=arm64 GOHOSTARCH=arm64; \
     fi && go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
