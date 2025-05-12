@@ -359,75 +359,7 @@ build_windows_ltsc2022_x64:
     - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
     - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
 
-.release:
-  stage: release
-  rules:
-    - !reference [.on_default_branch_push]
-  tags: ["arch:amd64"]
-  image: "${CI_IMAGE}"
-  variables:
-    SRC_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
-  script:
-    # Tag as latest in internal registry
-    - crane tag $SRC_IMAGE latest
-    # Copy to public dockerhub registry and also tag as latest
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - crane copy $SRC_IMAGE datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION
-    - crane tag datadog/agent-buildimages-$IMAGE:$IMAGE_VERSION latest
-
-release_windows:
-  stage: release
-  # rules:
-    # - !reference [.on_default_branch_push]
-  tags: ["windows-v2:2022"]
-  id_tokens:
-    CI_IDENTITY_GITLAB_JWT:
-      aud: https://vault.us1.ddbuild.io
-  variables:
-    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    IMAGE: windows_ltsc2022_x64_test_only
-    DOCKERHUB_TAG_PREFIX: ltsc2022
-  script:
-    - $ErrorActionPreference = "Stop"
-    - Set-PSDebug -Trace 1
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
-    - docker pull $SRC_IMAGE
-    - docker tag $SRC_IMAGE registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:latest
-    - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:latest
-    - If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-    # DockerHub login and push
-    - $DOCKER_REGISTRY_LOGIN = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text
-    - $DOCKER_REGISTRY_PWD = aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text
-    - docker login --username "$DOCKER_REGISTRY_LOGIN" --password "$DOCKER_REGISTRY_PWD" docker.io
-    - If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-    - docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION}
-    - docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION}
-    - If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-    - docker tag $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
-    - docker push datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}
-    - If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }
-  after_script:
-    - $SHORT_CI_COMMIT_SHA = $($CI_COMMIT_SHA.Substring(0,8))
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:${IMAGE_VERSION}"
-    - docker rmi $SRC_IMAGE registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}:latest
-    - If ("${DOCKERHUB_IMAGE}" -ne "") { docker rmi datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX}-${IMAGE_VERSION} $SRC_IMAGE datadog/${DOCKERHUB_IMAGE}:${DOCKERHUB_TAG_PREFIX} }
-
-release_linux:
-  extends: .release
-  parallel:
-    matrix:
-      - IMAGE:
-        - deb_x64
-        - rpm_x64
-        - deb_arm64
-        - rpm_arm64
-        - linux-glibc-2-17-x64
-        - linux-glibc-2-23-arm64
-
-release_dev_env_linux:
+release:
   stage: release
   rules:
     - !reference [.on_default_branch_push]
@@ -438,8 +370,24 @@ release_dev_env_linux:
   variables:
     IMG_REGISTRIES: dockerhub
     IMG_SIGNING: "false"
-    IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:x64,registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:aarch64
-    IMG_DESTINATIONS: agent-dev-env-linux:latest,agent-dev-env-linux:v$IMAGE_VERSION
+  parallel:
+    matrix:
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:x64,registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:aarch64
+        IMG_DESTINATIONS: agent-dev-env-linux:latest,agent-dev-env-linux:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64
+        IMG_DESTINATIONS: agent-buildimages-deb_x64:latest,agent-buildimages-deb_x64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_arm64
+        IMG_DESTINATIONS: agent-buildimages-deb_arm64:latest,agent-buildimages-deb_arm64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64
+        IMG_DESTINATIONS: agent-buildimages-rpm_x64:latest,agent-buildimages-rpm_x64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64
+        IMG_DESTINATIONS: agent-buildimages-rpm_arm64:latest,agent-buildimages-rpm_arm64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64
+        IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-17-x64:latest,agent-buildimages-linux-glibc-2-17-x64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64
+        IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-23-arm64:latest,agent-buildimages-linux-glibc-2-23-arm64:v$IMAGE_VERSION
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+        IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022,agent-buildimages-windows_x64:ltsc2022-v$IMAGE_VERSION
 
 notify-images-available:
   extends: .slack-notifier-base
