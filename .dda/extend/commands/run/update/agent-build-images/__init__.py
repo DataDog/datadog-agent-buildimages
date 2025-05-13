@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import click
 
-from dda.cli.base import dynamic_command
+from dda.cli.base import dynamic_command, pass_app
 
 if TYPE_CHECKING:
     from dda.cli.application import Application
@@ -26,7 +26,7 @@ WORKFLOW_ID = 80540190
 @click.option("--go-version", help="The version of Go to use for the buildimages")
 @click.option("--ref", default="main", help="The ref to trigger the workflow on")
 @click.option("--test-version", is_flag=True, help="Whether the images_id was generated on a dev branch")
-@click.pass_obj
+@pass_app
 def cmd(
     app: Application,
     *,

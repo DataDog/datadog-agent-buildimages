@@ -7,7 +7,7 @@ from dda.cli.base import dynamic_group
 
 
 @dynamic_group(
-    short_help="Agent-related scripts",
+    short_help="Agent-related commands",
 )
 def cmd() -> None:
     pass

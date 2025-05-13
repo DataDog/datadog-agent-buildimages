@@ -39,6 +39,7 @@ RUN apt-get update &&  \
     rm -rf /var/lib/apt/lists/*
 
 # Python install
+ENV PYTHONUTF8 1
 ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
@@ -78,7 +79,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPL
 # Build xar to open macOS pkg files
 # Apply fix for openssl from the following issue
 # https://github.com/mackyle/xar/issues/18#issuecomment-379841536
-RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master.tar.gz && \ 
+RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master.tar.gz && \
     echo "$XAR_CHECKSUM /tmp/master.tar.gz" | sha256sum --check && \
     tar -C /tmp -xzf /tmp/master.tar.gz && \
     cd /tmp/xar-master/xar && chmod +x autogen.sh && \

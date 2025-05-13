@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import click
 
-from dda.cli.base import dynamic_command
+from dda.cli.base import dynamic_command, pass_app
 
 if TYPE_CHECKING:
     from dda.cli.application import Application
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     context_settings={"help_option_names": [], "ignore_unknown_options": True},
 )
 @click.argument("args", nargs=-1)
-@click.pass_obj
+@pass_app
 def cmd(app: Application, *, args: tuple[str, ...]) -> None:
     """
     Build the images using the proper environment variables.

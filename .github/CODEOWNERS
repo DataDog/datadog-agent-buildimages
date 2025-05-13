@@ -1,4 +1,4 @@
-# Code owners
+ # Code owners
 
 # The listed owners will be automatically added as reviewers for PRs,
 # to ensure code quality and consistency, and identify
@@ -9,39 +9,37 @@
 # Rules are matched bottom-to-top, so one team can own subdirectories
 # and another the rest of the directory.
 
-*                                   @DataDog/agent-devx-infra
+*                                   @DataDog/agent-devx
 
 go.env                              @DataDog/agent-runtimes
-dda.env                             @DataDog/agent-devx-loops
+dda.env                             @DataDog/agent-devx
 
-.gitlab/kernel-version-testing.yml  @DataDog/ebpf-platform @DataDog/agent-devx-infra
+.gitlab/kernel-version-testing.yml  @DataDog/ebpf-platform @DataDog/agent-devx
 
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
 
 .dda/scripts/run/update/go/         @DataDog/agent-runtimes
 
-/entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-devx-infra
+/entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-devx
 
-/build-container.ps1                @DataDog/windows-agent @DataDog/agent-devx-infra
+/build-container.ps1                @DataDog/windows-agent @DataDog/agent-devx
 
 # eBPF / KMT images
-/btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx-infra
-/kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx-infra
-/system-probe_arm64/                @DataDog/ebpf-platform @DataDog/agent-devx-infra
-/system-probe_x64/                  @DataDog/ebpf-platform @DataDog/agent-devx-infra
+/btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx
+/kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx
 
 # Linux test & build images
-/deb-arm/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/deb-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-arm64/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-armhf/                         @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
-/rpm-x64/                           @DataDog/agent-devx-loops @DataDog/agent-delivery @DataDog/agent-devx-infra
+/deb-arm/                           @DataDog/agent-devx @DataDog/agent-delivery
+/deb-x64/                           @DataDog/agent-devx @DataDog/agent-delivery
+/rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-delivery
+/rpm-armhf/                         @DataDog/agent-devx @DataDog/agent-delivery
+/rpm-x64/                           @DataDog/agent-devx @DataDog/agent-delivery
 
 # Windows test & build images
-/windows/                           @DataDog/windows-agent @DataDog/agent-devx-infra
+/windows/                           @DataDog/windows-agent @DataDog/agent-devx
 
 # Docker images
-/docker-arm64/                      @DataDog/container-integrations @DataDog/agent-devx-infra
-/docker-x64/                        @DataDog/container-integrations @DataDog/agent-devx-infra
-/dev-envs/                          @DataDog/agent-devx-loops
-/devcontainer/                      @DataDog/agent-devx-loops @DataDog/container-platform
+/docker-arm64/                      @DataDog/container-integrations @DataDog/agent-devx
+/docker-x64/                        @DataDog/container-integrations @DataDog/agent-devx
+/dev-envs/                          @DataDog/agent-devx
+/devcontainer/                      @DataDog/agent-devx @DataDog/container-platform

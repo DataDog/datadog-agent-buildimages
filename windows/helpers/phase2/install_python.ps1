@@ -23,6 +23,7 @@ Write-Host -ForegroundColor Green Done downloading Python, installing
 
 Start-Process $out -ArgumentList '/quiet InstallAllUsers=1' -Wait
 
+Add-EnvironmentVariable -Variable PYTHONUTF8 -Value 1 -Local -Global
 Add-ToPath "c:\program files\Python312;c:\Program files\python312\scripts" -Global -Local
 
 Remove-Item $out
@@ -41,10 +42,6 @@ Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { 
     $var = $_.Split('=')
     Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
 }
-
-# Disable caching until the following issue is fixed because junctions do not persist properly:
-# https://github.com/astral-sh/uv/issues/11263
-$env:UV_NO_CACHE = "1"
 
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
 if($Env:DD_DEV_TARGET -eq "Container") {
