@@ -49,7 +49,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv global ${PYTHON_VERSION}
 
 RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
- && dda -v self dep sync -f legacy-build -f legacy-notifications \
+ && dda -v self dep sync -f legacy-build -f legacy-notifications -f google-client-api \
  && pyenv rehash
 
 # Install Go
