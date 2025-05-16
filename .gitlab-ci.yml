@@ -13,16 +13,8 @@ stages:
   - notify
 
 variables:
-  SETUP_IMAGE_NAME: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v62994096-9c8f38f2 # Image used during setup task, must contains pyinvoke
-  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
-  S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
-  DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
-  S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
-  S3_OMNIBUS_CACHE_ANONYMOUS_ACCESS: "true"
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
-  CI_IMAGE_REPO: "ci/${CI_PROJECT_NAME}"
-  CI_IMAGE: "${BUILDENV_REGISTRY}/${CI_IMAGE_REPO}:v30023992-5c09d40b@sha256:5a83247d330ea44b437eb207711561005ca08343ccf4aa523d3540fe01e095f6" # https://gitlab.ddbuild.io/DataDog/datadog-agent-buildimages/-/jobs/458723556
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
 
 #
@@ -73,7 +65,7 @@ default:
 
 get_agent_version:
   stage: setup
-  image: $SETUP_IMAGE_NAME
+  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v62994096-9c8f38f2 # Must contains pyinvoke
   script:
     - source /root/.bashrc
     - VERSION=$(dda run agent version)
@@ -109,9 +101,6 @@ lint_dockerfiles:
   rules:
     - if: $CI_COMMIT_TAG == null
   script:
-    # Dockerhub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -141,6 +130,7 @@ lint_dockerfiles:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
+  retry: 1 # Add a retry to prevent flakyness on build stage.
 
 .build_dev_env:
   stage: build
@@ -159,26 +149,6 @@ lint_dockerfiles:
       --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
     - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
-
-build_ci_image:
-  stage: build
-  image: "${CI_IMAGE}"
-  tags: ["arch:amd64"]
-  script: |-
-    docker buildx build \
-      --file ci/Dockerfile \
-      --platform linux/amd64 \
-      --label target=build \
-      --tag registry.ddbuild.io/${CI_IMAGE_REPO}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} \
-      --push \
-      .
-  rules:
-    - changes:
-        paths:
-          - "ci/Dockerfile"
-        compare_to: 'main'
-    - when: manual
-      allow_failure: true
 
 build_x64:
   extends: [.build, .x64]
@@ -255,6 +225,33 @@ build_dev_env_linux_arm64:
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
+build_windows_ltsc2022_x64:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  timeout: 2h 00m
+  tags: ["windows-v2:2022"]
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
+  variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_ltsc2022_x64
+    DD_TARGET_ARCH: x64
+  script:
+    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+  after_script:
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - docker rmi $SRC_IMAGE
+    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
+
 trigger_build_kernels:
   stage: test
   needs:
@@ -330,34 +327,7 @@ push_to_datadog_agent:
     - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
     - pip install "dda==${DDA_VERSION}"
     - dda -v self dep sync -f legacy-build
-    - dda inv update-datadog-agent-buildimages --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
-
-build_windows_ltsc2022_x64:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null
-  timeout: 2h 00m
-  tags: ["windows-v2:2022"]
-  id_tokens:
-    CI_IDENTITY_GITLAB_JWT:
-      aud: https://vault.us1.ddbuild.io
-  variables:
-    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_ltsc2022_x64
-    DD_TARGET_ARCH: x64
-  script:
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - docker rmi $SRC_IMAGE
-    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
+    - dda inv buildimages.update --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
 
 release:
   stage: release
