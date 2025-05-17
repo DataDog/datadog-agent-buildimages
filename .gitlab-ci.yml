@@ -104,6 +104,7 @@ lint_dockerfiles:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - docker --version
     - >-
       docker build
       --build-arg BASE_IMAGE=$BASE_IMAGE
