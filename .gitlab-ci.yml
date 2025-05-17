@@ -112,6 +112,8 @@ lint_dockerfiles:
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --cache-to mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache
+      --cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache
       --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -147,6 +149,8 @@ lint_dockerfiles:
       docker build dev-envs/$PLATFORM
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
+      --cache-to mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache
+      --cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
     - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
 
