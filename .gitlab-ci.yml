@@ -66,9 +66,11 @@ default:
 
 get_agent_version:
   stage: setup
-  image: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v62994096-9c8f38f2 # Must contains pyinvoke
+  image: $BUILDENV_REGISTRY/images/python:3.12.8
   script:
-    - source /root/.bashrc
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - pip install "dda==${DDA_VERSION}"
+    - export PATH=/home/dog/.local/bin:$PATH
     - VERSION=$(dda run agent version)
     - echo "AGENT_VERSION=$VERSION"
     - echo "AGENT_VERSION=$VERSION" >> version.env
@@ -86,16 +88,18 @@ lint_dockerfiles:
     - hadolint dev-envs/linux/Dockerfile
 
 .x64:
-  tags: ["runner:docker"]
-  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
+  tags: ["docker-in-docker:amd64"]
+  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
 
 .arm:
-  tags: ["runner:docker-arm", "platform:arm64"]
-  image: "$BUILDENV_REGISTRY/images/docker:20.10-py3"
+  tags: ["arch:arm64"]
+  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
   variables:
     DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
 
 .build:
   stage: build
@@ -105,8 +109,15 @@ lint_dockerfiles:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
+    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
+    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - PUSH=""
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
     - >-
-      docker build
+      docker buildx build --platform $PLATFORM $PUSH --pull
+      ${CACHE_SOURCE}
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
@@ -115,12 +126,8 @@ lint_dockerfiles:
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       --file $DOCKERFILE .
     # For size debug purposes
-    - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    - |
-      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
-        docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      fi
+    #- docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+    #- docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
     - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
@@ -143,13 +150,20 @@ lint_dockerfiles:
     # Docker Hub login
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache"
+    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
+    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - PUSH=""
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
     # Build and push
     - >-
-      docker build dev-envs/$PLATFORM
+      docker buildx build --platform $PLATFORM $PUSH --pull
+      ${CACHE_SOURCE}
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache,mode=max
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
-    - docker push registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
+      dev-envs/$PLATFORM
 
 build_x64:
   extends: [.build, .x64]
