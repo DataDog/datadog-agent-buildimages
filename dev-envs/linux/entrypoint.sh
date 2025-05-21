@@ -30,6 +30,14 @@ if ! [[ -f "${startup_indicator}" ]]; then
         dda self telemetry enable
     fi
 
+    # Set Git config
+    if [[ -n "${GIT_AUTHOR_NAME:-}" ]]; then
+        git config --global user.name "${GIT_AUTHOR_NAME}"
+    fi
+    if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
+        git config --global user.email "${GIT_AUTHOR_EMAIL}"
+    fi
+
     # Create the startup indicator file
     touch "${startup_indicator}"
 fi
