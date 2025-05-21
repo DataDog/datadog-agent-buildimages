@@ -5,9 +5,6 @@ FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG DDA_VERSION=""
 
-# Allow dynamic dependencies again as they are disabled in build images
-ENV DDA_NO_DYNAMIC_DEPS=0
-
 # Set up scripts
 COPY scripts /root/.scripts
 COPY scripts.sh /setup/scripts.sh

@@ -36,4 +36,4 @@ def cmd(app: Application, *, args: tuple[str, ...]) -> None:
                 build_args.extend(("--build-arg", line))
 
     build_args.extend(args)
-    app.subprocess.exit_with_command(build_args)
+    app.subprocess.exit_with(build_args)
