@@ -145,16 +145,37 @@ mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
 
+# Always use the latest version of kubectl as recommended:
+# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+KUBECTL_VERSION="$(curl -sL https://dl.k8s.io/release/stable.txt)"
+install-binary \
+    --version "${KUBECTL_VERSION}" \
+    --digest "$(curl -sL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${short_arch}/kubectl.sha256")" \
+    --url "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${short_arch}/kubectl" \
+    --name "kubectl"
+
 # The following tools are required for Visual Studio Code's Go extension:
 # https://github.com/golang/vscode-go#quick-start
 #
 # If either are unavailable the extension will download upon editor startup which is a poor experience
-GOPLS_VERSION="0.16.2"
-go install "golang.org/x/tools/gopls@v${GOPLS_VERSION}"
-
+go install golang.org/x/tools/gopls@latest
 install-binary \
-    --version "2024.1.1" \
-    --digest "6e9398fcaff2b36e1d15e84a647a3a14733b7c2dd41187afa2c182a4c3b32180" \
-    --digest "4cf69c1f5cdd86810a07d830ff90c253e8da8a5817bb57caee8c9807493fc557" \
+    --version "2025.1.1" \
+    --digest "ae320e410225295ecb2a2cd406113e3c2fe40521aaed984dd11dc41a0a50b253" \
+    --digest "b135fd89dbc875f20d83e66948fff256af738b33b48a64024c0752f29ea1eb13" \
     --url "https://github.com/dominikh/go-tools/releases/download/{{version}}/staticcheck_linux_${short_arch}.tar.gz" \
     --name "staticcheck"
+
+# Optional tools for Visual Studio Code's Go extension:
+# https://github.com/golang/vscode-go/wiki/tools
+go install github.com/go-delve/delve/cmd/dlv@latest
+go install github.com/josharian/impl@latest
+go install github.com/fatih/gomodifytags@latest
+
+GOLANGCI_LINT_VERSION="$(curl -s https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
+install-binary \
+    --version "${GOLANGCI_LINT_VERSION}" \
+    --digest "4037af8122871f401ed874852a471e54f147ff8ce80f5a304e020503bdb806ef" \
+    --digest "74782943b2d2edae1208be3701e0cafe62817ba90b9b4cc5ca52bdef26df12f9" \
+    --url "https://github.com/golangci/golangci-lint/releases/download/v{{version}}/golangci-lint-{{version}}-linux-${short_arch}.tar.gz" \
+    --name "golangci-lint"
