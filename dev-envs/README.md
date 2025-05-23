@@ -6,26 +6,28 @@ This directory contains the environments used by all Agent developers, both inte
 
 ***Table of contents***
 
-- [Utilities](#utilities)
+- [Tools](#tools)
 - [Git](#git)
 - [Repositories](#repositories)
 - [Shells](#shells)
 - [Fonts](#fonts)
 - [Ports](#ports)
 
-## Utilities
+## Tools
 
-This is a non-exhaustive list of utilities that are available in every image:
+This is the tools that are available in every image (excluding those installed by the build image):
 
 - [`ambr`](https://github.com/dalance/amber) - find and replace like `sed` but with interactivity
 - [`bat`](https://github.com/sharkdp/bat) - show file contents like `cat`
 - [`btm`](https://github.com/ClementTsang/bottom) - system monitor like `top`
+- [`docker`](https://docs.docker.com/engine/) - Docker engine, including the `buildx` and `compose` plugins
 - [`eza`](https://github.com/eza-community/eza) - list files like `ls`
 - [`fd`](https://github.com/sharkdp/fd) - find files like `find`
 - [`fzf`](https://github.com/junegunn/fzf) - fuzzy finder
 - [`gfold`](https://github.com/nickgerace/gfold) - Git status viewer for multiple repositories
-- [`hyperfine`](https://github.com/sharkdp/hyperfine) - benchmarking tool
 - [`gitui`](https://github.com/extrawurst/gitui) - Git terminal UI
+- [`hyperfine`](https://github.com/sharkdp/hyperfine) - benchmarking tool
+- [`kubectl`](https://kubernetes.io/docs/reference/kubectl/) - Kubernetes control plane CLI
 - [`jq`](https://github.com/jqlang/jq) - JSON processor
 - [`pdu`](https://github.com/KSXGitHub/parallel-disk-usage) - show disk usage like `du`
 - [`procs`](https://github.com/dalance/procs) - process viewer like `ps`
