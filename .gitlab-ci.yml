@@ -112,6 +112,7 @@ lint_dockerfiles:
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:latest
       --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -119,6 +120,7 @@ lint_dockerfiles:
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
         docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+        docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:latest
       fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
