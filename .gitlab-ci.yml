@@ -104,12 +104,8 @@ lint_dockerfiles:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker info
-    - echo "{ \"storage-driver\": \"docker-container\" }" > /etc/docker/daemon.json
-    - sudo systemctl start docker
-    - docker info
     - >-
-      docker build
+      docker buildx build
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
@@ -150,7 +146,7 @@ lint_dockerfiles:
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build and push
     - >-
-      docker build dev-envs/$PLATFORM
+      docker buildx build dev-envs/$PLATFORM
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --cache-to mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache
