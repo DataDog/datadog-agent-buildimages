@@ -112,7 +112,6 @@ lint_dockerfiles:
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:latest
       --file $DOCKERFILE .
     # For size debug purposes
     - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
@@ -120,7 +119,6 @@ lint_dockerfiles:
     - |
       if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
         docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-        docker push registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:latest
       fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
@@ -342,24 +340,24 @@ release:
   variables:
     IMG_REGISTRIES: dockerhub
     IMG_SIGNING: "false"
-  # We cannot use the $IMAGE_VERSION variable because there is only one step of variable substitution, see https://forum.gitlab.com/t/inconsistent-variable-behavior-in-multi-project-pipeline/77916
+  # We cannot use the $IMAGE_VERSION variable directly because there is only one step of variable substitution, see https://forum.gitlab.com/t/inconsistent-variable-behavior-in-multi-project-pipeline/77916. We must use v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} instead.
   parallel:
     matrix:
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:x64,registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux:aarch64
         IMG_DESTINATIONS: agent-dev-env-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-deb_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-deb_x64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_arm64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-deb_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-deb_arm64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_x64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-rpm_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_arm64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-17-x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux-glibc-2-17-x64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-23-arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux-glibc-2-23-arm64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
 
 notify-images-available:
