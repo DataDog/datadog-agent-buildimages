@@ -13,6 +13,6 @@ set-ev COLORTERM "truecolor"
 set-ev DDA_NO_DYNAMIC_DEPS "0"
 
 # These environment variables are set in docker directives, we want them available when we ssh into the container
-set-ev DD_CC "${DD_CC}"
-set-ev DD_CXX "${DD_CXX}"
-set-ev DD_CMAKE_TOOLCHAIN "${DD_CMAKE_TOOLCHAIN}"
+set-ev DD_CC_PATH "${DD_CC_PATH}"
+set-ev DD_CXX_PATH "${DD_CXX_PATH}"
+set-ev DD_CMAKE_TOOLCHAIN_PATH "${DD_CMAKE_TOOLCHAIN_PATH}"
