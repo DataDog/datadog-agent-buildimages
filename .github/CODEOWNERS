@@ -34,6 +34,7 @@ dda.env                             @DataDog/agent-devx
 /rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-delivery
 /rpm-armhf/                         @DataDog/agent-devx @DataDog/agent-delivery
 /rpm-x64/                           @DataDog/agent-devx @DataDog/agent-delivery
+/linux-glibc-*/                     @DataDog/agent-devx @DataDog/agent-delivery
 
 # Windows test & build images
 /windows/                           @DataDog/windows-agent @DataDog/agent-devx
