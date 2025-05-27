@@ -11,8 +11,3 @@ set-ev COLORTERM "truecolor"
 
 # Allow dynamic dependencies again as they are disabled in build images
 set-ev DDA_NO_DYNAMIC_DEPS "0"
-
-# These environment variables are set in docker directives, we want them available when we ssh into the container
-set-ev DD_CC "${DD_CC}"
-set-ev DD_CXX "${DD_CXX}"
-set-ev DD_CMAKE_TOOLCHAIN "${DD_CMAKE_TOOLCHAIN}"
