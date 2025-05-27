@@ -39,9 +39,6 @@ COPY linux-glibc-2.23-arm64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/cro
 COPY linux-glibc-2.23-arm64/toolchain_aarch64.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.23-arm64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.23-arm64/ctng.patch /root/ctng.patch
-ENV DD_CC="aarch64-unknown-linux-gnu-gcc"
-ENV DD_CXX="aarch64-unknown-linux-gnu-g++"
-ENV DD_CMAKE_TOOLCHAIN="/opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake"
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
