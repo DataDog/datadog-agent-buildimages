@@ -5,9 +5,6 @@ FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG DDA_VERSION=""
 
-# Allow dynamic dependencies again as they are disabled in build images
-ENV DDA_NO_DYNAMIC_DEPS=0
-
 # Set up scripts
 COPY scripts /root/.scripts
 COPY scripts.sh /setup/scripts.sh
@@ -41,9 +38,9 @@ RUN /setup/env.sh
 COPY env-vars.sh /setup/env-vars.sh
 RUN /setup/env-vars.sh
 
-# Set up utilities
-COPY utils.sh /setup/utils.sh
-RUN /setup/utils.sh
+# Set up tools
+COPY tools.sh /setup/tools.sh
+RUN /setup/tools.sh
 
 # Set up Git
 COPY git.sh /setup/git.sh
@@ -56,6 +53,10 @@ RUN /setup/python.sh
 # Set up dda
 COPY dda.sh /setup/dda.sh
 RUN DDA_VERSION=${DDA_VERSION} /setup/dda.sh
+
+# Set up Docker
+COPY docker.sh /setup/docker.sh
+RUN /setup/docker.sh
 
 # Set up fonts
 COPY fonts.sh /setup/fonts.sh

@@ -41,7 +41,7 @@ def _get_expected_sha256(version: str, base_url: str) -> list[tuple[Platform, st
     for os, arch in PLATFORMS:
         ext = _get_archive_extension(os)
         url = f"{base_url}/go{version}.{os}-{arch}.{ext}.sha256"
-        res = httpx.get(url)
+        res = httpx.get(url, follow_redirects=True)
         res.raise_for_status()
 
         # Handle both format "<sha256>" and "<sha256>..<filename>"
@@ -80,7 +80,7 @@ def _check_archive(app: Application, version: str, shas: list[tuple[Platform, st
         app.display(f"[check-archive] Fetching archive at {url}")
         # Using `curl` through `ctx.run` takes way too much time due to the archive being huge
         # use `requests` as a workaround
-        req = httpx.get(url)
+        req = httpx.get(url, follow_redirects=True)
         sha = hashlib.sha256(req.content).hexdigest()
         if sha != expected_sha:
             message = f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"

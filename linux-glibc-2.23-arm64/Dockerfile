@@ -19,6 +19,7 @@ ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
+ENV PYTHONUTF8 1
 ENV CONDA_PATH /root/miniforge3
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
@@ -31,13 +32,16 @@ RUN apt update -qy && apt install -y \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic jq
+    linux-headers-generic jq libsystemd-dev clang-format
 
 COPY linux-glibc-2.23-arm64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.23-arm64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config-x86
 COPY linux-glibc-2.23-arm64/toolchain_aarch64.cmake /opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.23-arm64/cargo-config.toml ${HOME}/.cargo/config.toml
-COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
+COPY linux-glibc-2.23-arm64/ctng.patch /root/ctng.patch
+ENV DD_CC_PATH="/opt/toolchains/aarch64/bin/aarch64-unknown-linux-gnu-gcc"
+ENV DD_CXX_PATH="/opt/toolchains/aarch64/bin/aarch64-unknown-linux-gnu-g++"
+ENV DD_CMAKE_TOOLCHAIN_PATH="/opt/cmake/aarch64-unknown-linux-gnu.toolchain.cmake"
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"

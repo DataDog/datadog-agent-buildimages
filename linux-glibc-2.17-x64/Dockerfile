@@ -20,7 +20,11 @@ ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aa
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
+ARG PROTOBUF_VERSION=29.3
+ARG PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip"
+ARG PROTOBUF_CHECKSUM=3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a
 
+ENV PYTHONUTF8 1
 ENV CONDA_PATH /root/miniforge3
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
@@ -33,13 +37,16 @@ RUN apt update -qy && apt install -y \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic libc6-dev-i386 jq
+    linux-headers-generic libc6-dev-i386 jq libsystemd-dev clang-format
 
 COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux-glibc-2.17-x64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config-aarch64
 COPY linux-glibc-2.17-x64/toolchain_x86-64.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
 COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
 COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
+ENV DD_CC_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-gcc"
+ENV DD_CXX_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-g++"
+ENV DD_CMAKE_TOOLCHAIN_PATH="/opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake"
 
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
@@ -104,6 +111,15 @@ RUN /bin/bash -l -c "rvm requirements"
 RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
 RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+
+# Protobuf
+RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME} \
+    && echo "${PROTOBUF_CHECKSUM}  ${PROTOBUF_FILENAME}" | sha256sum --check \
+    && unzip -o ${PROTOBUF_FILENAME} -d protoc3 \
+    && mv protoc3/bin/* /usr/bin/ \
+    && mv protoc3/include/* /usr/include/ \
+    && rm -rf protoc3 \
+    && rm ${PROTOBUF_FILENAME}
 
 # Go
 ENV GOPATH=/go
