@@ -30,7 +30,7 @@ $arglist = @()
 if($Tag -eq $null -or $Tag -eq ""){
     $Tag ="builder_$($kernelver)_$Arch"
 }
-$arglist += "build"
+$arglist += "buildx build"
 
 # Read arguments from go.env file
 $lines = Get-Content -Path 'go.env'
