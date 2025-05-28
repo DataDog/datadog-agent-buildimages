@@ -16,6 +16,7 @@ variables:
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
+  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
 
 #
 # Workflow rules
