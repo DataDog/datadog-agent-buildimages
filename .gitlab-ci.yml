@@ -85,14 +85,14 @@ lint_dockerfiles:
     - hadolint dev-envs/linux/Dockerfile
 
 .x64:
-  tags: ["runner:docker"]
-  image: "$BUILDENV_REGISTRY/images/docker:27.3.1"
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/docker_x64:v66293343-2eef00c4
   variables:
     DD_TARGET_ARCH: x64
 
 .arm:
-  tags: ["runner:docker-arm", "platform:arm64"]
-  image: "$BUILDENV_REGISTRY/images/docker:27.3.1"
+  tags: ["arch:arm64"]
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/docker_arm64:v66293343-2eef00c4
   variables:
     DD_TARGET_ARCH: aarch64
 
