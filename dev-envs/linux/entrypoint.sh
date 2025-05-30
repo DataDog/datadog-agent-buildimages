@@ -38,6 +38,9 @@ if ! [[ -f "${startup_indicator}" ]]; then
         git config --global user.email "${GIT_AUTHOR_EMAIL}"
     fi
 
+    # Restore default configuration to account for changes during startup like Git author details
+    dda config restore
+
     # Create the startup indicator file
     touch "${startup_indicator}"
 fi
