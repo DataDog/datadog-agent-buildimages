@@ -82,6 +82,7 @@ case $DD_TARGET_ARCH in
     cd ..
     rm -rf /tmp/dda-install
     # python3 -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    python3 -m dda self telemetry disable
     python3 -m dda -v self dep sync -f legacy-build
     exit 0
     ;;
@@ -108,6 +109,7 @@ pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+dda self telemetry disable
 dda -v self dep sync -f legacy-build
 pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
