@@ -25,7 +25,7 @@ def cmd(app: Application, *, args: tuple[str, ...]) -> None:
     """
     from dda.utils.fs import Path
 
-    build_args = ["docker", "build"]
+    build_args = ["build"]
     for entry in Path.cwd().glob("*.env"):
         with entry.open(encoding="utf-8") as f:
             for line in f:
@@ -36,4 +36,4 @@ def cmd(app: Application, *, args: tuple[str, ...]) -> None:
                 build_args.extend(("--build-arg", line))
 
     build_args.extend(args)
-    app.subprocess.exit_with(build_args)
+    app.tools.docker.exit_with(build_args)
