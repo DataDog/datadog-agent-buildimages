@@ -1,0 +1,211 @@
+---
+.docker_runner_amd:
+  tags: ["runner:docker"]
+  variables:
+    ARCH: x86_64
+
+.docker_runner_arm:
+  tags: ["runner:docker-arm", "platform:arm64"]
+  variables:
+    ARCH: aarch64
+
+.stats:
+  stage: stats
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  before_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:install_awscli[collapsed=true]\r\e[0KInstalling AWS CLI"
+    - apt-get update && apt-get install -y curl unzip
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip"
+    - unzip awscliv2.zip
+    - ./aws/install
+    - echo -e "\e[0Ksection_end:`date +%s`:install_awscli\r\e[0K"
+  script:
+    # For size debug purposes
+    - docker load -i ./$IMAGE-$IMAGE_VERSION.tar
+    - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+    - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+    - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
+    - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then
+        echo -e "\033[0;32m\033[1mImage registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION is available.\033[0m"
+      else
+        echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
+      fi
+
+# We cannot use parallel:matrix here because we depend on parallel:matrix, and we need to define a dependency to pull only the required image.
+stats_deb_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: deb_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-x64/Dockerfile
+            IMAGE: deb_x64
+
+stats_rpm_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: rpm_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-x64/Dockerfile
+            IMAGE: rpm_x64
+            BASE_IMAGE: centos:7
+
+stats_dd_agent_testing:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: dd-agent-testing
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: dd-agent-testing/Dockerfile
+            IMAGE: dd-agent-testing
+
+stats_docker_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: docker_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: docker-x64/Dockerfile
+            IMAGE: docker_x64
+
+stats_btf_gen:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: btf-gen
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: btf-gen/Dockerfile
+            IMAGE: btf-gen
+
+stats_kernel_version_testing:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: kernel-version-testing_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+            DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+            IMAGE: kernel-version-testing_x64
+
+stats_gitlab_agent_deploy:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: gitlab_agent_deploy
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: agent-deploy/Dockerfile
+            IMAGE: gitlab_agent_deploy
+
+stats_linux_glibc_2_17_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: linux-glibc-2-17-x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+            IMAGE: linux-glibc-2-17-x64
+
+stats_deb_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: deb_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-arm/Dockerfile
+            IMAGE: deb_arm64
+            BASE_IMAGE: arm64v8/ubuntu:16.04
+
+stats_deb_armhf:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: deb_armhf
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-arm/Dockerfile
+            IMAGE: deb_armhf
+            BASE_IMAGE: arm32v7/ubuntu:16.04
+            DD_TARGET_ARCH: armhf
+
+stats_rpm_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: rpm_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-arm64/Dockerfile
+            IMAGE: rpm_arm64
+            BASE_IMAGE: amazonlinux:2.0.20181114
+
+stats_rpm_armhf:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: rpm_armhf
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-armhf/Dockerfile
+            IMAGE: rpm_armhf
+            BASE_IMAGE: arm32v7/centos:7
+            DD_TARGET_ARCH: armhf
+
+stats_docker_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: docker_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: docker-arm64/Dockerfile
+            IMAGE: docker_arm64
+
+stats_kernel_version_testing_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: kernel-version-testing_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+            DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+            IMAGE: kernel-version-testing_arm64
+
+stats_linux_glibc_2_23_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: linux-glibc-2-23-arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+            IMAGE: linux-glibc-2-23-arm64
