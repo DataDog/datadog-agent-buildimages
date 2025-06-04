@@ -134,15 +134,26 @@ lint_dockerfiles:
 
 .docker_runner_amd:
   tags: ["runner:docker"]
+  variables:
+    ARCH: x86_64
 
 .docker_runner_arm:
   tags: ["runner:docker-arm", "platform:arm64"]
+  variables:
+    ARCH: aarch64
 
 .stats:
   stage: stats
   image: $BUILDENV_REGISTRY/images/docker:27.3.1
   rules:
     - if: $CI_COMMIT_TAG == null
+  before_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:install_awscli\r\e[OKInstalling AWS CLI"
+    - apt-get update && apt-get install -y curl unzip
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip"
+    - unzip awscliv2.zip
+    - ./aws/install
+    - echo -e "\e[0Ksection_end:`date +%s`:install_awscli\r\e[OK"
   script:
     # For size debug purposes
     - docker load -i ./$IMAGE-$IMAGE_VERSION.tar
