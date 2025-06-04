@@ -6,6 +6,7 @@ include:
 stages:
   - setup
   - build
+  - stats
   - availability_message
   - test
   - devcontainer
@@ -66,6 +67,7 @@ default:
 
 get_agent_version:
   stage: setup
+  tags: ["arch:amd64"]
   image: $BUILDENV_REGISTRY/images/python:3.12.8
   script:
     - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
@@ -77,7 +79,6 @@ get_agent_version:
   artifacts:
     reports:
       dotenv: version.env
-  tags: ["arch:amd64"]
 
 lint_dockerfiles:
   tags: ["arch:amd64"]
@@ -88,15 +89,15 @@ lint_dockerfiles:
     - hadolint dev-envs/linux/Dockerfile
 
 .x64:
-  tags: ["docker-in-docker:amd64"]
-  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
   variables:
     DD_TARGET_ARCH: x64
     PLATFORM: linux/amd64
 
 .arm:
   tags: ["arch:arm64"]
-  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
   variables:
     DD_TARGET_ARCH: aarch64
     PLATFORM: linux/arm64
@@ -106,7 +107,7 @@ lint_dockerfiles:
   rules:
     - if: $CI_COMMIT_TAG == null
   script:
-    # Build
+    # Build and push to internal ECR
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
@@ -125,11 +126,28 @@ lint_dockerfiles:
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       --file $DOCKERFILE .
+      --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+  artifacts:
+    paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
+    expire_in: 1 hour
+  retry: 1 # Add a retry to prevent flakyness on build stage.
+
+.docker_runner_amd:
+  tags: ["runner:docker"]
+
+.docker_runner_arm:
+  tags: ["runner:docker-arm", "platform:arm64"]
+
+.stats:
+  stage: stats
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  script:
     # For size debug purposes
-    #- docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-    #- docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-  after_script:
-    - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo -e "\033[0;32m\033[1mBuild failed.\033[0m"; exit 0; fi
+    - docker load -i ./$IMAGE-$IMAGE_VERSION.tar
+    - docker images registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+    - docker history --no-trunc registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
     - export SIZE=$(docker inspect -f "{{ .Size }}" registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
     - |
@@ -138,7 +156,180 @@ lint_dockerfiles:
       else
         echo -e "\033[0;33m\033[1mScheduled pipeline, image push skipped.\033[0m"
       fi
-  retry: 1 # Add a retry to prevent flakyness on build stage.
+
+stats_deb_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: deb_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-x64/Dockerfile
+            IMAGE: deb_x64
+
+stats_rpm_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: rpm_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-x64/Dockerfile
+            IMAGE: rpm_x64
+            BASE_IMAGE: centos:7
+
+stats_dd_agent_testing:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: dd-agent-testing
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: dd-agent-testing/Dockerfile
+            IMAGE: dd-agent-testing
+
+stats_docker_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: docker_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: docker-x64/Dockerfile
+            IMAGE: docker_x64
+
+stats_btf_gen:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: btf-gen
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: btf-gen/Dockerfile
+            IMAGE: btf-gen
+
+stats_kernel_version_testing:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: kernel-version-testing_x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+            DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+            IMAGE: kernel-version-testing_x64
+
+stats_gitlab_agent_deploy:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: gitlab_agent_deploy
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: agent-deploy/Dockerfile
+            IMAGE: gitlab_agent_deploy
+
+stats_linux_glibc_2_17_x64:
+  extends: [.stats, .docker_runner_amd]
+  variables:
+    IMAGE: linux-glibc-2-17-x64
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+            IMAGE: linux-glibc-2-17-x64
+
+stats_deb_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: deb_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-arm/Dockerfile
+            IMAGE: deb_arm64
+            BASE_IMAGE: arm64v8/ubuntu:16.04
+
+stats_deb_armhf:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: deb_armhf
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: deb-arm/Dockerfile
+            IMAGE: deb_armhf
+            BASE_IMAGE: arm32v7/ubuntu:16.04
+            DD_TARGET_ARCH: armhf
+
+stats_rpm_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: rpm_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-arm64/Dockerfile
+            IMAGE: rpm_arm64
+            BASE_IMAGE: amazonlinux:2.0.20181114
+
+stats_rpm_armhf:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: rpm_armhf
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: rpm-armhf/Dockerfile
+            IMAGE: rpm_armhf
+            BASE_IMAGE: arm32v7/centos:7
+            DD_TARGET_ARCH: armhf
+
+stats_docker_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: docker_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: docker-arm64/Dockerfile
+            IMAGE: docker_arm64
+
+stats_kernel_version_testing_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: kernel-version-testing_arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+            DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+            IMAGE: kernel-version-testing_arm64
+
+stats_linux_glibc_2_23_arm64:
+  extends: [.stats, .docker_runner_arm]
+  variables:
+    IMAGE: linux-glibc-2-23-arm64
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+            IMAGE: linux-glibc-2-23-arm64
 
 .build_dev_env:
   stage: build
@@ -147,15 +338,12 @@ lint_dockerfiles:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
   script:
-    # Docker Hub login
-    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache"
     # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
     - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
     - PUSH=""
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
-    # Build and push
+    # Build and push to internal ECR
     - >-
       docker buildx build --platform $PLATFORM $PUSH --pull
       ${CACHE_SOURCE}
