@@ -5,7 +5,6 @@ ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-
 
 FROM ${BASE_IMAGE}
 
-SHELL ["powershell", "-Command"]
 
 ARG WINDOWS_VERSION
 ENV WINDOWS_VERSION=${WINDOWS_VERSION:-2022}
@@ -63,6 +62,7 @@ COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
 
 
 COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
+SHELL ["powershell", "-Command"]
 RUN .\install-all.ps1 -TargetContainer -Phase 1
 # COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
 # RUN .\install-all.ps1 -TargetContainer -Phase 2
