@@ -72,6 +72,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
     && echo "${DATADOG_CI_SHASUM} /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci \
+    # AWS v2 cli
+    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+    && unzip -q awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Use gnupg1 instead of gnupg2, our scripts and rpm-s3 are currently not compatible with gnupg2

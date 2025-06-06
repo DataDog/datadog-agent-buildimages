@@ -122,6 +122,12 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
   echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
 
+# AWS v2 cli
+RUN curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip && \
+    unzip -q awscliv2.zip && \
+    ./aws/install && \
+    rm -rf aws awscliv2.zip
+
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh

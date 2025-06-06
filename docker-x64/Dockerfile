@@ -65,7 +65,12 @@ ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip && \
+  unzip -q awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
