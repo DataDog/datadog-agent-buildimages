@@ -80,6 +80,15 @@ RUN /setup/ssh.sh
 # hadolint ignore=DL3059
 RUN rm -rf /setup
 
+# Create a user for use with the devcontainer ecosystem
+# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
+RUN apt-get update \
+    && apt-get install -y sudo \
+    && groupadd --non-unique --gid 1000 datadog \
+    && useradd --non-unique --uid 1000 --gid datadog --create-home --shell /bin/bash datadog \
+    && echo datadog ALL=\(ALL:ALL\) NOPASSWD:ALL > /etc/sudoers.d/datadog \
+    && chmod 0440 /etc/sudoers.d/datadog
+
 # Remove side effects of APT installations
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
