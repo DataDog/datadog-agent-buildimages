@@ -1,0 +1,168 @@
+---
+.x64:
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  variables:
+    DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
+
+.arm:
+  tags: ["arch:arm64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  variables:
+    DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
+
+.build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  script:
+    # Build and push to internal ECR
+    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
+    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
+    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - PUSH=""
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
+    - >-
+      docker buildx build --platform $PLATFORM $PUSH --pull
+      ${CACHE_SOURCE}
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
+      $GO_BUILD_ARGS
+      $DDA_BUILD_ARGS
+      $CUSTOM_BUILD_ARGS
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --file $DOCKERFILE .
+      --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+  artifacts:
+    paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
+    expire_in: 1 hour
+  retry: 1 # Add a retry to prevent flakyness on build stage.
+
+.build_dev_env:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+  script:
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache"
+    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
+    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - PUSH=""
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
+    # Build and push to internal ECR
+    - >-
+      docker buildx build --platform $PLATFORM $PUSH --pull
+      ${CACHE_SOURCE}
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache,mode=max
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
+      dev-envs/$PLATFORM
+
+build_x64:
+  extends: [.build, .x64]
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-x64/Dockerfile
+        IMAGE: deb_x64
+      - DOCKERFILE: rpm-x64/Dockerfile
+        IMAGE: rpm_x64
+        BASE_IMAGE: centos:7
+      - DOCKERFILE: dd-agent-testing/Dockerfile
+        IMAGE: dd-agent-testing
+      - DOCKERFILE: docker-x64/Dockerfile
+        IMAGE: docker_x64
+      - DOCKERFILE: btf-gen/Dockerfile
+        IMAGE: btf-gen
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+        IMAGE: kernel-version-testing_x64
+      - DOCKERFILE: agent-deploy/Dockerfile
+        IMAGE: gitlab_agent_deploy
+      - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+        IMAGE: linux-glibc-2-17-x64
+
+build_arm64:
+  extends: [.build, .arm]
+  parallel:
+    matrix:
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: deb_arm64
+        BASE_IMAGE: arm64v8/ubuntu:16.04
+      - DOCKERFILE: deb-arm/Dockerfile
+        IMAGE: deb_armhf
+        BASE_IMAGE: arm32v7/ubuntu:16.04
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: rpm-arm64/Dockerfile
+        IMAGE: rpm_arm64
+        BASE_IMAGE: amazonlinux:2.0.20181114
+      - DOCKERFILE: rpm-armhf/Dockerfile
+        IMAGE: rpm_armhf
+        BASE_IMAGE: arm32v7/centos:7
+        DD_TARGET_ARCH: armhf
+      - DOCKERFILE: docker-arm64/Dockerfile
+        IMAGE: docker_arm64
+      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+        DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+        IMAGE: kernel-version-testing_arm64
+      - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+        IMAGE: linux-glibc-2-23-arm64
+
+build_dev_env_linux_x64:
+  extends: [.build_dev_env, .x64]
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+            IMAGE: linux-glibc-2-17-x64
+  variables:
+    PLATFORM: linux
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION
+
+build_dev_env_linux_arm64:
+  extends: [.build_dev_env, .arm]
+  needs:
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+            IMAGE: linux-glibc-2-23-arm64
+  variables:
+    PLATFORM: linux
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION
+
+build_windows_ltsc2022_x64:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  timeout: 2h 00m
+  tags: ["windows-v2:2022"]
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
+  variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
+    DOCKERFILE: windows/Dockerfile
+    IMAGE: windows_ltsc2022_x64
+    DD_TARGET_ARCH: x64
+  script:
+    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+  after_script:
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+    - docker rmi $SRC_IMAGE
+    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
+    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }

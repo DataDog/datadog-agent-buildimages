@@ -1,0 +1,77 @@
+---
+trigger_build_kernels:
+  stage: test
+  needs:
+    - job: build_x64
+      parallel:
+        matrix:
+        - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+          DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+          IMAGE: kernel-version-testing_x64
+    - job: build_arm64
+      parallel:
+        matrix:
+        - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+          DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+          IMAGE: kernel-version-testing_arm64
+  rules:
+    - when: manual
+      allow_failure: true
+  # Pass variables to the child pipeline
+  variables:
+    PARENT_EXTRA_KCONFIG_VERSION: $EXTRA_KCONFIG_VERSION
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger:
+    include:
+      - local: .gitlab/kernel_version_testing.yml
+    strategy: depend
+
+trigger_tests:
+  stage: test
+  rules:
+    - when: manual
+      allow_failure: true
+  variables:
+    RUN_KITCHEN_TESTS: "false"
+    BUCKET_BRANCH: "dev"
+    DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
+    DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+  trigger:
+    project: DataDog/datadog-agent
+    strategy: depend
+
+push_to_datadog_agent:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_MESSAGE !~ /^\[push_to_datadog_agent\]/
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: never
+    - !reference [.on_push]
+  tags: ["arch:amd64"]
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:v58799063-651eeeea
+  variables:
+    SSM_GITHUB_APP_KEY: ci.datadog-agent.platform-github-app-key
+    GITHUB_INSTALLATION_ID: 45116690
+    GITHUB_APP_ID: 682216
+    REF: main
+    BRANCH: buildimages/$CI_COMMIT_BRANCH
+    IMAGES_ID: v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+  script:
+    - source /root/.bashrc
+    - set -o pipefail
+    # Get the current go version from the go.env file
+    - >
+      for line in $(cat go.env); do
+        export $line
+      done
+    # Read the Github app private token from AWS SSM
+    - export GITHUB_KEY_B64=$(aws ssm get-parameter --region us-east-1 --name $SSM_GITHUB_APP_KEY --with-decryption --query "Parameter.Value" --out text)
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - pip install "dda==${DDA_VERSION}"
+    - dda -v self dep sync -f legacy-build
+    - dda inv buildimages.update --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
