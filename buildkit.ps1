@@ -18,10 +18,10 @@ $Path = [Environment]::GetEnvironmentVariable("PATH", "Machine") + `
 [Environment]::SetEnvironmentVariable( "Path", $Path, "Machine")
 $Env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + `
     [System.Environment]::GetEnvironmentVariable("Path","User")
-buildkitd `
-    --register-service `
-    --service-name buildkitd `
-    --containerd-cni-config-path="C:\Program Files\containerd\cni\conf\0-containerd-nat.conf" `
-    --containerd-cni-binary-dir="C:\Program Files\containerd\cni\bin" `
-    --debug `
-    --log-file="C:\Windows\Temp\buildkitd.log"
+# buildkitd `
+#     --register-service `
+#     --service-name buildkitd `
+#     --containerd-cni-config-path="C:\Program Files\containerd\cni\conf\0-containerd-nat.conf" `
+#     --containerd-cni-binary-dir="C:\Program Files\containerd\cni\bin" `
+#     --debug `
+#     --log-file="C:\Windows\Temp\buildkitd.log"
