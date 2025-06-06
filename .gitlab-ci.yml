@@ -246,6 +246,11 @@ build_windows_ltsc2022_x64:
     # - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
     - .\containerd.ps1
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - .\cni.ps1
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - .\buildkit.ps1
+    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+    - buildctl debug info
   #   - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
   #   - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
   # after_script:
