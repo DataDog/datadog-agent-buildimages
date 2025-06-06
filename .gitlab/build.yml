@@ -157,12 +157,33 @@ build_windows_ltsc2022_x64:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - docker rmi $SRC_IMAGE
-    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
+    - $CACHE_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:cache"
+    # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
+    - .\containerd.ps1
+    - .\cni.ps1
+    - .\buildkit.ps1
+    # Start buildkitd
+    - Start-Process -FilePath "buildkitd.exe"
+    - $arglist = @()
+    - $arglist += -split "--opt build-arg:BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022" 
+    - |
+      foreach ($line in $(Get-Content go.env)) {
+        if( -not ($line -like "*LINUX*")){
+          $arglist += -split "--opt build-arg:$line"
+        }
+      }
+    - |
+      foreach ($line in $(Get-Content dda.env)) {
+        $arglist += -split "--opt build-arg:$line"
+      }
+    # Build the image
+    - >-
+      buildctl build
+      --progress=plain
+      --output type=image,name=$SRC_IMAGE,push=true
+      --frontend=dockerfile.v0
+      --local context=.
+      --local dockerfile=.\windows 
+      $arglist
+      --import-cache type=registry,ref=$CACHE_IMAGE
+      --export-cache type=registry,ref=$CACHE_IMAGE
