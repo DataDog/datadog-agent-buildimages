@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libbz2-dev  \
     libreadline-dev  \
     libsqlite3-dev  \
+    unzip \
     wget  \
     libncurses5-dev  \
     xz-utils  \
@@ -31,7 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxmlsec1-dev  \
     libffi-dev  \
     liblzma-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+    && unzip -q awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
+    rm -rf /var/lib/apt/lists/*
 
 # Python install
 ENV PYTHONUTF8 1
@@ -43,7 +49,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
      pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
-     dda -v self dep sync -f legacy-build -f legacy-btf-gen && \
+     dda -v self dep sync -f legacy-build && \
      pyenv rehash
 
 COPY .awsconfig /root/.aws/config
