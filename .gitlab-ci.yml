@@ -243,25 +243,26 @@ build_windows_ltsc2022_x64:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    # - .\build-container.ps1 -Arch $DD_TARGET_ARCH -Tag $SRC_IMAGE
+    - .\containerd.ps1
     - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
-    - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
-  after_script:
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - docker rmi $SRC_IMAGE
-    - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
-    - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
+  #   - If ($CI_PIPELINE_SOURCE -ne "schedule") { docker push $SRC_IMAGE } else { exit 0 }
+  #   - If ($lastExitCode -ne "0") { throw "Previous command returned `$lastExitCode" }
+  # after_script:
+  #   - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
+  #   - docker rmi $SRC_IMAGE
+  #   - If ($CI_JOB_STATUS -ne "success") { Write-Host "Build failed."; exit 0 }
+  #   - If ($CI_PIPELINE_SOURCE -ne "schedule") { Write-Host "Image $SRC_IMAGE is available." } else { Write-Host "Scheduled pipeline, image push skipped." }
 
-test_job:
-  stage: test
-  image: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64$:v66293343-2eef00c4
-  tags: ["windows-v2:2022"]
-  script:
-    - $WINIMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:${IMAGE_VERSION}"
-    - docker pull $WINIMAGE
-    - docker history $WINIMAGE
-    - docker buildx version
+# test_job:
+#   stage: test
+#   image: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64$:v66293343-2eef00c4
+#   tags: ["windows-v2:2022"]
+#   script:
+#     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
+#     - $WINIMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:${IMAGE_VERSION}"
+#     - docker pull $WINIMAGE
+#     - docker history $WINIMAGE
 
 # trigger_build_kernels:
 #   stage: test
