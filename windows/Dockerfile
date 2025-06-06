@@ -7,6 +7,7 @@ FROM ${BASE_IMAGE}
 
 SHELL ["powershell", "-Command"]
 
+# Build arguments and environment variables
 ARG WINDOWS_VERSION
 ENV WINDOWS_VERSION=${WINDOWS_VERSION:-2022}
 
@@ -16,6 +17,7 @@ ENV TARGET_ARCH=${DD_TARGET_ARCH:-x64}
 ARG DDA_NO_DYNAMIC_DEPS
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
+# Version arguments for labels and installation
 ARG GIT_VERSION
 ARG SEVENZIP_VERSION
 ARG VS2017BUILDTOOLS_VERSION
@@ -33,46 +35,55 @@ ARG NUGET_VERSION
 ARG CODEQL_VERSION
 ARG VAULT_VERSION
 
-LABEL target_agent="Agent 6/7"
-LABEL target_arch=${TARGET_ARCH}
-LABEL windows_version=${WINDOWS_VERSION}
-LABEL git_version=${GIT_VERSION}
-LABEL sevenzip_version=${SEVENZIP_VERSION}
-LABEL vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION}
-LABEL go_version=${GO_VERSION}-${MSGO_PATCH}
-LABEL ruby_version=${RUBY_VERSION}
-LABEL wix_version=${WIX_VERSION}
-LABEL cmake_version=${CMAKE_VERSION}
-LABEL msys_version=${MSYS_VERSION}
-LABEL system_python_version=${PYTHON_VERSION}
-LABEL embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION}
-LABEL nuget_version=${NUGET_VERSION}
-LABEL codeql_version=${CODEQL_VERSION}
-LABEL vault_version=${VAULT_VERSION}
+# Labels for documentation and metadata
+LABEL target_agent="Agent 6/7" \
+      target_arch=${TARGET_ARCH} \
+      windows_version=${WINDOWS_VERSION} \
+      git_version=${GIT_VERSION} \
+      sevenzip_version=${SEVENZIP_VERSION} \
+      vs2017buildtools_version=${VS2017BUILDTOOLS_VERSION} \
+      go_version=${GO_VERSION}-${MSGO_PATCH} \
+      ruby_version=${RUBY_VERSION} \
+      wix_version=${WIX_VERSION} \
+      cmake_version=${CMAKE_VERSION} \
+      msys_version=${MSYS_VERSION} \
+      system_python_version=${PYTHON_VERSION} \
+      embedded_py3_version=${EMBEDDED_PYTHON_3_VERSION} \
+      nuget_version=${NUGET_VERSION} \
+      codeql_version=${CODEQL_VERSION} \
+      vault_version=${VAULT_VERSION}
 
-## WORKDIR should automatically create the directory
+# Set up working directory
 WORKDIR c:/scripts
+
+# Copy all installation scripts and configuration files
 COPY ./windows/*.ps1 ./
 COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
-
+COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
+COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
+COPY ./windows/helpers/phase3/*.ps1 c:/scripts/helpers/phase3/
+COPY ./windows/helpers/phase4/*.ps1 c:/scripts/helpers/phase4/
 COPY go.env c:/
 COPY dda.env c:/
-
 COPY python-packages-versions.txt /
 COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
-
-RUN .\helpers\update_root_certs.ps1
-
-COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
-RUN .\install-all.ps1 -TargetContainer -Phase 1
-COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
-RUN .\install-all.ps1 -TargetContainer -Phase 2
-COPY ./windows/helpers/phase3/*.ps1 c:/scripts/helpers/phase3/
-RUN .\install-all.ps1 -TargetContainer -Phase 3
-COPY ./windows/helpers/phase4/*.ps1 c:/scripts/helpers/phase4/
-RUN .\install-all.ps1 -TargetContainer -Phase 4
-
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
+
+# Update root certificates before installing any software
+RUN .\helpers\update_root_certs.ps1
+
+# Run installation in phases to optimize caching
+# Phase 1: Install basic tools and dependencies
+RUN .\install-all.ps1 -TargetContainer -Phase 1
+
+# Phase 2: Install development tools
+RUN .\install-all.ps1 -TargetContainer -Phase 2
+
+# Phase 3: Install programming languages and runtimes
+RUN .\install-all.ps1 -TargetContainer -Phase 3
+
+# Phase 4: Install final components and configure environment
+RUN .\install-all.ps1 -TargetContainer -Phase 4
 
 ENTRYPOINT ["/entrypoint.bat"]

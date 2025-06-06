@@ -13,9 +13,9 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 
 ## Valid archs are
 # amd64, arm32v7, arm64v8, i386, ppc64le, s390x
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} AS base
 
-# Build Args
+# Build Args - common arguments used across stages
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG GO_SHA256_LINUX_ARMV6L
@@ -49,47 +49,159 @@ ARG LIBLZMA_VERSION=5.2.11
 ARG CI_UPLOADER_VERSION=2.38.1
 ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
 
-# Environment
-ENV PYTHONUTF8 1
-ENV GOPATH /go
-ENV CONDA_PATH /root/miniforge3
-ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+# Environment common to all stages
+ENV PYTHONUTF8=1
+ENV GOPATH=/go
+ENV CONDA_PATH=/root/miniforge3
+ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
 
-# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
-RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
-
-RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
-    build-essential pkg-config tar libsystemd-dev libkrb5-dev \
-    gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre flex unzip wget
-
-# Ubuntu 16.04 comes with gcc 5.4 by default, which doesn't work with the race detector starting with Go 1.22
-# NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
-# it and there's not way to prevent that. So leave it be and use update-alternatives to select 9
-RUN apt install -y software-properties-common \
+# Basic system configuration (merged into one layer)
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc \
+    && apt-get update && apt-get install -y curl wget software-properties-common \
     && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
     && apt-get update \
     && apt-get install -y gcc-9 g++-9 \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 0
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 0 \
+    && echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc \
+    && echo "umask 0022" >> /root/.bashrc
 
-# Update curl with a statically linked binary
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
+
+# FROM base as patchelf-builder
+FROM base as patchelf-builder
+ARG PATCHELF_VERSION
+ARG PATCHELF_SHA256
+RUN apt-get update && apt-get install -y build-essential autoconf automake \
+    && curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
+    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
+    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
+    && cd patchelf-${PATCHELF_VERSION} \
+    && ./bootstrap.sh \
+    && ./configure --prefix=/usr/local/patchelf \
+    && make \
+    && make install \
+    && cd / \
+    && rm -rf patchelf-${PATCHELF_VERSION} \
+    && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
+# FROM base as liblzma-builder
+FROM base as liblzma-builder
+ARG LIBLZMA_VERSION
+ARG DD_TARGET_ARCH
+RUN apt-get update && apt-get install -y build-essential autoconf libtool git \
+    && if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+       LIB_DEST="arm-linux-gnueabihf"; \
+       else \
+       LIB_DEST="aarch64-linux-gnu"; \
+       fi \
+    && git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
+    && cd xz \
+    && autoreconf -vif \
+    && ./configure --prefix=/usr/local/liblzma \
+    && make -j$(nproc) && make install \
+    && cd / \
+    && rm -rf /xz
+
+# FROM base as dpkg-builder
+FROM base as dpkg-builder
+ARG DPKG_VERSION
+ARG DPKG_SHA256
+ARG DD_TARGET_ARCH
+RUN apt-get update && apt-get install -y build-essential autoconf autopoint pkg-config \
+    && if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+       LIB_DEST="arm-linux-gnueabihf"; \
+       EXTRA_CONFIGURE_OPTIONS="--host=arm-linux-gnueabihf --build=arm-linux-gnueabihf"; \
+       else \
+       LIB_DEST="aarch64-linux-gnu"; \
+       fi \
+    && curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
+    && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
+    && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
+    && cd "dpkg-${DPKG_VERSION}" \
+    && echo 1.18.4 > .dist-version \
+    && autoreconf -vfi \
+    && mkdir build && cd build \
+    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr/local/dpkg --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+    && rm -rf /dpkg-${DPKG_VERSION}.tar.bz2 /dpkg-${DPKG_VERSION}
+
+# FROM base as cmake-builder
+FROM base as cmake-builder
+ARG CMAKE_VERSION
+ARG CMAKE_SHA256
+ARG DD_TARGET_ARCH
+RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
+    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && rm cmake.sh ; fi
+
+# Final image with all tools combined
+FROM base
+
+# Copy all built components from previous stages
 COPY --from=CURL_GETTER /curl-aarch64 /usr/local/bin/curl-aarch64
 COPY --from=CURL_GETTER /curl-armv7 /usr/local/bin/curl-armv7
+COPY --from=patchelf-builder /usr/local/patchelf /usr/local/
+COPY --from=liblzma-builder /usr/local/liblzma /usr/local/
+COPY --from=dpkg-builder /usr/local/dpkg /usr/local/
+COPY --from=cmake-builder /opt/cmake /opt/cmake
+
+# Set up curl based on architecture
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         cp /usr/local/bin/curl-aarch64 /usr/local/bin/curl; \
     else \
         cp /usr/local/bin/curl-armv7 /usr/local/bin/curl; \
-    fi
-RUN chmod +x /usr/local/bin/curl
+    fi \
+    && chmod +x /usr/local/bin/curl \
+    && ln -sf /usr/local/dpkg/bin/dpkg /usr/bin/dpkg \
+    && ln -sf /usr/local/patchelf/bin/patchelf /usr/local/bin/patchelf \
+    && if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
+       ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake; \
+       fi \
+    && if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+       LIB_DEST="arm-linux-gnueabihf"; \
+       else \
+       LIB_DEST="aarch64-linux-gnu"; \
+       fi \
+    && cp /usr/local/liblzma/lib/liblzma.so* /lib/${LIB_DEST}/
+
+# Install core dependencies in a single layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fakeroot procps bzip2 \
+    build-essential pkg-config tar libsystemd-dev libkrb5-dev \
+    gettext libtool autopoint autoconf libtool-bin \
+    selinux-basics default-jre flex unzip git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Git configuration
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
 
 # CI uploader, to send junit to ci-visibility during CI tests
+ARG CI_UPLOADER_VERSION
+ARG CI_UPLOADER_SHA
 RUN if [ "${DD_TARGET_ARCH}" = "aarch64" ] ; then \
     curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
     echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci ; \
     fi
 
-# Rust is needed to compile the SDS library
+# Install Rust in a single layer
+ARG RUSTUP_VERSION
+ARG RUST_VERSION
+ARG RUSTC_SHA256_AARCH64
+ARG RUSTUP_SHA256_AARCH64
+ARG RUSTUP_ARCH_AARCH64
+ARG RUSTC_SHA256_ARMHF
+ARG RUSTUP_SHA256_ARMHF
+ARG RUSTUP_ARCH_ARMHF
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
         export RUSTUP_SHA256=${RUSTUP_SHA256_ARMHF} \
                RUSTUP_ARCH=${RUSTUP_ARCH_ARMHF} \
@@ -103,135 +215,73 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
     && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
-    && rm ./rustup-init;
+    && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
-# CONDA
+# CONDA environment setup in a single layer
 COPY python-packages-versions.txt setup_python.sh /
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-# External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
-
-# Patchelf
-RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
-    && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
-    && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
-    && cd patchelf-${PATCHELF_VERSION}  \
-    && ./bootstrap.sh \
-    && ./configure \
-    && make \
-    && make install \
-    && cd - \
-    && rm -rf patchelf-${PATCHELF_VERSION} \
-    && rm patchelf-${PATCHELF_VERSION}.tar.gz
-
-# RVM
+# RVM installation in a single layer
 COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
+RUN gpg --import /gpg-keys/* && rm -rf /gpg-keys \
+    && curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
     && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
+    && rm get-rvm.sh \
+    && /bin/bash -l -c "rvm requirements" \
+    && if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
         /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} 2.7 && rvm cleanup all" ; \
     else \
         /bin/bash -l -c "rvm install --with-openssl-dir=${CONDA_PATH} --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all" ; \
-    fi
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
-
-# Go
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
-    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-    && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
-    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz ; fi
-
-RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
-    && echo "$GO_SHA256_LINUX_ARMV6L /tmp/golang.tar.gz" | sha256sum --check \
-    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-    && rm -f /tmp/golang.tar.gz ; fi
-
-ENV PATH="/usr/local/go/bin:${PATH}"
-ENV PATH="${GOPATH}/bin:${PATH}"
-
-# Now install a recent enough liblzma (5.2+) which supports parallel compression
-RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-    LIB_DEST="arm-linux-gnueabihf"; \
-    else \
-    LIB_DEST="aarch64-linux-gnu"; \
-    fi && \
-    git clone -b v${LIBLZMA_VERSION} https://github.com/tukaani-project/xz.git \
-    && cd xz \
-    && autoreconf -vif \
-    && ./configure --prefix=/usr/ \
-    && make -j$(nproc) && make install \
-    && cp /usr/lib/liblzma.so* /lib/${LIB_DEST}/ \
-    && rm -rf /xz
-
-RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
-    LIB_DEST="arm-linux-gnueabihf"; \
-    EXTRA_CONFIGURE_OPTIONS="--host=arm-linux-gnueabihf --build=arm-linux-gnueabihf"; \
-    else \
-    LIB_DEST="aarch64-linux-gnu"; \
-    fi && \
-    curl -LO https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_VERSION}/dpkg-${DPKG_VERSION}.tar.bz2 \
-    && echo "${DPKG_SHA256}  dpkg-${DPKG_VERSION}.tar.bz2" | sha256sum --check \
-    && tar -xf "dpkg-${DPKG_VERSION}.tar.bz2" \
-    && cd "dpkg-${DPKG_VERSION}" \
-    && echo 1.18.4 > .dist-version \
-    && autoreconf -vfi \
-    && mkdir build && cd build \
-    && PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ../configure --disable-nls --disable-dselect --prefix=/usr --localstatedir=/var ${EXTRA_CONFIGURE_OPTIONS} \
-    && make -j$(nproc) \
-    && make install
-
-# CMake
-RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
-    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
-    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
-    && mkdir -p /opt/cmake/ \
-    && sh cmake.sh --skip-license --prefix=/opt/cmake \
-    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-    && rm cmake.sh ; fi
+    fi \
+    && /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
 RUN ./setup_codecov.sh
 
-# Install clang and llvm version 8. Pre-built because building takes ~4 hours.
-# This was built from sources on centos 7, using the build-clang.sh script
+# Install Go in a single layer
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_ARM64
+ARG GO_SHA256_LINUX_ARMV6L
+RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
+    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
+    && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz ; fi \
+    && if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
+    curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
+    && echo "$GO_SHA256_LINUX_ARMV6L /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz ; fi
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Install clang and llvm in a single layer
+ARG CLANG_VERSION
+ARG CLANG_SHA256
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz \
     && echo "${CLANG_SHA256}  clang_llvm.tar.xz" | sha256sum --check \
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz ; fi
 ENV PATH="/opt/clang/bin:$PATH"
 
-# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+# Install Vault in a single layer
+ARG VAULT_VERSION
+ARG VAULT_CHECKSUM
+ARG VAULT_FILENAME
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
-  echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
-  unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
-
-# Install linter tools
-RUN apt-get update \
-    && apt-get install -y shellcheck
-
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
-
-# Force umask to 0022
-RUN echo "umask 0022" >> /root/.bashrc
+    echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
+    unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
+    rm ${VAULT_FILENAME}
 
 # Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
 COPY ./entrypoint.sh /

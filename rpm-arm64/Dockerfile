@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} AS base
 
-# Build Args
+# Build Args - common arguments used across stages
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG DDA_VERSION
@@ -35,24 +35,30 @@ ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
-# Environment
-ENV PYTHONUTF8 1
-ENV GOPATH /go
-ENV GO_VERSION $GO_VERSION
-ENV CONDA_PATH /root/miniforge3
-ENV DD_TARGET_ARCH $DD_TARGET_ARCH
+# Environment common to all stages
+ENV PYTHONUTF8=1
+ENV GOPATH=/go
+ENV GO_VERSION=$GO_VERSION
+ENV CONDA_PATH=/root/miniforge3
+ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
 
-# The last two lines contain dependencies for build of newer rpm
+# Base system configuration (merged into one layer)
 RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
-    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
+    curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig \
     libtool autoconf policycoreutils-python texinfo \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java wget \
-    && yum clean all
+    && yum clean all \
+    && echo 'umask 0022' >> /root/.bashrc
 
-COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
+# External calls configuration
+COPY .awsconfig /root/.aws/config
+COPY .curlrc .wgetrc /root/
 
-# Upgrade binutils
+# FROM base as binutils-builder
+FROM base as binutils-builder
+ARG BINUTILS_VERSION
+ARG BINUTILS_SHA256
 RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
     && echo "${BINUTILS_SHA256}  ./binutils-${BINUTILS_VERSION}.tar.gz" | sha256sum --check \
     && tar -zxvf "./binutils-${BINUTILS_VERSION}.tar.gz" \
@@ -62,11 +68,8 @@ RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-$
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
 
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
-
-# Build new rpm
+# FROM base as rpm-builder
+FROM base as rpm-builder
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
 RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/rpm-4.15.1.tar.bz2 \
@@ -81,70 +84,104 @@ RUN curl -sL -o /tmp/rpm-4.15.1.tar.bz2 http://ftp.rpm.org/releases/rpm-4.15.x/r
     && cd / \
     && rm -rf /tmp/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp/rpm-4.15.1.tar.bz2 /tmp/rpm-4.15.1
 
-# Rebuild RPM database with the new rpm
-RUN mkdir -p /usr/local/var/lib/rpm \
-    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
-    && /usr/local/bin/rpm --rebuilddb
-
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
-
-# CI uploader, to send junit to ci-visibility during CI tests
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" \
-    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
-    && chmod +x /usr/local/bin/datadog-ci
-
-# CONDA
-COPY python-packages-versions.txt setup_python.sh /
-ENV DDA_VERSION=$DDA_VERSION
-ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN ./setup_python.sh
-ENV PATH "${CONDA_PATH}/condabin:${PATH}"
-ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
-
-# External calls configuration
-COPY .awsconfig /root/.aws/config
-COPY .curlrc .wgetrc /root/
-
-# Patchelf
+# FROM base as patchelf-builder
+FROM base as patchelf-builder
+ARG PATCHELF_VERSION
+ARG PATCHELF_SHA256
 RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patchelf/archive/refs/tags/${PATCHELF_VERSION}.tar.gz \
     && echo "${PATCHELF_SHA256}  patchelf-${PATCHELF_VERSION}.tar.gz" | sha256sum --check \
     && tar xvzf patchelf-${PATCHELF_VERSION}.tar.gz \
     && cd patchelf-${PATCHELF_VERSION}  \
     && ./bootstrap.sh \
-    && ./configure \
+    && ./configure --prefix=/usr/local/patchelf \
     && make \
     && make install \
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
-# RVM
+# FROM base as cmake-builder
+FROM base as cmake-builder
+ARG CMAKE_VERSION
+ARG CMAKE_SHA256
+RUN curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
+    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
+    && mkdir -p /opt/cmake/ \
+    && sh cmake.sh --skip-license --prefix=/opt/cmake \
+    && rm cmake.sh
+
+# Final image with all tools combined
+FROM base
+
+# Copy all built components from previous stages
+COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
+COPY --from=binutils-builder /usr/local/binutils /usr/local/binutils
+COPY --from=rpm-builder /usr/local/bin/rpm* /usr/local/bin/
+COPY --from=rpm-builder /usr/local/lib/rpm /usr/local/lib/rpm
+COPY --from=patchelf-builder /usr/local/patchelf /usr/local/
+COPY --from=cmake-builder /opt/cmake /opt/cmake
+
+# Set permissions for copied binaries and symlinks
+RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && ln -sf /usr/local/patchelf/bin/patchelf /usr/local/bin/patchelf \
+    && mkdir -p /usr/local/var/lib/rpm \
+    && cp /var/lib/rpm/Packages /usr/local/var/lib/rpm/Packages \
+    && /usr/local/bin/rpm --rebuilddb
+
+# Git configuration
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
+# Upgrade some perl modules
+RUN cpanp -i List::Util 1.66
+
+# CI uploader, to send junit to ci-visibility during CI tests
+ARG CI_UPLOADER_VERSION
+ARG CI_UPLOADER_SHA
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
+    && chmod +x /usr/local/bin/datadog-ci
+
+# CONDA environment setup in a single layer
+COPY python-packages-versions.txt setup_python.sh /
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
+ENV DDA_VERSION=$DDA_VERSION
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
+RUN ./setup_python.sh
+ENV PATH "${CONDA_PATH}/condabin:${PATH}"
+ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
+
+# RVM installation in a single layer
 COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
+RUN gpg --import /gpg-keys/* && rm -rf /gpg-keys \
+    && curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
     && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+    && rm get-rvm.sh \
+    && /bin/bash -l -c "rvm requirements" \
+    && /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all" \
+    && /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document" \
+    && echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
-# Override updated linker system-wide
-RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld
-
-# Go
+# Install Go in a single layer
+ARG GO_VERSION
+ARG GO_SHA256_LINUX_ARM64
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.tar.gz \
-  && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
-  && tar -C /usr/local -xzf /tmp/golang.tar.gz \
-  && rm -f /tmp/golang.tar.gz
+    && echo "$GO_SHA256_LINUX_ARM64  /tmp/golang.tar.gz" | sha256sum --check \
+    && tar -C /usr/local -xzf /tmp/golang.tar.gz \
+    && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# Rust is needed to compile the SDS library
+# Install Rust in a single layer
+ARG RUST_VERSION
+ARG RUSTC_SHA256
+ARG RUSTUP_VERSION
+ARG RUSTUP_SHA256
+ARG RUSTUP_ARCH
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
@@ -153,35 +190,27 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
-# CMake
-RUN set -ex \
-    && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
-    && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
-    && mkdir -p /opt/cmake/ \
-    && sh cmake.sh --skip-license --prefix=/opt/cmake \
-    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-    && rm cmake.sh
-
 # Install Codecov uploader
 COPY setup_codecov.sh /
 RUN ./setup_codecov.sh
 
-# Install clang and llvm version 8. Pre-built because building takes ~4 hours.
-# This was built from sources on centos 7, using the build-clang.sh script
+# Install clang and llvm in a single layer
+ARG CLANG_VERSION
+ARG CLANG_SHA256
 RUN curl -sL -o clang_llvm.tar.xz https://dd-agent-omnibus.s3.amazonaws.com/clang%2Bllvm-${CLANG_VERSION}-aarch64-linux.tar.xz \
     && echo "${CLANG_SHA256}  clang_llvm.tar.xz" | sha256sum --check \
     && tar xf clang_llvm.tar.xz --no-same-owner -kC / \
     && rm clang_llvm.tar.xz
 ENV PATH="/opt/clang/bin:$PATH"
 
-# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+# Install Vault in a single layer
+ARG VAULT_VERSION
+ARG VAULT_CHECKSUM
+ARG VAULT_FILENAME
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
-  echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
-  unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
-
-# Force umask to 0022
-RUN echo "umask 0022" >> /root/.bashrc
+    echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
+    unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
+    rm ${VAULT_FILENAME}
 
 # Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
 COPY entrypoint.sh /

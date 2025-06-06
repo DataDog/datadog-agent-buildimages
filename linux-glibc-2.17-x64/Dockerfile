@@ -1,5 +1,6 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS base
 
+# Build Args - common arguments used across stages
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_AMD64
@@ -24,44 +25,40 @@ ARG PROTOBUF_VERSION=29.3
 ARG PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip"
 ARG PROTOBUF_CHECKSUM=3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a
 
-ENV PYTHONUTF8 1
-ENV CONDA_PATH /root/miniforge3
+# Environment variables common to all stages
+ENV PYTHONUTF8=1
+ENV CONDA_PATH=/root/miniforge3
 
-# Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
-RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
-
-RUN apt update -qy && apt install -y \
+# Base system dependencies
+RUN apt update -qy && apt install -y --no-install-recommends \
     wget xz-utils gpg build-essential flex texinfo unzip \
     help2man file gawk libtool-bin bison libncurses-dev \
     python-is-python3 git cmake curl fakeroot procps bzip2 \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic libc6-dev-i386 jq libsystemd-dev clang-format
+    linux-headers-generic libc6-dev-i386 jq libsystemd-dev clang-format \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc \
+    && git config --global user.email "package@datadoghq.com" \
+    && git config --global user.name "Bits"
 
-COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc-2.17-x64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config-aarch64
-COPY linux-glibc-2.17-x64/toolchain_x86-64.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
-COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
-ENV DD_CC_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-gcc"
-ENV DD_CXX_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-g++"
-ENV DD_CMAKE_TOOLCHAIN_PATH="/opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake"
-
-RUN git config --global user.email "package@datadoghq.com"
-RUN git config --global user.name "Bits"
-
-# Build texinfo to get a bugfix version
-# Otherwise generating glibc doc with a recent version
-# causes a segfault. The fix isn't yet released as a package
-# https://git.savannah.gnu.org/cgit/texinfo.git/commit/?id=60d3edc4b74b4e1e5ef55e53de394d3b65506c47
+# FROM base as texinfo-builder
+FROM base as texinfo-builder
 RUN cd /build && \
     git clone https://gnu.googlesource.com/texinfo && \
     cd texinfo && \
     git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
     ./autogen.sh && \
-    ./configure && make -j$(ncproc) && make install && \
+    ./configure && make -j$(nproc) && make install && \
     rm -rf /build/texinfo
+
+# FROM base as crosstool-builder
+FROM texinfo-builder as crosstool-builder
+ARG CTNG_VERSION
+COPY linux-glibc-2.17-x64/config-x86_64-unknown-gnu-linux-glibc2.17 /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux-glibc-2.17-x64/config-aarch64-unknown-gnu-linux-glibc2.23 /build/crosstool-ng-${CTNG_VERSION}/.config-aarch64
+COPY linux-glibc-2.17-x64/ctng.patch /root/ctng.patch
 
 RUN cd /build && \
     wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz && \
@@ -80,39 +77,62 @@ RUN cd /build && \
     mv .config-aarch64 .config && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
-    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
-    rm -rf /build
+    mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64
 
-
-# IBM MQ
+# FROM base as ibm-mq-builder
+FROM base as ibm-mq-builder
+ARG IBM_MQ_VERSION
+ARG IBM_MQ_SHA256
 RUN mkdir -p /opt/mqm \
     && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
     && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
     && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
     && rm -rf /tmp/mq_client.tar.gz
 
-# CONDA
+# Final image with all components
+FROM base
+
+# Copy built components from previous stages
+COPY --from=crosstool-builder /opt/toolchains /opt/toolchains
+COPY --from=ibm-mq-builder /opt/mqm /opt/mqm
+
+# Copy configuration files
+COPY linux-glibc-2.17-x64/toolchain_x86-64.cmake /opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc-2.17-x64/cargo-config.toml ${HOME}/.cargo/config.toml
+
+# Set environment variables for the toolchain
+ENV DD_CC_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-gcc"
+ENV DD_CXX_PATH="/opt/toolchains/x86_64/bin/x86_64-unknown-linux-gnu-g++"
+ENV DD_CMAKE_TOOLCHAIN_PATH="/opt/cmake/x86_64-unknown-linux-gnu.toolchain.cmake"
+ENV PATH=/opt/toolchains/x86_64/bin:/opt/toolchains/aarch64/bin:$PATH
+ENV PKG_CONFIG_LIBDIR=""
+
+# CONDA installation in a single layer
 COPY python-packages-versions.txt setup_python.sh /
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 
-# RVM
+# RVM installation in a single layer
 COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
+RUN gpg --import /gpg-keys/* && rm -rf /gpg-keys \
+    && curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
     && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
     && bash get-rvm.sh stable --version 1.29.12 \
     && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+    && rm get-rvm.sh \
+    && /bin/bash -l -c "rvm requirements" \
+    && /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all" \
+    && /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document" \
+    && echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
-# Protobuf
+# Protobuf installation in a single layer
+ARG PROTOBUF_VERSION
+ARG PROTOBUF_FILENAME
+ARG PROTOBUF_CHECKSUM
 RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME} \
     && echo "${PROTOBUF_CHECKSUM}  ${PROTOBUF_FILENAME}" | sha256sum --check \
     && unzip -o ${PROTOBUF_FILENAME} -d protoc3 \
@@ -121,13 +141,17 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
     && rm -rf protoc3 \
     && rm ${PROTOBUF_FILENAME}
 
-# Go
+# Go installation in a single layer
 ENV GOPATH=/go
 COPY setup_go.sh /
 RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# Rust is needed to compile the SDS library
+# Rust installation in a single layer
+ARG RUST_VERSION
+ARG RUSTC_SHA256
+ARG RUSTUP_VERSION
+ARG RUSTUP_SHA256
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
@@ -136,26 +160,27 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
-# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+# Vault installation in a single layer
+ARG VAULT_VERSION
+ARG VAULT_CHECKSUM
+ARG VAULT_FILENAME
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
-  echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
-  unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+    echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
+    unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
+    rm ${VAULT_FILENAME}
 
-# CI uploader, to send junit to ci-visibility during CI tests
+# CI uploader in a single layer
+ARG CI_UPLOADER_VERSION
+ARG CI_UPLOADER_SHA
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
-  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
-  chmod +x /usr/local/bin/datadog-ci
+    echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+    chmod +x /usr/local/bin/datadog-ci
 
-RUN echo "umask 0022" >> /root/.bashrc
+# Final setup
+RUN echo "umask 0022" >> /root/.bashrc \
+    && mkdir -p /go/src/github.com/DataDog/datadog-agent
+
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-
-RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
-
-ENV PATH=/opt/toolchains/x86_64/bin:/opt/toolchains/aarch64/bin:$PATH
-
-# Ensure pkg-config will not look into the system directories
-ENV PKG_CONFIG_LIBDIR ""
 
 ENTRYPOINT ["/entrypoint.sh"]
