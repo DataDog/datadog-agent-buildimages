@@ -11,3 +11,7 @@ set-ev COLORTERM "truecolor"
 
 # Allow dynamic dependencies again as they are disabled in build images
 set-ev DDA_NO_DYNAMIC_DEPS "0"
+
+# These are effectively required for builds
+set-ev OMNIBUS_BASE_DIR "/omnibus"
+set-ev OMNIBUS_GIT_CACHE_DIR "/tmp/omnibus-git-cache"
