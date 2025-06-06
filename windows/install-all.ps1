@@ -61,18 +61,18 @@ try {
     #
     if ($Phase -eq 0 -or $Phase -eq 1) {
         .\helpers\phase1\install_net35.ps1
-        .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
-        .\helpers\phase1\install_7zip_standalone.ps1 -Version $ENV:SEVENZIP_STANDALONE_VERSION -Sha256 $ENV:SEVENZIP_STANDALONE_SHA256
-        .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
-        .\helpers\phase1\install_vstudio.ps1
-        .\helpers\phase1\install_wdk.ps1
-        .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
-        .\helpers\phase1\install_dotnetcore.ps1
-        .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
-        .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
-        # # vcpkg depends on cmake
-        .\helpers\phase1\install_vcpkg.ps1
-        .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256
+        # .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
+        # .\helpers\phase1\install_7zip_standalone.ps1 -Version $ENV:SEVENZIP_STANDALONE_VERSION -Sha256 $ENV:SEVENZIP_STANDALONE_SHA256
+        # .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
+        # .\helpers\phase1\install_vstudio.ps1
+        # .\helpers\phase1\install_wdk.ps1
+        # .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION -Sha256 $ENV:WIX_SHA256
+        # .\helpers\phase1\install_dotnetcore.ps1
+        # .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
+        # .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
+        # # # vcpkg depends on cmake
+        # .\helpers\phase1\install_vcpkg.ps1
+        # .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256
     }
 
     if ($Phase -eq 0 -or $Phase -eq 2) {
