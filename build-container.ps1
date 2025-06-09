@@ -54,7 +54,7 @@ foreach ($h in $SoftwareTable.GetEnumerator()){
 }
 
 $arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
-# Write-Host -ForegroundColor Green "Building with the following command:"
-# Write-Host -ForegroundColor Green "$buildcommand `n"
+Write-Host -ForegroundColor Green "Building with the following command:"
+Write-Host -ForegroundColor Green "$arglist"
 filter timestamp {"$(Get-Date -Format o): $_"}
 & docker $arglist | timestamp
