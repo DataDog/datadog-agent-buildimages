@@ -53,10 +53,6 @@ foreach ($h in $SoftwareTable.GetEnumerator()){
     }
 }
 
-if( -not $Cache) {
-    $arglist += "--no-cache"
-}
-
 $arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
 # Write-Host -ForegroundColor Green "Building with the following command:"
 # Write-Host -ForegroundColor Green "$buildcommand `n"
