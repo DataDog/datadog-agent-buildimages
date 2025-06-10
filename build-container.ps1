@@ -35,8 +35,10 @@ $arglist += "build"
 # Read arguments from go.env file
 $lines = Get-Content -Path 'go.env'
 foreach ($line in $lines) {
-    $arglist += "--build-arg"
-    $arglist += "$line"
+    if($line -like "*WINDOWS_AMD64"){
+        $arglist += "--build-arg"
+        $arglist += "$line"
+    }
 }
 
 # Read arguments from dda.env file
