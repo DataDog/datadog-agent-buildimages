@@ -74,8 +74,7 @@ test_windows_pull:
     CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
   script:
     - docker pull registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:v67364541-26e934c5
-    - docker pull registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:v67361405-07e0a820
-    - docker pull registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:v67360487-f3a6d4b8
+    - docker pull registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64_test_only:v67381646-102f067d
 
 # get_agent_version:
 #   stage: setup
