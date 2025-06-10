@@ -76,12 +76,9 @@ RUN /setup/vscode.sh
 COPY ssh.sh /setup/ssh.sh
 RUN /setup/ssh.sh
 
-# Remove setup files
-# hadolint ignore=DL3059
-RUN rm -rf /setup
-
-# Remove side effects of APT installations
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Run steps that must happen last
+COPY finalize.sh /setup/finalize.sh
+RUN /setup/finalize.sh
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
