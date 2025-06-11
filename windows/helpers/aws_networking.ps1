@@ -1,3 +1,4 @@
+# This script is used to configure the AWS networking for the build image.
 $ErrorActionPreference = 'Stop'
 
 $defgw = Get-NetRoute -DestinationPrefix "0.0.0.0/0" | Select-Object -ExpandProperty "NextHop"
