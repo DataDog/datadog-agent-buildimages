@@ -4,6 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12.6
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -33,7 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi-dev  \
     liblzma-dev \
     && apt-get clean \
-    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
+    && echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check \
     && unzip -q awscliv2.zip \
     && ./aws/install \
     && rm -rf aws awscliv2.zip \

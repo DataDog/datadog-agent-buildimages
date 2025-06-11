@@ -18,6 +18,8 @@ ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 ARG DATADOG_CI_VERSION=3.9.0
 ARG DATADOG_CI_SHA=abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
 
 ENV PYTHONUTF8 1
 ENV CONDA_PATH /root/miniforge3
@@ -115,18 +117,18 @@ ENV PATH "${HOME}/.cargo/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWSCLI_VERSION}.zip && \
+  echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
+  unzip -q awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
 
 # CI uploader, to send junit to ci-visibility during CI tests
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
   echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
-
-# AWS v2 cli
-RUN curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip && \
-    unzip -q awscliv2.zip && \
-    ./aws/install && \
-    rm -rf aws awscliv2.zip
 
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
