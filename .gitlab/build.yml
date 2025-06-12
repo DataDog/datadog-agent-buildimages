@@ -176,6 +176,13 @@ build_windows_ltsc2022_x64:
       foreach ($line in $(Get-Content dda.env)) {
         $arglist += -split "--opt build-arg:$line"
       }
+    - $cache_source_arg = @()
+    - |
+      if ($env:CI_PIPELINE_SOURCE -eq "schedule") {
+        $cache_source_arg += "--no-cache"
+      } else {
+        $cache_source_arg += -split "--import-cache type=registry,ref=$CACHE_IMAGE"
+      }
     # Build the image
     - >-
       buildctl build
@@ -185,5 +192,5 @@ build_windows_ltsc2022_x64:
       --local context=.
       --local dockerfile=.\windows 
       $arglist
-      --import-cache type=registry,ref=$CACHE_IMAGE
+      $cache_source_arg
       --export-cache type=registry,ref=$CACHE_IMAGE
