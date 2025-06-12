@@ -23,6 +23,7 @@ ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
 ARG CMAKE_VERSION=3.30.2
 ARG CMAKE_SHA256="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
+ARG CMAKE_SHA256_ARMHF="46074c781eccebc433e98f0bbfa265ca3fd4381f245ca3b140e7711531d60db2"
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
@@ -33,7 +34,8 @@ ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 ARG AWSCLI_VERSION=2.27.30
-ARG AWSCLI_CHECKSUM=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
+ARG AWSCLI_CHECKSUM_AARCH64=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
+ARG AWSCLI_CHECKSUM_ARMHF="bda85007d2d1dc5b76a1391165953c0ba4ccc9d3a61d25452b035a60fb4c7c27"
 
 ARG RUSTC_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_SHA256_AARCH64="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
@@ -198,14 +200,23 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     && make -j$(nproc) \
     && make install
 
-# CMake
+# CMake (added for awscli in arm32)
 RUN if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then set -ex \
     && curl -sL -o cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-aarch64.sh \
     && echo "${CMAKE_SHA256}  cmake.sh" | sha256sum --check \
     && mkdir -p /opt/cmake/ \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-    && rm cmake.sh ; fi
+    && rm cmake.sh ; else set -ex \
+    && curl --retry 10 -fsSLo cmake-${CMAKE_VERSION}.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz \
+    && echo "${CMAKE_SHA256_ARMHF} cmake-${CMAKE_VERSION}.tar.gz" | sha256sum --check \
+    && tar -xzf cmake-${CMAKE_VERSION}.tar.gz \
+    && cd cmake-${CMAKE_VERSION} \
+    && ./bootstrap \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. \
+    && rm -rf cmake-${CMAKE_VERSION} cmake-${CMAKE_VERSION}.tar.gz ; fi
 
 # Install Codecov uploader
 COPY setup_codecov.sh /
@@ -224,12 +235,24 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME} && \
-  # AWS v2 cli
+  if [ "$DD_TARGET_ARCH" = "aarch64" ] ; then \
+  # AWS v2 cli aarch64
   curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWSCLI_VERSION}.zip && \
-  echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
+  echo "${AWSCLI_CHECKSUM_AARCH64} awscliv2.zip" | sha256sum --check && \
   unzip -q awscliv2.zip && \
   ./aws/install && \
-  rm -rf aws awscliv2.zip
+  rm -rf aws awscliv2.zip ; else \
+  # AWS v2 cli armhf
+  curl --retry 10 -fsSLo awscli-${AWSCLI_VERSION}.tar.gz https://awscli.amazonaws.com/awscli-${AWSCLI_VERSION}.tar.gz && \
+  echo "${AWSCLI_CHECKSUM_ARMHF} awscli-${AWSCLI_VERSION}.tar.gz" | sha256sum --check && \
+  tar -xzf awscli-${AWSCLI_VERSION}.tar.gz && \
+  cd awscli-${AWSCLI_VERSION} && \
+  ./configure --with-download-deps && \
+  make -j$(nproc) && \
+  make install && \
+  aws --version && \
+  cd .. && \
+  rm -rf awscli-${AWSCLI_VERSION} awscli-${AWSCLI_VERSION}.tar.gz ; fi
 
 # Install linter tools
 RUN apt-get update \
