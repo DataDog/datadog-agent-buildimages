@@ -22,8 +22,8 @@
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
-    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
-    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    # Do not use cache on periodic pipeline where we want to test our dependencies.
+    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then CACHE_SOURCE="--no-cache"; fi
     - PUSH=""
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
     - >-
@@ -51,8 +51,8 @@
       when: never
   script:
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache"
-    # Do not use cache on official build, we just want to speed up the dev pipelines and want regular cache invalidations.
-    - if [[ -z "$ECR_TEST_ONLY" ]]; then CACHE_SOURCE="--no-cache"; fi
+    # Do not use cache on periodic pipeline where we want to test our dependencies.
+    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then CACHE_SOURCE="--no-cache"; fi
     - PUSH=""
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
     # Build and push to internal ECR
