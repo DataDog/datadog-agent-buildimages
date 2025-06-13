@@ -4,6 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12.6
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -23,6 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libbz2-dev  \
     libreadline-dev  \
     libsqlite3-dev  \
+    unzip \
     wget  \
     libncurses5-dev  \
     xz-utils  \
@@ -31,7 +34,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxmlsec1-dev  \
     libffi-dev  \
     liblzma-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
+    && echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check \
+    && unzip -q awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
+    rm -rf /var/lib/apt/lists/*
 
 # Python install
 ENV PYTHONUTF8 1
@@ -43,7 +52,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
      pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
-     dda -v self dep sync -f legacy-build -f legacy-btf-gen && \
+     dda -v self dep sync -f legacy-build && \
      pyenv rehash
 
 COPY .awsconfig /root/.aws/config
