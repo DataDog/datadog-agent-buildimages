@@ -43,4 +43,5 @@ rm "vscode_cli_alpine_${arch}_cli.tar.gz"
 
 ln -s "${vscode_root_dir}/cli/servers/Stable-${commit}/server/bin/code-server" /usr/local/bin/code-server
 
+ln -s "${vscode_root_dir}/extensions" "${HOME}/.vscode-extensions"
 install-vscode-extensions /setup/default-vscode-extensions.txt
