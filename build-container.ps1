@@ -1,64 +1,50 @@
 param(
-    [Parameter(Mandatory = $false)][string] $Arch = "x64",
-    [Parameter(Mandatory = $false)][string] $Tag = $null,
-    [Parameter(Mandatory = $false)][switch] $Cache
+    [Parameter(Mandatory = $true)][string] $Image,
+    [Parameter(Mandatory = $true)][string] $Tag,
+    [Parameter(Mandatory = $false)][switch] $Buildkit = $false
 )
 
-$ErrorActionPreference = "Stop"
-. .\windows\versions.ps1
-$BaseTable = @{
-    1809 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019";
-    1909 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-1909";
-    2004 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-2004";
-    ## 20H2 reports itself as 2009 in the registry
-    2009 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-20H2"
-    2022 = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022"
+$build_args = @()
+$cmd_args = @()
+$build_opt = "--build-arg "
+$cmd = "docker"
+$SRC_IMAGE = "${Image}:${Tag}"
+$CACHE_IMAGE = "${Image}:cache"
+
+
+if ($Buildkit) {
+    $cmd = "buildctl"
+    # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
+    .\containerd.ps1
+    .\cni.ps1
+    .\buildkit.ps1
+    # Start buildkitd
+    Start-Process -FilePath "buildkitd.exe"
+    $build_opt = "--opt build-arg:"
+    $cmd_args = -split "--progress=plain --output type=image,name=$SRC_IMAGE,push=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.\windows "
+    # Set cache arguments
+    if ($env:CI_PIPELINE_SOURCE -eq "schedule") {
+        $cmd_args += "--no-cache"
+    } else {
+        $cmd_args += -split "--import-cache type=registry,ref=$CACHE_IMAGE"
+    }
+    $cmd_args += -split "--export-cache type=registry,ref=$CACHE_IMAGE"
+} else {
+    $cmd_args = -split "-m 4096M -t $SRC_IMAGE --file .\windows\Dockerfile ."
 }
 
-$kernelver = [int](get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -name releaseid).releaseid
-$build = [System.Environment]::OSVersion.version.build
-$productname = (get-itemproperty -path "hklm:software\microsoft\windows nt\currentversion" -n productname).productname
-Write-Host -ForegroundColor Green "Detected kernel version $kernelver, build $build and product name $productname"
-# Windows Server 2022 still reports 2009 as releaseid
-if ($build -ge 20348) {
-    $kernelver = 2022
-}
-
-Write-Host -ForegroundColor Green "Using base image $($BaseTable[$kernelver])"
-
-$arglist = @()
-if($Tag -eq $null -or $Tag -eq ""){
-    $Tag ="builder_$($kernelver)_$Arch"
-}
-$arglist += "build"
-
-# Read arguments from go.env file
-$lines = Get-Content -Path 'go.env'
-foreach ($line in $lines) {
-    $arglist += "--build-arg"
-    $arglist += "$line"
-}
-
-# Read arguments from dda.env file
-$lines = Get-Content -Path 'dda.env'
-foreach ($line in $lines) {
-    $arglist += "--build-arg"
-    $arglist += "$line"
-}
-
-foreach ($h in $SoftwareTable.GetEnumerator()){
-    if( -not ($($h.Key) -like "*SHA256")){
-        $arglist += "--build-arg"
-        $arglist += "$($h.Key)=$($h.Value)"
+# Get build arguments from environment variables
+$build_args += -split "${build_opt}BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022" 
+foreach ($line in $(Get-Content go.env)) {
+    if ( -not ($line -like "*LINUX*") ) {
+        $build_args += -split "$build_opt$line"
     }
 }
-
-if( -not $Cache) {
-    $arglist += "--no-cache"
+foreach ($line in $(Get-Content dda.env)) {
+    $build_args += -split "$build_opt$line"
 }
+$cmd_args += $build_args
 
-$arglist += -split "-m 4096M --build-arg BASE_IMAGE=$($BaseTable[$kernelver]) --build-arg DD_TARGET_ARCH=$Arch --build-arg WINDOWS_VERSION=$kernelver -t $Tag --file .\windows\Dockerfile ."
-# Write-Host -ForegroundColor Green "Building with the following command:"
-# Write-Host -ForegroundColor Green "$buildcommand `n"
-filter timestamp {"$(Get-Date -Format o): $_"}
-& docker $arglist | timestamp
+# Build the image
+Write-Host "Building the image using $cmd and $cmd_args"
+& $cmd build $cmd_args
