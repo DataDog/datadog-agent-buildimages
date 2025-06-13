@@ -1,10 +1,14 @@
 # Source: https://github.com/moby/buildkit/blob/master/docs/windows.md#cni--networking-setup
+. .\windows\helpers.ps1
 # get the CNI plugins (binaries)
 $cniPluginVersion = "0.3.1"
+$sha256 = "4f36ee6905ada238ca2a9e1bfb8a1fb2912c2d88c4b6e5af4c41a42db70d7d68"
 $cniBinDir = "$env:ProgramFiles\containerd\cni\bin"
 mkdir $cniBinDir -Force
-curl.exe -fSLO https://github.com/microsoft/windows-container-networking/releases/download/v$cniPluginVersion/windows-container-networking-cni-amd64-v$cniPluginVersion.zip
-tar xvf windows-container-networking-cni-amd64-v$cniPluginVersion.zip -C $cniBinDir
+$cni_url = "https://github.com/microsoft/windows-container-networking/releases/download/v$cniPluginVersion/windows-container-networking-cni-amd64-v$cniPluginVersion.zip"
+$out = "$($PSScriptRoot)\windows-container-networking-cni-amd64-v$cniPluginVersion.zip"
+Get-RemoteFile -RemoteFile $cni_url -LocalFile $out -VerifyHash $sha256
+tar xvf $out -C $cniBinDir
 
 # NOTE: depending on your host setup, the IPs may change after restart
 # you can only run this script from here to end for a refresh.

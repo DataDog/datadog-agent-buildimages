@@ -1,12 +1,19 @@
 # Source: https://github.com/containerd/containerd/blob/main/docs/getting-started.md#installing-containerd-on-windows
+. .\windows\helpers.ps1
 # If containerd previously installed run:
-Stop-Service containerd
+$service = Get-Service -Name containerd -ErrorAction SilentlyContinue
+if ($service) {
+    Stop-Service containerd
+}
 
 # Download and extract desired containerd Windows binaries
 $Version="1.7.13"	# update to your preferred version
 $Arch = "amd64"	# arm64 also available
-curl.exe -LO https://github.com/containerd/containerd/releases/download/v$Version/containerd-$Version-windows-$Arch.tar.gz
-tar.exe xvf .\containerd-$Version-windows-$Arch.tar.gz
+$sha256 = "a576160771eba9b3e0d85a841fa4f6dba60a14c5c4f45e34f2148e2fe138ebb7"
+$containerd_url = "https://github.com/containerd/containerd/releases/download/v$Version/containerd-$Version-windows-$Arch.tar.gz"
+$out = "$($PSScriptRoot)\containerd-$Version-windows-$Arch.tar.gz"
+Get-RemoteFile -RemoteFile $containerd_url -LocalFile $out -VerifyHash $sha256
+tar.exe xvf $out
 
 # Copy
 Copy-Item -Path .\bin -Destination $Env:ProgramFiles\containerd -Recurse -Force

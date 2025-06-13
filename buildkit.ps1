@@ -1,8 +1,11 @@
 # Source: https://github.com/moby/buildkit/blob/master/docs/windows.md#setup-instructions
-$url = "https://api.github.com/repos/moby/buildkit/releases/latest"
-$version = (Invoke-RestMethod -Uri $url -UseBasicParsing).tag_name
+. .\windows\helpers.ps1
+$version = "v0.22.0"
 $arch = "amd64" # arm64 binary available too
-curl.exe -fSLO https://github.com/moby/buildkit/releases/download/$version/buildkit-$version.windows-$arch.tar.gz
+$sha256 = "e76584227535814b25be9bb202ef400fd43c32b74c3ed3a0a05e9ceee40b3f66"
+$buildkit_url = "https://github.com/moby/buildkit/releases/download/$version/buildkit-$version.windows-$arch.tar.gz"
+$out = "$($PSScriptRoot)\buildkit-$version.windows-$arch.tar.gz"
+Get-RemoteFile -RemoteFile $buildkit_url -LocalFile $out -VerifyHash $sha256
 # there could be another `.\bin` directory from containerd instructions
 # you can move those
 mv bin bin2
