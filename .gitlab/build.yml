@@ -156,41 +156,5 @@ build_windows_ltsc2022_x64:
     DD_TARGET_ARCH: x64
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
-    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}"
-    - $CACHE_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:cache"
-    # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
-    - .\containerd.ps1
-    - .\cni.ps1
-    - .\buildkit.ps1
-    # Start buildkitd
-    - Start-Process -FilePath "buildkitd.exe"
-    - $arglist = @()
-    - $arglist += -split "--opt build-arg:BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022" 
-    - |
-      foreach ($line in $(Get-Content go.env)) {
-        if( -not ($line -like "*LINUX*")){
-          $arglist += -split "--opt build-arg:$line"
-        }
-      }
-    - |
-      foreach ($line in $(Get-Content dda.env)) {
-        $arglist += -split "--opt build-arg:$line"
-      }
-    - $cache_source_arg = @()
-    - |
-      if ($env:CI_PIPELINE_SOURCE -eq "schedule") {
-        $cache_source_arg += "--no-cache"
-      } else {
-        $cache_source_arg += -split "--import-cache type=registry,ref=$CACHE_IMAGE"
-      }
-    # Build the image
-    - >-
-      buildctl build
-      --progress=plain
-      --output type=image,name=$SRC_IMAGE,push=true
-      --frontend=dockerfile.v0
-      --local context=.
-      --local dockerfile=.\windows 
-      $arglist
-      $cache_source_arg
-      --export-cache type=registry,ref=$CACHE_IMAGE
+    - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
+    - .\build-container.ps1 -Image $SRC_IMAGE -Tag $IMAGE_VERSION -Buildkit
