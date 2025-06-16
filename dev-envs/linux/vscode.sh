@@ -43,7 +43,7 @@ cursor_cli_url="https://cursor.blob.core.windows.net/remote-releases/${cursor_co
 extensions_root_dir="${HOME}/.vscode-extensions"
 mkdir -p "${extensions_root_dir}"
 
-# Create function to install VS Code server
+# Create function to install VS Code-based servers
 function install_vscode() {
     commit="$1"
     root_dir_name="$2"
