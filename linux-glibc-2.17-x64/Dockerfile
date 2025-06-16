@@ -143,8 +143,8 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" && \
   echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
-DATADOG_CI
-RUN echo "DATADOG_CI >> /root/.bashrc
+
+RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
