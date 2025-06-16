@@ -16,8 +16,8 @@ ARG DD_TARGET_ARCH
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
-ARG CI_UPLOADER_VERSION=2.38.1
-ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
+ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_SHA=abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d
 
 ENV PYTHONUTF8 1
 ENV CONDA_PATH /root/miniforge3
@@ -121,8 +121,8 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
   echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
-
-RUN echo "umask 0022" >> /root/.bashrc
+DATADOG_CI
+RUN echo "DATADOG_CI >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 

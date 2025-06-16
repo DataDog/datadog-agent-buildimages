@@ -5,8 +5,8 @@ ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
-ARG CI_UPLOADER_VERSION=2.38.1
-ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
+ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_SHA=abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
@@ -66,6 +66,6 @@ COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
 # CI uploader, to send tags for extra visibility into CI
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
-  echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
+  echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
