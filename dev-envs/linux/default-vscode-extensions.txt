@@ -7,8 +7,6 @@ golang.go
 ms-azuretools.vscode-docker
 ms-python.python
 ms-vscode.cmake-tools
-ms-vscode.cpptools
-redhat.java
 redhat.vscode-xml
 redhat.vscode-yaml
 rust-lang.rust-analyzer
