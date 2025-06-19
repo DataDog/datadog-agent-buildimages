@@ -1,0 +1,23 @@
+---
+get_agent_version:
+  stage: setup
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/python:3.12.8
+  script:
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - pip install "dda==${DDA_VERSION}"
+    - export PATH=/home/dog/.local/bin:$PATH
+    - VERSION=$(dda run agent version)
+    - echo "AGENT_VERSION=$VERSION"
+    - echo "AGENT_VERSION=$VERSION" >> version.env
+  artifacts:
+    reports:
+      dotenv: version.env
+
+lint_dockerfiles:
+  tags: ["arch:amd64"]
+  stage: setup
+  needs: []
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
+  script:
+    - hadolint dev-envs/linux/Dockerfile

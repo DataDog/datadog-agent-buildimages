@@ -11,3 +11,11 @@ set-ev COLORTERM "truecolor"
 
 # Allow dynamic dependencies again as they are disabled in build images
 set-ev DDA_NO_DYNAMIC_DEPS "0"
+
+# These are effectively required for builds
+set-ev OMNIBUS_BASE_DIR "/omnibus"
+set-ev OMNIBUS_GIT_CACHE_DIR "/tmp/omnibus-git-cache"
+set-ev OMNIBUS_FORCE_PACKAGES "1"
+
+# Properly set up Ruby's bundle cache
+set-ev BUNDLE_PATH "/omnibus/vendor/bundle"
