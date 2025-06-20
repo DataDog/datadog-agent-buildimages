@@ -10,6 +10,8 @@ ARG DATADOG_CI_SHA=abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3d
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
 
 RUN apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
@@ -59,7 +61,13 @@ ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWSCLI_VERSION}.zip && \
+  echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
+  unzip -q awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

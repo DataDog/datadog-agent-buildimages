@@ -26,6 +26,10 @@ ARG GIT_SHA256="78553f786f1a66cb68983c170be482558028a3376056c0f2ed366f331b1e35f2
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=e8fa3d269cf90cdaa6e8b4c7e9172c45dce87d0a96f04b041016e9d97c7b9bdc
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm.zip"
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM="bda85007d2d1dc5b76a1391165953c0ba4ccc9d3a61d25452b035a60fb4c7c27"
+ARG CMAKE_VERSION=4.0.2
+ARG CMAKE_CHECKSUM="1c3a82c8ca7cf12e0b17178f9d0c32f7ac773bd5651a98fcfd80fbf4977f8d48"
 
 # Environment
 ENV PYTHONUTF8 1
@@ -149,7 +153,27 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # CMake for awscli
+  curl --retry 10 -fsSLo cmake-${CMAKE_VERSION}.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz && \
+  echo "${CMAKE_CHECKSUM} cmake-${CMAKE_VERSION}.tar.gz" | sha256sum --check && \
+  tar -xzf cmake-${CMAKE_VERSION}.tar.gz && \
+  cd cmake-${CMAKE_VERSION} && \
+  ./bootstrap && \
+  make -j$(nproc) && \
+  make install && \
+  cd .. && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscli-${AWSCLI_VERSION}.tar.gz https://awscli.amazonaws.com/awscli-${AWSCLI_VERSION}.tar.gz && \
+  echo "${AWSCLI_CHECKSUM} awscli-${AWSCLI_VERSION}.tar.gz" | sha256sum --check && \
+  tar -xzf awscli-${AWSCLI_VERSION}.tar.gz && \
+  cd awscli-${AWSCLI_VERSION} && \
+  ./configure --with-download-deps && \
+  make -j$(nproc) && \
+  make install && \
+  aws --version && \
+  cd .. && \
+  rm -rf awscli-${AWSCLI_VERSION} awscli-${AWSCLI_VERSION}.tar.gz
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
