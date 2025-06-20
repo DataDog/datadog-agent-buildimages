@@ -7,8 +7,6 @@ ARG MSGO_PATCH
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
 ARG CTNG_VERSION=1.26.0
-ARG IBM_MQ_VERSION=9.2.4.0
-ARG IBM_MQ_SHA256="d0d583eba72daf20b3762976f8831c2e23150ace90509520e12f8cda5b5bdb49"
 ARG RUST_VERSION=1.76.0
 ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG RUSTUP_VERSION=1.26.0
@@ -81,14 +79,6 @@ RUN cd /build && \
     ./ct-ng build && \
     mv /root/x-tools/aarch64-unknown-linux-gnu/ /opt/toolchains/aarch64 && \
     rm -rf /build
-
-
-# IBM MQ
-RUN mkdir -p /opt/mqm \
-    && curl "https://s3.amazonaws.com/dd-agent-omnibus/ibm-mq-backup/${IBM_MQ_VERSION}-IBM-MQC-Redist-LinuxX64.tar.gz" -o /tmp/mq_client.tar.gz \
-    && echo "${IBM_MQ_SHA256}  /tmp/mq_client.tar.gz" | sha256sum --check \
-    && tar -C /opt/mqm -xf /tmp/mq_client.tar.gz \
-    && rm -rf /tmp/mq_client.tar.gz
 
 # CONDA
 COPY python-packages-versions.txt setup_python.sh /
