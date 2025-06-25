@@ -23,6 +23,7 @@ variables:
   ECR_TEST_ONLY: "_test_only"
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
+  COMPARE_TO_BRANCH: main
 
 #
 # Workflow rules
@@ -48,6 +49,19 @@ variables:
   - if: $CI_COMMIT_TAG != null
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    when: always
+
+.on_default_branch_push_windows:
+  - if: $CI_PIPELINE_SOURCE == "schedule"
+    when: never
+  - if: $CI_COMMIT_TAG != null
+    when: never
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    changes:
+      paths:
+        - build-container.ps1
+        - windows/**/*
+      compare_to: $COMPARE_TO_BRANCH
     when: always
 
 workflow:
