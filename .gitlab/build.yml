@@ -13,17 +13,28 @@
     DD_TARGET_ARCH: aarch64
     PLATFORM: linux/arm64
 
-.build:
-  stage: build
+.always:
   rules:
     - if: $CI_COMMIT_TAG == null
+
+.no_schedule:
+  rules:
+    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+
+.build:
+  stage: build
   script:
+    # Docker Hub login to reduce risk of rate limiting.
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # Build and push to internal ECR
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
     # Do not use cache on periodic pipeline where we want to test our dependencies.
-    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "$PREVENT_CACHE" ]]; then CACHE_SOURCE="--no-cache"; fi
     - PUSH=""
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
     - >-
@@ -31,11 +42,12 @@
       ${CACHE_SOURCE}
       --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
       --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
       $GO_BUILD_ARGS
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
       --file $DOCKERFILE .
       --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
   artifacts:
@@ -43,30 +55,8 @@
     expire_in: 1 hour
   retry: 1 # Add a retry to prevent flakyness on build stage.
 
-.build_dev_env:
-  stage: build
-  rules:
-    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-  script:
-    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache-$DD_TARGET_ARCH"
-    # Do not use cache on periodic pipeline where we want to test our dependencies.
-    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then CACHE_SOURCE="--no-cache"; fi
-    - PUSH=""
-    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
-    # Build and push to internal ECR
-    - >-
-      docker buildx build --platform $PLATFORM $PUSH --pull
-      ${CACHE_SOURCE}
-      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache-$DD_TARGET_ARCH,mode=max
-      --build-arg BASE_IMAGE=$BASE_IMAGE
-      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
-      dev-envs/$PLATFORM
-
 build_x64:
-  extends: [.build, .x64]
+  extends: [.build, .always, .x64]
   parallel:
     matrix:
       - DOCKERFILE: deb-x64/Dockerfile
@@ -89,7 +79,7 @@ build_x64:
         IMAGE: linux-glibc-2-17-x64
 
 build_arm64:
-  extends: [.build, .arm]
+  extends: [.build, .always, .arm]
   parallel:
     matrix:
       - DOCKERFILE: deb-arm/Dockerfile
@@ -115,7 +105,7 @@ build_arm64:
         IMAGE: linux-glibc-2-23-arm64
 
 build_dev_env_linux_x64:
-  extends: [.build_dev_env, .x64]
+  extends: [.build, .no_schedule, .x64]
   needs:
     - job: build_x64
       parallel:
@@ -123,12 +113,13 @@ build_dev_env_linux_x64:
           - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
             IMAGE: linux-glibc-2-17-x64
   variables:
-    PLATFORM: linux
+    DOCKERFILE: dev-envs/linux
+    IMAGE: dev-env-$DD_TARGET_ARCH
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_dev_env_linux_arm64:
-  extends: [.build_dev_env, .arm]
+  extends: [.build, .no_schedule, .arm]
   needs:
     - job: build_arm64
       parallel:
@@ -136,7 +127,8 @@ build_dev_env_linux_arm64:
           - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
             IMAGE: linux-glibc-2-23-arm64
   variables:
-    PLATFORM: linux
+    DOCKERFILE: dev-envs/linux
+    IMAGE: dev-env-$DD_TARGET_ARCH
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
