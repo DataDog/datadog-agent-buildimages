@@ -50,7 +50,7 @@
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
   script:
-    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache"
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache-$DD_TARGET_ARCH"
     # Do not use cache on periodic pipeline where we want to test our dependencies.
     - if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then CACHE_SOURCE="--no-cache"; fi
     - PUSH=""
@@ -59,7 +59,7 @@
     - >-
       docker buildx build --platform $PLATFORM $PUSH --pull
       ${CACHE_SOURCE}
-      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache,mode=max
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:cache-$DD_TARGET_ARCH,mode=max
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-$PLATFORM:$DD_TARGET_ARCH
@@ -144,6 +144,11 @@ build_windows_ltsc2022_x64:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
+      changes:
+        paths:
+          - build-container.ps1
+          - windows/**/*
+        compare_to: $COMPARE_TO_BRANCH
   timeout: 2h 00m
   tags: ["windows-v2:2022"]
   id_tokens:

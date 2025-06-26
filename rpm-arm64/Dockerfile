@@ -29,11 +29,13 @@ ARG DD_TARGET_ARCH=aarch64
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
-ARG CI_UPLOADER_VERSION=2.38.1
-ARG CI_UPLOADER_SHA=90ee346ea639e2d70a45b70e2d1491e5749099665df06a2e6d80ddc9fd90fe0c
+ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_SHA=abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
 
 # Environment
 ENV PYTHONUTF8 1
@@ -90,8 +92,8 @@ RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # CI uploader, to send junit to ci-visibility during CI tests
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" \
-    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${DATADOG_CI_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci
 
 # CONDA
@@ -180,7 +182,13 @@ ENV PATH="/opt/clang/bin:$PATH"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWSCLI_VERSION}.zip && \
+  echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
+  unzip -q awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

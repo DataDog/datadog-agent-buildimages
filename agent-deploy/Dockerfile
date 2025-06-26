@@ -11,22 +11,22 @@ FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
 ARG BUNDLER_VERSION_ARG=2.5.21
-ARG AWSCLI_VERSION_ARG=1.34.33
 ARG RPM_S3_VERSION_ARG=0.8.0
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
-ARG CI_UPLOADER_SHASUM=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
-ARG CI_UPLOADER_VERSION=2.38.1
+ARG DATADOG_CI_SHASUM=1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5
+ARG DATADOG_CI_VERSION=3.9.0
 ARG PYTHON_VERSION=3.12.6
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
-    AWSCLI_VERSION=$AWSCLI_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
     PYTHONUTF8=1 \
     DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
@@ -69,9 +69,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
     && apt update \
     && apt install gh -y \
-    && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
-    && echo "${CI_UPLOADER_SHASUM} /usr/local/bin/datadog-ci" | sha256sum --check \
+    && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${DATADOG_CI_SHASUM} /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci \
+    # AWS v2 cli
+    && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
+    && echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check \
+    && unzip -q awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Use gnupg1 instead of gnupg2, our scripts and rpm-s3 are currently not compatible with gnupg2
@@ -82,7 +88,6 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
     && python2 get-pip.py
 
 RUN python2 -m pip install \
-    awscli==1.18.140 \
     boto3==1.14.7 \
     pexpect==3.2
 

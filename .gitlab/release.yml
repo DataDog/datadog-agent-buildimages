@@ -29,5 +29,17 @@ release:
         IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-17-x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux-glibc-2-17-x64:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-linux-glibc-2-23-arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux-glibc-2-23-arm64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
-        IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
+
+release_windows:
+  stage: release
+  rules:
+    - !reference [.on_default_branch_push_windows]
+  trigger:
+    project: DataDog/public-images
+    branch: main
+    strategy: depend
+  variables:
+    IMG_REGISTRIES: dockerhub
+    IMG_SIGNING: "false"
+    IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
