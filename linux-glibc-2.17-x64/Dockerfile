@@ -121,7 +121,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 # Go
 ENV GOPATH=/go
 COPY setup_go.sh /
-RUN ./setup_go.sh
+RUN ./setup_go.sh && true
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library

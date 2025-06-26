@@ -170,7 +170,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go)
+RUN go install golang.org/dl/gotip@latest && gotip download && mv $(which gotip) $(which go) && true
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
