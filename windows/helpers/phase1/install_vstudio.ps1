@@ -16,16 +16,13 @@ $VSPackages = @(
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre",
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
-    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64",
-    "Microsoft.VisualStudio.Component.VC.14.29.16.10.ARM64.Spectre",
-    "Microsoft.VisualStudio.Component.Windows11SDK.22621",
-    "Microsoft.VisualStudio.Component.Windows10SDK.18362",
-    "Microsoft.VisualStudio.ComponentGroup.VC.Tools.142.x86.x64",
     "Microsoft.VisualStudio.Workload.ManagedDesktop",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
     "Microsoft.VisualStudio.Workload.NetCoreTools",
     "Microsoft.VisualStudio.Workload.WebBuildTools",
-    "Microsoft.VisualStudio.Workload.VCTools"
+    "Microsoft.VisualStudio.Workload.VCTools",
+    "Component.Microsoft.Windows.DriverKit.BuildTools",
+    "Microsoft.VisualStudio.Component.Windows11SDK.26100"
 )
 
 $VSPackagesDesktop = @(
@@ -34,7 +31,7 @@ $VSPackagesDesktop = @(
     "Microsoft.VisualStudio.Component.IntelliCode"
 )
 
-$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "vstudio" -Keyname "DownloadFile" -TargetValue $Env:VS2019INSTALLER_DOWNLOAD_URL
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "vstudio" -Keyname "DownloadFile" -TargetValue $Env:VSINSTALLER_DOWNLOAD_URL
 
 if($isInstalled){
     if(-not $isCurrent){
@@ -46,11 +43,11 @@ if($isInstalled){
 }
 
 if($Env:DD_DEV_TARGET -eq "Container") {
-    $Sha256 = $Env:VS2017BUILDTOOLS_SHA256
-    $Url = $Env:VS2017BUILDTOOLS_DOWNLOAD_URL
+    $Sha256 = $Env:VSBUILDTOOLS_SHA256
+    $Url = $Env:VSBUILDTOOLS_DOWNLOAD_URL
 } else {
-    $Sha256 = $Env:VS2019INSTALLER_SHA256
-    $Url = $Env:VS2019INSTALLER_DOWNLOAD_URL
+    $Sha256 = $Env:VSINSTALLER_SHA256
+    $Url = $Env:VSINSTALLER_DOWNLOAD_URL
     $VSPackages += $VSPackagesDesktop
 }
 Write-Host -ForegroundColor Green "Installing Visual Studio from $($Url)"
@@ -80,7 +77,7 @@ Write-Host "start-process done $st $(get-date)"
 
 Add-EnvironmentVariable -Variable VSTUDIO_ROOT -Value $InstallRoot -Global -Local
 
-Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.18362.0\x64" -Global
+Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.26100.0\x64" -Global
 
 Remove-Item $out
 Set-InstalledVersionKey -Component vstudio -KeyName "DownloadFile" -TargetValue $Url
