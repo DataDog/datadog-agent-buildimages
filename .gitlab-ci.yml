@@ -76,6 +76,7 @@ workflow:
         ECR_TEST_ONLY: "_test_only"
 
 default:
+  timeout: 2h 30m
   retry:
     max: 2
     when:

@@ -3,6 +3,7 @@
   tags: ["arch:amd64"]
   image: $BUILDENV_REGISTRY/images/docker:27.3.1
   variables:
+    ARCH: x86_64
     DD_TARGET_ARCH: x64
     PLATFORM: linux/amd64
 
@@ -10,6 +11,7 @@
   tags: ["arch:arm64"]
   image: $BUILDENV_REGISTRY/images/docker:27.3.1
   variables:
+    ARCH: aarch64
     DD_TARGET_ARCH: aarch64
     PLATFORM: linux/arm64
 
@@ -25,6 +27,10 @@
 
 .build:
   stage: build
+  before_script:
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
+    - unzip awscliv2.zip
+    - ./aws/install
   script:
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
