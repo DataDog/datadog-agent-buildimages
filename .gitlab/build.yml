@@ -53,7 +53,7 @@
       $GO_BUILD_ARGS
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
-      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:$IMAGE_VERSION
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
       --file $DOCKERFILE .
       --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
   artifacts:
