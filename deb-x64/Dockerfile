@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://github.com/moparisthebest/static-curl/releases/download/v${CURL_VERSION}/curl-amd64
 RUN echo "${CURL_SHA256}  curl-amd64" | sha256sum --check
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 # Build Args
 ARG GIT_VERSION=2.10.1
@@ -68,9 +68,9 @@ RUN echo 'Acquire::Check-Valid-Until "false";' >> /etc/apt/apt.conf.d/20datadog
 
 RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-  libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
+  libsystemd-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics libtool software-properties-common default-jre texinfo pxz wget \
-  binutils-2.26 unzip
+  binutils unzip
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
@@ -79,10 +79,6 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update \
     && apt-get install -y gcc-9 g++-9 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 0
-
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
 
 # Ensure we're using the newest binutils
 ENV PATH "/usr/lib/binutils-2.26/bin:$PATH"
@@ -201,6 +197,8 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+RUN go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
