@@ -173,7 +173,7 @@ RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \
     export GOARCH=arm GOHOSTARCH=arm; \
     else \
     export GOARCH=arm64 GOHOSTARCH=arm64; \
-    fi && go install golang.org/dl/go1.25rc1@latest && mv $(which go1.25rc1) /usr/local/go/bin/go
+    fi && go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN if [ "$DD_TARGET_ARCH" = "armhf" ] ; then \

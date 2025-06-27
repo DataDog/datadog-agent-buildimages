@@ -57,7 +57,7 @@ ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 
-RUN go install golang.org/dl/go1.25rc1@latest && mv $(which go1.25rc1) /usr/local/go/bin/go
+RUN go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \

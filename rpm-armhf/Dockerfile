@@ -149,7 +149,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN GOARCH=arm GOHOSTARCH=arm go install golang.org/dl/go1.25rc1@latest && mv $(which go1.25rc1) /usr/local/go/bin/go
+RUN GOARCH=arm GOHOSTARCH=arm go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \

@@ -172,7 +172,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN go install golang.org/dl/go1.25rc1@latest && mv $(which go1.25rc1) /usr/local/go/bin/go
+RUN go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd

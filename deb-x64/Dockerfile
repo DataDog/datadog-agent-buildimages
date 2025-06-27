@@ -198,7 +198,7 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-RUN go install golang.org/dl/go1.25rc1@latest && mv $(which go1.25rc1) /usr/local/go/bin/go
+RUN go install golang.org/dl/go1.25rc1@latest && go1.25rc1 download && mv $(which go1.25rc1) /usr/local/go/bin/go
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
