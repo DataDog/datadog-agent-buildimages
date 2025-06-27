@@ -76,7 +76,8 @@ build_x64:
         BASE_IMAGE: centos:7
       - DOCKERFILE: dd-agent-testing/Dockerfile
         IMAGE: dd-agent-testing
-      - DOCKERFILE: docker-x64/Dockerfile
+      - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
+        DOCKERFILE: docker-x64/Dockerfile
         IMAGE: docker_x64
       - DOCKERFILE: btf-gen/Dockerfile
         IMAGE: btf-gen
@@ -106,7 +107,8 @@ build_arm64:
         IMAGE: rpm_armhf
         BASE_IMAGE: arm32v7/centos:7
         DD_TARGET_ARCH: armhf
-      - DOCKERFILE: docker-arm64/Dockerfile
+      - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
+        DOCKERFILE: docker-arm64/Dockerfile
         IMAGE: docker_arm64
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
         DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
