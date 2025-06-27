@@ -38,6 +38,8 @@
     # Build and push to internal ECR
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - WORKDIR="."
+    - if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
     - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
     # Do not use cache on periodic pipeline where we want to test our dependencies.
     - if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "$PREVENT_CACHE" ]]; then CACHE_SOURCE="--no-cache"; fi
@@ -54,7 +56,7 @@
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
       --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
-      --file $DOCKERFILE .
+      --file $DOCKERFILE $WORKDIR
       --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
   artifacts:
     paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
