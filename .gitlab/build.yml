@@ -32,6 +32,7 @@
       --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
+      --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
       $GO_BUILD_ARGS
       $DDA_BUILD_ARGS
       $CUSTOM_BUILD_ARGS
@@ -76,8 +77,7 @@ build_x64:
         BASE_IMAGE: centos:7
       - DOCKERFILE: dd-agent-testing/Dockerfile
         IMAGE: dd-agent-testing
-      - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
-        DOCKERFILE: docker-x64/Dockerfile
+      - DOCKERFILE: docker-x64/Dockerfile
         IMAGE: docker_x64
       - DOCKERFILE: btf-gen/Dockerfile
         IMAGE: btf-gen
@@ -107,8 +107,7 @@ build_arm64:
         IMAGE: rpm_armhf
         BASE_IMAGE: arm32v7/centos:7
         DD_TARGET_ARCH: armhf
-      - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
-        DOCKERFILE: docker-arm64/Dockerfile
+      - DOCKERFILE: docker-arm64/Dockerfile
         IMAGE: docker_arm64
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
         DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile

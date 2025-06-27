@@ -78,8 +78,7 @@ stats_docker_x64:
     - job: build_x64
       parallel:
         matrix:
-          - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
-            DOCKERFILE: docker-x64/Dockerfile
+          - DOCKERFILE: docker-x64/Dockerfile
             IMAGE: docker_x64
 
 stats_btf_gen:
@@ -185,8 +184,7 @@ stats_docker_arm64:
     - job: build_arm64
       parallel:
         matrix:
-          - CUSTOM_BUILD_ARGS: --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
-            DOCKERFILE: docker-arm64/Dockerfile
+          - DOCKERFILE: docker-arm64/Dockerfile
             IMAGE: docker_arm64
 
 stats_kernel_version_testing_arm64:
