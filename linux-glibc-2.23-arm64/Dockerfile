@@ -101,7 +101,7 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 # Go
 ENV GOPATH=/go
 COPY setup_go.sh /
-RUN ./setup_go.sh && true
+RUN ./setup_go.sh && true && true
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library

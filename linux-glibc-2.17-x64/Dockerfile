@@ -113,7 +113,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 # Go
 ENV GOPATH=/go
 COPY setup_go.sh /
-RUN ./setup_go.sh && true
+RUN ./setup_go.sh && true && true
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
@@ -131,7 +131,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME} && \
   # AWS v2 cli
-  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip && \   
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip && \
   echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
   unzip -q awscliv2.zip && \
   ./aws/install && \
