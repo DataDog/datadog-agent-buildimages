@@ -83,6 +83,10 @@ RUN /setup/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
+# SSH
 EXPOSE 22
+# MCP
+EXPOSE 9000
+
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
