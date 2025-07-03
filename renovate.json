@@ -2,6 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "enabledManagers": ["custom.regex"],
   "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchDepNames": ["DataDog/datadog-agent-dev"],
+      "changelogUrl": "https://github.com/DataDog/datadog-agent-dev/releases/tag/v{{newValue}}"
+    }
+  ],
   "customManagers" : [
       {
         "customType": "regex",
