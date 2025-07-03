@@ -149,7 +149,7 @@ build_windows_ltsc2022_x64:
           - build-container.ps1
           - windows/**/*
         compare_to: $COMPARE_TO_BRANCH
-  timeout: 2h 00m
+  timeout: 2h 30m
   tags: ["windows-v2:2022"]
   id_tokens:
     CI_IDENTITY_GITLAB_JWT:
