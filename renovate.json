@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": ["custom.regex"],
+  "labels": ["dependencies"],
+  "customManagers" : [
+      {
+        "customType": "regex",
+        "fileMatch": ["dda.env"],
+        "matchStrings": [
+          "DDA_VERSION=v(?<currentValue>[0-9]+.[0-9]+.[0-9]+)"
+        ],
+        "depNameTemplate": "datadog/datadog-agent-dev",
+        "datasourceTemplate": "github-releases"
+      }
+  ]
+}
