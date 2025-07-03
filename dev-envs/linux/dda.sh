@@ -11,3 +11,4 @@ fi
 
 dda self telemetry disable
 dda self dep sync -f mcp
+dda self mcp-server configure-editors
