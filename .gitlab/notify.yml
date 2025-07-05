@@ -13,10 +13,11 @@ notify-images-available:
   script: |
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
-    export MESSAGE="Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
+    WINDOWS=$([ -f "windows.image" ] && echo "-w" || echo "")
+    export MESSAGE=":done: Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     :idea: You can test them in the \`datadog-agent\` repository by running:
-    \`\`\`inv buildimages.update -t $IMAGE_VERSION [--no-test] [-i <image_name>]\`\`\`
+    \`\`\`inv buildimages.update -t $IMAGE_VERSION $WINDOWS [--no-test] [-i <image_name>]\`\`\`
     Or run the \`trigger_tests\` manual job in your \`datadog-agent-buildimages\` <$CI_PIPELINE_URL|pipeline>."
     /usr/local/bin/notify.sh
 
@@ -31,7 +32,7 @@ notify-images-failure:
   script: |
     COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
     BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
-    export MESSAGE=":warning: Your :docker: images with tag \`$IMAGE_VERSION\` failed to build. :warning:
+    export MESSAGE=":red_circle: Your :docker: images with tag \`$IMAGE_VERSION\` failed to build.
     :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
     More details :arrow_right:"
     /usr/local/bin/notify.sh
