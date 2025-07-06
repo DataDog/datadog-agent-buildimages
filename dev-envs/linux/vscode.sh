@@ -126,3 +126,5 @@ install_vscode \
     "${CURSOR_SERVER_DIGEST}" \
     "${cursor_cli_url}" \
     "${CURSOR_CLI_DIGEST}"
+
+dda self mcp-server configure-editors
