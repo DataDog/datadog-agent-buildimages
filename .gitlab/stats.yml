@@ -118,13 +118,14 @@ stats_gitlab_agent_deploy:
 stats_linux_glibc_2_17_x64:
   extends: [.stats, .docker_runner_amd]
   variables:
-    IMAGE: linux-glibc-2-17-x64
+    IMAGE: linux-glibc-x64
   needs:
     - job: build_x64
       parallel:
         matrix:
-          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
-            IMAGE: linux-glibc-2-17-x64
+          - DOCKERFILE: linux-glibc/Dockerfile
+            IMAGE: linux-glibc-x64
+            BUILD_ARGS_FILE: linux-glibc/2.17/build.env
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -202,10 +203,11 @@ stats_kernel_version_testing_arm64:
 stats_linux_glibc_2_23_arm64:
   extends: [.stats, .docker_runner_arm]
   variables:
-    IMAGE: linux-glibc-2-23-arm64
+    IMAGE: linux-glibc-arm64
   needs:
     - job: build_arm64
       parallel:
         matrix:
-          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
-            IMAGE: linux-glibc-2-23-arm64
+          - DOCKERFILE: linux-glibc/Dockerfile
+            IMAGE: linux-glibc-arm64
+            BUILD_ARGS_FILE: linux-glibc/2.23/build.env
