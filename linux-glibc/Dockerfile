@@ -59,6 +59,13 @@ RUN apt update -qy && apt install -y \
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
+# Copy architecture-specific configuration files
+COPY linux-glibc/${GLIBC_VERSION}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux-glibc/${GLIBC_VERSION}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux-glibc/${GLIBC_VERSION}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc/${GLIBC_VERSION}/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc/ctng.patch /root/ctng.patch
+
 # Build texinfo to get a bugfix version
 RUN cd /build && \
     git clone https://gnu.googlesource.com/texinfo && \
@@ -67,13 +74,6 @@ RUN cd /build && \
     ./autogen.sh && \
     ./configure && make -j$(ncproc) && make install && \
     rm -rf /build/texinfo
-
-# Copy architecture-specific configuration files
-COPY linux-glibc/${GLIBC_VERSION}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc/${GLIBC_VERSION}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
-COPY linux-glibc/${GLIBC_VERSION}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc/${GLIBC_VERSION}/cargo-config.toml ${HOME}/.cargo/config.toml
-COPY linux-glibc/ctng.patch /root/ctng.patch
 
 # Build cross-compilation toolchain
 RUN cd /build && \
