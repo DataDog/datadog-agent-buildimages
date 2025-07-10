@@ -1,11 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Docker Hub login to reduce risk of rate limiting.
-DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-echo "DOCKER_REGISTRY_LOGIN: $DOCKER_REGISTRY_LOGIN"
-aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-
 # Build and push to internal ECR
 WORKDIR="."
 if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
