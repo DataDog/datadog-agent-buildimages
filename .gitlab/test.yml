@@ -54,6 +54,7 @@ push_to_datadog_agent:
     - !reference [.on_push]
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:v58799063-651eeeea
+  dependencies: [] # do not download artifacts from other jobs
   variables:
     SSM_GITHUB_APP_KEY: ci.datadog-agent.platform-github-app-key
     GITHUB_INSTALLATION_ID: 45116690
