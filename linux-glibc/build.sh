@@ -22,17 +22,18 @@ if [[ -f "$BUILD_ARGS_FILE" ]]; then
 fi
 
 echo "Run buildx build"
-docker buildx build --platform $PLATFORM $PUSH --pull
-${CACHE_SOURCE}
---cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
---build-arg BASE_IMAGE=$BASE_IMAGE
---build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
---build-arg ARCH=$ARCH
---build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
---build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
-$GO_BUILD_ARGS
-$DDA_BUILD_ARGS
-$CUSTOM_BUILD_ARGS
---tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
---file $DOCKERFILE $WORKDIR
+docker buildx build \
+--platform $PLATFORM \
+--pull $PUSH \
+--cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max ${CACHE_SOURCE} \
+--build-arg BASE_IMAGE=$BASE_IMAGE \
+--build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG \
+--build-arg ARCH=$ARCH \
+--build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH \
+--build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY \
+$GO_BUILD_ARGS \
+$DDA_BUILD_ARGS \
+$CUSTOM_BUILD_ARGS \
+--tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
+--file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
