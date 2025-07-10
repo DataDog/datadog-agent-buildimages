@@ -39,8 +39,8 @@ ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
 
 # Common environment variables
-ENV PYTHONUTF8 1
-ENV CONDA_PATH /root/miniforge3
+ENV PYTHONUTF8=1
+ENV CONDA_PATH=/root/miniforge3
 
 # Remove the early return on non-interactive shells
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -101,7 +101,7 @@ COPY python-packages-versions.txt setup_python.sh /
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 RUN ./setup_python.sh
-ENV PATH "${CONDA_PATH}/condabin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 # RVM setup
 COPY ./rvm/gpg-keys /gpg-keys
@@ -137,9 +137,9 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check && \
     chmod +x ./rustup-init && \
     ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} && \
-    echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check && \
+    echo "${RUSTC_SHA256}  /root/.cargo/bin/rustc" | sha256sum --check && \
     rm ./rustup-init
-ENV PATH "${HOME}/.cargo/bin:${PATH}"
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Install vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
@@ -166,7 +166,7 @@ RUN echo "umask 0022" >> /root/.bashrc && \
 ENV PATH=/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
-ENV PKG_CONFIG_LIBDIR ""
+ENV PKG_CONFIG_LIBDIR=""
 
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
