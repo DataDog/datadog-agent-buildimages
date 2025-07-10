@@ -74,4 +74,4 @@ push_to_datadog_agent:
     - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
     - pip install "dda==${DDA_VERSION}"
     - dda -v self dep sync -f legacy-build
-    - dda inv buildimages.update --images-id "$IMAGES_ID" --ref "$REF" --branch "$BRANCH" --test-version
+    - dda run update agent-build-images "$IMAGES_ID" "$BRANCH" --ref "$REF" --test-version
