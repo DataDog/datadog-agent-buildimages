@@ -151,6 +151,7 @@ build_windows_ltsc2022_x64:
         paths:
           - build-container.ps1
           - windows/**/*
+          - go.env
         compare_to: $COMPARE_TO_BRANCH
   timeout: 2h 30m
   tags: ["windows-v2:2022"]
