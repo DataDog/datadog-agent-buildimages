@@ -59,7 +59,7 @@ workflow:
     - <<: *if_not_release_nor_main_branch
       variables:
         # Use the `*_test_only` ECR for images built from commits that are not on main nor on a release branch
-        ECR_TEST_ONLY: "_test_only"
+        ECR_TEST_ONLY: ""
 
 default:
   retry:
