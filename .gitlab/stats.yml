@@ -3,11 +3,13 @@
   tags: ["runner:docker"]
   variables:
     ARCH: x86_64
+    BUILDENV_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci
 
 .docker_runner_arm:
   tags: ["docker-in-docker:arm64"]
   variables:
     ARCH: aarch64
+    BUILDENV_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci
 
 .stats:
   stage: stats
