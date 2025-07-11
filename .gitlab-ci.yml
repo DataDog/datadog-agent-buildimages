@@ -23,6 +23,7 @@ variables:
   ECR_TEST_ONLY: "_test_only"
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
   COMPARE_TO_BRANCH: main
+  BUILDENV_REGISTRY: "registry.ddbuild.io"
 
 #
 # Workflow rules
