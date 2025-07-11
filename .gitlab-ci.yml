@@ -19,7 +19,6 @@ stages:
   - notify
 
 variables:
-  BUILDENV_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci
   EXTRA_KCONFIG_VERSION: "0.1"
   ECR_TEST_ONLY: "_test_only"
   IMAGE_VERSION: "v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}"
