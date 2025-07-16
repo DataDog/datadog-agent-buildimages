@@ -5,7 +5,7 @@
     ARCH: x86_64
 
 .docker_runner_arm:
-  tags: ["docker-in-docker:arm64"]
+  tags: ["runner:docker-arm", "platform:arm64"]
   variables:
     ARCH: aarch64
 

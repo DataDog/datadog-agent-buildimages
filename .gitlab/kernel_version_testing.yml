@@ -63,7 +63,7 @@ build_kernels_x64:
 build_kernels_arm64:
   extends: .build_kernels
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/kernel-version-testing_arm64${ECR_TEST_ONLY}:$IMAGE_VERSION
-  tags: ["docker-in-docker:arm64"]
+  tags: ["runner:docker-arm", "platform:arm64"]
   variables:
     ARCH: arm64
     BZ_IMAGE: Image.gz
