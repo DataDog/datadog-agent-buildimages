@@ -15,10 +15,10 @@ if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
 fi
 
 # Collect build arguments
-GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+GO_BUILD_ARGS=$(sed -e 's/^/--build-arg /' go.env | tr '\n' ' ')
+DDA_BUILD_ARGS=$(sed -e 's/^/--build-arg /' dda.env| tr '\n' ' ')
 if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
-    CUSTOM_BUILD_ARGS=$(cat $BUILD_ARGS_FILE | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
 fi
 
 echo "Run buildx build"

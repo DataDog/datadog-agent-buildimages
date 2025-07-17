@@ -63,7 +63,7 @@ build_x64:
         IMAGE: gitlab_agent_deploy
       - DOCKERFILE: linux-glibc/Dockerfile
         IMAGE: linux-glibc-x64
-        BUILD_ARGS_FILE: linux-glibc/2.17/build.env
+        BUILD_ARGS_FILE: linux-glibc/x64/build.env
 
 
 build_arm64:
@@ -91,7 +91,7 @@ build_arm64:
         IMAGE: kernel-version-testing_arm64
       - DOCKERFILE: linux-glibc/Dockerfile
         IMAGE: linux-glibc-arm64
-        BUILD_ARGS_FILE: linux-glibc/2.23/build.env
+        BUILD_ARGS_FILE: linux-glibc/arm64/build.env
 
 build_dev_env_linux_x64:
   extends: [.build, .no_schedule, .x64]
@@ -101,7 +101,7 @@ build_dev_env_linux_x64:
         matrix:
           - DOCKERFILE: linux-glibc/Dockerfile
             IMAGE: linux-glibc-x64
-            BUILD_ARGS_FILE: linux-glibc/2.17/build.env
+            BUILD_ARGS_FILE: linux-glibc/x64/build.env
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
@@ -116,7 +116,7 @@ build_dev_env_linux_arm64:
         matrix:
           - DOCKERFILE: linux-glibc/Dockerfile
             IMAGE: linux-glibc-arm64
-            BUILD_ARGS_FILE: linux-glibc/2.23/build.env
+            BUILD_ARGS_FILE: linux-glibc/arm64/build.env
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH

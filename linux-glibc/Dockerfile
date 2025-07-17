@@ -34,6 +34,17 @@ ARG DATADOG_CI_SHA256
 ARG PROTOBUF_SHA256
 ARG AWSCLI_SHA256
 
+LABEL maintainer="DataDog"
+LABEL glibc_version="${GLIBC_VERSION}"
+LABEL ctng_version="${CTNG_VERSION}"
+LABEL rust_version="${RUST_VERSION}"
+LABEL rustup_version="${RUSTUP_VERSION}"
+LABEL bundler_version="${BUNDLER_VERSION}"
+LABEL vault_version="${VAULT_VERSION}"
+LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
+LABEL protobuf_version="${PROTOBUF_VERSION}"
+LABEL awscli_version="${AWSCLI_VERSION}"
+
 # Set architecture-specific variables
 ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
@@ -60,10 +71,10 @@ RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # Copy architecture-specific configuration files
-COPY linux-glibc/${GLIBC_VERSION}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc/${GLIBC_VERSION}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
-COPY linux-glibc/${GLIBC_VERSION}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc/${GLIBC_VERSION}/cargo-config.toml /root/.cargo/config.toml
+COPY linux-glibc/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux-glibc/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux-glibc/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux-glibc/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux-glibc/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
