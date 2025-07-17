@@ -115,7 +115,7 @@ stats_gitlab_agent_deploy:
           - DOCKERFILE: agent-deploy/Dockerfile
             IMAGE: gitlab_agent_deploy
 
-stats_linux_glibc_2_17_x64:
+stats_linux_glibc_x64:
   extends: [.stats, .docker_runner_amd]
   variables:
     IMAGE: linux-glibc-x64
@@ -125,7 +125,7 @@ stats_linux_glibc_2_17_x64:
         matrix:
           - DOCKERFILE: linux-glibc/Dockerfile
             IMAGE: linux-glibc-x64
-            BUILD_ARGS_FILE: linux-glibc/2.17/build.env
+            BUILD_ARGS_FILE: linux-glibc/x64/build.env
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -200,7 +200,7 @@ stats_kernel_version_testing_arm64:
             DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
             IMAGE: kernel-version-testing_arm64
 
-stats_linux_glibc_2_23_arm64:
+stats_linux_glibc_arm64:
   extends: [.stats, .docker_runner_arm]
   variables:
     IMAGE: linux-glibc-arm64
@@ -210,4 +210,4 @@ stats_linux_glibc_2_23_arm64:
         matrix:
           - DOCKERFILE: linux-glibc/Dockerfile
             IMAGE: linux-glibc-arm64
-            BUILD_ARGS_FILE: linux-glibc/2.23/build.env
+            BUILD_ARGS_FILE: linux-glibc/arm64/build.env
