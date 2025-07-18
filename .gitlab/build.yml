@@ -61,9 +61,9 @@ build_x64:
         IMAGE: kernel-version-testing_x64
       - DOCKERFILE: agent-deploy/Dockerfile
         IMAGE: gitlab_agent_deploy
-      - DOCKERFILE: linux-glibc/Dockerfile
-        IMAGE: linux-glibc-x64
-        BUILD_ARGS_FILE: linux-glibc/x64/build.env
+      - DOCKERFILE: linux/Dockerfile
+        IMAGE: linux-x64
+        BUILD_ARGS_FILE: linux/x64/build.env
 
 
 build_arm64:
@@ -89,9 +89,9 @@ build_arm64:
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
         DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
         IMAGE: kernel-version-testing_arm64
-      - DOCKERFILE: linux-glibc/Dockerfile
-        IMAGE: linux-glibc-arm64
-        BUILD_ARGS_FILE: linux-glibc/arm64/build.env
+      - DOCKERFILE: linux/Dockerfile
+        IMAGE: linux-arm64
+        BUILD_ARGS_FILE: linux/arm64/build.env
 
 build_dev_env_linux_x64:
   extends: [.build, .no_schedule, .x64]
@@ -99,13 +99,13 @@ build_dev_env_linux_x64:
     - job: build_x64
       parallel:
         matrix:
-          - DOCKERFILE: linux-glibc/Dockerfile
-            IMAGE: linux-glibc-x64
-            BUILD_ARGS_FILE: linux-glibc/x64/build.env
+          - DOCKERFILE: linux/Dockerfile
+            IMAGE: linux-x64
+            BUILD_ARGS_FILE: linux/x64/build.env
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-x64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-x64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_dev_env_linux_arm64:
@@ -114,13 +114,13 @@ build_dev_env_linux_arm64:
     - job: build_arm64
       parallel:
         matrix:
-          - DOCKERFILE: linux-glibc/Dockerfile
-            IMAGE: linux-glibc-arm64
-            BUILD_ARGS_FILE: linux-glibc/arm64/build.env
+          - DOCKERFILE: linux/Dockerfile
+            IMAGE: linux-arm64
+            BUILD_ARGS_FILE: linux/arm64/build.env
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-arm64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-arm64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_windows_ltsc2022_x64:

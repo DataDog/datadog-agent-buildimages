@@ -71,11 +71,11 @@ RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # Copy architecture-specific configuration files
-COPY linux-glibc/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux-glibc/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
-COPY linux-glibc/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux-glibc/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY linux-glibc/ctng.patch /root/ctng.patch
+COPY linux/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
+COPY linux/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
 RUN cd /build && \
