@@ -33,6 +33,7 @@ ARG VAULT_SHA256
 ARG DATADOG_CI_SHA256
 ARG PROTOBUF_SHA256
 ARG AWSCLI_SHA256
+ARG ADDITIONAL_PACKAGE
 
 LABEL maintainer="DataDog"
 LABEL glibc_version="${GLIBC_VERSION}"
@@ -64,7 +65,7 @@ RUN apt update -qy && apt install -y \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic jq libsystemd-dev clang-format
+    linux-headers-generic jq libsystemd-dev clang-format ${ADDITIONAL_PACKAGE}
 
 # Git configuration
 RUN git config --global user.email "package@datadoghq.com" && \
