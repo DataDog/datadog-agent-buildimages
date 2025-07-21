@@ -31,11 +31,34 @@
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
+  script:
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-  script:
-    - ./build.sh
+    # Build and push to internal ECR
+    - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_BUILD_ARGS=$(cat dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - WORKDIR="."
+    - if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
+    - CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
+    # Do not use cache on periodic pipeline where we want to test our dependencies.
+    - if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "$PREVENT_CACHE" ]]; then CACHE_SOURCE="--no-cache"; fi
+    - PUSH=""
+    - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then PUSH="--push"; fi
+    - >-
+      docker buildx build --platform $PLATFORM $PUSH --pull
+      ${CACHE_SOURCE}
+      --cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG
+      --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH
+      --build-arg BUILDENV_REGISTRY=$BUILDENV_REGISTRY
+      $GO_BUILD_ARGS
+      $DDA_BUILD_ARGS
+      $CUSTOM_BUILD_ARGS
+      --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+      --file $DOCKERFILE $WORKDIR
+      --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
   artifacts:
     paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
     expire_in: 1 hour
@@ -61,10 +84,8 @@ build_x64:
         IMAGE: kernel-version-testing_x64
       - DOCKERFILE: agent-deploy/Dockerfile
         IMAGE: gitlab_agent_deploy
-      - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux-x64
-        BUILD_ARGS_FILE: linux/x64/build.env
-
+      - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+        IMAGE: linux-glibc-2-17-x64
 
 build_arm64:
   extends: [.build, .always, .arm]
@@ -89,9 +110,8 @@ build_arm64:
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
         DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
         IMAGE: kernel-version-testing_arm64
-      - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux-arm64
-        BUILD_ARGS_FILE: linux/arm64/build.env
+      - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+        IMAGE: linux-glibc-2-23-arm64
 
 build_dev_env_linux_x64:
   extends: [.build, .no_schedule, .x64]
@@ -99,13 +119,12 @@ build_dev_env_linux_x64:
     - job: build_x64
       parallel:
         matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux-x64
-            BUILD_ARGS_FILE: linux/x64/build.env
+          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
+            IMAGE: linux-glibc-2-17-x64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-x64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-17-x64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_dev_env_linux_arm64:
@@ -114,13 +133,12 @@ build_dev_env_linux_arm64:
     - job: build_arm64
       parallel:
         matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux-arm64
-            BUILD_ARGS_FILE: linux/arm64/build.env
+          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
+            IMAGE: linux-glibc-2-23-arm64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-arm64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-glibc-2-23-arm64$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_windows_ltsc2022_x64:
