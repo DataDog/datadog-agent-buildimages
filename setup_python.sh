@@ -110,6 +110,7 @@ pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
 dda self telemetry disable
+dda config set update.mode off
 dda -v self dep sync -f legacy-build
 pip uninstall -y cython # remove cython to prevent further issue with nghttp2
 
