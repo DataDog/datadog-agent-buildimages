@@ -61,7 +61,7 @@ RUN apt update -qy && apt install -y \
     wget xz-utils gpg build-essential flex texinfo unzip \
     help2man file gawk libtool-bin bison libncurses-dev \
     python-is-python3 git cmake curl fakeroot procps bzip2 \
-    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
+    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev libseccomp2 \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
     linux-headers-generic jq libsystemd-dev clang-format
@@ -182,4 +182,4 @@ ENV PKG_CONFIG_LIBDIR=""
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"] 
+ENTRYPOINT ["/entrypoint.sh"]
