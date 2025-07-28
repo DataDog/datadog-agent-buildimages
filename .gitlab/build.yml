@@ -62,9 +62,9 @@ build_x64:
       - DOCKERFILE: agent-deploy/Dockerfile
         IMAGE: gitlab_agent_deploy
       - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux-x64
+        IMAGE: linux
+        IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
         BUILD_ARGS_FILE: linux/x64/build.env
-
 
 build_arm64:
   extends: [.build, .always, .arm]
@@ -90,37 +90,57 @@ build_arm64:
         DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
         IMAGE: kernel-version-testing_arm64
       - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux-arm64
+        IMAGE: linux
+        IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
         BUILD_ARGS_FILE: linux/arm64/build.env
 
-build_dev_env_linux_x64:
-  extends: [.build, .no_schedule, .x64]
+build_multiarch:
+  extends: [.always, .x64]
+  stage: build
   needs:
     - job: build_x64
       parallel:
         matrix:
           - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux-x64
+            IMAGE: linux
+            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
             BUILD_ARGS_FILE: linux/x64/build.env
+    - job: build_arm64
+      parallel:
+        matrix:
+          - DOCKERFILE: linux/Dockerfile
+            IMAGE: linux
+            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
+            BUILD_ARGS_FILE: linux/arm64/build.env
+  variables:
+    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+  before_script:
+    - !reference [.build, before_script]
+  script:
+    - >
+      docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
+      $TARGET_IMAGE:$IMAGE_VERSION-x64
+      $TARGET_IMAGE:$IMAGE_VERSION-arm64
+    - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
+
+build_dev_env_linux_x64:
+  extends: [.build, .no_schedule, .x64]
+  needs:
+    - job: build_multiarch
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-x64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_dev_env_linux_arm64:
   extends: [.build, .no_schedule, .arm]
   needs:
-    - job: build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux-arm64
-            BUILD_ARGS_FILE: linux/arm64/build.env
+    - job: build_multiarch
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
-    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux-arm64$ECR_TEST_ONLY
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION
 
 build_windows_ltsc2022_x64:
