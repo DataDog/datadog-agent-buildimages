@@ -1,4 +1,12 @@
 ---
+variables:
+  DEFAULT_BUILD_TIMEOUT: 15m
+  DEB_RPM_BUILD_TIMEOUT: 33m
+  LINUX_BUILD_TIMEOUT: 1h 10m
+# Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
+# Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
+# See https://app.datadoghq.com/notebook/12840350/setting-timeouts-for-buildimages-build-jobs for explanation of the chosen timeout values.
+
 .x64:
   tags: ["arch:amd64"]
   image: $BUILDENV_REGISTRY/images/docker:27.3.1
@@ -63,6 +71,7 @@
     paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
     expire_in: 1 hour
   retry: 1 # Add a retry to prevent flakyness on build stage.
+  timeout: $DEFAULT_BUILD_TIMEOUT
 
 build_x64:
   extends: [.build, .always, .x64]
@@ -70,9 +79,11 @@ build_x64:
     matrix:
       - DOCKERFILE: deb-x64/Dockerfile
         IMAGE: deb_x64
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: rpm-x64/Dockerfile
         IMAGE: rpm_x64
         BASE_IMAGE: centos:7
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: dd-agent-testing/Dockerfile
         IMAGE: dd-agent-testing
       - DOCKERFILE: docker-x64/Dockerfile
@@ -86,6 +97,7 @@ build_x64:
         IMAGE: gitlab_agent_deploy
       - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
         IMAGE: linux-glibc-2-17-x64
+        timeout: $LINUX_BUILD_TIMEOUT
 
 build_arm64:
   extends: [.build, .always, .arm]
@@ -94,17 +106,21 @@ build_arm64:
       - DOCKERFILE: deb-arm/Dockerfile
         IMAGE: deb_arm64
         BASE_IMAGE: arm64v8/ubuntu:16.04
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: deb-arm/Dockerfile
         IMAGE: deb_armhf
         BASE_IMAGE: arm32v7/ubuntu:16.04
         DD_TARGET_ARCH: armhf
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: rpm-arm64/Dockerfile
         IMAGE: rpm_arm64
         BASE_IMAGE: amazonlinux:2.0.20181114
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: rpm-armhf/Dockerfile
         IMAGE: rpm_armhf
         BASE_IMAGE: arm32v7/centos:7
         DD_TARGET_ARCH: armhf
+        timeout: $DEB_RPM_BUILD_TIMEOUT
       - DOCKERFILE: docker-arm64/Dockerfile
         IMAGE: docker_arm64
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -112,6 +128,7 @@ build_arm64:
         IMAGE: kernel-version-testing_arm64
       - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
         IMAGE: linux-glibc-2-23-arm64
+        timeout: $LINUX_BUILD_TIMEOUT
 
 build_dev_env_linux_x64:
   extends: [.build, .no_schedule, .x64]
