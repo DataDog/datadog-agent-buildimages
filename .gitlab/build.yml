@@ -1,4 +1,16 @@
 ---
+.default_build_timeout:
+  timeout: 15m
+
+.deb_rpm_build_timeout:
+  timeout: 33m
+
+.linux_build_timeout:
+  timeout: 1h 10m
+# Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
+# Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
+# See https://app.datadoghq.com/notebook/12840350/setting-timeouts-for-buildimages-build-jobs for explanation of the chosen timeout values.
+
 .x64:
   tags: ["arch:amd64"]
   image: $BUILDENV_REGISTRY/images/docker:27.3.1
@@ -40,6 +52,7 @@
     paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
     expire_in: 1 hour
   retry: 1 # Add a retry to prevent flakyness on build stage.
+  timeout: !reference [.default_build_timeout, timeout]
 
 build_x64:
   extends: [.build, .always, .x64]
@@ -47,9 +60,11 @@ build_x64:
     matrix:
       - DOCKERFILE: deb-x64/Dockerfile
         IMAGE: deb_x64
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: rpm-x64/Dockerfile
         IMAGE: rpm_x64
         BASE_IMAGE: centos:7
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: dd-agent-testing/Dockerfile
         IMAGE: dd-agent-testing
       - DOCKERFILE: docker-x64/Dockerfile
@@ -65,6 +80,7 @@ build_x64:
         IMAGE: linux
         IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
         BUILD_ARGS_FILE: linux/x64/build.env
+        timeout: !reference [.linux_build_timeout, timeout]
 
 build_arm64:
   extends: [.build, .always, .arm]
@@ -73,17 +89,21 @@ build_arm64:
       - DOCKERFILE: deb-arm/Dockerfile
         IMAGE: deb_arm64
         BASE_IMAGE: arm64v8/ubuntu:16.04
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: deb-arm/Dockerfile
         IMAGE: deb_armhf
         BASE_IMAGE: arm32v7/ubuntu:16.04
         DD_TARGET_ARCH: armhf
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: rpm-arm64/Dockerfile
         IMAGE: rpm_arm64
         BASE_IMAGE: amazonlinux:2.0.20181114
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: rpm-armhf/Dockerfile
         IMAGE: rpm_armhf
         BASE_IMAGE: arm32v7/centos:7
         DD_TARGET_ARCH: armhf
+        timeout: !reference [.deb_rpm_build_timeout, timeout]
       - DOCKERFILE: docker-arm64/Dockerfile
         IMAGE: docker_arm64
       - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -93,6 +113,7 @@ build_arm64:
         IMAGE: linux
         IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
         BUILD_ARGS_FILE: linux/arm64/build.env
+        timeout: !reference [.linux_build_timeout, timeout]
 
 build_multiarch:
   extends: [.always, .x64]
@@ -133,6 +154,7 @@ build_dev_env_linux_x64:
             IMAGE: linux
             IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
             BUILD_ARGS_FILE: linux/x64/build.env
+            timeout: !reference [.linux_build_timeout, timeout]
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
@@ -149,6 +171,7 @@ build_dev_env_linux_arm64:
             IMAGE: linux
             IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
             BUILD_ARGS_FILE: linux/arm64/build.env
+            timeout: !reference [.linux_build_timeout, timeout]
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH

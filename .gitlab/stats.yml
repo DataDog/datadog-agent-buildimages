@@ -46,6 +46,7 @@ stats_deb_x64:
         matrix:
           - DOCKERFILE: deb-x64/Dockerfile
             IMAGE: deb_x64
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_x64:
   extends: [.stats, .docker_runner_amd]
@@ -58,6 +59,7 @@ stats_rpm_x64:
           - DOCKERFILE: rpm-x64/Dockerfile
             IMAGE: rpm_x64
             BASE_IMAGE: centos:7
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_dd_agent_testing:
   extends: [.stats, .docker_runner_amd]
@@ -128,6 +130,7 @@ stats_linux_x64:
             IMAGE: linux
             IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
             BUILD_ARGS_FILE: linux/x64/build.env
+            timeout: !reference [.linux_build_timeout, timeout]
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -140,6 +143,7 @@ stats_deb_arm64:
           - DOCKERFILE: deb-arm/Dockerfile
             IMAGE: deb_arm64
             BASE_IMAGE: arm64v8/ubuntu:16.04
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_deb_armhf:
   extends: [.stats, .docker_runner_arm]
@@ -153,6 +157,7 @@ stats_deb_armhf:
             IMAGE: deb_armhf
             BASE_IMAGE: arm32v7/ubuntu:16.04
             DD_TARGET_ARCH: armhf
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -165,6 +170,7 @@ stats_rpm_arm64:
           - DOCKERFILE: rpm-arm64/Dockerfile
             IMAGE: rpm_arm64
             BASE_IMAGE: amazonlinux:2.0.20181114
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_armhf:
   extends: [.stats, .docker_runner_arm]
@@ -178,6 +184,7 @@ stats_rpm_armhf:
             IMAGE: rpm_armhf
             BASE_IMAGE: arm32v7/centos:7
             DD_TARGET_ARCH: armhf
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_docker_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -215,3 +222,4 @@ stats_linux_arm64:
             IMAGE: linux
             IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
             BUILD_ARGS_FILE: linux/arm64/build.env
+            timeout: !reference [.linux_build_timeout, timeout]
