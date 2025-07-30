@@ -46,6 +46,7 @@ stats_deb_x64:
         matrix:
           - DOCKERFILE: deb-x64/Dockerfile
             IMAGE: deb_x64
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_x64:
   extends: [.stats, .docker_runner_amd]
@@ -58,6 +59,7 @@ stats_rpm_x64:
           - DOCKERFILE: rpm-x64/Dockerfile
             IMAGE: rpm_x64
             BASE_IMAGE: centos:7
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_dd_agent_testing:
   extends: [.stats, .docker_runner_amd]
@@ -125,6 +127,7 @@ stats_linux_glibc_2_17_x64:
         matrix:
           - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
             IMAGE: linux-glibc-2-17-x64
+            timeout: !reference [.linux_build_timeout, timeout]
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -137,6 +140,7 @@ stats_deb_arm64:
           - DOCKERFILE: deb-arm/Dockerfile
             IMAGE: deb_arm64
             BASE_IMAGE: arm64v8/ubuntu:16.04
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_deb_armhf:
   extends: [.stats, .docker_runner_arm]
@@ -150,6 +154,7 @@ stats_deb_armhf:
             IMAGE: deb_armhf
             BASE_IMAGE: arm32v7/ubuntu:16.04
             DD_TARGET_ARCH: armhf
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -162,6 +167,7 @@ stats_rpm_arm64:
           - DOCKERFILE: rpm-arm64/Dockerfile
             IMAGE: rpm_arm64
             BASE_IMAGE: amazonlinux:2.0.20181114
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_rpm_armhf:
   extends: [.stats, .docker_runner_arm]
@@ -175,6 +181,7 @@ stats_rpm_armhf:
             IMAGE: rpm_armhf
             BASE_IMAGE: arm32v7/centos:7
             DD_TARGET_ARCH: armhf
+            timeout: !reference [.deb_rpm_build_timeout, timeout]
 
 stats_docker_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -209,3 +216,4 @@ stats_linux_glibc_2_23_arm64:
         matrix:
           - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
             IMAGE: linux-glibc-2-23-arm64
+            timeout: !reference [.linux_build_timeout, timeout]
