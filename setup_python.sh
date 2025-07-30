@@ -108,7 +108,21 @@ conda activate ddpy3
 pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
-pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+
+pip install uv
+dda_repo="/tmp/datadog-agent-dev"
+echo "Cloning dda repository..."
+git clone --depth 1 --branch "${DDA_VERSION}" https://github.com/DataDog/datadog-agent-dev.git "${dda_repo}"
+
+pushd "${dda_repo}"
+echo "Installing dda..."
+uv export --no-editable --no-hashes -o requirements.txt
+pip install -r requirements.txt
+popd
+
+echo "Cleaning up repository..."
+rm -rf "${dda_repo}"
+
 dda self telemetry disable
 dda config set update.mode off
 dda -v self dep sync -f legacy-build
