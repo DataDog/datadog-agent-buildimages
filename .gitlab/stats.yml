@@ -41,7 +41,7 @@ stats_deb_x64:
   variables:
     IMAGE: deb_x64
   needs:
-    - job: build_x64
+    - job: deb_rpm_build_x64
       parallel:
         matrix:
           - DOCKERFILE: deb-x64/Dockerfile
@@ -52,7 +52,7 @@ stats_rpm_x64:
   variables:
     IMAGE: rpm_x64
   needs:
-    - job: build_x64
+    - job: deb_rpm_build_x64
       parallel:
         matrix:
           - DOCKERFILE: rpm-x64/Dockerfile
@@ -64,7 +64,7 @@ stats_dd_agent_testing:
   variables:
     IMAGE: dd-agent-testing
   needs:
-    - job: build_x64
+    - job: misc_build_x64
       parallel:
         matrix:
           - DOCKERFILE: dd-agent-testing/Dockerfile
@@ -75,7 +75,7 @@ stats_docker_x64:
   variables:
     IMAGE: docker_x64
   needs:
-    - job: build_x64
+    - job: misc_build_x64
       parallel:
         matrix:
           - DOCKERFILE: docker-x64/Dockerfile
@@ -86,7 +86,7 @@ stats_btf_gen:
   variables:
     IMAGE: btf-gen
   needs:
-    - job: build_x64
+    - job: misc_build_x64
       parallel:
         matrix:
           - DOCKERFILE: btf-gen/Dockerfile
@@ -97,7 +97,7 @@ stats_kernel_version_testing:
   variables:
     IMAGE: kernel-version-testing_x64
   needs:
-    - job: build_x64
+    - job: misc_build_x64
       parallel:
         matrix:
           - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -109,7 +109,7 @@ stats_gitlab_agent_deploy:
   variables:
     IMAGE: gitlab_agent_deploy
   needs:
-    - job: build_x64
+    - job: misc_build_x64
       parallel:
         matrix:
           - DOCKERFILE: agent-deploy/Dockerfile
@@ -120,18 +120,14 @@ stats_linux_glibc_2_17_x64:
   variables:
     IMAGE: linux-glibc-2-17-x64
   needs:
-    - job: build_x64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux-glibc-2.17-x64/Dockerfile
-            IMAGE: linux-glibc-2-17-x64
+    - job: linux_build_x64
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
   variables:
     IMAGE: deb_arm64
   needs:
-    - job: build_arm64
+    - job: deb_rpm_build_arm64
       parallel:
         matrix:
           - DOCKERFILE: deb-arm/Dockerfile
@@ -143,7 +139,7 @@ stats_deb_armhf:
   variables:
     IMAGE: deb_armhf
   needs:
-    - job: build_arm64
+    - job: deb_rpm_build_arm64
       parallel:
         matrix:
           - DOCKERFILE: deb-arm/Dockerfile
@@ -156,7 +152,7 @@ stats_rpm_arm64:
   variables:
     IMAGE: rpm_arm64
   needs:
-    - job: build_arm64
+    - job: deb_rpm_build_arm64
       parallel:
         matrix:
           - DOCKERFILE: rpm-arm64/Dockerfile
@@ -168,7 +164,7 @@ stats_rpm_armhf:
   variables:
     IMAGE: rpm_armhf
   needs:
-    - job: build_arm64
+    - job: deb_rpm_build_arm64
       parallel:
         matrix:
           - DOCKERFILE: rpm-armhf/Dockerfile
@@ -181,7 +177,7 @@ stats_docker_arm64:
   variables:
     IMAGE: docker_arm64
   needs:
-    - job: build_arm64
+    - job: misc_build_arm64
       parallel:
         matrix:
           - DOCKERFILE: docker-arm64/Dockerfile
@@ -192,7 +188,7 @@ stats_kernel_version_testing_arm64:
   variables:
     IMAGE: kernel-version-testing_arm64
   needs:
-    - job: build_arm64
+    - job: misc_build_arm64
       parallel:
         matrix:
           - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
@@ -204,8 +200,4 @@ stats_linux_glibc_2_23_arm64:
   variables:
     IMAGE: linux-glibc-2-23-arm64
   needs:
-    - job: build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux-glibc-2.23-arm64/Dockerfile
-            IMAGE: linux-glibc-2-23-arm64
+    - job: linux_build_arm64
