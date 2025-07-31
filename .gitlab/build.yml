@@ -118,7 +118,7 @@ deb_rpm_build_arm64:
         DD_TARGET_ARCH: armhf
 
 misc_build_arm64:
-  extends: [.build, .always, .arm]
+  extends: [.fast_build, .always, .arm]
   parallel:
     matrix:
       - DOCKERFILE: docker-arm64/Dockerfile
@@ -145,7 +145,7 @@ build_multiarch:
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
 
 build_dev_env_linux_x64:
-  extends: [.build, .no_schedule, .x64]
+  extends: [.fast_build, .no_schedule, .x64]
   needs:
     - job: linux_build_x64
   variables:
@@ -155,7 +155,7 @@ build_dev_env_linux_x64:
     BASE_IMAGE_TAG: $IMAGE_VERSION-x64
 
 build_dev_env_linux_arm64:
-  extends: [.build, .no_schedule, .arm]
+  extends: [.fast_build, .no_schedule, .arm]
   needs:
     - job: linux_build_arm64
   variables:
