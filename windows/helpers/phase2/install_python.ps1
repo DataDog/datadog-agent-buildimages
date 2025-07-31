@@ -53,6 +53,7 @@ if($Env:DD_DEV_TARGET -ne "Container") {
 python -m pip install uv==${Env:DD_UV_VERSION}
 
 $repoPath = "$($PSScriptRoot)\datadog-agent-dev"
+Remove-Item -Recurse -Force "$repoPath"
 Write-Host -ForegroundColor Green "Cloning dda repository..."
 git clone --depth 1 --branch "$($Env:DDA_VERSION)" https://github.com/DataDog/datadog-agent-dev.git "$repoPath"
 
