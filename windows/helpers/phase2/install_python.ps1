@@ -50,7 +50,7 @@ if($Env:DD_DEV_TARGET -ne "Container") {
     &  "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
 }
 
-python -m pip install uv
+python -m pip install uv==${Env:DD_UV_VERSION}
 
 $repoPath = "$($PSScriptRoot)\datadog-agent-dev"
 Write-Host -ForegroundColor Green "Cloning dda repository..."

@@ -109,7 +109,7 @@ pip install -i https://pypi.python.org/simple pip==${DD_PIP_VERSION_PY3}
 pip install setuptools==${DD_SETUPTOOLS_VERSION_PY3}
 pip install --no-build-isolation "cython<3.0.0" PyYAML==5.4.1
 
-pip install uv
+pip install uv==${DD_UV_VERSION}
 dda_repo="/tmp/datadog-agent-dev"
 echo "Cloning dda repository..."
 git clone --depth 1 --branch "${DDA_VERSION}" https://github.com/DataDog/datadog-agent-dev.git "${dda_repo}"
