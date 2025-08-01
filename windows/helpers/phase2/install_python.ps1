@@ -3,6 +3,7 @@ param (
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
+$ErrorActionPreference = 'Stop'
 
 # https://www.python.org/ftp/python/X.Y.Z/python-X.Y.Z-amd64.exe
 $pyexe = "https://www.python.org/ftp/python/$($Version)/python-$($Version)-amd64.exe"
@@ -53,7 +54,9 @@ if($Env:DD_DEV_TARGET -ne "Container") {
 python -m pip install uv==${Env:DD_UV_VERSION}
 
 $repoPath = "$($PSScriptRoot)\datadog-agent-dev"
-Remove-Item -Recurse -Force "$repoPath"
+if (Test-Path "$repoPath") {
+    Remove-Item -Recurse -Force "$repoPath"
+}
 Write-Host -ForegroundColor Green "Cloning dda repository..."
 git clone --depth 1 --branch "$($Env:DDA_VERSION)" https://github.com/DataDog/datadog-agent-dev.git "$repoPath"
 
