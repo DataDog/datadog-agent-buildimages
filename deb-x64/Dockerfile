@@ -250,6 +250,10 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 RUN apt-get update \
     && apt-get install -y shellcheck
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" -o /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
