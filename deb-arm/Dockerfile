@@ -258,6 +258,11 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 RUN apt-get update \
     && apt-get install -y shellcheck
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-arm64" && \
+    mv authanywhere-linux-arm64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
