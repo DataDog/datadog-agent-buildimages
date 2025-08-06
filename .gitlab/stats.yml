@@ -121,7 +121,7 @@ stats_linux_x64:
     IMAGE: linux
     IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
   needs:
-    - job: linux_build_x64
+    - job: build_linux_x64
 
 stats_deb_arm64:
   extends: [.stats, .docker_runner_arm]
@@ -202,4 +202,4 @@ stats_linux_arm64:
     IMAGE: linux
     IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
   needs:
-    - job: linux_build_arm64
+    - job: build_linux_arm64
