@@ -43,7 +43,7 @@
 
 # Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
 # Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
-# See https://app.datadoghq.com/notebook/12840350/setting-timeouts-for-buildimages-build-jobs for explanation of the chosen timeout values.
+# Timeout values were chosen to be just above the longest historically-available runtime of the corresponding job's successful runs
 .fast_build:
   extends: .build
   timeout: 15m
