@@ -2,18 +2,8 @@
 trigger_build_kernels:
   stage: test
   needs:
-    - job: misc_build_x64
-      parallel:
-        matrix:
-          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-            DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-            IMAGE: kernel-version-testing_x64
-    - job: misc_build_arm64
-      parallel:
-        matrix:
-          - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-            DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-            IMAGE: kernel-version-testing_arm64
+    - job: build_kernel_version_testing_x64
+    - job: build_kernel_version_testing_arm64
   rules:
     - when: manual
       allow_failure: true

@@ -77,21 +77,36 @@ build_rpm_x64:
     IMAGE: rpm_x64
     BASE_IMAGE: centos:7
 
-misc_build_x64:
+build_dd_agent_testing:
   extends: [.fast_build, .always, .x64]
-  parallel:
-    matrix:
-      - DOCKERFILE: dd-agent-testing/Dockerfile
-        IMAGE: dd-agent-testing
-      - DOCKERFILE: docker-x64/Dockerfile
-        IMAGE: docker_x64
-      - DOCKERFILE: btf-gen/Dockerfile
-        IMAGE: btf-gen
-      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-        DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-        IMAGE: kernel-version-testing_x64
-      - DOCKERFILE: agent-deploy/Dockerfile
-        IMAGE: gitlab_agent_deploy
+  variables:
+    DOCKERFILE: dd-agent-testing/Dockerfile
+    IMAGE: dd-agent-testing
+
+build_docker_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: docker-x64/Dockerfile
+    IMAGE: docker_x64
+
+build_btf_gen:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: btf-gen/Dockerfile
+    IMAGE: btf-gen
+
+build_kernel_version_testing_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_gitlab_agent_deploy:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: agent-deploy/Dockerfile
+    IMAGE: gitlab_agent_deploy
 
 build_linux_arm64:
   extends: [.slow_build, .always, .arm]
@@ -131,15 +146,18 @@ build_rpm_armhf:
     BASE_IMAGE: arm32v7/centos:7
     DD_TARGET_ARCH: armhf
 
-misc_build_arm64:
+build_docker_arm64:
   extends: [.fast_build, .always, .arm]
-  parallel:
-    matrix:
-      - DOCKERFILE: docker-arm64/Dockerfile
-        IMAGE: docker_arm64
-      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-        DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-        IMAGE: kernel-version-testing_arm64
+  variables:
+    DOCKERFILE: docker-arm64/Dockerfile
+    IMAGE: docker_arm64
+
+build_kernel_version_testing_arm64:
+  extends: [.fast_build, .always, .arm]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
 
 build_multiarch:
   extends: [.always, .x64]
