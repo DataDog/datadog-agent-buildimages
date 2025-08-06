@@ -3,6 +3,7 @@ param (
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
+$ErrorActionPreference = 'Stop'
 
 # https://www.python.org/ftp/python/X.Y.Z/python-X.Y.Z-amd64.exe
 $pyexe = "https://www.python.org/ftp/python/$($Version)/python-$($Version)-amd64.exe"
@@ -44,19 +45,44 @@ Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { 
 }
 
 python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
-if($Env:DD_DEV_TARGET -eq "Container") {
-    python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DDA_VERSION}"
-    python -m dda self telemetry disable
-    python -m dda -v self dep sync -f legacy-build
-} else {
+if($Env:DD_DEV_TARGET -ne "Container") {
     ## When installing for local use, set up the virtual environment first
     python -m venv "$($Env:USERPROFILE)\.ddbuild\agentdev"
     &  "$($Env:USERPROFILE)\.ddbuild\agentdev\scripts\activate.ps1"
-    python -m pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${Env:DDA_VERSION}"
-    python -m dda self telemetry disable
-    python -m dda -v self dep sync -f legacy-build
 }
 
+python -m pip install uv==${Env:DD_UV_VERSION}
+
+$repoPath = "$($PSScriptRoot)\datadog-agent-dev"
+if (Test-Path "$repoPath") {
+    Remove-Item -Recurse -Force "$repoPath"
+}
+Write-Host -ForegroundColor Green "Cloning dda repository..."
+git clone --depth 1 --branch "$($Env:DDA_VERSION)" https://github.com/DataDog/datadog-agent-dev.git "$repoPath"
+
+Push-Location "$repoPath"
+try {
+    Write-Host -ForegroundColor Green "Installing dda..."
+    python -m uv export --no-editable --no-hashes -o requirements.txt
+    python -m pip install -r requirements.txt
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to install dda"
+        exit $LASTEXITCODE
+    }
+} finally {
+    Pop-Location
+}
+
+Write-Host -ForegroundColor Green "Cleaning up repository..."
+Remove-Item -Recurse -Force "$repoPath"
+
+python -m dda self telemetry disable
+python -m dda config set update.mode off
+python -m dda -v self dep sync -f legacy-build
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to sync dda dependencies"
+    exit $LASTEXITCODE
+}
 
 Set-InstalledVersionKey -Component "Python" -Keyname "version" -TargetValue $Version
 Write-Host -ForegroundColor Green Done with Python

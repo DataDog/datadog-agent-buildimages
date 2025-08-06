@@ -10,4 +10,5 @@ else
 fi
 
 dda self telemetry disable
+dda config set update.mode check
 dda self dep sync -f mcp
