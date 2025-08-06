@@ -41,23 +41,14 @@ stats_deb_x64:
   variables:
     IMAGE: deb_x64
   needs:
-    - job: deb_rpm_build_x64
-      parallel:
-        matrix:
-          - DOCKERFILE: deb-x64/Dockerfile
-            IMAGE: deb_x64
+    - job: build_deb_x64
 
 stats_rpm_x64:
   extends: [.stats, .docker_runner_amd]
   variables:
     IMAGE: rpm_x64
   needs:
-    - job: deb_rpm_build_x64
-      parallel:
-        matrix:
-          - DOCKERFILE: rpm-x64/Dockerfile
-            IMAGE: rpm_x64
-            BASE_IMAGE: centos:7
+    - job: build_rpm_x64
 
 stats_dd_agent_testing:
   extends: [.stats, .docker_runner_amd]
@@ -128,50 +119,28 @@ stats_deb_arm64:
   variables:
     IMAGE: deb_arm64
   needs:
-    - job: deb_rpm_build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: deb-arm/Dockerfile
-            IMAGE: deb_arm64
-            BASE_IMAGE: arm64v8/ubuntu:16.04
+    - job: build_deb_arm64
 
 stats_deb_armhf:
   extends: [.stats, .docker_runner_arm]
   variables:
     IMAGE: deb_armhf
   needs:
-    - job: deb_rpm_build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: deb-arm/Dockerfile
-            IMAGE: deb_armhf
-            BASE_IMAGE: arm32v7/ubuntu:16.04
-            DD_TARGET_ARCH: armhf
+    - job: build_deb_armhf
 
 stats_rpm_arm64:
   extends: [.stats, .docker_runner_arm]
   variables:
     IMAGE: rpm_arm64
   needs:
-    - job: deb_rpm_build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: rpm-arm64/Dockerfile
-            IMAGE: rpm_arm64
-            BASE_IMAGE: amazonlinux:2.0.20181114
+    - job: build_rpm_arm64
 
 stats_rpm_armhf:
   extends: [.stats, .docker_runner_arm]
   variables:
     IMAGE: rpm_armhf
   needs:
-    - job: deb_rpm_build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: rpm-armhf/Dockerfile
-            IMAGE: rpm_armhf
-            BASE_IMAGE: arm32v7/centos:7
-            DD_TARGET_ARCH: armhf
+    - job: build_rpm_armhf
 
 stats_docker_arm64:
   extends: [.stats, .docker_runner_arm]
