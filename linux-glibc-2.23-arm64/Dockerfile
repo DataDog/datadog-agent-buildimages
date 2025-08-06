@@ -130,6 +130,11 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
   echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-arm64" && \
+    mv authanywhere-linux-arm64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 RUN echo "umask 0022" >> /root/.bashrc
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh

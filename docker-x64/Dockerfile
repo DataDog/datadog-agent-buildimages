@@ -85,6 +85,11 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
   echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && \
+    mv authanywhere-linux-amd64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 # Build xar to open macOS pkg files
 # Apply fix for openssl from the following issue
 # https://github.com/mackyle/xar/issues/18#issuecomment-379841536
