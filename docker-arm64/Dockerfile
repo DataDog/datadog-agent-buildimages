@@ -70,6 +70,11 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   ./aws/install && \
   rm -rf aws awscliv2.zip
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-arm64" && \
+    mv authanywhere-linux-arm64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
