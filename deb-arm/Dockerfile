@@ -1,5 +1,3 @@
-ARG BASE_IMAGE=arm64v8/ubuntu:16.04
-
 FROM ubuntu as CURL_GETTER
 ENV CURL_AARCH64_VERSION=7.79.1
 ENV CURL_AARCH64_SHA256="234cc67f7caae0a0e1222bd70b513c78f65e058397bc271191ede66d12ec0366"
@@ -13,7 +11,7 @@ RUN echo "${CURL_AARCH64_SHA256}  curl-aarch64" | sha256sum --check
 
 ## Valid archs are
 # amd64, arm32v7, arm64v8, i386, ppc64le, s390x
-FROM ${BASE_IMAGE}
+FROM ubuntu:24.04
 
 # Build Args
 ARG GO_VERSION
