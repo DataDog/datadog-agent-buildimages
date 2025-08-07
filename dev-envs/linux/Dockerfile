@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=datadog/agent-buildimages-linux-arm64
+ARG BASE_IMAGE=datadog/agent-buildimages-linux
 ARG BASE_IMAGE_TAG=latest
 
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
