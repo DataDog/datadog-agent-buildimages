@@ -1,8 +1,8 @@
 ---
 release:
   stage: release
-  rules:
-    - !reference [.on_default_branch_push]
+  # rules:
+  #   - !reference [.on_default_branch_push]
   trigger:
     project: DataDog/public-images
     branch: main
