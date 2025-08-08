@@ -41,77 +41,130 @@
     expire_in: 1 hour
   retry: 1 # Add a retry to prevent flakyness on build stage.
 
-build_x64:
-  extends: [.build, .always, .x64]
-  parallel:
-    matrix:
-      - DOCKERFILE: deb-x64/Dockerfile
-        IMAGE: deb_x64
-      - DOCKERFILE: rpm-x64/Dockerfile
-        IMAGE: rpm_x64
-        BASE_IMAGE: centos:7
-      - DOCKERFILE: dd-agent-testing/Dockerfile
-        IMAGE: dd-agent-testing
-      - DOCKERFILE: docker-x64/Dockerfile
-        IMAGE: docker_x64
-      - DOCKERFILE: btf-gen/Dockerfile
-        IMAGE: btf-gen
-      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-        DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-        IMAGE: kernel-version-testing_x64
-      - DOCKERFILE: agent-deploy/Dockerfile
-        IMAGE: gitlab_agent_deploy
-      - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux
-        IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
-        BUILD_ARGS_FILE: linux/x64/build.env
+# Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
+# Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
+# Timeout values were chosen to be just above the longest historically-available runtime of the corresponding job's successful runs
+.fast_build:
+  extends: .build
+  timeout: 15m
 
-build_arm64:
-  extends: [.build, .always, .arm]
-  parallel:
-    matrix:
-      - DOCKERFILE: deb-arm/Dockerfile
-        IMAGE: deb_arm64
-        BASE_IMAGE: arm64v8/ubuntu:16.04
-      - DOCKERFILE: deb-arm/Dockerfile
-        IMAGE: deb_armhf
-        BASE_IMAGE: arm32v7/ubuntu:16.04
-        DD_TARGET_ARCH: armhf
-      - DOCKERFILE: rpm-arm64/Dockerfile
-        IMAGE: rpm_arm64
-        BASE_IMAGE: amazonlinux:2.0.20181114
-      - DOCKERFILE: rpm-armhf/Dockerfile
-        IMAGE: rpm_armhf
-        BASE_IMAGE: arm32v7/centos:7
-        DD_TARGET_ARCH: armhf
-      - DOCKERFILE: docker-arm64/Dockerfile
-        IMAGE: docker_arm64
-      - CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-        DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-        IMAGE: kernel-version-testing_arm64
-      - DOCKERFILE: linux/Dockerfile
-        IMAGE: linux
-        IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
-        BUILD_ARGS_FILE: linux/arm64/build.env
+.medium_build:
+  extends: .build
+  timeout: 33m
+
+.slow_build:
+  extends: .build
+  timeout: 1h 10m
+
+build_linux_x64:
+  extends: [.slow_build, .always, .x64]
+  variables:
+    DOCKERFILE: linux/Dockerfile
+    IMAGE: linux
+    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
+    BUILD_ARGS_FILE: linux/x64/build.env
+
+build_deb_x64:
+  extends: [.medium_build, .always, .x64]
+  variables:
+    DOCKERFILE: deb-x64/Dockerfile
+    IMAGE: deb_x64
+
+build_rpm_x64:
+  extends: [.medium_build, .always, .x64]
+  variables:
+    DOCKERFILE: rpm-x64/Dockerfile
+    IMAGE: rpm_x64
+    BASE_IMAGE: centos:7
+
+build_dd_agent_testing:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: dd-agent-testing/Dockerfile
+    IMAGE: dd-agent-testing
+
+build_docker_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: docker-x64/Dockerfile
+    IMAGE: docker_x64
+
+build_btf_gen:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: btf-gen/Dockerfile
+    IMAGE: btf-gen
+
+build_kernel_version_testing_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_gitlab_agent_deploy:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: agent-deploy/Dockerfile
+    IMAGE: gitlab_agent_deploy
+
+build_linux_arm64:
+  extends: [.slow_build, .always, .arm]
+  variables:
+    DOCKERFILE: linux/Dockerfile
+    IMAGE: linux
+    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
+    BUILD_ARGS_FILE: linux/arm64/build.env
+
+build_deb_arm64:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: deb-arm/Dockerfile
+    IMAGE: deb_arm64
+    BASE_IMAGE: arm64v8/ubuntu:16.04
+
+build_deb_armhf:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: deb-arm/Dockerfile
+    IMAGE: deb_armhf
+    BASE_IMAGE: arm32v7/ubuntu:16.04
+    DD_TARGET_ARCH: armhf
+
+build_rpm_arm64:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: rpm-arm64/Dockerfile
+    IMAGE: rpm_arm64
+    BASE_IMAGE: amazonlinux:2.0.20181114
+
+build_rpm_armhf:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: rpm-armhf/Dockerfile
+    IMAGE: rpm_armhf
+    BASE_IMAGE: arm32v7/centos:7
+    DD_TARGET_ARCH: armhf
+
+build_docker_arm64:
+  extends: [.fast_build, .always, .arm]
+  variables:
+    DOCKERFILE: docker-arm64/Dockerfile
+    IMAGE: docker_arm64
+
+build_kernel_version_testing_arm64:
+  extends: [.fast_build, .always, .arm]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
 
 build_multiarch:
   extends: [.always, .x64]
   stage: build
   needs:
-    - job: build_x64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux
-            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
-            BUILD_ARGS_FILE: linux/x64/build.env
-    - job: build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux
-            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
-            BUILD_ARGS_FILE: linux/arm64/build.env
+    - job: build_linux_x64
+    - job: build_linux_arm64
   variables:
     TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
   before_script:
@@ -124,15 +177,9 @@ build_multiarch:
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
 
 build_dev_env_linux_x64:
-  extends: [.build, .no_schedule, .x64]
+  extends: [.fast_build, .no_schedule, .x64]
   needs:
-    - job: build_x64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux
-            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
-            BUILD_ARGS_FILE: linux/x64/build.env
+    - job: build_linux_x64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
@@ -140,15 +187,9 @@ build_dev_env_linux_x64:
     BASE_IMAGE_TAG: $IMAGE_VERSION-x64
 
 build_dev_env_linux_arm64:
-  extends: [.build, .no_schedule, .arm]
+  extends: [.fast_build, .no_schedule, .arm]
   needs:
-    - job: build_arm64
-      parallel:
-        matrix:
-          - DOCKERFILE: linux/Dockerfile
-            IMAGE: linux
-            IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
-            BUILD_ARGS_FILE: linux/arm64/build.env
+    - job: build_linux_arm64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
