@@ -73,7 +73,7 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
 USER datadog
 
 # prevents using system package which emits warning logs on every call
-RUN pip3 install --upgrade blinker
+RUN pip3 install --no-cache-dir blinker==1.9.0
 
 ENV GOPATH=/home/datadog/go \
     GOROOT=/usr/local/go \
