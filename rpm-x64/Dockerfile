@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="centos:7"
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2025-07-15
-ENV CACERT_BUNDLE_SHA256="7430e90ee0cdca2d0f02b1ece46fbf255d5d0408111f009638e3b892d6ca089c"
+ENV CACERT_BUNDLE_VERSION=2025-08-12
+ENV CACERT_BUNDLE_SHA256="64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e"
 RUN apt-get update && apt-get install -y wget
 RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
