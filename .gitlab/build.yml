@@ -160,7 +160,7 @@ build_kernel_version_testing_arm64:
     IMAGE: kernel-version-testing_arm64
 
 build_multiarch:
-  extends: [.always, .x64]
+  extends: [.no_schedule, .x64]
   stage: build
   needs:
     - job: build_linux_x64
