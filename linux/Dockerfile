@@ -145,6 +145,17 @@ COPY setup_go.sh /
 RUN ./setup_go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Install & verify Bazelisk (Go package) as Bazel bootstrapper
+RUN bash <<'EOF'
+    source ~/.bashrc  # the actual Go binary path isn't in above `ENV PATH` (see `/setup_go.sh`)
+    set -euxo pipefail
+    go install github.com/bazelbuild/bazelisk@v1.27.0
+    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
+    export BAZELISK_HOME="$(mktemp -d)"
+    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
+    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
+EOF
+
 # Rust setup
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \
     echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check && \

@@ -172,6 +172,16 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Install & verify Bazelisk (Go package) as Bazel bootstrapper
+RUN bash <<'EOF'
+    set -euxo pipefail
+    go install github.com/bazelbuild/bazelisk@v1.27.0
+    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
+    export BAZELISK_HOME="$(mktemp -d)"
+    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
+    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
+EOF
+
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
 
