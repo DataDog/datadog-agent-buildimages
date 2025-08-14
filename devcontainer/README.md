@@ -30,7 +30,7 @@ docker pull registry.ddbuild.io/ci/datadog-agent-devenv:1-<platform>
 Option 2: Build the image locally
 
 ```
-DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.22.5" -t registry.ddbuild.io/ci/datadog-agent-devenv:1 .
+DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.24.5" --build-arg="DDA_VERSION=v0.24.0" -t registry.ddbuild.io/ci/datadog-agent-devenv:1 .
 ```
 
 The Go version currently in use in the default image can be found [here](https://github.com/DataDog/datadog-agent-buildimages/blob/main/go.env).
