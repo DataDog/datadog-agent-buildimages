@@ -38,7 +38,7 @@
     - ./build.sh
   artifacts:
     paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
-    expire_in: 1 hour
+    expire_in: 1 day
   retry: 1 # Add a retry to prevent flakyness on build stage.
 
 # Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
@@ -204,4 +204,4 @@ build_windows_ltsc2022_x64:
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
   artifacts:
     paths: ["./windows.image"]
-    expire_in: 1 hour
+    expire_in: 1 day
