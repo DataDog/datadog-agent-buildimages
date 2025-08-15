@@ -146,6 +146,16 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-arm64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Install & verify Bazelisk (Go package) as Bazel bootstrapper
+RUN bash <<'EOF'
+    set -euxo pipefail
+    go install github.com/bazelbuild/bazelisk@v1.27.0
+    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
+    export BAZELISK_HOME="$(mktemp -d)"
+    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
+    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
+EOF
+
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
