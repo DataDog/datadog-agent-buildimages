@@ -88,6 +88,7 @@ try {
     if ($Phase -eq 0 -or $Phase -eq 3) {
         .\helpers\phase3\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
         .\helpers\phase3\install_go.ps1
+        .\helpers\phase3\install_go_bazelisk.ps1
         .\helpers\phase3\install_codeql.ps1
         .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
         .\helpers\phase3\install_java.ps1
@@ -102,7 +103,6 @@ try {
     }
 
     if ($Phase -eq 0 -or $Phase -eq 4) {
-
     }
 }
 catch {
