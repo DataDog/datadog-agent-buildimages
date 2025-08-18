@@ -62,7 +62,7 @@ RUN cd /build && \
 
 RUN cd /build && \
     wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz && \
-    gpg --keyserver pgp.surfnet.nl --recv-keys 1F30EF2E && \
+    gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E && \
     wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
