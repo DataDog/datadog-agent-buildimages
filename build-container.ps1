@@ -48,3 +48,4 @@ $cmd_args += $build_args
 # Build the image
 Write-Host "Building the image using $cmd and $cmd_args"
 & $cmd build $cmd_args
+exit $LASTEXITCODE
