@@ -58,6 +58,16 @@ ENV GOPATH /go
 ENV GO_VERSION $GO_VERSION
 ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 
+# Install & verify Bazelisk (Go package) as Bazel bootstrapper
+RUN bash <<'EOF'
+    set -euxo pipefail
+    go install github.com/bazelbuild/bazelisk@v1.27.0
+    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
+    export BAZELISK_HOME="$(mktemp -d)"
+    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
+    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
+EOF
+
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
