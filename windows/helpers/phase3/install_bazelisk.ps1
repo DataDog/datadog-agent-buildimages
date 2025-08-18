@@ -19,7 +19,13 @@ if ($isInstalled -and -not $isCurrent) {
     Remove-Item -Recurse -Force $targetDir -ErrorAction SilentlyContinue
 }
 New-Item -ItemType Directory -Path $targetDir
-Get-RemoteFile -LocalFile "$targetDir\bazel.exe" -RemoteFile "https://github.com/bazelbuild/bazelisk/releases/download/v$Version/bazelisk-windows-amd64.exe" -VerifyHash $Sha256
+Get-RemoteFile -LocalFile "$targetDir\bazelisk.exe" -RemoteFile "https://github.com/bazelbuild/bazelisk/releases/download/v$Version/bazelisk-windows-amd64.exe" -VerifyHash $Sha256
+Push-Location $targetDir
+try {
+    New-Item -ItemType SymbolicLink -Path "bazel.exe" -Target "bazelisk.exe"
+} finally {
+    Pop-Location
+}
 Add-ToPath -NewPath $targetDir -Global -Local
 Write-Host -ForegroundColor Green "Installed bazelisk v$Version"
 
