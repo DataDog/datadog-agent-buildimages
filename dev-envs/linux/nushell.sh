@@ -55,13 +55,10 @@ cat <<'EOF' >> "${nu_config_file}"
 use ~/.cache/starship/init.nu
 EOF
 
-# Queue up post-processing
-cat <<EOF >> /setup/shellrc.sh
-export NUSHELL_ENV_FILE="${nu_env_file}"
-export PATH="${install_dir}:\${PATH}"
-EOF
-
-cat <<EOF >> /setup/env.sh
-set-ev NUSHELL_ENV_FILE "${nu_env_file}"
-path-append "${install_dir}"
-EOF
+# Inject environment variables used in ~/.scripts
+(
+    cd "$(dirname "${BASH_SOURCE[0]}")"
+    export NUSHELL_ENV_FILE="$nu_env_file"
+    scripts/set-ev.sh NUSHELL_ENV_FILE "$NUSHELL_ENV_FILE"
+    scripts/path-append.sh "$install_dir"
+)

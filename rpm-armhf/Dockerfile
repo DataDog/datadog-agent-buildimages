@@ -132,10 +132,9 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
 # CONDA
-COPY python-packages-versions.txt setup_python.sh /
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN ./setup_python.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

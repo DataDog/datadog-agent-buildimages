@@ -2,7 +2,7 @@
 
 set -ex
 
-source python-packages-versions.txt
+source "$(dirname "${BASH_SOURCE[0]}")"/../python-packages-versions.txt
 
 function detect_distro(){
     local KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"

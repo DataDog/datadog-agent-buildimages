@@ -2,9 +2,6 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-# Remove setup files
-rm -rf /setup
-
 # Remove side effects of APT installations
 apt-get clean && rm -rf /var/lib/apt/lists/*
 

@@ -130,10 +130,9 @@ RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
 # CONDA
-COPY python-packages-versions.txt setup_python.sh /
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN ./setup_python.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
@@ -172,15 +171,8 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# Install & verify Bazelisk (Go package) as Bazel bootstrapper
-RUN bash <<'EOF'
-    set -euxo pipefail
-    go install github.com/bazelbuild/bazelisk@v1.27.0
-    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
-    export BAZELISK_HOME="$(mktemp -d)"
-    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
-    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
-EOF
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
@@ -195,8 +187,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install Codecov uploader
-COPY setup_codecov.sh /
-RUN ./setup_codecov.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/codecov.sh
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image

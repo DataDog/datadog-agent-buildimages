@@ -104,11 +104,13 @@ function install_vscode() {
     ln -s "${extensions_dir}" "${root_dir}/extensions"
 
     # Ugly hack to remove github.copilot extension when we install cursor
+    cp "$(dirname "${BASH_SOURCE[0]}")"/default-vscode-extensions.txt /tmp
     if [[ "${root_dir_name}" == ".cursor-server" ]]; then
-        sed -i '/github.copilot/d' /setup/default-vscode-extensions.txt
+        sed -i '/github.copilot/d' /tmp/default-vscode-extensions.txt
     fi
 
-    install-vscode-extensions /setup/default-vscode-extensions.txt "${binary_name}-server"
+    install-vscode-extensions /tmp/default-vscode-extensions.txt "${binary_name}-server"
+    rm /tmp/default-vscode-extensions.txt
 }
 
 install_vscode \
