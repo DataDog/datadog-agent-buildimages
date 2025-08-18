@@ -145,12 +145,21 @@ mkdir -p "${HOME}/.config"
 mkdir -p "${DD_REPOS_DIR}"
 gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
 
+curl_opts=(
+  --fail              # fail on HTTP errors (>=400), prevents saving an error page
+  --silent            # no progress meter or extra output
+  --show-error        # but still show errors (important for debugging)
+  --location          # follow redirects
+  --retry 2           # retry N more times on transient errors
+  --retry-connrefused # also if connection is refused (CDN saturation cases)
+)
+
 # Always use the latest version of kubectl as recommended:
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-KUBECTL_VERSION="$(curl -sL https://dl.k8s.io/release/stable.txt)"
+KUBECTL_VERSION="$(curl "${curl_opts[@]}" https://dl.k8s.io/release/stable.txt)"
 install-binary \
     --version "${KUBECTL_VERSION}" \
-    --digest "$(curl -sL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${short_arch}/kubectl.sha256")" \
+    --digest "$(curl "${curl_opts[@]}" "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${short_arch}/kubectl.sha256")" \
     --url "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${short_arch}/kubectl" \
     --name "kubectl"
 
@@ -172,7 +181,7 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 go install github.com/josharian/impl@latest
 go install github.com/fatih/gomodifytags@latest
 
-GOLANGCI_LINT_VERSION="$(curl -s https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
+GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
 install-binary \
     --version "${GOLANGCI_LINT_VERSION}" \
     --digest "4037af8122871f401ed874852a471e54f147ff8ce80f5a304e020503bdb806ef" \
