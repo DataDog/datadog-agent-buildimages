@@ -2,8 +2,11 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-cd "${HOME}/.scripts"
-for f in *; do
-    mv -- "$f" "${f%.sh}"
-done
-find . -maxdepth 1 -type f -exec chmod +x {} \;
+mkdir "$HOME"/.scripts
+(
+    cd "$(dirname "${BASH_SOURCE[0]}")"/scripts
+    for f in *.sh; do
+        install -m 755 "$f" "$HOME"/.scripts/"${f%.sh}"
+    done
+)
+"$HOME"/.scripts/path-prepend "$HOME"/.scripts

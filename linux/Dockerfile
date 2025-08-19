@@ -110,10 +110,9 @@ RUN cd /build && \
     rm -rf /build
 
 # CONDA setup
-COPY python-packages-versions.txt setup_python.sh /
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN ./setup_python.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 # RVM setup
@@ -141,20 +140,11 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 
 # Go setup
 ENV GOPATH=/go
-COPY setup_go.sh /
-RUN ./setup_go.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-# Install & verify Bazelisk (Go package) as Bazel bootstrapper
-RUN bash <<'EOF'
-    source ~/.bashrc  # the actual Go binary path isn't in above `ENV PATH` (see `/setup_go.sh`)
-    set -euxo pipefail
-    go install github.com/bazelbuild/bazelisk@v1.27.0
-    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
-    export BAZELISK_HOME="$(mktemp -d)"
-    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
-    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
-EOF
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt bash -i /mnt/setup/bazelisk.sh
 
 # Rust setup
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \

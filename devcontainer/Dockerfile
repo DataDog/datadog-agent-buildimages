@@ -85,15 +85,8 @@ RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
     go install gotest.tools/gotestsum@latest
 
-# Install & verify Bazelisk (Go package) as Bazel bootstrapper
-RUN bash <<'EOF'
-    set -euxo pipefail
-    go install github.com/bazelbuild/bazelisk@v1.27.0
-    ln -s bazelisk "$(command -v bazelisk | sed 's/bazelisk$/bazel/')"
-    export BAZELISK_HOME="$(mktemp -d)"
-    trap 'rm -rv -- "$BAZELISK_HOME"' EXIT
-    USE_BAZEL_VERSION=7.6.1 bazel --version | grep -Fq 'bazel 7.6.1'
-EOF
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
 
 WORKDIR /home/datadog
 CMD [ "sleep", "infinity" ]
