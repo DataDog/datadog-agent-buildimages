@@ -10,14 +10,13 @@ ARG DDA_VERSION=""
 # scripts require the shells to be set up, leaving us with a cyclical dependency.
 # To break this cycle:
 # hadolint global ignore=DL3059
-# 1. Set up Nushell using only workspace-mounted scripts to update environment variables, (no ~/.scripts yet)
+# 1. Set up shells using only workspace-mounted scripts to update environment variables, (no ~/.scripts yet)
+RUN --mount=type=bind,dst=/mnt /mnt/zsh.sh
 RUN --mount=type=bind,dst=/mnt /mnt/nushell.sh
 # 2. Set up scripts into ~/.scripts and update PATH accordingly, (only explicit access to ~/.scripts)
 RUN --mount=type=bind,dst=/mnt /mnt/scripts.sh
 # 3. Proceed with subsequent steps relying solely on the installed scripts in PATH.
 
-# Set up Zsh
-RUN --mount=type=bind,dst=/mnt /mnt/zsh.sh
 # Set up environment variables
 RUN --mount=type=bind,dst=/mnt /mnt/env-vars.sh
 # Set up tools
