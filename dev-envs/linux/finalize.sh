@@ -23,3 +23,8 @@ cache_dirs=(
 for cache_dir in "${cache_dirs[@]}"; do
     rm -rf "$cache_dir"
 done
+
+cat ~/.profile
+cat ~/.bashrc
+cat ~/.zshenv
+cat "${NUSHELL_ENV_FILE}"
