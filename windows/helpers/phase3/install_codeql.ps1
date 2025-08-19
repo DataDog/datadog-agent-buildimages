@@ -12,7 +12,7 @@ if($isInstalled -and -not $isCurrent){
 Write-Host -ForegroundColor Green "Installing CodeQL $ENV:CODEQL_VERSION"
 #             https://github.com/github/codeql-cli-binaries/releases/download/v2.10.3/codeql-win64.zip
 $codeqlzip = "https://github.com/github/codeql-cli-binaries/releases/download/v$ENV:CODEQL_VERSION/codeql-win64.zip"
-$out = "$($PSScriptRoot)\codeql.zip"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'codeql.zip'
 
 Write-Host -ForegroundColor Green "Downloading $codeqlzip to $out"
 

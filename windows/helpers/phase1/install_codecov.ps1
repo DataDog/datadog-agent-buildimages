@@ -5,7 +5,7 @@ param (
 
 $CodecovPath = "c:\program files\codecov"
 $CodecovUrl = "https://uploader.codecov.io/$Version/windows/codecov.exe"
-$OutFile = "$($PSScriptRoot)\codecov.exe"
+$OutFile = Join-Path ([IO.Path]::GetTempPath()) 'codecov.exe'
 
 if (Test-Path -Path "$CodecovPath\codecov.exe") {
     Write-Output "$CodecovPath\codecov.exe already exists on the system."

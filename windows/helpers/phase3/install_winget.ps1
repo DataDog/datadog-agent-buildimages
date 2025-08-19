@@ -15,7 +15,7 @@ if($installed -and -not $isCurrent){
     Remove-Item -Force \winget\wingetcreate.exe -ErrorAction SilentlyContinue
 }
 Write-Host -ForegroundColor Green "Downloading winget"
-$out = "$($PSScriptRoot)\wingetcreate.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'wingetcreate.exe'
 
 Get-RemoteFile -RemoteFile $wingetexe -LocalFile $out -VerifyHash $Sha256
 
@@ -44,7 +44,7 @@ if(-not $isCurrent){
     ## presumably executable knows how to handle upgrade
 }
 Write-Host -ForegroundColor Green "Installing dotnet core 6 from $dotnetcore6url"
-$out = "$($PSScriptRoot)\dotnetcore.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'dotnetcore.exe'
 
 Get-RemoteFile -RemoteFile $dotnetcore6url -LocalFile $out -VerifyHash $dotnetcore6hash
 Write-Host -ForegroundColor Green Downloading $dotnetcore6url to $out

@@ -11,7 +11,7 @@ if(-not $isCurrent){
 }
 Write-Host -ForegroundColor Green "Installing dotnetcore from $($env:DOTNETCORE_URL)"
 
-$out = "$($PSScriptRoot)\dotnetcoresdk.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'dotnetcoresdk.exe'
 
 Get-RemoteFile -RemoteFile $env:DOTNETCORE_URL -LocalFile $out -VerifyHash $env:DOTNETCORE_SHA256
 Write-Host -ForegroundColor Green Downloading $env:DOTNETCORE_URL to $out

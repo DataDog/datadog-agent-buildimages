@@ -29,7 +29,7 @@ try {
 Add-ToPath -NewPath $targetDir -Global -Local
 Write-Host -ForegroundColor Green "Installed bazelisk v$Version"
 
-$bazeliskHome = (New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()))).FullName
+$bazeliskHome = (New-Item -ItemType Directory -Path (Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName()))).FullName
 try {
     $output = & {
         $env:BAZELISK_HOME = "$bazeliskHome"

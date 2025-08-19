@@ -21,7 +21,7 @@ if($isInstalled) {
 
 
 Write-Host  -ForegroundColor Green starting with WiX
-$out = "$($PSScriptRoot)\wix.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'wix.exe'
 
 Get-RemoteFile -RemoteFile $wixzip -LocalFile $out -VerifyHash $Sha256
 

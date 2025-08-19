@@ -16,7 +16,7 @@ if($isInstalled -and $isCurrent) {
 ## presumably installer exe knows how to handle upgrades
 
 Write-Host  -ForegroundColor Green starting with Python
-$out = "$($PSScriptRoot)\python.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'python.exe'
 
 Get-RemoteFile -RemoteFile $pyexe -LocalFile $out -VerifyHash $Sha256
 
@@ -31,20 +31,18 @@ Remove-Item $out
 
 $getpipurl = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
 $getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
-$target = "$($PSScriptRoot)\get-pip.py"
+$target = Join-Path ([IO.Path]::GetTempPath()) 'get-pip.py'
 
 Get-RemoteFile -RemoteFile $getpipurl -LocalFile $target -VerifyHash $getpipsha256
 
-$packages_file = "\python-packages-versions.txt"
-if($Env:DD_DEV_TARGET -ne "Container") {
-    $packages_file = "$($PSScriptRoot)\..\..\.." + $packages_file
-}
+$packages_file = Join-Path $PSScriptRoot '..\..\..\python-packages-versions.txt'
 Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
     $var = $_.Split('=')
     Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
 }
 
-python "$($PSScriptRoot)\get-pip.py" pip==${Env:DD_PIP_VERSION_PY3}
+python "$target" pip==${Env:DD_PIP_VERSION_PY3}
+Remove-Item $target
 if($Env:DD_DEV_TARGET -ne "Container") {
     ## When installing for local use, set up the virtual environment first
     python -m venv "$($Env:USERPROFILE)\.ddbuild\agentdev"
@@ -53,7 +51,7 @@ if($Env:DD_DEV_TARGET -ne "Container") {
 
 python -m pip install uv==${Env:DD_UV_VERSION}
 
-$repoPath = "$($PSScriptRoot)\datadog-agent-dev"
+$repoPath = Join-Path ([IO.Path]::GetTempPath()) 'datadog-agent-dev'
 if (Test-Path "$repoPath") {
     Remove-Item -Recurse -Force "$repoPath"
 }

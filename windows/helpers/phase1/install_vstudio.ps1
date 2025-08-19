@@ -53,7 +53,7 @@ if($Env:DD_DEV_TARGET -eq "Container") {
 }
 Write-Host -ForegroundColor Green "Installing Visual Studio from $($Url)"
 
-$out = "$($PSScriptRoot)\vs_buildtools.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'vs_buildtools.exe'
 
 Write-Host -ForegroundColor Green Downloading $Url to $out
 Get-RemoteFile -RemoteFile $Url -LocalFile $out -VerifyHash $Sha256

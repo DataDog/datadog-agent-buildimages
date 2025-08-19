@@ -43,7 +43,8 @@ $mirrors = @(
 )
 
 Write-Host  -ForegroundColor Green starting with MSYS
-$out = "$($PSScriptRoot)\msys.tar.xz"
+$outDir = [IO.Path]::GetTempPath()
+$out = Join-Path $outDir 'msys.tar.xz'
 $msyszip = "distrib/x86_64/msys2-base-x86_64-$($Version).tar.xz"
 $downloadSuccessful = $False
 foreach($mirror in $mirrors) {
@@ -60,8 +61,8 @@ if (!$downloadSuccessful) {
 }
 
 # uncompress the tar-xz into a tar
-$msystar = "msys.tar"
-& 7z x $out
+$msystar = Join-Path $outDir 'msys.tar'
+& 7z x -o"$outDir" $out
 start-process 7z -ArgumentList "x -o$($InstallPath) $msystar" -Wait
 
 Remove-Item $out

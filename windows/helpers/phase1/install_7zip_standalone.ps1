@@ -15,7 +15,6 @@ if($isInstalled -and $isCurrent){
     return
 }
 
-# Script directory is $PSScriptRoot
 $sevenZipStandalone ="https://github.com/ip7z/7zip/releases/download/$Version/7zr.exe"
 
 Write-Host -ForegroundColor Green "Installing 7zip Standalone $sevenZipStandalone"

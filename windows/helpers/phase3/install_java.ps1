@@ -7,7 +7,7 @@ Write-Host -ForegroundColor Green "Installing Java $ENV:JAVA_VERSION"
 ## https://aka.ms/download-jdk/microsoft-jdk-17.0.8-windows-x64.zip
 $javazip = "https://aka.ms/download-jdk/microsoft-jdk-$($ENV:JAVA_VERSION)-windows-x64.zip"
 
-$out = 'java.zip'
+$out = Join-Path ([IO.Path]::GetTempPath()) 'java.zip'
 
 Write-Host -ForegroundColor Green "Downloading $javazip to $out"
 
@@ -18,7 +18,7 @@ mkdir c:\tmp\java
 
 Write-Host -ForegroundColor Green "Extracting $out to c:\tmp\java"
 
-Start-Process "7z" -ArgumentList 'x -oc:\tmp\java java.zip' -Wait
+Start-Process "7z" -ArgumentList "x -oc:\tmp\java $out" -Wait
 
 Write-Host -ForegroundColor Green "Removing temporary file $out"
 
