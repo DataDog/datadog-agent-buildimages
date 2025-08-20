@@ -175,7 +175,7 @@ RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt bash -i /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
 
 # Rust setup
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \

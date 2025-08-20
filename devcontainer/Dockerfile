@@ -48,6 +48,9 @@ RUN if [ "$TARGETARCH" = "amd64" ] ; then set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh ; fi
 
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
@@ -84,9 +87,6 @@ RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
     go install gotest.tools/gotestsum@latest
-
-# Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
 
 WORKDIR /home/datadog
 CMD [ "sleep", "infinity" ]
