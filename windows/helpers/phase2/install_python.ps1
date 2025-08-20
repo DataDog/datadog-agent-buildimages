@@ -78,6 +78,7 @@ Remove-Item -Recurse -Force "$repoPath"
 
 python -m dda self telemetry disable
 python -m dda config set update.mode off
+python -m dda config find
 python -m dda -v self dep sync -f legacy-build
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to sync dda dependencies"
