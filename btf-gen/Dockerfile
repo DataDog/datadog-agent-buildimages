@@ -55,6 +55,11 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      dda -v self dep sync -f legacy-build && \
      pyenv rehash
 
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && \
+    mv authanywhere-linux-amd64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
+
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 

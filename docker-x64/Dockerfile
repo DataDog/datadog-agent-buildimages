@@ -98,3 +98,8 @@ RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master
     sed -i -e "s/OpenSSL_add_all_ciphers/OPENSSL_init_crypto/g" configure.ac && \
     ./autogen.sh && make && make install && \
     rm /tmp/master.tar.gz && rm -rf /tmp/xar-master/
+
+# Install authanywhere for infra token management
+RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && \
+    mv authanywhere-linux-amd64 /bin/authanywhere && \
+    chmod +x /bin/authanywhere
