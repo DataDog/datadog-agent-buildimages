@@ -12,6 +12,7 @@ ARG VAULT_VERSION=1.17.2
 ARG DATADOG_CI_VERSION=3.9.0
 ARG PROTOBUF_VERSION=29.3
 ARG AWSCLI_VERSION=2.27.30
+ARG DPKG_ARMHF_VERSION=1.18.4
 
 # Architecture-specific build arguments
 ARG ARCH
@@ -33,6 +34,7 @@ ARG VAULT_SHA256
 ARG DATADOG_CI_SHA256
 ARG PROTOBUF_SHA256
 ARG AWSCLI_SHA256
+ARG DPKG_ARMHF_SHA256
 ARG ADDITIONAL_PACKAGE
 
 LABEL maintainer="DataDog"
@@ -108,6 +110,35 @@ RUN cd /build && \
     ./ct-ng build && \
     mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
     rm -rf /build
+
+RUN curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
+    echo "${DPKG_ARMHF_SHA256}  dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" | sha256sum --check && \
+    tar -xf "dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
+    cd "dpkg-${DPKG_ARMHF_VERSION}" && \
+    echo "${DPKG_ARMHF_VERSION}" > .dist-version && \
+    autoreconf -vfi && \
+    mkdir build && cd build && \
+    export DPKG_PREFIX=/opt/dpkg-armhf && \
+    PKG_CONFIG_PATH=/usr/local/lib/pkgconfig \
+    ../configure \
+      --host=arm-linux-gnueabihf \
+      --build=arm-linux-gnueabihf \
+      --program-suffix=-armhf \
+      --prefix="${DPKG_PREFIX}" \
+      --sysconfdir="${DPKG_PREFIX}/etc" \
+      --localstatedir="${DPKG_PREFIX}/var" \
+      --disable-nls \
+      --disable-dselect && \
+    make -j"$(nproc)" && \
+    make install && \
+    mkdir -p "${DPKG_PREFIX}/var/lib/dpkg" "${DPKG_PREFIX}/var/cache/dpkg" && \
+    install -m 0755 /dev/stdin "${DPKG_PREFIX}/bin/dpkg" <<EOF
+#!/bin/sh
+exec "${DPKG_PREFIX}/bin/dpkg-armhf" \\
+    --admindir="${DPKG_PREFIX}/var/lib/dpkg" \\
+    --instdir="${DPKG_PREFIX}" \\
+    "\$@"
+EOF
 
 # CONDA setup
 COPY python-packages-versions.txt setup_python.sh /
