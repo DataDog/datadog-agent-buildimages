@@ -2,7 +2,6 @@
 include:
   - .gitlab/setup.yml
   - .gitlab/build.yml
-  - .gitlab/stats.yml
   - .gitlab/test.yml
   - .gitlab/devcontainer.yml
   - .gitlab/release.yml
@@ -11,7 +10,6 @@ include:
 stages:
   - setup
   - build
-  - stats
   - availability_message # Jobs of this stage are defined in the notify.yml file
   - test
   - devcontainer
