@@ -5,7 +5,7 @@ $ProgressPreference = 'SilentlyContinue'
 Write-Host -ForegroundColor Green Installing Google Cloud SDK
 $version = $ENV:GCLOUD_SDK_VERSION
 $gsdk = "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$version-windows-x86_64.zip"
-$out = "$($PSScriptRoot)\gsdk.zip"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'gsdk.zip'
 $sha256 = $ENV:GCLOUD_SDK_SHA256
 
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "GCloudSDK" -Keyname "version" -TargetValue $version

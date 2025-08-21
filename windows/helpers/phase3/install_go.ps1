@@ -7,8 +7,8 @@ Write-Host -ForegroundColor Green "Installing msgo $ENV:GO_VERSION-$ENV:MSGO_PAT
 $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
 $msgozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION)-$($ENV:MSGO_PATCH).windows-amd64.zip"
 
-$out = "$($PSScriptRoot)\go.zip"
-$msgo_out = "$($PSScriptRoot)\msgo.zip"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'go.zip'
+$msgo_out = Join-Path ([IO.Path]::GetTempPath()) 'msgo.zip'
 
 ##
 ## because we want to allow multiple versions of GO, we need to handle

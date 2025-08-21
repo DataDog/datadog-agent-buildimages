@@ -16,7 +16,7 @@ if(-not $isInstalled) {
     Remove-Item -Force "c:\nuget\nuget.exe" -ErrorAction SilentlyContinue
 }
 Write-Host -ForegroundColor Green "Downloading nuget"
-$out = "$($PSScriptRoot)\nuget.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'nuget.exe'
 
 Get-RemoteFile -RemoteFile $nugetexe -LocalFile $out -VerifyHash $Sha256
 

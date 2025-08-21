@@ -14,7 +14,7 @@ if ($isinstalled) {
 }
 
 Write-Host -foregroundcolor green installing wdk
-$out = "$($psscriptroot)\wdksetup.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'wdksetup.exe'
 $sha256 = "59c802a7edf1ecca172ec76a8b07702239ae83ee5ff9d1acb6742b2e224e9227"
 Write-Host -foregroundcolor green downloading $wdk to $out
 
@@ -26,7 +26,7 @@ Write-Host -foregroundcolor green "file size is $((get-item $out).length)"
 
 
 start-process $out -argumentlist '/features + /quiet' -wait
-
+Remove-Item $out
 
 set-installedversionkey -component "wdk" -keyname "downloadfile" -targetvalue $wdk
 Write-Host -foregroundcolor green done with wdk

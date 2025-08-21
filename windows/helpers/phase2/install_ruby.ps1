@@ -18,7 +18,7 @@ if($isInstalled -and -not $isCurrent) {
 $rubyexe = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-$($Version)/rubyinstaller-$($Version)-x64.exe"
 
 Write-Host  -ForegroundColor Green starting with Ruby
-$out = "$($PSScriptRoot)\rubyinstaller.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'rubyinstaller.exe'
 
 Get-RemoteFile -RemoteFile $rubyexe -LocalFile $out -VerifyHash $Sha256
 

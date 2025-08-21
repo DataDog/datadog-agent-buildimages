@@ -6,8 +6,6 @@ param (
     [Parameter(Mandatory=$true)][string]$Version
 )
 
-# Script directory is $PSScriptRoot
-
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "AWSCLI" -Keyname "version" -TargetValue $Version
 if($isInstalled -and $isCurrent) {
     Write-Host -ForegroundColor Green "AWS CLI v2 up to date"
@@ -19,7 +17,7 @@ $awsCliUrl = "https://awscli.amazonaws.com/AWSCLIV2-${Version}.msi"
 $installPath = "$env:ProgramFiles\Amazon\AWSCLIV2"
 
 Write-Host -ForegroundColor Green "Starting with AWS CLI v2 installation"
-$out = "$($PSScriptRoot)\awscli.msi"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'awscli.msi'
 
 Get-RemoteFile -RemoteFile $awsCliUrl -LocalFile $out -VerifyHash $Sha256
 

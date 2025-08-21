@@ -19,29 +19,16 @@ ARG MSGO_PATCH
 ARG DDA_VERSION
 
 ## WORKDIR should automatically create the directory
-WORKDIR c:/scripts
-COPY ./windows/*.ps1 ./
-COPY ./windows/helpers/*.ps1 c:/scripts/helpers/
-
-COPY go.env c:/
-COPY dda.env c:/
-
-COPY python-packages-versions.txt /
-COPY ./windows/set_cpython_compiler.cmd set_cpython_compiler.cmd
-
-
-COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
+WORKDIR /mnt/windows
+RUN --mount=type=bind,dst=/mnt /mnt/windows/set_cpython_compiler.cmd
 SHELL ["powershell", "-Command"]
-RUN .\install-all.ps1 -TargetContainer -Phase 1
-COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
-RUN .\install-all.ps1 -TargetContainer -Phase 2
-COPY ./windows/helpers/phase3/*.ps1 c:/scripts/helpers/phase3/
-RUN .\install-all.ps1 -TargetContainer -Phase 3
-COPY ./windows/helpers/phase4/*.ps1 c:/scripts/helpers/phase4/
-RUN .\install-all.ps1 -TargetContainer -Phase 4
-
+RUN --mount=type=bind,dst=/mnt /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
+RUN --mount=type=bind,dst=/mnt /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
+RUN --mount=type=bind,dst=/mnt /mnt/windows/install-all.ps1 -TargetContainer -Phase 3
+RUN --mount=type=bind,dst=/mnt /mnt/windows/install-all.ps1 -TargetContainer -Phase 4
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
-RUN .\helpers\update_root_certs.ps1
-
+RUN --mount=type=bind,dst=/mnt /mnt/windows/helpers/update_root_certs.ps1
+WORKDIR c:/
+RUN Remove-Item -Recurse -Verbose c:/mnt
 ENTRYPOINT ["/entrypoint.bat"]

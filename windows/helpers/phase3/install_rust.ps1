@@ -23,13 +23,14 @@ if($isInstalled -and $isCurrent) {
 $source="https://static.rust-lang.org/rustup/archive/$Rustup_Version/x86_64-pc-windows-msvc/rustup-init.exe"
 
 Write-Host -ForegroundColor Green "Installing rust-up"
-$out = "$($PSScriptRoot)\rustup-init.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'rustup-init.exe'
 Get-RemoteFile -RemoteFile $source -LocalFile $out -VerifyHash $Rustup_Sha256
 
 Set-InstalledVersionKey -Component "rust-up" -Keyname "version" -TargetValue $Rustup_Version
 
 Write-Host -ForegroundColor Green "Installing rust"
 & $out -y --default-toolchain $Rust_Version
+Remove-Item $out
 
 Set-InstalledVersionKey -Component "rust" -Keyname "version" -TargetValue $Rust_Version
 
