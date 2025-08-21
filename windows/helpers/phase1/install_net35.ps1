@@ -11,7 +11,7 @@ if($isInstalled){
 if($Env:DD_DEV_TARGET -ne "Container") {
     $osInfo = Get-CimInstance -classname win32_operatingsystem
     if($osinfo.ProductType -eq "1"){
-        & dism /online /enable-feature /FeatureName:Netfx3 /all
+        & dism /online /add-capability /CapabilityName:Netfx3 /Quiet /NoRestart
         Set-InstalledVersionKey -Component "netfx35" -Keyname "version" -TargetValue "1"
         return
     }

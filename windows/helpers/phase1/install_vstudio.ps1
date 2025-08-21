@@ -61,7 +61,7 @@ Get-RemoteFile -RemoteFile $Url -LocalFile $out -VerifyHash $Sha256
 # write file size to make sure it worked
 Write-Host -ForegroundColor Green "File size is $((get-item $out).length)"
 $VSPackageListParam = $VSPackages -join " --add "
-$ArgList = "--wait --norestart --nocache --installPath `"$($InstallRoot)`" --add $VSPackageListParam"
+$ArgList = "--wait --norestart --nocache --noupdateinstaller --installPath `"$($InstallRoot)`" --add $VSPackageListParam"
 if(-not $NoQuiet){
     $ArgList = "--quiet $ArgList"
 }
