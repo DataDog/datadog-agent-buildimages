@@ -29,6 +29,12 @@ RUN --mount=type=bind,dst=/mnt /mnt/windows/install-all.ps1 -TargetContainer -Ph
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
 RUN --mount=type=bind,dst=/mnt /mnt/windows/helpers/update_root_certs.ps1
+RUN Get-Location
+RUN Get-ChildItem
+RUN Get-Process
 WORKDIR c:/
+RUN Get-Location
+RUN Set-Location c:/
+RUN Get-Location
 RUN Remove-Item -Recurse -Verbose c:/mnt
 ENTRYPOINT ["/entrypoint.bat"]
