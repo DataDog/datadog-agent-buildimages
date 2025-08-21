@@ -29,12 +29,10 @@ dda.env                             @DataDog/agent-devx
 /kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx
 
 # Linux test & build images
-/deb-arm/                           @DataDog/agent-devx @DataDog/agent-build
-/deb-x64/                           @DataDog/agent-devx @DataDog/agent-build
 /rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-build
 /rpm-armhf/                         @DataDog/agent-devx @DataDog/agent-build
 /rpm-x64/                           @DataDog/agent-devx @DataDog/agent-build
-/linux-glibc-*/                     @DataDog/agent-devx @DataDog/agent-build
+/linux/                             @DataDog/agent-devx @DataDog/agent-build
 
 # Windows test & build images
 /windows/                           @DataDog/windows-products @DataDog/agent-devx
