@@ -11,6 +11,6 @@ else
 fi
 
 # Install authanywhere for infra token management
-curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-$authanywhere_arch" && \
-    mv "authanywhere-linux-$authanywhere_arch" /bin/authanywhere && \
-    chmod +x /bin/authanywhere
+curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-$authanywhere_arch"
+mv "authanywhere-linux-$authanywhere_arch" /usr/local/bin/authanywhere
+chmod +x /usr/local//bin/authanywhere
