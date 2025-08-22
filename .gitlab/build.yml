@@ -36,9 +36,6 @@
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
   script:
     - ./build.sh
-  artifacts:
-    paths: ["./$IMAGE-$IMAGE_VERSION.tar"]
-    expire_in: 1 day
   retry: 1 # Add a retry to prevent flakyness on build stage.
 
 # Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging

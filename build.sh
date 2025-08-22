@@ -37,3 +37,9 @@ ${CUSTOM_BUILD_ARGS:-} \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+
+# Statistics
+crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq
+crane config registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq
+export SIZE=$(crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq '.config.size + ([.layers[].size] | add)')
+./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
