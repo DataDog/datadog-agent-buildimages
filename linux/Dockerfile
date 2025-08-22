@@ -204,9 +204,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
     chmod +x /usr/local/bin/datadog-ci
 
 # Install authanywhere for infra token management
-RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-${ARCH}" && \
-    mv authanywhere-linux-${ARCH} /bin/authanywhere && \
-    chmod +x /bin/authanywhere
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 
 # Common environment setup

@@ -187,9 +187,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   rm ${VAULT_FILENAME}
 
 # Install authanywhere for infra token management
-RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && \
-    mv authanywhere-linux-amd64 /bin/authanywhere && \
-    chmod +x /bin/authanywhere
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts

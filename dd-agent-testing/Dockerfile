@@ -57,9 +57,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   rm ${VAULT_FILENAME}
 
 # Install authanywhere for infra token management
-RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-amd64" && \
-    mv authanywhere-linux-amd64 /bin/authanywhere && \
-    chmod +x /bin/authanywhere
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent

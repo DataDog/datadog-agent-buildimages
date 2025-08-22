@@ -78,9 +78,7 @@ COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
 # Install authanywhere for infra token management
-RUN curl -OL "binaries.ddbuild.io/dd-source/authanywhere/LATEST/authanywhere-linux-arm64" && \
-    mv authanywhere-linux-arm64 /bin/authanywhere && \
-    chmod +x /bin/authanywhere
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # CI uploader, to send tags for extra visibility into CI
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
