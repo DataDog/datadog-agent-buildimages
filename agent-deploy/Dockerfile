@@ -186,6 +186,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
 
+# Install authanywhere for infra token management
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts
 RUN chmod +x /deploy_scripts/check_apt_pool.sh

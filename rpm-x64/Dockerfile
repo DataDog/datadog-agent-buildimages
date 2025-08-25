@@ -224,6 +224,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   ./aws/install && \
   rm -rf aws awscliv2.zip
 
+# Install authanywhere for infra token management
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
 

@@ -203,6 +203,10 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
     echo "${DATADOG_CI_SHA256} /usr/local/bin/datadog-ci" | sha256sum --check && \
     chmod +x /usr/local/bin/datadog-ci
 
+# Install authanywhere for infra token management
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+
+
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
