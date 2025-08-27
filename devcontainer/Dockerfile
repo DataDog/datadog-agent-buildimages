@@ -74,6 +74,10 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
 USER datadog
+
+# prevents using system package which emits warning logs on every call
+RUN pip3 install --no-cache-dir blinker==1.9.0
+
 ENV GOPATH=/home/datadog/go \
     GOROOT=/usr/local/go \
     PATH="/home/datadog/.local/bin:/home/datadog/go/bin:/usr/local/go/bin:${PATH}"
