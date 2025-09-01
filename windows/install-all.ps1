@@ -60,9 +60,6 @@ try {
     # Phase 4 is empty by default. Before starting work on updating an item move the script to Phase 4.
     #
 
-    # TEST
-    .\helpers\phase3\install_winsign.ps1
-
     if ($Phase -eq 0 -or $Phase -eq 1) {
         .\helpers\phase1\install_net35.ps1
         .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
