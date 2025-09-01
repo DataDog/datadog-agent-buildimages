@@ -18,7 +18,7 @@ $SoftwareTable = @{
     "VSBUILDTOOLS_SHA256"="B4FAB6D6D479C38A6081EC95E32D7A105D21D19B6AE7F97371F716DBEA08303D";
 
     ## VisualStudio IDE
-    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes 
+    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes
     "VSINSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/6319a322aec87401661ec138427946ca6ab0373c917364a4abf17556ff7aef91/vs_Community.exe";
     "VSINSTALLER_SHA256"="6319A322AEC87401661EC138427946CA6AB0373C917364A4ABF17556FF7AEF91";
 
@@ -57,7 +57,7 @@ $SoftwareTable = @{
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";
     "WINSIGN_VERSION"="0.3.3";
-    "WINSIGN_SHA256"="43c1429e1e23fba2f9284da2d12027b5be58258c6b047c65ff8e2d46370072ba";
+    "WINSIGN_SHA256"="7cfdecd01a997eb0bdd3e8c85ea4a74fa0e4bc7857c73d6cfcfe0d1400433603";
     "RUSTUP_VERSION"="1.26.0";
     "RUSTUP_SHA256"="365D072AC4EF47F8774F4D2094108035E2291A0073702DB25FA7797A30861FC9";
     "RUST_VERSION"="1.74.0";
