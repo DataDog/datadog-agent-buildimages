@@ -195,7 +195,6 @@ build_windows_ltsc2022_x64:
     IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
   script:
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
     - .\build-container.ps1 -Image $SRC_IMAGE -Tag $IMAGE_VERSION -Buildkit
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
