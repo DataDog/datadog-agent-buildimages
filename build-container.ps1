@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string] $Image,
     [Parameter(Mandatory = $true)][string] $Tag,
-    [Parameter(Mandatory = $false)][switch] $Buildkit = $false
+    [Parameter(Mandatory = $false)][switch] $Buildkit = $false,
+    [Parameter(Mandatory = $false)][string] $WindowsVersion = "2022"
 )
 
 $build_args = @()
@@ -34,7 +35,8 @@ if ($Buildkit) {
 }
 
 # Get build arguments from environment variables
-$build_args += -split "${build_opt}BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022" 
+$base_image = "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc${WindowsVersion}"
+$build_args += -split "${build_opt}BASE_IMAGE=${base_image}" 
 foreach ($line in $(Get-Content go.env)) {
     if ( -not ($line -like "*LINUX*") ) {
         $build_args += -split "$build_opt$line"
