@@ -10,8 +10,7 @@ if(! $?){
         $route = Get-NetRoute -DestinationPrefix "169.254.169.254/32"
         if($route -and $route.NextHop -eq $defgw){
             Write-Host -ForegroundColor Green "AWS Endpoint properly configured."
-            $token = (iwr -ErrorAction 'silentlycontinue' -UseBasicParsing http://169.254.169.254/latest/api/token -Headers @{"X-aws-ec2-metadata-token-ttl-seconds"="21600"}).content
-            $inst = (iwr -ErrorAction 'silentlycontinue' -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id -Headers @{"X-aws-ec2-metadata-token"=$token}).content
+            $inst = (iwr -ErrorAction 'silentlycontinue' -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content
             if($inst){
                 Write-Host -ForegroundColor Green "AWS metadata endpoint accessible.  Instance ID $inst"
             } else {
