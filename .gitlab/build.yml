@@ -183,6 +183,7 @@ build_dev_env_linux_arm64:
           - build-container.ps1
           - windows/**/*
           - go.env
+          - .gitlab/build.yml
         compare_to: $COMPARE_TO_BRANCH
   timeout: 2h 30m
   tags: ["windows-v2:2022"]
