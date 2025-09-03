@@ -15,9 +15,27 @@ $SoftwareTable = @{
     "VS2017BUILDTOOLS_SHA256"="6CC639A464629B62ECE2B4B786880BD213EE371D89FFC7717DC08B7F68644F38";
 
     ## VisualStudio IDE
+<<<<<<< HEAD
     # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
     "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
     "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
+||||||| parent of f104634 (Re-apply + fix "Update windows code signer + remove IMDSv1" (#974))
+    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes 
+    "VSINSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/6319a322aec87401661ec138427946ca6ab0373c917364a4abf17556ff7aef91/vs_Community.exe";
+    "VSINSTALLER_SHA256"="6319A322AEC87401661EC138427946CA6AB0373C917364A4ABF17556FF7AEF91";
+
+    "DOTNETCORE_VERSION"="8.0.302";
+    "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
+    "DOTNETCORE_URL"="https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe";
+=======
+    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes
+    "VSINSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/6319a322aec87401661ec138427946ca6ab0373c917364a4abf17556ff7aef91/vs_Community.exe";
+    "VSINSTALLER_SHA256"="6319A322AEC87401661EC138427946CA6AB0373C917364A4ABF17556FF7AEF91";
+
+    "DOTNETCORE_VERSION"="8.0.302";
+    "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
+    "DOTNETCORE_URL"="https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe";
+>>>>>>> f104634 (Re-apply + fix "Update windows code signer + remove IMDSv1" (#974))
 
     "RUBY_VERSION"="2.6.6-1";
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
@@ -51,8 +69,16 @@ $SoftwareTable = @{
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";
+<<<<<<< HEAD
     "WINSIGN_VERSION"="0.2.0";
     "WINSIGN_SHA256"="760aa4e3bf12b48ba134f72dda815e98ec628f84420d0ef1bdf4b0185b90193a";
+||||||| parent of f104634 (Re-apply + fix "Update windows code signer + remove IMDSv1" (#974))
+    "WINSIGN_VERSION"="0.3.0";
+    "WINSIGN_SHA256"="43c1429e1e23fba2f9284da2d12027b5be58258c6b047c65ff8e2d46370072ba";
+=======
+    "WINSIGN_VERSION"="0.3.5";
+    "WINSIGN_SHA256"="b2ba5127a5c5141e04d42444ca115af4c95cc053a743caaa9b33c68dd6b13f68";
+>>>>>>> f104634 (Re-apply + fix "Update windows code signer + remove IMDSv1" (#974))
     "RUSTUP_VERSION"="1.26.0";
     "RUSTUP_SHA256"="365D072AC4EF47F8774F4D2094108035E2291A0073702DB25FA7797A30861FC9";
     "RUST_VERSION"="1.74.0"
