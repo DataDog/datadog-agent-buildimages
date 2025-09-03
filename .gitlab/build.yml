@@ -196,7 +196,7 @@ build_dev_env_linux_arm64:
   script:
     - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $SRC_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
-    - .\build-container.ps1 -Image $SRC_IMAGE -WindowsVersion $WINDOWS_VERSION -Tag $IMAGE_VERSION -Buildkit
+    - .\build-container.ps1 -Image $SRC_IMAGE -Tag $IMAGE_VERSION -Buildkit
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
   artifacts:
     paths: ["./windows.image"]
@@ -206,10 +206,8 @@ build_windows_ltsc2022_x64:
   extends: [.build_windows_x64]
   variables:
     IMAGE: windows_ltsc2022_x64
-    WINDOWS_VERSION: 2022
 
 build_windows_ltsc2025_x64:
   extends: [.build_windows_x64]
   variables:
     IMAGE: windows_ltsc2025_x64
-    WINDOWS_VERSION: 2025
