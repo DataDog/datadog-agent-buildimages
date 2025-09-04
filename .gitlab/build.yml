@@ -194,7 +194,6 @@ build_dev_env_linux_arm64:
     DOCKERFILE: windows/Dockerfile
     DD_TARGET_ARCH: x64
   script:
-    - '$_instance_id = (iwr  -UseBasicParsing http://169.254.169.254/latest/meta-data/instance-id).content ; Write-Host "Running on instance $($_instance_id)"'
     - $OUTPUT_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
     - .\build-container.ps1 -BaseImage $BASE_IMAGE -Image $OUTPUT_IMAGE -Tag $IMAGE_VERSION -Buildkit
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
