@@ -1,4 +1,5 @@
 param(
+    [Parameter(Mandatory = $true)][string] $BaseImage,
     [Parameter(Mandatory = $true)][string] $Image,
     [Parameter(Mandatory = $true)][string] $Tag,
     [Parameter(Mandatory = $false)][switch] $Buildkit = $false
@@ -8,7 +9,7 @@ $build_args = @()
 $cmd_args = @()
 $build_opt = "--build-arg "
 $cmd = "docker"
-$SRC_IMAGE = "${Image}:${Tag}"
+$OUTPUT_IMAGE = "${Image}:${Tag}"
 $CACHE_IMAGE = "${Image}:cache"
 
 
@@ -21,7 +22,7 @@ if ($Buildkit) {
     # Start buildkitd
     Start-Process -FilePath "buildkitd.exe"
     $build_opt = "--opt build-arg:"
-    $cmd_args = -split "--progress=plain --output type=image,name=$SRC_IMAGE,push=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.\windows "
+    $cmd_args = -split "--progress=plain --output type=image,name=$OUTPUT_IMAGE,push=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.\windows "
     # Set cache arguments
     if ($env:CI_PIPELINE_SOURCE -eq "schedule") {
         $cmd_args += "--no-cache"
@@ -30,11 +31,11 @@ if ($Buildkit) {
     }
     $cmd_args += -split "--export-cache type=registry,ref=$CACHE_IMAGE"
 } else {
-    $cmd_args = -split "-m 4096M -t $SRC_IMAGE --file .\windows\Dockerfile ."
+    $cmd_args = -split "-m 4096M -t $OUTPUT_IMAGE --file .\windows\Dockerfile ."
 }
 
 # Get build arguments from environment variables
-$build_args += -split "${build_opt}BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022" 
+$build_args += -split "${build_opt}BASE_IMAGE=${BaseImage}"
 foreach ($line in $(Get-Content go.env)) {
     if ( -not ($line -like "*LINUX*") ) {
         $build_args += -split "$build_opt$line"
