@@ -21,7 +21,7 @@ GEM
     aws-sigv4 (1.10.0)
       aws-eventstream (~> 1, >= 1.0.2)
     jmespath (1.6.2)
-    trollop (2.9.10)
+    optimist (3.2.1)
 
 PLATFORMS
   ruby
@@ -30,7 +30,7 @@ DEPENDENCIES
   aws-sdk-cloudfront (~> 1)
   aws-sdk-core (~> 3)
   aws-sdk-s3 (~> 1)
-  trollop
+  optimist
 
 BUNDLED WITH
    2.3.26
