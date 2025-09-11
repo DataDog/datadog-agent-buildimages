@@ -52,7 +52,7 @@ variables:
 build_kernels_x64:
   extends: .build_kernels
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/kernel-version-testing_x64${ECR_TEST_ONLY}:$IMAGE_VERSION
-  tags: [ "runner:main" ]
+  tags: [ "arch:amd64" ]
   variables:
     ARCH: x86
     BZ_IMAGE: bzImage
@@ -63,7 +63,7 @@ build_kernels_x64:
 build_kernels_arm64:
   extends: .build_kernels
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/kernel-version-testing_arm64${ECR_TEST_ONLY}:$IMAGE_VERSION
-  tags: ["docker-in-docker:arm64"]
+  tags: ["arch:arm64"]
   variables:
     ARCH: arm64
     BZ_IMAGE: Image.gz
@@ -75,7 +75,7 @@ build_kernels_arm64:
 upload_kernel_packages_x64:
   stage: upload_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
-  tags: [ "runner:main" ]
+  tags: [ "arch:amd64" ]
   needs: [ "build_kernels_x64" ]
   script:
     - KARCH=$(echo $ARCH | cut -d '_' -f 1)
@@ -94,7 +94,7 @@ upload_kernel_packages_x64:
 upload_kernel_packages_arm64:
   stage: upload_kernels
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
-  tags: [ "runner:main" ]
+  tags: [ "arch:arm64" ]
   needs: [ "build_kernels_arm64" ]
   script:
     - KARCH=$(echo $ARCH | cut -d '_' -f 1)
