@@ -51,7 +51,7 @@
 
 .slow_build:
   extends: .build
-  timeout: 1h 10m
+  timeout: 1h 30m
 
 build_linux_x64:
   extends: [.slow_build, .always, .x64]
