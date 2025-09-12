@@ -10,7 +10,7 @@
 FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
-ARG BUNDLER_VERSION_ARG=2.5.21
+ARG BUNDLER_VERSION_ARG=1.17.3
 ARG RPM_S3_VERSION_ARG=0.8.0
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
@@ -148,7 +148,7 @@ RUN rm -rf /gpg-keys
 RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
 RUN /bin/bash -l -c "rvm install ${RUBY_VERSION}"
 RUN /bin/bash -l -c "rvm --default use ${RUBY_VERSION} && \
-    gem install bundler --version 1.17.3 && \
+    gem install bundler --version ${BUNDLER_VERSION} && \
     bundle install"
 RUN /bin/bash -l -c "rvm alias create default ${RUBY_VERSION}"
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
