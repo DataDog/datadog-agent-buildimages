@@ -16,7 +16,6 @@ variables:
   # the buildimage for the highest Windows version supported.
   # This image must use the same Windows version as the Windows version of the Gitlab runner used in .winrelease
   WINDOWS_RELEASE_IMAGE: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/windows_ltsc2022_x64
-  SETUP_IMAGE_NAME: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/deb_x64:v19805261-b468a29 # Image used during setup task, must contains pyinvoke
   S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
@@ -75,15 +74,18 @@ default:
 
 get_agent_version:
   stage: setup
-  image: $SETUP_IMAGE_NAME
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/python:3.12.8
   script:
-    - VERSION=$(inv agent.version)
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - pip install "dda==${DDA_VERSION}"
+    - export PATH=/home/dog/.local/bin:$PATH
+    - VERSION=$(dda run agent version)
     - echo "AGENT_VERSION=$VERSION"
     - echo "AGENT_VERSION=$VERSION" >> version.env
   artifacts:
     reports:
       dotenv: version.env
-  tags: ["arch:amd64"]
 
 .x64:
   tags: ["runner:docker"]
