@@ -14,7 +14,7 @@ ENV DDA_NO_DYNAMIC_DEPS=${DDA_NO_DYNAMIC_DEPS}
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
-    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
+    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison flex pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
     # Network feature tests
     openjdk-11-jre-headless \
     # System-probe dependencies
