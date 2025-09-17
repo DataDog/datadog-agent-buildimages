@@ -68,6 +68,7 @@ RUN apt update -qy && apt install -y \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
     linux-headers-generic jq libsystemd-dev clang-format libseccomp-dev shellcheck \
+    libcap-dev libelf-dev llvm llvm-dev lld ninja-build \
     ${ADDITIONAL_PACKAGE}
 
 # Git configuration
@@ -206,6 +207,13 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 # Install authanywhere for infra token management
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
+# Install bpftool for BTF generation
+RUN git clone https://github.com/libbpf/bpftool.git /build/bpftool && \
+    cd /build/bpftool && \
+    git reset --hard 77a72987353fcae8ce330fd87d4c7afb7677a169 && \
+    git submodule update --init && \
+    make -C src/ V=1 install && \
+    rm -rf /build/bpftool
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
