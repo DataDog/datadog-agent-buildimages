@@ -64,4 +64,7 @@ if($installed){
     & git config --system core.symlinks false
 
 }
+# https://andrewlock.net/fixing-max_path-issues-in-gitlab/
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWord -Force
+& git config --system core.longpaths true
 return
