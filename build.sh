@@ -4,13 +4,14 @@ set -euo pipefail
 # Build and push to internal ECR
 WORKDIR="."
 if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
-CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache"
+CACHE_KEY="cache-${DD_TARGET_ARCH}"
+CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${CACHE_KEY}"
 # Do not use cache on periodic pipeline where we want to test our dependencies.
-if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "${PREVENT_CACHE:-}" ]]; then 
+if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "${PREVENT_CACHE:-}" ]]; then
     CACHE_SOURCE="--no-cache"
 fi
 PUSH=""
-if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then 
+if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
     PUSH="--push"
 fi
 
@@ -25,7 +26,7 @@ echo "Run buildx build"
 docker buildx build \
 --platform $PLATFORM \
 --pull $PUSH \
---cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:cache,mode=max ${CACHE_SOURCE} \
+--cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${CACHE_KEY},mode=max ${CACHE_SOURCE} \
 --build-arg BASE_IMAGE=${BASE_IMAGE:-} \
 --build-arg BASE_IMAGE_TAG=${BASE_IMAGE_TAG:-} \
 --build-arg ARCH=${ARCH:-} \
