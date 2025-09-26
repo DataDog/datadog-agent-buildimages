@@ -11,7 +11,7 @@ function sanitize() {
     # A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes.
     # Git branch names can contain disallowed characters, so we need to sanitize them.
     # xargs is used to remove leading and trailing whitespace.
-    echo "$1" | tr -C 'a-zA-Z0-9_.-' '_'
+    echo "$1" | tr -C '\na-zA-Z0-9_.-' '_'
 }
 
 # Setup keys
