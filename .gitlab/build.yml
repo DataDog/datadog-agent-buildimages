@@ -43,11 +43,11 @@
 # Timeout values were chosen to be just above the longest historically-available runtime of the corresponding job's successful runs
 .fast_build:
   extends: .build
-  timeout: 15m
+  timeout: 30m
 
 .medium_build:
   extends: .build
-  timeout: 33m
+  timeout: 45m
 
 .slow_build:
   extends: .build
