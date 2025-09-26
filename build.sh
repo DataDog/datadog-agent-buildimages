@@ -6,10 +6,18 @@ WORKDIR="."
 if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
 
 # == Caching logic == #
+function sanitize() {
+    # From docker docs: https://docker-docs.uclv.cu/engine/reference/commandline/tag/#extended-description
+    # A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes.
+    # Git branch names can contain disallowed characters, so we need to sanitize them.
+    # xargs is used to remove leading and trailing whitespace.
+    echo "$1" | tr -C 'a-zA-Z0-9_.-' '_'
+}
+
 # Setup keys
 BRANCH_NAME="${CI_COMMIT_BRANCH:-unknown}"
-CACHE_KEY_BRANCH="cache-${BRANCH_NAME}-${DD_TARGET_ARCH}"
-CACHE_KEY_MAIN="cache-${CI_DEFAULT_BRANCH}-${DD_TARGET_ARCH}"
+CACHE_KEY_BRANCH="$(sanitize "cache-${BRANCH_NAME}-${DD_TARGET_ARCH}")"
+CACHE_KEY_MAIN="$(sanitize "cache-${CI_DEFAULT_BRANCH}-${DD_TARGET_ARCH}")"
 
 CACHE_DETAILS_BRANCH="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_BRANCH}"
 CACHE_DETAILS_MAIN="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_MAIN}"
