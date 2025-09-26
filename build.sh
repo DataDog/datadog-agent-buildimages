@@ -4,12 +4,29 @@ set -euo pipefail
 # Build and push to internal ECR
 WORKDIR="."
 if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
-CACHE_KEY="cache-${DD_TARGET_ARCH}"
-CACHE_SOURCE="--cache-from type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${CACHE_KEY}"
+
+# == Caching logic == #
+# Setup keys
+BRANCH_NAME="${CI_COMMIT_BRANCH:-unknown}"
+CACHE_KEY_BRANCH="cache-${BRANCH_NAME}-${DD_TARGET_ARCH}"
+CACHE_KEY_MAIN="cache-${CI_DEFAULT_BRANCH}-${DD_TARGET_ARCH}"
+
+CACHE_DETAILS_BRANCH="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_BRANCH}"
+CACHE_DETAILS_MAIN="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_MAIN}"
+
+# Cache pull logic: pull from branch preferentially, fallback to main if no hit
 # Do not use cache on periodic pipeline where we want to test our dependencies.
 if [[ "$CI_PIPELINE_SOURCE" == "schedule" || -n "${PREVENT_CACHE:-}" ]]; then
-    CACHE_SOURCE="--no-cache"
+    CACHE_PULL_ARGS="--no-cache"
+else
+    CACHE_PULL_ARGS="--cache-from ${CACHE_DETAILS_BRANCH} --cache-from ${CACHE_DETAILS_MAIN}"
 fi
+
+# Cache push logic: only push to branch cache
+# Since on main CACHE_DETAILS_BRANCH == CACHE_DETAILS_MAIN, this works as expected.
+CACHE_PUSH_ARGS="--cache-to ${CACHE_DETAILS_BRANCH}"
+
+# == Image push logic == #
 PUSH=""
 if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
     PUSH="--push"
@@ -26,7 +43,8 @@ echo "Run buildx build"
 docker buildx build \
 --platform $PLATFORM \
 --pull $PUSH \
---cache-to type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:${CACHE_KEY},mode=max ${CACHE_SOURCE} \
+$CACHE_PUSH_ARGS \
+$CACHE_PULL_ARGS \
 --build-arg BASE_IMAGE=${BASE_IMAGE:-} \
 --build-arg BASE_IMAGE_TAG=${BASE_IMAGE_TAG:-} \
 --build-arg ARCH=${ARCH:-} \
