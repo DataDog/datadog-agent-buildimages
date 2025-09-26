@@ -220,4 +220,6 @@ ENV PKG_CONFIG_LIBDIR=""
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
+RUN echo hello world
+
 ENTRYPOINT ["/entrypoint.sh"]
