@@ -10,6 +10,7 @@ function sanitize() {
     # Docker uses the Go reference format for images: https://pkg.go.dev/github.com/distribution/reference#pkg-overview
     # A tag name must match the following regex: /[\w][\w.-]{0,127}/
     # Git branch names can contain disallowed characters, so we need to sanitize them.
+    # `\n` is included here as the pipe adds a newline to the end of the string - not allowing it would mean we get an extra `_` at the end.
     echo "$1" | tr -C '\na-zA-Z0-9_.-' '_'
 }
 
