@@ -7,10 +7,9 @@ if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/li
 
 # == Caching logic == #
 function sanitize() {
-    # From docker docs: https://docker-docs.uclv.cu/engine/reference/commandline/tag/#extended-description
-    # A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes.
+    # Docker uses the Go reference format for images: https://pkg.go.dev/github.com/distribution/reference#pkg-overview
+    # A tag name must match the following regex: /[\w][\w.-]{0,127}/
     # Git branch names can contain disallowed characters, so we need to sanitize them.
-    # xargs is used to remove leading and trailing whitespace.
     echo "$1" | tr -C '\na-zA-Z0-9_.-' '_'
 }
 
