@@ -3,16 +3,18 @@ FROM ubuntu:22.04
 ARG TARGETARCH
 ARG GO_VERSION
 ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
 ARG PYTHON_VERSION=3.12
 ARG CMAKE_VERSION=3.30.2
 ARG CMAKE_SHA256_AMD64="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
 ARG CMAKE_SHA256_ARM64="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
+ENV DDA_NO_DYNAMIC_DEPS=${DDA_NO_DYNAMIC_DEPS}
 
 RUN apt-get update && apt-get upgrade -y && \
     # Common + Agent (Core/Trace/Process) dependencies
-    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
+    apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison flex pkg-config docker.io docker-buildx docker-compose-v2 ninja-build \
     # Network feature tests
     openjdk-11-jre-headless \
     # System-probe dependencies
@@ -46,6 +48,9 @@ RUN if [ "$TARGETARCH" = "amd64" ] ; then set -ex \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh ; fi
 
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
@@ -69,6 +74,10 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
 USER datadog
+
+# prevents using system package which emits warning logs on every call
+RUN pip3 install --no-cache-dir blinker==1.9.0
+
 ENV GOPATH=/home/datadog/go \
     GOROOT=/usr/local/go \
     PATH="/home/datadog/.local/bin:/home/datadog/go/bin:/usr/local/go/bin:${PATH}"
@@ -82,5 +91,6 @@ RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
     go install gotest.tools/gotestsum@latest
+
 WORKDIR /home/datadog
 CMD [ "sleep", "infinity" ]

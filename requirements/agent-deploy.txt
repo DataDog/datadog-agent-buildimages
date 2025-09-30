@@ -1,7 +1,0 @@
--c constraints.txt
-
-setuptools
-virtualenv
-azure-mgmt-resource
-azure-identity
-PyGithub

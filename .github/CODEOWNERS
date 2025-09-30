@@ -22,24 +22,23 @@ dda.env                             @DataDog/agent-devx
 
 /entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-devx
 
-/build-container.ps1                @DataDog/windows-agent @DataDog/agent-devx
+/build-container.ps1                @DataDog/windows-products @DataDog/agent-devx
 
 # eBPF / KMT images
 /btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx
 /kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx
 
 # Linux test & build images
-/deb-arm/                           @DataDog/agent-devx @DataDog/agent-delivery
-/deb-x64/                           @DataDog/agent-devx @DataDog/agent-delivery
-/rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-delivery
-/rpm-armhf/                         @DataDog/agent-devx @DataDog/agent-delivery
-/rpm-x64/                           @DataDog/agent-devx @DataDog/agent-delivery
+/rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-build
+/rpm-armhf/                         @DataDog/agent-devx @DataDog/agent-build
+/rpm-x64/                           @DataDog/agent-devx @DataDog/agent-build
+/linux/                             @DataDog/agent-devx @DataDog/agent-build
 
 # Windows test & build images
-/windows/                           @DataDog/windows-agent @DataDog/agent-devx
+/windows/                           @DataDog/windows-products @DataDog/agent-devx
 
 # Docker images
-/docker-arm64/                      @DataDog/container-integrations @DataDog/agent-devx
-/docker-x64/                        @DataDog/container-integrations @DataDog/agent-devx
+/docker-arm64/                      @DataDog/agent-build @DataDog/agent-devx
+/docker-x64/                        @DataDog/agent-build @DataDog/agent-devx
 /dev-envs/                          @DataDog/agent-devx
 /devcontainer/                      @DataDog/agent-devx @DataDog/container-platform

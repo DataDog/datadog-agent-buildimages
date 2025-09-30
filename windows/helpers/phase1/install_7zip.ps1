@@ -17,12 +17,11 @@ if($isInstalled -and $isCurrent){
 # assuming that exe installer would properly handle upgrade if we ever needed to
 # so not installed is the same as not current
 
-# Script directory is $PSScriptRoot
 $shortenedver = $Version.Replace('.','')
 $sevenzip="https://www.7-zip.org/a/7z$($shortenedver)-x64.exe"
 
 Write-Host -ForegroundColor Green "Installing 7zip $sevenzip"
-$out = "$($PSScriptRoot)\7zip.exe"
+$out = Join-Path ([IO.Path]::GetTempPath()) '7zip.exe'
 Get-RemoteFile -RemoteFile $sevenzip -LocalFile $out -VerifyHash $Sha256
 
 Start-Process $out -ArgumentList '/S' -Wait

@@ -10,17 +10,17 @@ $SoftwareTable = @{
 
     ## VisualStudio build tools for containers
     # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history
-    # LTSC 17.8
-    "VS2017BUILDTOOLS_VERSION"="17.8.7";
-    "VS2017BUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe";
+    # LTSC 17.14
+    "VSBUILDTOOLS_VERSION"="17.14";
+    "VSBUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/b4fab6d6d479c38a6081ec95e32d7a105d21d19b6ae7f97371f716dbea08303d/vs_BuildTools.exe";
 
-    # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/03aef663-a3da-4cdd-ac33-9ff2935267ba/fc12f5b47ac9ec42064cfad9e40efe3b88ef5468e82bafec7839ef3296fd88a3/vs_BuildTools.exe'))
-    "VS2017BUILDTOOLS_SHA256"="FC12F5B47AC9EC42064CFAD9E40EFE3B88EF5468E82BAFEC7839EF3296FD88A3";
+    # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/b4fab6d6d479c38a6081ec95e32d7a105d21d19b6ae7f97371f716dbea08303d/vs_BuildTools.exe'))
+    "VSBUILDTOOLS_SHA256"="B4FAB6D6D479C38A6081EC95E32D7A105D21D19B6AE7F97371F716DBEA08303D";
 
     ## VisualStudio IDE
-    # https://learn.microsoft.com/en-us/visualstudio/releases/2019/history
-    "VS2019INSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3a7354bc-d2e4-430f-92d0-9abd031b5ee5/d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536/vs_Community.exe";
-    "VS2019INSTALLER_SHA256"="d9fc228ea71a98adc7bc5f5d8e8800684c647e955601ed721fcb29f74ace7536";
+    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes
+    "VSINSTALLER_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/6319a322aec87401661ec138427946ca6ab0373c917364a4abf17556ff7aef91/vs_Community.exe";
+    "VSINSTALLER_SHA256"="6319A322AEC87401661EC138427946CA6AB0373C917364A4ABF17556FF7AEF91";
 
     "DOTNETCORE_VERSION"="8.0.302";
     "DOTNETCORE_SHA256"="BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D";
@@ -51,18 +51,22 @@ $SoftwareTable = @{
     "NINJA_SHA256"="d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b";
     "GCLOUD_SDK_VERSION"="315.0.0";
     "GCLOUD_SDK_SHA256"="c9b283c9db4ed472111ccf32e6689fd467daf18ce3a77b8e601f9c646a83d86b";
-    "CACERTS_VERSION"="2025-02-25";
-    "CACERTS_HASH"="50a6277ec69113f00c5fd45f09e8b97a4b3e32daa35d3a95ab30137a55386cef";
+    "CACERTS_VERSION"="2025-09-09";
+    "CACERTS_HASH"="f290e6acaf904a4121424ca3ebdd70652780707e28e8af999221786b86bb1975";
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";
-    "WINSIGN_VERSION"="0.3.0";
-    "WINSIGN_SHA256"="43c1429e1e23fba2f9284da2d12027b5be58258c6b047c65ff8e2d46370072ba";
+    "WINSIGN_VERSION"="0.3.5";
+    "WINSIGN_SHA256"="b2ba5127a5c5141e04d42444ca115af4c95cc053a743caaa9b33c68dd6b13f68";
     "RUSTUP_VERSION"="1.26.0";
     "RUSTUP_SHA256"="365D072AC4EF47F8774F4D2094108035E2291A0073702DB25FA7797A30861FC9";
     "RUST_VERSION"="1.74.0";
-    "CI_UPLOADER_VERSION"="2.38.1";
-    "CI_UPLOADER_SHA256"="b8311e01cbe71ead8d64ff123eddde1d3df31b80a4bed200d17a41b88e873ed5";
+    "DATADOG_CI_VERSION"="3.9.0";
+    "DATADOG_CI_SHA256"="c3cd6a1842253d34ad2aac53d4359c1029342e05e5e105e1bf8a44dfcae0800d";
     "CODECOV_VERSION"="v0.6.1";
     "CODECOV_SHA256"="6b95584fbb252b721b73ddfe970d715628879543d119f1d2ed08b073155f7d06";
+    "AWSCLI_VERSION"="2.27.30";
+    "AWSCLI_SHA256"="986bf44e2176ed2f00f9f2fd8404fdf9d903a79d0ebf6c0f9da3fe09835ac3f1";
+    "BAZELISK_VERSION"="1.27.0";
+    "BAZELISK_SHA256"="d4b5e1cea61fcdb0bed60f8868c2e37684221b65feae898d1124482cd39ec89e";
 }

@@ -1,0 +1,218 @@
+---
+.x64:
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  variables:
+    ARCH: x86_64
+    DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
+
+.arm:
+  tags: ["arch:arm64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  variables:
+    ARCH: aarch64
+    DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
+
+.always:
+  rules:
+    - if: $CI_COMMIT_TAG == null
+
+.no_schedule:
+  rules:
+    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+
+.build:
+  stage: build
+  before_script:
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
+    - unzip awscliv2.zip
+    - ./aws/install
+    # Docker Hub login to reduce risk of rate limiting.
+    - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+  script:
+    - ./build.sh
+  retry: 1 # Add a retry to prevent flakyness on build stage.
+
+# Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
+# Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
+# Timeout values were chosen to be just above the longest historically-available runtime of the corresponding job's successful runs
+.fast_build:
+  extends: .build
+  timeout: 30m
+
+.medium_build:
+  extends: .build
+  timeout: 45m
+
+.slow_build:
+  extends: .build
+  timeout: 1h 10m
+
+build_linux_x64:
+  extends: [.slow_build, .always, .x64]
+  variables:
+    DOCKERFILE: linux/Dockerfile
+    IMAGE: linux
+    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
+    BUILD_ARGS_FILE: linux/x64/build.env
+
+build_rpm_x64:
+  extends: [.medium_build, .always, .x64]
+  variables:
+    DOCKERFILE: rpm-x64/Dockerfile
+    IMAGE: rpm_x64
+    BASE_IMAGE: centos:7
+
+build_dd_agent_testing:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: dd-agent-testing/Dockerfile
+    IMAGE: dd-agent-testing
+
+build_docker_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: docker-x64/Dockerfile
+    IMAGE: docker_x64
+
+build_btf_gen:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: btf-gen/Dockerfile
+    IMAGE: btf-gen
+
+build_kernel_version_testing_x64:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
+    IMAGE: kernel-version-testing_x64
+
+build_gitlab_agent_deploy:
+  extends: [.fast_build, .always, .x64]
+  variables:
+    DOCKERFILE: agent-deploy/Dockerfile
+    IMAGE: gitlab_agent_deploy
+
+build_linux_arm64:
+  extends: [.slow_build, .always, .arm]
+  variables:
+    DOCKERFILE: linux/Dockerfile
+    IMAGE: linux
+    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
+    BUILD_ARGS_FILE: linux/arm64/build.env
+
+build_rpm_arm64:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: rpm-arm64/Dockerfile
+    IMAGE: rpm_arm64
+    BASE_IMAGE: amazonlinux:2.0.20181114
+
+build_rpm_armhf:
+  extends: [.medium_build, .always, .arm]
+  variables:
+    DOCKERFILE: rpm-armhf/Dockerfile
+    IMAGE: rpm_armhf
+    BASE_IMAGE: arm32v7/centos:7
+    DD_TARGET_ARCH: armhf
+
+build_docker_arm64:
+  extends: [.fast_build, .always, .arm]
+  variables:
+    DOCKERFILE: docker-arm64/Dockerfile
+    IMAGE: docker_arm64
+
+build_kernel_version_testing_arm64:
+  extends: [.fast_build, .always, .arm]
+  variables:
+    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
+    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
+    IMAGE: kernel-version-testing_arm64
+
+build_multiarch:
+  extends: [.no_schedule, .x64]
+  stage: build
+  needs:
+    - job: build_linux_x64
+    - job: build_linux_arm64
+  variables:
+    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+  before_script:
+    - !reference [.build, before_script]
+  script:
+    - >
+      docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
+      $TARGET_IMAGE:$IMAGE_VERSION-x64
+      $TARGET_IMAGE:$IMAGE_VERSION-arm64
+    - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
+
+build_dev_env_linux_x64:
+  extends: [.fast_build, .no_schedule, .x64]
+  needs:
+    - job: build_linux_x64
+  variables:
+    DOCKERFILE: dev-envs/linux/Dockerfile
+    IMAGE: dev-env-linux-$DD_TARGET_ARCH
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION-x64
+
+build_dev_env_linux_arm64:
+  extends: [.fast_build, .no_schedule, .arm]
+  needs:
+    - job: build_linux_arm64
+  variables:
+    DOCKERFILE: dev-envs/linux/Dockerfile
+    IMAGE: dev-env-linux-$DD_TARGET_ARCH
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION-arm64
+
+.build_windows_x64:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+    - if: $CI_COMMIT_TAG == null
+      changes:
+        paths:
+          - build-container.ps1
+          - windows/**/*
+          - go.env
+          - .gitlab/build.yml
+        compare_to: $COMPARE_TO_BRANCH
+  timeout: 2h 30m
+  id_tokens:
+    CI_IDENTITY_GITLAB_JWT:
+      aud: https://vault.us1.ddbuild.io
+  variables:
+    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
+    DOCKERFILE: windows/Dockerfile
+    DD_TARGET_ARCH: x64
+  script:
+    - $OUTPUT_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
+    - .\build-container.ps1 -BaseImage $BASE_IMAGE -Image $OUTPUT_IMAGE -Tag $IMAGE_VERSION -Buildkit
+    - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
+  artifacts:
+    paths: ["./windows.image"]
+    expire_in: 1 day
+
+build_windows_ltsc2022_x64:
+  extends: [.build_windows_x64]
+  tags: ["windows-v2:2022"]
+  variables:
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022
+    IMAGE: windows_ltsc2022_x64
+    WINDOWS_VERSION: 2022
+
+build_windows_ltsc2025_x64:
+  extends: [.build_windows_x64]
+  tags: ["windows-v2:2025"]
+  variables:
+    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2025
+    IMAGE: windows_ltsc2025_x64
+    WINDOWS_VERSION: 2025

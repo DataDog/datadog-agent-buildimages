@@ -105,3 +105,8 @@ else
     mv "${file_path}" "${target_path}"
     chmod +x "${target_path}"
 fi
+
+# Remove any downloaded archive
+if [[ -f "${file_path}" ]]; then
+    rm "${file_path}"
+fi

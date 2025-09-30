@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="centos:7"
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2025-02-25
-ENV CACERT_BUNDLE_SHA256="50a6277ec69113f00c5fd45f09e8b97a4b3e32daa35d3a95ab30137a55386cef"
+ENV CACERT_BUNDLE_VERSION=2025-09-09
+ENV CACERT_BUNDLE_SHA256="f290e6acaf904a4121424ca3ebdd70652780707e28e8af999221786b86bb1975"
 RUN apt-get update && apt-get install -y wget
 RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -29,11 +29,13 @@ ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
 ARG BUNDLER_VERSION=2.4.20
-ARG CI_UPLOADER_VERSION=2.38.1
-ARG CI_UPLOADER_SHA="4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38"
+ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_SHA="1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5"
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG AWSCLI_VERSION=2.27.30
+ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
 # Environment
 ENV PYTHONUTF8 1
@@ -109,8 +111,8 @@ RUN mkdir -p /usr/local/var/lib/rpm \
     && /usr/local/bin/rpm --rebuilddb
 
 # CI uploader, to send junit to ci-visibility during CI tests
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
-    && echo "${CI_UPLOADER_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
+RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
+    && echo "${DATADOG_CI_SHA}  /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci
 
 # Git
@@ -128,10 +130,9 @@ RUN git config --global user.email "package@datadoghq.com"
 RUN git config --global user.name "Bits"
 
 # CONDA
-COPY python-packages-versions.txt setup_python.sh /
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN ./setup_python.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
@@ -170,6 +171,9 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-amd64.t
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+# Install & verify Bazelisk as Bazel bootstrapper
+RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
 
@@ -183,8 +187,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install Codecov uploader
-COPY setup_codecov.sh /
-RUN ./setup_codecov.sh
+RUN --mount=type=bind,dst=/mnt /mnt/setup/codecov.sh
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
@@ -213,7 +216,16 @@ ENV PATH "${HOME}/.cargo/bin:${PATH}"
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-  rm ${VAULT_FILENAME}
+  rm ${VAULT_FILENAME} && \
+  # AWS v2 cli
+  curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip && \
+  echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check && \
+  unzip -q awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
+
+# Install authanywhere for infra token management
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

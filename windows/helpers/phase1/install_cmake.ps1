@@ -3,8 +3,6 @@ param (
     [Parameter(Mandatory=$true)][string]$Sha256
 )
 
-# Script directory is $PSScriptRoot
-
 $shortenedver = $Version.Replace('.','')
 $splitver = $Version.split(".")
 $majmin = "$($splitver[0])$($splitver[1])" 
@@ -21,7 +19,7 @@ if($isInstalled -and $isCurrent) {
 $cmakeurl = "https://github.com/Kitware/CMake/releases/download/v$($Version)/cmake-$($Version)-windows-x86_64.msi"
 
 Write-Host  -ForegroundColor Green starting with CMake
-$out = "$($PSScriptRoot)\cmake.msi"
+$out = Join-Path ([IO.Path]::GetTempPath()) 'cmake.msi'
 
 Get-RemoteFile -RemoteFile $cmakeurl -LocalFile $out -VerifyHash $Sha256
 

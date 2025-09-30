@@ -1,0 +1,53 @@
+---
+include:
+  - https://gitlab-templates.ddbuild.io/slack-notifier/v3-sdm/template.yml
+
+notify-images-available:
+  extends: .slack-notifier-base
+  stage: availability_message # Created a new stage to depend upon all image builds without explicitely name them in 'needs'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+      when: never
+    - when: on_success
+  dependencies: []
+  script: |
+    COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
+    BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
+    WINDOWS=$([ -f "windows.image" ] && echo "-w" || echo "")
+    export MESSAGE=":done: Your :docker: images with tag \`$IMAGE_VERSION\` are ready.
+    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
+    :idea: You can test them in the \`datadog-agent\` repository by running:
+    \`\`\`inv buildimages.update -t $IMAGE_VERSION $WINDOWS [--no-test] [-i <image_name>]\`\`\`
+    Or run the \`trigger_tests\` manual job in your \`datadog-agent-buildimages\` <$CI_PIPELINE_URL|pipeline>."
+    /usr/local/bin/notify.sh
+
+notify-images-failure:
+  extends: .slack-notifier-base
+  stage: availability_message
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+      when: never
+    - when: on_failure
+  dependencies: []
+  script: |
+    COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
+    BRANCH_URL="$CI_PROJECT_URL/tree/$CI_COMMIT_BRANCH"
+    export MESSAGE=":red_circle: Your :docker: images with tag \`$IMAGE_VERSION\` failed to build.
+    :git: Branch <$BRANCH_URL|$CI_COMMIT_BRANCH> for commit \`$CI_COMMIT_TITLE\` (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>)
+    More details :arrow_right:"
+    /usr/local/bin/notify.sh
+
+notify-on-failure:
+  extends: .slack-notifier-base
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"
+      when: on_failure
+  dependencies: []
+  script: |
+    COMMIT_URL="$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"
+    AUTHOR=$(git show -s --format="%an" HEAD)
+    MESSAGE_TEXT=":red-light: datadog-agent-buildimages build failed in pipeline <$CI_PIPELINE_URL|$CI_PIPELINE_ID> for $CI_COMMIT_TITLE (<$COMMIT_URL|$CI_COMMIT_SHORT_SHA>) by $AUTHOR"
+    if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
+      MESSAGE_TEXT="$MESSAGE_TEXT (this was a scheduled build)"
+    fi
+    postmessage "#agent-devx-ops" "$MESSAGE_TEXT"

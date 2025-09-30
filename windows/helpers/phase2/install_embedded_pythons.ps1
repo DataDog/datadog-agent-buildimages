@@ -30,7 +30,8 @@ DownloadAndExpandTo -TargetDir $py3Target -SourceURL $py3 -Sha256 "$Env:EMBEDDED
 Add-EnvironmentVariable -Variable "TEST_EMBEDDED_PY3" -Value $py3Target -Global
 
 # Read DD_PIP_VERSION{,_PY3} and DD_SETUPTOOLS_VERSION{,_PY3} to variables
-Get-Content \python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
+$packages_file = Join-Path $PSScriptRoot '..\..\..\python-packages-versions.txt'
+Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { $_.Trim() -notlike "#*" } | Foreach-Object{
    $var = $_.Split('=')
    Add-EnvironmentVariable -Variable $var[0] -Value $var[1] -Local
 }
@@ -38,6 +39,8 @@ Get-Content \python-packages-versions.txt | Where-Object { $_.Trim() -ne '' } | 
 # Python 3
 $py3getpip = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
 $py3getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
-Get-RemoteFile -LocalFile "get-pip.py" -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
-& "$py3Target\python" get-pip.py pip==${Env:DD_PIP_VERSION_PY3}
+$out = Join-Path ([IO.Path]::GetTempPath()) 'get-pip.py'
+Get-RemoteFile -LocalFile $out -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
+& "$py3Target\python" "$out" pip==${Env:DD_PIP_VERSION_PY3}
+Remove-Item $out
 If ($lastExitCode -ne "0") { throw "Previous command returned $lastExitCode" }

@@ -1,0 +1,39 @@
+---
+release:
+  stage: release
+  rules:
+    - !reference [.on_default_branch_push]
+  trigger:
+    project: DataDog/public-images
+    branch: main
+    strategy: depend
+  variables:
+    IMG_REGISTRIES: dockerhub
+    IMG_SIGNING: "false"
+  # We cannot use the $IMAGE_VERSION variable directly because there is only one step of variable substitution.
+  # See https://forum.gitlab.com/t/inconsistent-variable-behavior-in-multi-project-pipeline/77916.
+  # We must use v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} instead.
+  parallel:
+    matrix:
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+        IMG_DESTINATIONS: agent-dev-env-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux:latest
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+        IMG_DESTINATIONS: agent-buildimages-rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_x64:latest
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+        IMG_DESTINATIONS: agent-buildimages-rpm_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_arm64:latest
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-x64,registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64
+        IMG_DESTINATIONS: agent-buildimages-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux:latest
+
+release_windows:
+  stage: release
+  rules:
+    - !reference [.on_default_branch_push]
+  trigger:
+    project: DataDog/public-images
+    branch: main
+    strategy: depend
+  variables:
+    IMG_REGISTRIES: dockerhub
+    IMG_SIGNING: "false"
+    IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022

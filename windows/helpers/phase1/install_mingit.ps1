@@ -8,12 +8,10 @@ param (
 ## in developer mode
 
 function InstallMinGit() {
-    # Script directory is $PSScriptRoot
-
     $mingit = "https://github.com/git-for-windows/git/releases/download/v$($Version).windows.1/MinGit-$($Version)-64-bit.zip"
 
     Write-Host -ForegroundColor Green Installing MinGit
-    $out = "$($PSScriptRoot)\mingit.zip"
+    $out = Join-Path ([IO.Path]::GetTempPath()) 'mingit.zip'
     Get-RemoteFile -RemoteFile $mingit -LocalFile $out -VerifyHash $Sha256
 
     if(! (test-path "c:\devtools\git")){
@@ -41,7 +39,7 @@ function InstallWinGit() {
         return $false
     }
     Write-Host -ForegroundColor Green "Installing WinGit"
-    $out = "$($PSScriptRoot)\wingit.exe"
+    $out = Join-Path ([IO.Path]::GetTempPath()) 'wingit.exe'
     Get-RemoteFile -RemoteFile $wingit -LocalFile $out -VerifyHash $Sha256
 
     Start-Process $out -ArgumentList "/VERYSILENT" -Wait -NoNewWindow
@@ -66,4 +64,7 @@ if($installed){
     & git config --system core.symlinks false
 
 }
+# https://andrewlock.net/fixing-max_path-issues-in-gitlab/
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWord -Force
+& git config --system core.longpaths true
 return

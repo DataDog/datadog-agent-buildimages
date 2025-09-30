@@ -1,8 +1,8 @@
 FROM ruby:2.7.5-bullseye
 
 ENV BUNDLER_VERSION=1.17.3
-ARG CI_UPLOADER_VERSION=2.38.1
-ARG CI_UPLOADER_SHA=4e56d449e6396ae4c7356f07fc5372a28999aacb012d4343a3b8a9389123aa38
+ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_SHA=1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
 ARG PYTHON_VERSION=3.12.6
@@ -25,8 +25,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
   && apt-get update && apt-get install -y azure-cli=2.40.0-1~focal \
   && apt-get clean && rm -rf /var/lib/apt/lists/* \
-  && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${CI_UPLOADER_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
-  && echo "${CI_UPLOADER_SHA} /usr/local/bin/datadog-ci" | sha256sum --check \
+  && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
+  && echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check \
   && chmod +x /usr/local/bin/datadog-ci
 
 # Python install
@@ -55,6 +55,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   echo "${VAULT_CHECKSUM} ${VAULT_FILENAME}" | sha256sum --check && \
   unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
   rm ${VAULT_FILENAME}
+
+# Install authanywhere for infra token management
+RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
