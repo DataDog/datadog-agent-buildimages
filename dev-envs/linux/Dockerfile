@@ -12,9 +12,9 @@ ARG DDA_VERSION=""
 # hadolint global ignore=DL3059
 # 1. Set up shells using only workspace-mounted scripts to update environment variables, (no ~/.scripts yet)
 RUN --mount=type=bind,src=./zsh.sh,dst=/mnt/zsh.sh /mnt/zsh.sh
-RUN --mount=type=bind,src=./nushell.sh,dst=/mnt/nushell.sh /mnt/nushell.sh
+RUN --mount=type=bind,src=./nushell.sh,dst=/mnt/nushell.sh --mount=type=bind,src=./scripts/,dst=/mnt/scripts/ /mnt/nushell.sh
 # 2. Set up scripts into ~/.scripts and update PATH accordingly, (only explicit access to ~/.scripts)
-RUN --mount=type=bind,src=./scripts.sh,dst=/mnt/scripts.sh /mnt/scripts.sh
+RUN --mount=type=bind,src=./scripts.sh,dst=/mnt/scripts.sh --mount=type=bind,src=./scripts/,dst=/mnt/scripts/ /mnt/scripts.sh
 # 3. Proceed with subsequent steps relying solely on the installed scripts in PATH.
 
 # Set up environment variables
@@ -37,7 +37,7 @@ RUN --mount=type=bind,src=./fonts.sh,dst=/mnt/fonts.sh /mnt/fonts.sh
 # Set up Starship prompt
 RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
 # Set up Visual Studio Code
-RUN --mount=type=bind,src=./vscode.sh,dst=/mnt/vscode.sh /mnt/vscode.sh
+RUN --mount=type=bind,src=./vscode.sh,dst=/mnt/vscode.sh --mount=type=bind,src=./default-vscode-extensions.txt,dst=/mnt/default-vscode-extensions.txt /mnt/vscode.sh
 # Set up OpenSSH server
 # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
 RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
