@@ -7,7 +7,6 @@ Write-Host -ForegroundColor Green "Installing Windows Codesign Helper $ENV:WINSI
 $codesign_base = "windows_code_signer-$($ENV:WINSIGN_VERSION)-py3-none-any.whl"
 $codesign_wheel = "https://s3.amazonaws.com/dd-agent-omnibus/windows-code-signer/$($codesign_base)"
 $codesign_wheel_target = "c:\devtools\$($codesign_base)"
-(New-Object System.Net.WebClient).DownloadFile($codesign_wheel, $codesign_wheel_target)
 
 Get-RemoteFile -RemoteFile $codesign_wheel -LocalFile $codesign_wheel_target -VerifyHash $ENV:WINSIGN_SHA256
 
