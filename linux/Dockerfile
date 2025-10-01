@@ -108,7 +108,7 @@ RUN cd /build && \
     mv .config-${CROSS_ARCH} .config && \
     ./ct-ng upgradeconfig && \
     ./ct-ng build && \
-    mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
+    # mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
     rm -rf /build
 
 RUN curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
@@ -143,7 +143,9 @@ EOF
 # CONDA setup
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
+RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
+    --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    /mnt/setup/python.sh
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 # RVM setup
@@ -171,11 +173,11 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 
 # Go setup
 ENV GOPATH=/go
-RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
+RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/setup/go.sh /mnt/setup/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
 
 # Rust setup
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \
@@ -204,7 +206,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
     chmod +x /usr/local/bin/datadog-ci
 
 # Install authanywhere for infra token management
-RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
 
 
 # Common environment setup

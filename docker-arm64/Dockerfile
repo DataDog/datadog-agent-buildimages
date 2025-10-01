@@ -59,7 +59,7 @@ ENV GO_VERSION $GO_VERSION
 ENV PATH="/go/bin:/usr/local/go/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
@@ -78,7 +78,7 @@ COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
 # Install authanywhere for infra token management
-RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
 
 # CI uploader, to send tags for extra visibility into CI
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
