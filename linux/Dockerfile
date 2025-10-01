@@ -115,6 +115,7 @@ RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # Copy architecture-specific configuration files
+# TODO: Do this cleaner
 COPY linux/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
 COPY linux/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
@@ -122,63 +123,13 @@ COPY linux/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
-RUN cd /build && \
-    git clone https://gnu.googlesource.com/texinfo && \
-    cd texinfo && \
-    git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
-    ./autogen.sh && \
-    ./configure && make -j$(ncproc) && make install && \
-    rm -rf /build/texinfo
+RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/setup/texinfo.sh /mnt/setup/texinfo.sh
 
 # Build cross-compilation toolchain
-RUN cd /build && \
-    wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz && \
-    gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E && \
-    wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
-    gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
-    tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
-    cd /build/crosstool-ng-${CTNG_VERSION} && \
-    patch -p1 < /root/ctng.patch && \
-    ./configure --enable-local && make -j$(nproc) && \
-    export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
-    ./ct-ng upgradeconfig && \
-    ./ct-ng build && \
-    mkdir -p /opt/toolchains/ && \
-    mv /root/x-tools/${ARCH}-unknown-linux-gnu/ /opt/toolchains/${ARCH} && \
-    mv .config-${CROSS_ARCH} .config && \
-    ./ct-ng upgradeconfig && \
-    ./ct-ng build && \
-    # mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
-    rm -rf /build
+RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/setup/ctng.sh /mnt/setup/ctng.sh
 
-RUN curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
-    echo "${DPKG_ARMHF_SHA256}  dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" | sha256sum --check && \
-    tar -xf "dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
-    cd "dpkg-${DPKG_ARMHF_VERSION}" && \
-    echo "${DPKG_ARMHF_VERSION}" > .dist-version && \
-    autoreconf -vfi && \
-    mkdir build && cd build && \
-    export DPKG_PREFIX=/opt/dpkg-armhf && \
-    PKG_CONFIG_PATH=/usr/local/lib/pkgconfig \
-    ../configure \
-      --host=arm-linux-gnueabihf \
-      --build=arm-linux-gnueabihf \
-      --program-suffix=-armhf \
-      --prefix="${DPKG_PREFIX}" \
-      --sysconfdir="${DPKG_PREFIX}/etc" \
-      --localstatedir="${DPKG_PREFIX}/var" \
-      --disable-nls \
-      --disable-dselect && \
-    make -j"$(nproc)" && \
-    make install && \
-    mkdir -p "${DPKG_PREFIX}/var/lib/dpkg" "${DPKG_PREFIX}/var/cache/dpkg" && \
-    install -m 0755 /dev/stdin "${DPKG_PREFIX}/bin/dpkg" <<EOF
-#!/bin/sh
-exec "${DPKG_PREFIX}/bin/dpkg-armhf" \\
-    --admindir="${DPKG_PREFIX}/var/lib/dpkg" \\
-    --instdir="${DPKG_PREFIX}" \\
-    "\$@"
-EOF
+# Build dpkg-armhf
+RUN --mount=type=bind,src=./setup/dpkg.sh,dst=/mnt/setup/dpkg.sh /mnt/setup/dpkg.sh
 
 # CONDA setup
 ENV DDA_VERSION=$DDA_VERSION
@@ -190,26 +141,10 @@ ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 # RVM setup
 COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/* && \
-    rm -rf /gpg-keys && \
-    curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
-    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check && \
-    bash get-rvm.sh stable --version 1.29.12 && \
-    echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check && \
-    rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements" && \
-    /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all" && \
-    /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document" && \
-    echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+RUN --mount=type=bind,src=./setup/rvm.sh,dst=/mnt/setup/rvm.sh /mnt/setup/rvm.sh
 
 # Protobuf
-RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME} \
-    && echo "${PROTOBUF_SHA256}  ${PROTOBUF_FILENAME}" | sha256sum --check \
-    && unzip -o ${PROTOBUF_FILENAME} -d protoc3 \
-    && mv protoc3/bin/* /usr/bin/ \
-    && mv protoc3/include/* /usr/include/ \
-    && rm -rf protoc3 \
-    && rm ${PROTOBUF_FILENAME}
+RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/setup/protobuf.sh /mnt/setup/protobuf.sh
 
 # Go setup
 ENV GOPATH=/go
@@ -220,40 +155,23 @@ ENV PATH="${GOPATH}/bin:${PATH}"
 RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
 
 # Rust setup
-RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \
-    echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check && \
-    chmod +x ./rustup-init && \
-    ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} && \
-    echo "${RUSTUP_SHA256}  /root/.cargo/bin/rustc" | sha256sum --check && \
-    rm ./rustup-init
+RUN --mount=type=bind,src=./setup/rust.sh,dst=/mnt/setup/rust.sh /mnt/setup/rust.sh
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
 
 # Install vault
-RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
-    echo "${VAULT_SHA256} ${VAULT_FILENAME}" | sha256sum --check && \
-    unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-    rm ${VAULT_FILENAME} && \
-    # AWS v2 cli
-    curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip && \
-    echo "${AWSCLI_SHA256} awscliv2.zip" | sha256sum --check && \
-    unzip -q awscliv2.zip && \
-    ./aws/install && \
-    rm -rf aws awscliv2.zip
+RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/setup/vault.sh /mnt/setup/vault.sh
 
 # Install Pulumi
-RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
-    mv ~/.pulumi/bin/* /usr/local/bin
+RUN --mount=type=bind,src=./setup/pulumi.sh,dst=/mnt/setup/pulumi.sh /mnt/setup/pulumi.sh
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
 
 # Install CI uploader
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH} --output "/usr/local/bin/datadog-ci" && \
-    echo "${DATADOG_CI_SHA256} /usr/local/bin/datadog-ci" | sha256sum --check && \
-    chmod +x /usr/local/bin/datadog-ci
+RUN --mount=type=bind,src=./setup/ciuploader.sh,dst=/mnt/setup/ciuploader.sh /mnt/setup/ciuploader.sh
 
 # Install authanywhere for infra token management
 RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
