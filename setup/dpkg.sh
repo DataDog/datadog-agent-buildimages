@@ -4,6 +4,7 @@ set -ex
 
 # NOTE: This script will not work outside of the Dockerfile build context (writing to /build)
 
+mkdir /build
 cd /build
 
 curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2"
