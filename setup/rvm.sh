@@ -8,6 +8,8 @@ echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.
 bash get-rvm.sh stable --version 1.29.12
 echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check
 rm get-rvm.sh
+# Reload shell
+exec bash -l
 rvm requirements
 rvm install 2.7 --with-openssl-dir=${CONDA_PATH}
 rvm cleanup all
