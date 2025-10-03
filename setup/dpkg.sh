@@ -2,14 +2,6 @@
 
 set -ex
 
-# NOTE: This script will not work outside of the Dockerfile build context (writing to /build)
-
-mkdir /build
-cd /build
-
-curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2"
-echo "${DPKG_ARMHF_SHA256}  dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" | sha256sum --check
-
 tar -xf "dpkg-${DPKG_ARMHF_VERSION}.tar.bz2"
 cd "dpkg-${DPKG_ARMHF_VERSION}"
 
@@ -39,5 +31,3 @@ exec "${DPKG_PREFIX}/bin/dpkg-armhf" \\
     --instdir="${DPKG_PREFIX}" \\
     "\$@"
 EOF
-
-rm -rf /build
