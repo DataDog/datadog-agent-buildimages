@@ -16,6 +16,8 @@ ARG DPKG_ARMHF_VERSION=1.18.4
 ARG PULUMI_VERSION=3.207.0
 
 # Architecture-specific build arguments
+# BUILDARCH is autofilled by the build command
+ARG BUILDARCH
 ARG ARCH
 ARG VAULT_ARCH
 ARG DATADOG_CI_ARCH
@@ -121,8 +123,8 @@ RUN git config --global user.email "package@datadoghq.com" && \
 
 # Copy architecture-specific configuration files
 # TODO: Do this cleaner
-COPY linux/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
+COPY linux/${BUILDARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux/${BUILDARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
@@ -136,8 +138,8 @@ ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-
     https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
     /tmp/crosstool-ng/
 
-COPY linux/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux/${BUILDARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux/${BUILDARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
 RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
 
 # Build dpkg-armhf
