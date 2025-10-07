@@ -74,7 +74,8 @@ FROM builder_base AS texinfo_builder
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
 RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh && rm -rf /tmp/texinfo
 
-FROM builder_base AS crosstool_ng_builder
+FROM texinfo_builder AS crosstool_ng_builder
+# CTNG depends on texinfo
 # Build cross-compilation toolchain
 ARG CTNG_VERSION=1.26.0
 ARG CROSS_ARCH
@@ -242,9 +243,6 @@ FROM builder_base AS final
 
 # Copy built tools
 # NOTE: We try to copy the least-often-used tools first to reduce the likelihood of cache misses
-
-# Texinfo
-COPY --from=texinfo_builder /usr/local/bin/info /usr/local/bin/info
 
 # Protobuf
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
