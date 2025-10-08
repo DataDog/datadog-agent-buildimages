@@ -1,0 +1,153 @@
+variable "versions" {
+  type = map(string)
+  default = {
+    GO_VERSION          = "1.23.5"
+    MSGO_PATCH          = "1" // Patch version of the Microsoft Go distribution
+    DDA_VERSION         = "v0.28.0"
+    CMAKE_VERSION       = "3.30.2"
+    CTNG_VERSION        = "1.26.0"
+    RUST_VERSION        = "1.76.0"
+    RVM_VERSION         = "1.29.12"
+    RUSTUP_VERSION      = "1.26.0"
+    BUNDLER_VERSION     = "2.4.20"
+    VAULT_VERSION       = "1.17.2"
+    DATADOG_CI_VERSION  = "3.9.0"
+    PROTOBUF_VERSION    = "29.3"
+    AWSCLI_VERSION      = "2.27.30"
+    DPKG_ARMHF_VERSION  = "1.18.4"
+  }
+}
+// NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
+
+variable "checksums_common" {
+  type = map(string)
+  default = {
+    DPKG_ARMHF_SHA256  = "19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41"
+    RVM_SHA256         = "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e"
+  }
+}
+
+variable "checksums_amd64" {
+  type = map(string)
+  default = {
+    GO_SHA256_LINUX_AMD64    = "da18191ddb7db8a9339816f3e2b54bdded8047cdc2a5d67059478f8d1595c43f"
+    MSGO_SHA256_LINUX_AMD64  = "a283380559f8cfc7860bd4528ad7346904552cde9d0fb0255fac34e64f61a4cb"
+    CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
+    CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
+    RUSTC_SHA256             = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+    RUSTUP_SHA256            = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+    VAULT_SHA256             = "a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8"
+    DATADOG_CI_SHA256        = "1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5"
+    PROTOBUF_SHA256          = "3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a"
+    AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
+  }
+}
+
+variable "checksums_arm64" {
+  type = map(string)
+  default = {
+    GO_SHA256_LINUX_ARM64    = "fd2bccce882e29369f56c86487663bb78ba7ea9e02188a5b0269303a0c3d33ab"
+    MSGO_SHA256_LINUX_ARM64  = "27c5659c76f2e9fdc2ad3ea031442d969f45ec60d2156351256e6c281cb10bd8"
+    CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
+    CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
+    RUSTC_SHA256             = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+    RUSTUP_SHA256            = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+    VAULT_SHA256             = "1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9"
+    DATADOG_CI_SHA256        = "abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d"
+    PROTOBUF_SHA256          = "6427349140e01f06e049e707a58709a4f221ae73ab9a0425bc4a00c8d0e1ab32"
+    AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
+  }
+}
+
+variable "architecture_defs_amd64" {
+  type = map(string)
+  default = {
+    DATADOG_CI_ARCH      = "x64"
+    ARCH                 = "x86_64"
+    DD_TARGET_ARCH       = "x64"
+    VAULT_ARCH           = "amd64"
+    CROSS_ARCH           = "aarch64"
+    PROTOBUF_ARCH        = "x86_64"
+    GLIBC_VERSION        = "2.17"
+    CROSS_GLIBC_VERSION  = "2.23"
+  }
+}
+
+variable "architecture_defs_arm64" {
+  type = map(string)
+  default = {
+    DATADOG_CI_ARCH      = "arm64"
+    ARCH                 = "aarch64"
+    DD_TARGET_ARCH       = "aarch64"
+    VAULT_ARCH           = "arm64"
+    CROSS_ARCH           = "x86_64"
+    PROTOBUF_ARCH        = "aarch_64"
+    GLIBC_VERSION        = "2.23"
+    CROSS_GLIBC_VERSION  = "2.17"
+  }
+}
+
+variable "misc_args_amd64" {
+  type = map(string)
+  default = {
+    ADDITIONAL_PACKAGE  = "libc6-dev-i386"
+  }
+}
+
+variable "misc_args_arm64" {
+  type = map(string)
+  default = {
+  }
+}
+
+// AMD64 architecture specific arguments
+variable "args_amd64" {
+  type = map(string)
+  default = merge(
+    versions,
+    checksums_common,
+    architecture_defs_amd64,
+    checksums_amd64,
+    misc_args_amd64,
+  )
+}
+
+// ARM64 architecture specific arguments
+variable "args_arm64" {
+  type = map(string)
+  default = merge(
+    versions,
+    checksums_common,
+    architecture_defs_arm64,
+    checksums_arm64,
+    misc_args_arm64,
+  )
+}
+
+// Target for AMD64 architecture
+target "linux-amd64" {
+  dockerfile = "linux/Dockerfile"
+  context    = "./"
+  platforms  = ["linux/amd64"]
+  args       = args_amd64
+  tags       = ["datadog/agent-buildimages-linux:amd64"]
+}
+
+// Target for ARM64 architecture
+target "linux-arm64" {
+  dockerfile = "linux/Dockerfile"
+  context    = "./"
+  platforms  = ["linux/arm64"]
+  args       = args_arm64
+  tags       = ["datadog/agent-buildimages-linux:arm64"]
+}
+
+// Group to build both architectures
+group "linux" {
+  targets = ["linux-amd64", "linux-arm64"]
+}
+
+// Default group
+group "default" {
+  targets = ["linux"]
+}

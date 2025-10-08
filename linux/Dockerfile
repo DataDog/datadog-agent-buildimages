@@ -32,7 +32,7 @@ RUN ls /tmp/texinfo
 RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/setup/texinfo.sh cd /tmp/texinfo && /mnt/setup/texinfo.sh && rm -rf /tmp/texinfo
 
 # Build cross-compilation toolchain
-ARG CTNG_VERSION=1.26.0
+ARG CTNG_VERSION
 ARG CROSS_ARCH
 ARG GLIBC_VERSION
 ARG CROSS_GLIBC_VERSION
@@ -56,7 +56,7 @@ RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/setup/ctng.sh cd /tmp/crossto
 
 FROM builder_base AS dpkg_armhf_builder
 # Build dpkg-armhf
-ARG DPKG_ARMHF_VERSION=1.18.4
+ARG DPKG_ARMHF_VERSION
 ARG DPKG_ARMHF_SHA256
 # Re-export as env for use in LABEL steps in the final stage
 ENV DPKG_ARMHF_VERSION=$DPKG_ARMHF_VERSION
@@ -84,9 +84,9 @@ ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 FROM builder_base AS rvm_builder
 # RVM setup
-ARG RVM_VERSION=1.29.12
-ARG BUNDLER_VERSION=2.4.20
-ARG RVM_SHA256=fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e
+ARG RVM_VERSION
+ARG BUNDLER_VERSION
+ARG RVM_SHA256
 # Re-export as env for use in LABEL steps in the final stage
 ENV RVM_VERSION=$RVM_VERSION
 ENV BUNDLER_VERSION=$BUNDLER_VERSION
@@ -101,7 +101,7 @@ RUN --mount=type=bind,src=./setup/rvm.sh,dst=/mnt/setup/rvm.sh cd /tmp/rvm && /m
 
 FROM builder_base AS protobuf_builder
 # Protobuf
-ARG PROTOBUF_VERSION=29.3
+ARG PROTOBUF_VERSION
 ARG PROTOBUF_SHA256
 ARG PROTOBUF_ARCH
 # Re-export as env for use in LABEL steps in the final stage
@@ -136,8 +136,8 @@ RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/se
 FROM builder_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
-ARG RUST_VERSION=1.76.0
-ARG RUSTUP_VERSION=1.26.0
+ARG RUST_VERSION
+ARG RUSTUP_VERSION
 ARG RUSTC_SHA256
 ARG RUSTUP_SHA256
 # Re-export as env for use in LABEL steps in the final stage
@@ -150,8 +150,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM builder_base AS vault_builder
 # Install vault
-ARG VAULT_VERSION=1.17.2
-ARG AWSCLI_VERSION=2.27.30
+ARG VAULT_VERSION
+ARG AWSCLI_VERSION
 ARG VAULT_SHA256
 ARG AWSCLI_SHA256
 ARG VAULT_ARCH
@@ -167,7 +167,7 @@ RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/setup/vault.sh cd /tmp/vault
 
 FROM builder_base AS datadog_ci_builder
 # Install CI uploader
-ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_VERSION
 ARG DATADOG_CI_SHA256
 ARG DATADOG_CI_ARCH
 
