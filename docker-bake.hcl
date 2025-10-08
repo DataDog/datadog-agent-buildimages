@@ -3,6 +3,9 @@ variable "versions" {
   default = {
     GO_VERSION          = "1.23.5"
     MSGO_PATCH          = "1" // Patch version of the Microsoft Go distribution
+    PY3_VERSION         = "3.12.6"
+    CONDA_VERSION       = "4.9.2-7"
+    BAZELISK_VERSION    = "1.27.0"
     DDA_VERSION         = "v0.28.0"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
@@ -30,8 +33,10 @@ variable "checksums_common" {
 variable "checksums_amd64" {
   type = map(string)
   default = {
-    GO_SHA256_LINUX_AMD64    = "da18191ddb7db8a9339816f3e2b54bdded8047cdc2a5d67059478f8d1595c43f"
-    MSGO_SHA256_LINUX_AMD64  = "a283380559f8cfc7860bd4528ad7346904552cde9d0fb0255fac34e64f61a4cb"
+    GO_SHA256                = "da18191ddb7db8a9339816f3e2b54bdded8047cdc2a5d67059478f8d1595c43f"
+    MSGO_SHA256              = "a283380559f8cfc7860bd4528ad7346904552cde9d0fb0255fac34e64f61a4cb"
+    CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
+    BAZELISK_SHA256          = "e1508323f347ad1465a887bc5d2bfb91cffc232d11e8e997b623227c6b32fb76"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTC_SHA256             = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
@@ -46,8 +51,10 @@ variable "checksums_amd64" {
 variable "checksums_arm64" {
   type = map(string)
   default = {
-    GO_SHA256_LINUX_ARM64    = "fd2bccce882e29369f56c86487663bb78ba7ea9e02188a5b0269303a0c3d33ab"
-    MSGO_SHA256_LINUX_ARM64  = "27c5659c76f2e9fdc2ad3ea031442d969f45ec60d2156351256e6c281cb10bd8"
+    GO_SHA256                = "fd2bccce882e29369f56c86487663bb78ba7ea9e02188a5b0269303a0c3d33ab"
+    MSGO_SHA256              = "27c5659c76f2e9fdc2ad3ea031442d969f45ec60d2156351256e6c281cb10bd8"
+    CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
+    BAZELISK_SHA256          = "bb608519a440d45d10304eb684a73a2b6bb7699c5b0e5434361661b25f113a5d"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTC_SHA256             = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
@@ -64,6 +71,9 @@ variable "architecture_defs_amd64" {
   default = {
     DATADOG_CI_ARCH      = "x64"
     ARCH                 = "x86_64"
+    GO_ARCH               = "amd64"
+    CONDA_ARCH            = "x86_64"
+    BAZELISK_ARCH         = "amd64"
     DD_TARGET_ARCH       = "x64"
     VAULT_ARCH           = "amd64"
     CROSS_ARCH           = "aarch64"
@@ -78,6 +88,9 @@ variable "architecture_defs_arm64" {
   default = {
     DATADOG_CI_ARCH      = "arm64"
     ARCH                 = "aarch64"
+    GO_ARCH              = "arm64"
+    CONDA_ARCH           = "aarch64"
+    BAZELISK_ARCH        = "arm64"
     DD_TARGET_ARCH       = "aarch64"
     VAULT_ARCH           = "arm64"
     CROSS_ARCH           = "x86_64"

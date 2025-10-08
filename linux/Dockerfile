@@ -65,22 +65,31 @@ ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/d
     /tmp/dpkg-armhf/
 RUN --mount=type=bind,src=./setup/dpkg.sh,dst=/mnt/setup/dpkg.sh cd /tmp/dpkg-armhf && /mnt/setup/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
-FROM builder_base AS conda_builder
-# CONDA setup
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
+FROM builder_base AS python_builder
+# Python and Conda setup
 
-ARG DDA_VERSION
-ARG DDA_NO_DYNAMIC_DEPS=1
+ARG PY3_VERSION
+ARG CONDA_VERSION
+ARG CONDA_SHA256
+ARG CONDA_ARCH
 # Re-export as env for use in LABEL steps in the final stage
 ENV DDA_VERSION=$DDA_VERSION
+
 # Common environment variables
 ENV PYTHONUTF8=1
 ENV CONDA_PATH=/root/miniforge3
+ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
+ADD --checksum=sha256:${CONDA_SHA256} "https://github.com/conda-forge/miniforge/releases/download/${CONDA_VERSION}/Miniforge3-Linux-${CONDA_ARCH}.sh" /tmp/conda/miniconda.sh
 RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
-    /mnt/setup/python.sh
-ENV PATH="${CONDA_PATH}/condabin:${PATH}"
+    cd /tmp/conda && /mnt/setup/python.sh && rm -rf /tmp/conda
+
+
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
+ADD https://github.com/DataDog/datadog-agent-dev.git#${DDA_VERSION} /tmp/dda
+RUN --mount=type=bind,src=./setup/dda.sh,dst=/mnt/setup/dda.sh cd /tmp/dda && /mnt/setup/dda.sh && rm -rf /tmp/dda
 
 FROM builder_base AS rvm_builder
 # RVM setup
@@ -113,25 +122,33 @@ RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/setup/protobuf.sh cd /tmp
 
 FROM builder_base AS go_builder
 # Go setup
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ARG GO_VERSION
-ARG GO_SHA256_LINUX_AMD64
-ARG GO_SHA256_LINUX_ARM64
-ARG MSGO_SHA256_LINUX_AMD64
-ARG MSGO_SHA256_LINUX_ARM64
+ARG GO_SHA256
+ARG MSGO_SHA256
+ARG GO_ARCH
 ARG MSGO_PATCH
 
 # Re-export as env for use in LABEL steps in the final stage
 ENV GO_VERSION=$GO_VERSION
 
 ENV GOPATH=/go
-RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/setup/go.sh /mnt/setup/go.sh
+
+# ADD --checksum=sha256:${GO_SHA256} "https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz" /tmp/go/go.tar.gz
+# ADD --checksum=sha256:${MSGO_SHA256} "https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz" /tmp/go/msgo.tar.gz
+ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
+ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
+RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/setup/go.sh cd /tmp/go && /mnt/setup/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 FROM builder_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
-RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
+ARG BAZELISK_VERSION
+ARG BAZELISK_ARCH
+ARG BAZELISK_SHA256
+
+ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}" /tmp/bazelisk/bazelisk
+ENV PATH="/usr/local/bin:${PATH}"
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh cd /tmp/bazelisk && /mnt/setup/bazelisk.sh && rm -rf /tmp/bazelisk
 
 FROM builder_base AS rust_builder
 # Rust setup
@@ -236,7 +253,7 @@ COPY --from=go_builder /usr/local/go /usr/local/go
 LABEL go_version="${GO_VERSION}"
 
 # Conda & Python
-COPY --from=conda_builder ${CONDA_PATH} ${CONDA_PATH}
+COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
 LABEL dda_version="${DDA_VERSION}"
 
 
