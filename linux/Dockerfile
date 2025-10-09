@@ -31,10 +31,6 @@ ARG CTNG_CROSS_ARCH
 ARG GLIBC_VERSION
 ARG CROSS_GLIBC_VERSION
 
-# Re-export as env for use in LABEL steps in the final stage
-ENV CTNG_VERSION=$CTNG_VERSION
-ENV GLIBC_VERSION=$GLIBC_VERSION
-
 # TODO: Add checksum
 # NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
 ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz \
@@ -52,8 +48,6 @@ FROM builder_base AS dpkg_armhf_builder
 # Build dpkg-armhf
 ARG DPKG_ARMHF_VERSION
 ARG DPKG_ARMHF_SHA256
-# Re-export as env for use in LABEL steps in the final stage
-ENV DPKG_ARMHF_VERSION=$DPKG_ARMHF_VERSION
 
 ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" \
     /tmp/dpkg-armhf/
@@ -66,8 +60,6 @@ ARG PY3_VERSION
 ARG CONDA_VERSION
 ARG CONDA_SHA256
 ARG CONDA_ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV DDA_VERSION=$DDA_VERSION
 
 # Common environment variables
 ENV PYTHONUTF8=1
@@ -79,7 +71,6 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
     cd /tmp/conda && /mnt/setup/python.sh && rm -rf /tmp/conda
 
-
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
 ADD https://github.com/DataDog/datadog-agent-dev.git#${DDA_VERSION} /tmp/dda
@@ -90,9 +81,6 @@ FROM builder_base AS rvm_builder
 ARG RVM_VERSION
 ARG BUNDLER_VERSION
 ARG RVM_SHA256
-# Re-export as env for use in LABEL steps in the final stage
-ENV RVM_VERSION=$RVM_VERSION
-ENV BUNDLER_VERSION=$BUNDLER_VERSION
 
 ADD --checksum=sha256:${RVM_SHA256} \
     "https://raw.githubusercontent.com/rvm/rvm/${RVM_VERSION}/binscripts/rvm-installer" \
@@ -107,8 +95,6 @@ FROM builder_base AS protobuf_builder
 ARG PROTOBUF_VERSION
 ARG PROTOBUF_SHA256
 ARG PROTOBUF_ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV PROTOBUF_VERSION=$PROTOBUF_VERSION
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
 
 ADD --checksum=sha256:${PROTOBUF_SHA256} "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME}" /tmp/protobuf/${PROTOBUF_FILENAME}
@@ -121,9 +107,6 @@ ARG GO_SHA256
 ARG MSGO_SHA256
 ARG GO_ARCH
 ARG MSGO_PATCH
-
-# Re-export as env for use in LABEL steps in the final stage
-ENV GO_VERSION=$GO_VERSION
 
 ENV GOPATH=/go
 
@@ -152,9 +135,6 @@ ARG RUSTUP_VERSION
 ARG RUSTC_SHA256
 ARG RUSTUP_SHA256
 ARG RUSTUP_ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV RUST_VERSION=$RUST_VERSION
-ENV RUSTUP_VERSION=$RUSTUP_VERSION
 
 ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
 RUN --mount=type=bind,src=./setup/rust.sh,dst=/mnt/setup/rust.sh cd /tmp/rust && /mnt/setup/rust.sh && rm -rf /tmp/rust
@@ -168,9 +148,6 @@ ARG VAULT_SHA256
 ARG AWSCLI_SHA256
 ARG VAULT_ARCH
 ARG AWSCLI_ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV VAULT_VERSION=$VAULT_VERSION
-ENV AWSCLI_VERSION=$AWSCLI_VERSION
 ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 
 ADD --checksum=sha256:${VAULT_SHA256} "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME}" /tmp/vault/vault.zip
@@ -182,9 +159,6 @@ FROM builder_base AS datadog_ci_builder
 ARG DATADOG_CI_VERSION
 ARG DATADOG_CI_SHA256
 ARG DATADOG_CI_ARCH
-
-# Re-export as env for use in LABEL steps in the final stage
-ENV DATADOG_CI_VERSION=$DATADOG_CI_VERSION
 
 ADD --checksum=sha256:${DATADOG_CI_SHA256} "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" /usr/local/bin/datadog-ci
 RUN chmod +x /usr/local/bin/datadog-ci
@@ -202,53 +176,38 @@ FROM builder_base AS final
 # Protobuf
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
-LABEL protobuf_version="${PROTOBUF_VERSION}"
 
 # Vault
 COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
 COPY --from=vault_builder /usr/local/aws* /usr/local/
-LABEL vault_version="${VAULT_VERSION}"
-LABEL awscli_version="${AWSCLI_VERSION}"
-
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
 
 # RVM
 COPY --from=rvm_builder /usr/local/rvm /usr/local/rvm
-LABEL rvm_version="${RVM_VERSION}"
-LABEL bundler_version="${BUNDLER_VERSION}"
 
 # Rust
 COPY --from=rust_builder /root/.cargo /root/.cargo
-LABEL rust_version="${RUST_VERSION}"
-LABEL rustup_version="${RUSTUP_VERSION}"
 
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
-LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
-
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
-# Takes values from the ENV steps in the builder stage
-LABEL glibc_version="${GLIBC_VERSION}"
-LABEL ctng_version="${CTNG_VERSION}"
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
-LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
 
 # Bazelisk
 COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
-LABEL go_version="${GO_VERSION}"
 
 # Conda & Python
+ENV CONDA_PATH=/root/miniforge3
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
-LABEL dda_version="${DDA_VERSION}"
 
 
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
@@ -263,10 +222,41 @@ RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Set up environment
+ARG CTNG_ARCH
+ARG CTNG_CROSS_ARCH
 ENV PATH=/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
+
+# Label the image
+ARG PROTOBUF_VERSION
+ARG VAULT_VERSION
+ARG AWSCLI_VERSION
+ARG RVM_VERSION
+ARG BUNDLER_VERSION
+ARG RUST_VERSION
+ARG RUSTUP_VERSION
+ARG DATADOG_CI_VERSION
+ARG GLIBC_VERSION
+ARG CTNG_VERSION
+ARG DPKG_ARMHF_VERSION
+ARG GO_VERSION
+ARG DDA_VERSION
+
+LABEL protobuf_version="${PROTOBUF_VERSION}"
+LABEL vault_version="${VAULT_VERSION}"
+LABEL awscli_version="${AWSCLI_VERSION}"
+LABEL rvm_version="${RVM_VERSION}"
+LABEL bundler_version="${BUNDLER_VERSION}"
+LABEL rust_version="${RUST_VERSION}"
+LABEL rustup_version="${RUSTUP_VERSION}"
+LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
+LABEL glibc_version="${GLIBC_VERSION}"
+LABEL ctng_version="${CTNG_VERSION}"
+LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
+LABEL go_version="${GO_VERSION}"
+LABEL dda_version="${DDA_VERSION}"
 
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
