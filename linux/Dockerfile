@@ -15,15 +15,15 @@ RUN apt update -qy && apt install -y \
     linux-headers-generic jq libsystemd-dev clang-format libseccomp-dev shellcheck \
     ${ADDITIONAL_PACKAGE}
 
-FROM builder_base AS texinfo_and_crosstool_ng_builder
-# For some reason crosstool-ng does not build properly without texinfo being built first
-# Probably some issue with the libc that gets resolved by building texinfo first
 
+FROM builder_base AS texinfo_builder
 # Build texinfo to get a bugfix version
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
 RUN ls /tmp/texinfo
 RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/setup/texinfo.sh cd /tmp/texinfo && /mnt/setup/texinfo.sh && rm -rf /tmp/texinfo
 
+FROM texinfo_builder AS crosstool_ng_builder
+# CTNG depends on texinfo
 # Build cross-compilation toolchain
 ARG CTNG_VERSION
 ARG CTNG_ARCH
@@ -229,9 +229,8 @@ COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-
 LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
 
 
-# Texinfo and crosstool-ng
-COPY --from=texinfo_and_crosstool_ng_builder /usr/local/bin/info /usr/local/bin/info
-COPY --from=texinfo_and_crosstool_ng_builder /opt/toolchains /opt/toolchains
+# Crosstool-ng
+COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 # Takes values from the ENV steps in the builder stage
 LABEL glibc_version="${GLIBC_VERSION}"
 LABEL ctng_version="${CTNG_VERSION}"
