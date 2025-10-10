@@ -2,6 +2,8 @@
 
 set -ex
 source /root/.bashrc
+source ${CONDA_PATH}/etc/profile.d/conda.sh
+conda activate ddpy3
 uv export --no-editable --no-hashes -o requirements.txt
 
 # The repo is cloned without any git metadata, so we need this otherwise setuptools-scm will fail
