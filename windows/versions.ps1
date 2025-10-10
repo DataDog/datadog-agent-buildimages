@@ -3,10 +3,10 @@ $SoftwareTable = @{
     "GIT_SHA256"="2dfbb1c46547c70179442a92b8593d592292b8bce2fd02ac4e0051a8072dde8f";
     "WINGIT_URL"="https://github.com/git-for-windows/git/releases/download/v2.37.3.windows.1/Git-2.37.3-64-bit.exe";
     "WINGIT_SHA256"="b0442f1b8ea40b6f94ef9a611121d2c204f6aa7f29c54315d2ce59876c3d134e";
-    "SEVENZIP_VERSION"="19.0.0";
-    "SEVENZIP_SHA256"="0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e";
-    "SEVENZIP_STANDALONE_VERSION"="24.08";
-    "SEVENZIP_STANDALONE_SHA256"="1B16C41AE39B679384B06F1492B587B650716430FF9C2E079DCA2AD1F62C952D";
+    "SEVENZIP_VERSION"="25.01";
+    "SEVENZIP_SHA256"="78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f";
+    "SEVENZIP_STANDALONE_VERSION"="25.01";
+    "SEVENZIP_STANDALONE_SHA256"="27cbe3d5804ad09e90bbcaa916da0d5c3b0be9462d0e0fb6cb54be5ed9030875";
 
     ## VisualStudio build tools for containers
     # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history
