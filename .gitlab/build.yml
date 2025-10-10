@@ -49,17 +49,33 @@
   extends: .build
   timeout: 45m
 
-.slow_build:
-  extends: .build
-  timeout: 1h 10m
-
-build_linux_x64:
-  extends: [.slow_build, .always, .x64]
+.build_linux:
+  stage: build
+  before_script:
+    - !reference [.build, before_script]
   variables:
-    DOCKERFILE: linux/Dockerfile
     IMAGE: linux
-    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
-    BUILD_ARGS_FILE: linux/amd64/build.env
+    IMAGE_VERSION_ROOT: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+  script:
+    - |
+      PUSH=""
+      if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+        PUSH="--push"
+      fi
+    - docker buildx bake $PUSH $BAKE_TARGET
+    - |
+      if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+        crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq
+        crane config registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq
+        export SIZE=$(crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq '.config.size + ([.layers[].size] | add)')
+        ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
+      fi
+
+build_linux_amd64:
+  extends: [.build_linux, .x64]
+  variables:
+    IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
+    BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
 
 build_rpm_x64:
   extends: [.medium_build, .always, .x64]
@@ -100,12 +116,10 @@ build_gitlab_agent_deploy:
     IMAGE: gitlab_agent_deploy
 
 build_linux_arm64:
-  extends: [.slow_build, .always, .arm]
+  extends: [.build_linux, .arm]
   variables:
-    DOCKERFILE: linux/Dockerfile
-    IMAGE: linux
-    IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-arm64
-    BUILD_ARGS_FILE: linux/arm64/build.env
+    IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
+    BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
 
 build_rpm_arm64:
   extends: [.medium_build, .always, .arm]
@@ -139,7 +153,7 @@ build_multiarch:
   extends: [.no_schedule, .x64]
   stage: build
   needs:
-    - job: build_linux_x64
+    - job: build_linux_amd64
     - job: build_linux_arm64
   variables:
     TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
@@ -148,19 +162,19 @@ build_multiarch:
   script:
     - >
       docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
-      $TARGET_IMAGE:$IMAGE_VERSION-x64
+      $TARGET_IMAGE:$IMAGE_VERSION-amd64
       $TARGET_IMAGE:$IMAGE_VERSION-arm64
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
 
 build_dev_env_linux_x64:
   extends: [.fast_build, .no_schedule, .x64]
   needs:
-    - job: build_linux_x64
+    - job: build_linux_amd64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
-    BASE_IMAGE_TAG: $IMAGE_VERSION-x64
+    BASE_IMAGE_TAG: $IMAGE_VERSION-amd64
 
 build_dev_env_linux_arm64:
   extends: [.fast_build, .no_schedule, .arm]
