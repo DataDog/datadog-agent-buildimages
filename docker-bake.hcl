@@ -1,3 +1,4 @@
+# ====== Build arguments ====== #
 variable "versions" {
   type = map(string)
   default = {
@@ -142,30 +143,87 @@ variable "args_arm64" {
   )
 }
 
-// Target for AMD64 architecture
+# ====== Helpers ====== #
+// Should not be needed as it is a builtin, but the LSP complains otherwise
+variable "BAKE_LOCAL_PLATFORM" {
+  type = string
+  default = "$BAKE_LOCAL_PLATFORM"
+}
+
+function "get_arch" {
+  params = []
+  result = split("/", "${BAKE_LOCAL_PLATFORM}")[1]
+}
+
+variable "registry_name" {
+  type = string
+  default = "registry.ddbuild.io/ci"
+}
+
+variable "repo_name" {
+  type = string
+  default = "datadog-agent-buildimages"
+}
+
+# ====== Caching details ====== #
+variable CI_COMMIT_BRANCH {
+  type = string
+  // Will pull in the env var if it is defined, but otherwise will be THIS LITERAL STRING
+  default = "$CI_COMMIT_BRANCH"
+}
+
+variable "default_branch_name" {
+  type = string
+  # We can't use $CI_DEFAULT_BRANCH as we also want to use this locally
+  default = "main"
+}
+
+variable "build_branch_name" {
+  type = string
+  default = sanitize("${CI_COMMIT_BRANCH}")
+}
+
+variable "cache_key_main" {
+  type = string
+  default = "cache-${default_branch_name}-${get_arch()}"
+}
+
+variable "cache_key_branch" {
+  type = string
+  default = "cache-${build_branch_name}-${get_arch()}"
+}
+
+variable "linux_cache_details_main" {
+  type = string
+  default = "type=registry,ref=${registry_name}/${repo_name}/linux:${cache_key_main}"
+}
+
+variable "linux_cache_details_branch" {
+  type = string
+  default = "type=registry,ref=${registry_name}/${repo_name}/linux:${cache_key_branch}"
+}
+
+# ====== Local build targets ====== #
+// AMD64 architecture
 target "linux-amd64" {
   dockerfile = "linux/Dockerfile"
   context    = "./"
   platforms  = ["linux/amd64"]
   args       = args_amd64
-  tags       = ["datadog/agent-buildimages-linux:amd64"]
+  cache-from = [linux_cache_details_main]
+  tags       = ["${repo_name}/linux:latest"]
 }
 
-// Target for ARM64 architecture
+// ARM64 architecture
 target "linux-arm64" {
   dockerfile = "linux/Dockerfile"
   context    = "./"
   platforms  = ["linux/arm64"]
   args       = args_arm64
-  tags       = ["datadog/agent-buildimages-linux:arm64"]
+  cache-from = [linux_cache_details_main]
+  tags       = ["${repo_name}/linux:latest"]
 }
 
-// Group to build both architectures
-group "linux" {
-  targets = ["linux-amd64", "linux-arm64"]
-}
-
-// Default group
 group "default" {
   targets = ["linux"]
 }
