@@ -166,15 +166,29 @@ variable "repo_name" {
 }
 
 # ====== Caching details ====== #
+variable "CI" {
+  type = string
+  // Will pull in the env var if it is defined in CI environments (GitLab CI sets this to "true")
+  default = ""
+}
+
 variable CI_COMMIT_BRANCH {
   type = string
-  // Will pull in the env var if it is defined, but otherwise will be THIS LITERAL STRING
-  default = "$CI_COMMIT_BRANCH"
+  // Will pull in the env var if it is defined, but otherwise will be empty
+  default = ""
+  validation {
+    condition     = CI_COMMIT_BRANCH != "" || CI == ""
+    error_message = "CI_COMMIT_BRANCH must be set and not empty in CI environment"
+  }
+}
+
+variable "CI_DEFAULT_BRANCH" {
+  type = string
+  default = "main"
 }
 
 variable "default_branch_name" {
   type = string
-  # We can't use $CI_DEFAULT_BRANCH as we also want to use this locally
   default = "main"
 }
 
@@ -224,6 +238,63 @@ target "linux-arm64" {
   tags       = ["${repo_name}/linux:latest"]
 }
 
+# ====== CI build targets ====== #
+// CI build targets (contain extra info for tagging, caching, etc.)
+
+variable "CI_COMMIT_SHORT_SHA" {
+  type = string
+  // Use the gitlab-provided env var - if it is not set, will be empty
+  default = ""
+  validation {
+    condition     = strlen(CI_COMMIT_SHORT_SHA) == 8 || CI == ""
+    error_message = "CI_COMMIT_SHORT_SHA must be 8 characters long in CI environment"
+  }
+}
+
+variable "CI_PIPELINE_ID" {
+  type = string
+  // Use the gitlab-provided env var - if it is not set, will be empty
+  default = ""
+  validation {
+    condition     = strlen(CI_PIPELINE_ID) == 8 || CI == ""
+    error_message = "CI_PIPELINE_ID must be 8 characters long in CI environment"
+  }
+}
+
+variable "linux-image-tag" {
+  type = string
+  default = "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-${get_arch()}"
+}
+
+target "linux-amd64-ci" {
+  inherits = ["linux-amd64"]
+  cache-from = [linux_cache_details_branch, linux_cache_details_main]
+  cache-to   = [linux_cache_details_branch]
+  tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
+  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+}
+
+target "linux-amd64-ci_test_only" {
+  inherits = ["linux-amd64-ci"]
+  tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+}
+
+target "linux-arm64-ci" {
+  inherits = ["linux-arm64"]
+  cache-from = [linux_cache_details_branch, linux_cache_details_main]
+  cache-to   = [linux_cache_details_branch]
+  tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
+  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+}
+
+target "linux-arm64-ci_test_only" {
+  inherits = ["linux-arm64-ci"]
+  tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+}
+
+// Default group - automatically builds the target for the current architecture
 group "default" {
-  targets = ["linux"]
+  targets = ["linux-${get_arch()}"]
 }
