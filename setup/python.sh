@@ -108,6 +108,7 @@ source /root/.bashrc
 
 # Setup pythons
 conda create -n ddpy3 python python=$PY3_VERSION
+source ${CONDA_PATH}/etc/profile.d/conda.sh
 
 # Update pip, setuptools and misc deps
 conda activate ddpy3
