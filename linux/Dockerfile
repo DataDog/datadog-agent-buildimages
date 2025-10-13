@@ -34,7 +34,7 @@ RUN apt-get install -y --no-install-recommends \
 FROM build_base AS texinfo_builder
 # Build texinfo to get a bugfix version
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
-RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/setup/texinfo.sh cd /tmp/texinfo && /mnt/setup/texinfo.sh
+RUN --mount=type=bind,src=./linux/scripts/texinfo.sh,dst=/mnt/scripts/texinfo.sh cd /tmp/texinfo && /mnt/scripts/texinfo.sh
 
 FROM texinfo_builder AS crosstool_ng_builder
 # CTNG depends on texinfo
@@ -61,7 +61,7 @@ COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
 COPY linux/ctng.patch /root/ctng.patch
-RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/setup/ctng.sh cd /tmp/crosstool-ng && /mnt/setup/ctng.sh && rm -rf /tmp/crosstool-ng
+RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/scripts/ctng.sh cd /tmp/crosstool-ng && /mnt/scripts/ctng.sh && rm -rf /tmp/crosstool-ng
 
 FROM build_base AS dpkg_armhf_builder
 # Build dpkg-armhf
@@ -74,7 +74,7 @@ RUN apt-get install -y --no-install-recommends \
 
 ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" \
     /tmp/dpkg-armhf/
-RUN --mount=type=bind,src=./setup/dpkg.sh,dst=/mnt/setup/dpkg.sh cd /tmp/dpkg-armhf && /mnt/setup/dpkg.sh && rm -rf /tmp/dpkg-armhf
+RUN --mount=type=bind,src=./linux/scripts/dpkg.sh,dst=/mnt/scripts/dpkg.sh cd /tmp/dpkg-armhf && /mnt/scripts/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
 FROM build_base AS python_builder
 # Python and Conda setup
@@ -90,14 +90,14 @@ ENV CONDA_PATH=/root/miniforge3
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 ADD --checksum=sha256:${CONDA_SHA256} "https://github.com/conda-forge/miniforge/releases/download/${CONDA_VERSION}/Miniforge3-Linux-${CONDA_ARCH}.sh" /tmp/conda/miniconda.sh
-RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
+RUN --mount=type=bind,src=./linux/scripts/python.sh,dst=/mnt/scripts/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
-    cd /tmp/conda && /mnt/setup/python.sh && rm -rf /tmp/conda
+    cd /tmp/conda && /mnt/scripts/python.sh && rm -rf /tmp/conda
 
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
 ADD https://github.com/DataDog/datadog-agent-dev.git#${DDA_VERSION} /tmp/dda
-RUN --mount=type=bind,src=./setup/dda.sh,dst=/mnt/setup/dda.sh cd /tmp/dda && /mnt/setup/dda.sh && rm -rf /tmp/dda
+RUN --mount=type=bind,src=./linux/scripts/dda.sh,dst=/mnt/scripts/dda.sh cd /tmp/dda && /mnt/scripts/dda.sh && rm -rf /tmp/dda
 
 FROM python_builder AS rvm_builder
 # Somehow building RVM needs some opensslstuff from the python_builder stage
@@ -113,7 +113,7 @@ ADD --checksum=sha256:${RVM_SHA256} \
 COPY ./rvm/gpg-keys /gpg-keys
 # TODO: Maybe deprecate the get-rvm.sh script and manually download and extract a tar.
 # The script we download does a lot of extra checking that we don't need in a Docker build.
-RUN --mount=type=bind,src=./setup/rvm.sh,dst=/mnt/setup/rvm.sh cd /tmp/rvm && /mnt/setup/rvm.sh && rm -rf /tmp/rvm
+RUN --mount=type=bind,src=./linux/scripts/rvm.sh,dst=/mnt/scripts/rvm.sh cd /tmp/rvm && /mnt/scripts/rvm.sh && rm -rf /tmp/rvm
 
 FROM extraction_base AS protobuf_builder
 # Protobuf
@@ -123,7 +123,7 @@ ARG PROTOBUF_ARCH
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
 
 ADD --checksum=sha256:${PROTOBUF_SHA256} "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME}" /tmp/protobuf/${PROTOBUF_FILENAME}
-RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/setup/protobuf.sh cd /tmp/protobuf && /mnt/setup/protobuf.sh && rm -rf /tmp/protobuf
+RUN --mount=type=bind,src=./linux/scripts/protobuf.sh,dst=/mnt/scripts/protobuf.sh cd /tmp/protobuf && /mnt/scripts/protobuf.sh && rm -rf /tmp/protobuf
 
 FROM extraction_base AS go_builder
 # Go setup
@@ -138,7 +138,7 @@ ENV GOPATH=/go
 
 ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
 ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
-RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/setup/go.sh cd /tmp/go && /mnt/setup/go.sh && rm -rf /tmp/go
+RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/scripts/go.sh cd /tmp/go && /mnt/scripts/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 FROM common_base AS bazelisk_builder
@@ -149,7 +149,7 @@ ARG BAZELISK_SHA256
 
 ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}" /tmp/bazelisk/bazelisk
 ENV PATH="/usr/local/bin:${PATH}"
-RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh cd /tmp/bazelisk && /mnt/setup/bazelisk.sh && rm -rf /tmp/bazelisk
+RUN --mount=type=bind,src=./linux/scripts/bazelisk.sh,dst=/mnt/scripts/bazelisk.sh cd /tmp/bazelisk && /mnt/scripts/bazelisk.sh && rm -rf /tmp/bazelisk
 FROM common_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
@@ -159,7 +159,7 @@ ARG RUSTUP_SHA256
 ARG RUSTUP_ARCH
 
 ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
-RUN --mount=type=bind,src=./setup/rust.sh,dst=/mnt/setup/rust.sh cd /tmp/rust && /mnt/setup/rust.sh && rm -rf /tmp/rust
+RUN --mount=type=bind,src=./linux/scripts/rust.sh,dst=/mnt/scripts/rust.sh cd /tmp/rust && /mnt/scripts/rust.sh && rm -rf /tmp/rust
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM extraction_base AS vault_builder
@@ -174,7 +174,7 @@ ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 
 ADD --checksum=sha256:${VAULT_SHA256} "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME}" /tmp/vault/vault.zip
 ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-linux-${AWSCLI_ARCH}-${AWSCLI_VERSION}.zip" /tmp/vault/awscliv2.zip
-RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/setup/vault.sh cd /tmp/vault && /mnt/setup/vault.sh && rm -rf /tmp/vault
+RUN --mount=type=bind,src=./linux/scripts/vault.sh,dst=/mnt/scripts/vault.sh cd /tmp/vault && /mnt/scripts/vault.sh && rm -rf /tmp/vault
 
 
 FROM build_base AS pulumi_builder
@@ -198,7 +198,7 @@ RUN chmod +x /usr/local/bin/datadog-ci
 FROM extraction_base AS authanywhere_builder
 # Install authanywhere for infra token management
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
-RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh cd /tmp/authanywhere && /mnt/setup/authanywhere.sh && rm -rf /tmp/authanywhere
+RUN --mount=type=bind,src=./linux/scripts/authanywhere.sh,dst=/mnt/scripts/authanywhere.sh cd /tmp/authanywhere && /mnt/scripts/authanywhere.sh && rm -rf /tmp/authanywhere
 
 FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
