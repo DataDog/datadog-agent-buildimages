@@ -165,13 +165,19 @@ variable "repo_name" {
 }
 
 # ====== Caching details ====== #
+variable "CI" {
+  type = string
+  // Will pull in the env var if it is defined in CI environments (GitLab CI sets this to "true")
+  default = ""
+}
+
 variable CI_COMMIT_BRANCH {
   type = string
   // Will pull in the env var if it is defined, but otherwise will be empty
   default = ""
   validation {
-    condition     = CI_COMMIT_BRANCH != ""
-    error_message = "CI_COMMIT_BRANCH must be set and not empty"
+    condition     = CI_COMMIT_BRANCH != "" || CI == ""
+    error_message = "CI_COMMIT_BRANCH must be set and not empty in CI environment"
   }
 }
 
@@ -239,8 +245,8 @@ variable "CI_COMMIT_SHORT_SHA" {
   // Use the gitlab-provided env var - if it is not set, will be empty
   default = ""
   validation {
-    condition     = strlen(CI_COMMIT_SHORT_SHA) == 8
-    error_message = "CI_COMMIT_SHORT_SHA must be 8 characters long"
+    condition     = strlen(CI_COMMIT_SHORT_SHA) == 8 || CI == ""
+    error_message = "CI_COMMIT_SHORT_SHA must be 8 characters long in CI environment"
   }
 }
 
@@ -249,8 +255,8 @@ variable "CI_PIPELINE_ID" {
   // Use the gitlab-provided env var - if it is not set, will be empty
   default = ""
   validation {
-    condition     = strlen(CI_PIPELINE_ID) == 8
-    error_message = "CI_PIPELINE_ID must be 8 characters long"
+    condition     = strlen(CI_PIPELINE_ID) == 8 || CI == ""
+    error_message = "CI_PIPELINE_ID must be 8 characters long in CI environment"
   }
 }
 
