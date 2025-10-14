@@ -249,7 +249,11 @@ RUN git config --global user.email "package@datadoghq.com" && \
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
 
+# Texinfo
+COPY --from=texinfo_builder /usr/local /usr/local
+
 # Vault
+COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
 COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
 COPY --from=vault_builder /usr/local/aws* /usr/local/
 
@@ -276,6 +280,7 @@ COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
@@ -289,7 +294,15 @@ COPY --from=go_builder /usr/local/go /usr/local/go
 # Conda & Python
 ENV CONDA_PATH=/root/miniforge3
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
+# Copy conda's bash initialization
+COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 
+# Set up missing environment variables
+ENV GOPATH=/go
+ENV PYTHONUTF8=1
+
+# Merge conda initialization with main bashrc
+RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
 
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
@@ -304,7 +317,7 @@ RUN echo "umask 0022" >> /root/.bashrc && \
 # Set up environment
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH=/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:$PATH
+ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
