@@ -174,7 +174,7 @@ build_dev_env_linux_x64:
     DOCKERFILE: dev-envs/linux/Dockerfile
     IMAGE: dev-env-linux-$DD_TARGET_ARCH
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
-    BASE_IMAGE_TAG: $IMAGE_VERSION-x64
+    BASE_IMAGE_TAG: $IMAGE_VERSION-amd64
 
 build_dev_env_linux_arm64:
   extends: [.fast_build, .no_schedule, .arm]
