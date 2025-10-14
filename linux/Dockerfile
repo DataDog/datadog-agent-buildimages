@@ -298,7 +298,11 @@ COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
 LABEL protobuf_version="${PROTOBUF_VERSION}"
 
+# Texinfo
+COPY --from=texinfo_builder /usr/local /usr/local
+
 # Vault
+COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
 COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
 COPY --from=vault_builder /usr/local/aws* /usr/local/
 LABEL vault_version="${VAULT_VERSION}"
@@ -335,6 +339,7 @@ LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 # Takes values from the ENV steps in the builder stage
 LABEL glibc_version="${GLIBC_VERSION}"
 LABEL ctng_version="${CTNG_VERSION}"
@@ -353,7 +358,15 @@ LABEL go_version="${GO_VERSION}"
 # Conda & Python
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
 LABEL dda_version="${DDA_VERSION}"
+# Copy conda's bash initialization
+COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 
+# Set up missing environment variables
+ENV GOPATH=/go
+ENV PYTHONUTF8=1
+
+# Merge conda initialization with main bashrc
+RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
 
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
@@ -366,7 +379,7 @@ RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Set up environment
-ENV PATH=/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:$PATH
+ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
