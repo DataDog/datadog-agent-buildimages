@@ -35,6 +35,7 @@ ARG PROTOBUF_SHA256
 ARG AWSCLI_SHA256
 ARG DPKG_ARMHF_SHA256
 ARG ADDITIONAL_PACKAGE
+ARG PULUMI_VERSION
 
 LABEL maintainer="DataDog"
 LABEL glibc_version="${GLIBC_VERSION}"
@@ -196,6 +197,11 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
     unzip -q awscliv2.zip && \
     ./aws/install && \
     rm -rf aws awscliv2.zip
+
+# Install Pulumi
+RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
+    mv ~/.pulumi/bin/* /usr/bin
+
 
 # Install CI uploader
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH} --output "/usr/local/bin/datadog-ci" && \
