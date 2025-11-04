@@ -111,11 +111,11 @@ procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
 sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
 
-PDU_VERSION="0.11.0"
+PDU_VERSION="0.21.1"
 if [[ $arch == "x86_64" ]]; then
     install-binary \
         --version "${PDU_VERSION}" \
-        --digest "7da2abd0c438e0317271b34e4122d1d5818b124e3d70867309d4a92bfb34ac69" \
+        --digest "04713f163ec80867edc60e17f078e1139fbfe9c0cef8a19defead7e207936dbe" \
         --url "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/{{version}}/pdu-${arch}-unknown-linux-musl" \
         --name "pdu"
 else
