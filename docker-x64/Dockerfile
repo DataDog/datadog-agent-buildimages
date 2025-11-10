@@ -37,6 +37,7 @@ RUN apt-get update &&  \
       cpio \
       dmg2img \
       autoconf \
+      skopeo \
       p7zip-full && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
