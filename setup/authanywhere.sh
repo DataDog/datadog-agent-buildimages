@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -euo pipefail
 
 if [ "$(uname -m)" == "x86_64" ]; then
     authanywhere_arch="amd64"
