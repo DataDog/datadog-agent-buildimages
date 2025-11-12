@@ -13,7 +13,6 @@ ARG DATADOG_CI_VERSION=3.9.0
 ARG PROTOBUF_VERSION=29.3
 ARG AWSCLI_VERSION=2.27.30
 ARG DPKG_ARMHF_VERSION=1.18.4
-ARG CI_JOB_TOKEN_ARG
 
 # Architecture-specific build arguments
 ARG ARCH
@@ -51,7 +50,6 @@ LABEL awscli_version="${AWSCLI_VERSION}"
 # Set architecture-specific variables
 ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
-ENV CI_JOB_TOKEN=$CI_JOB_TOKEN_ARG
 # Common environment variables
 ENV PYTHONUTF8=1
 ENV CONDA_PATH=/root/miniforge3
@@ -207,7 +205,8 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
-RUN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN \
+    --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \

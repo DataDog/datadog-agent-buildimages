@@ -48,10 +48,10 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
 fi
 
 # # Pass the CI_JOB_TOKEN if necessary
-CI_JOB_TOKEN_ARG=
+CI_JOB_TOKEN_ENV=
 case "$IMAGE" in
     gitlab_agent_deploy|linux)
-        CI_JOB_TOKEN_ARG="--build-arg CI_JOB_TOKEN_ARG=${CI_JOB_TOKEN:-}"
+        CI_JOB_TOKEN_ENV="--env CI_JOB_TOKEN=${CI_JOB_TOKEN:-}"
         ;;
 esac
 
@@ -66,7 +66,7 @@ $CACHE_PULL_ARGS \
 --build-arg ARCH=${ARCH:-} \
 --build-arg DD_TARGET_ARCH=${DD_TARGET_ARCH:-} \
 --build-arg BUILDENV_REGISTRY=${BUILDENV_REGISTRY:-} \
-$CI_JOB_TOKEN_ARG \
+$CI_JOB_TOKEN_ENV \
 $GO_BUILD_ARGS \
 $DDA_BUILD_ARGS \
 ${CUSTOM_BUILD_ARGS:-} \
