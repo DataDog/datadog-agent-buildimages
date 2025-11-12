@@ -47,13 +47,13 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
     CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
 fi
 
-# Pass the CI_JOB_TOKEN if necessary
-CI_JOB_TOKEN_ARG=
-case "$IMAGE" in
-    gitlab_agent_deploy|linux)
-        CI_JOB_TOKEN_ARG="--build-arg CI_JOB_TOKEN_ARG=${CI_JOB_TOKEN:-}"
-        ;;
-esac
+# # Pass the CI_JOB_TOKEN if necessary
+# CI_JOB_TOKEN_ARG=
+# case "$IMAGE" in
+#     gitlab_agent_deploy|linux)
+#         CI_JOB_TOKEN_ARG="--build-arg CI_JOB_TOKEN_ARG=${CI_JOB_TOKEN:-}"
+#         ;;
+# esac
 
 echo "Run buildx build"
 docker buildx build \
