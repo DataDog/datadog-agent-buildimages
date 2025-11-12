@@ -48,7 +48,7 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
 fi
 
 # # Pass the CI_JOB_TOKEN if necessary
-# CI_JOB_TOKEN_ARG=
+CI_JOB_TOKEN_ARG=
 # case "$IMAGE" in
 #     gitlab_agent_deploy|linux)
 #         CI_JOB_TOKEN_ARG="--build-arg CI_JOB_TOKEN_ARG=${CI_JOB_TOKEN:-}"
