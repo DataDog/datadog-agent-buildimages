@@ -207,11 +207,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
-# TODO: Fallback on github for non Datadog folks
-RUN git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/" && \
-    go env -w GOPRIVATE="github.com/DataDog/*" && \
-    export PATH="$PATH:$(go env GOPATH)/bin" && \
-    go install github.com/DataDog/datadog-packages/cmd/datadog-package@latest
+RUN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \

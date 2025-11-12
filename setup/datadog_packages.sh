@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+DATADOG_PACKAGES_VERSION=bb430d549b551c0aeb466f3f38470971dabdef2c
+
+# TODO: Test without this token
+if [ -n "$CI_JOB_TOKEN" ]; then
+    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/"
+    go env -w GOPRIVATE="github.com/DataDog/*"
+fi
+export PATH="$PATH:$(go env GOPATH)/bin"
+go install github.com/DataDog/datadog-packages/cmd/datadog-package@$DATADOG_PACKAGES_VERSION
