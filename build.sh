@@ -47,6 +47,8 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
     CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
 fi
 
+MY_SECRET=ilovechocolate
+
 # Pass the CI_JOB_TOKEN if necessary
 CI_JOB_TOKEN_ENV=
 case "$IMAGE" in
@@ -54,6 +56,7 @@ case "$IMAGE" in
         CI_JOB_TOKEN_ENV="--env CI_JOB_TOKEN=${CI_JOB_TOKEN:-}"
         ;;
 esac
+# $CI_JOB_TOKEN_ENV \
 
 echo "Run buildx build"
 docker buildx build \
@@ -66,7 +69,7 @@ $CACHE_PULL_ARGS \
 --build-arg ARCH=${ARCH:-} \
 --build-arg DD_TARGET_ARCH=${DD_TARGET_ARCH:-} \
 --build-arg BUILDENV_REGISTRY=${BUILDENV_REGISTRY:-} \
-$CI_JOB_TOKEN_ENV \
+--secret id=my-secret,env=MY_SECRET \
 $GO_BUILD_ARGS \
 $DDA_BUILD_ARGS \
 ${CUSTOM_BUILD_ARGS:-} \

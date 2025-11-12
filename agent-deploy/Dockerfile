@@ -31,6 +31,10 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     PYTHONUTF8=1 \
     DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
+RUN --mount=type=secret,id=my-secret,env=MY_SECRET \
+    echo "MY secret is $MY_SECRET" && \
+    exit 1
+
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
