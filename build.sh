@@ -47,7 +47,7 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
     CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
 fi
 
-MY_SECRET=ilovechocolate
+export MY_SECRET=ilovechocolate
 
 # Pass the CI_JOB_TOKEN if necessary
 CI_JOB_TOKEN_ENV=
