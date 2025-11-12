@@ -24,12 +24,14 @@ ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aa
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
+ARG CI_JOB_TOKEN_ARG
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
     PYTHONUTF8=1 \
-    DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
+    DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS \
+    CI_JOB_TOKEN=$CI_JOB_TOKEN_ARG
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
