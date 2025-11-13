@@ -22,7 +22,7 @@ EOF
     export GIT_CONFIG=/tmp/gitconfig
     go env -w GOPRIVATE="github.com/DataDog/*"
 fi
-export PATH="$PATH:$(go env GOPATH)/bin"
+# export PATH="$PATH:$(go env GOPATH)/bin"
 go install github.com/DataDog/datadog-packages/cmd/datadog-package@$DATADOG_PACKAGES_VERSION
 
 rm -f /tmp/gitconfig
