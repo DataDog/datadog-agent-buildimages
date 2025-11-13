@@ -31,10 +31,6 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     PYTHONUTF8=1 \
     DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
-RUN --mount=type=secret,id=my-secret,env=MY_SECRET \
-    echo "MY secret is $MY_SECRET" && \
-    exit 1
-
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
@@ -194,8 +190,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN \
-    --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
 
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts

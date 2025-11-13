@@ -205,8 +205,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN \
-    --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
