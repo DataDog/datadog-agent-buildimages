@@ -10,19 +10,12 @@ DATADOG_PACKAGES_VERSION=bb430d549b551c0aeb466f3f38470971dabdef2c
 set -euo pipefail
 
 if [ -n "$CI_JOB_TOKEN" ]; then
-    # git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/"
-
-    cat > /tmp/gitconfig <<EOF
-[url "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/"]
-    insteadOf = https://github.com/DataDog/
-EOF
-
-    export GIT_CONFIG_GLOBAL=/dev/null
-    export GIT_CONFIG_SYSTEM=/dev/null
-    export GIT_CONFIG=/tmp/gitconfig
+    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/"
     go env -w GOPRIVATE="github.com/DataDog/*"
 fi
 # export PATH="$PATH:$(go env GOPATH)/bin"
 go install github.com/DataDog/datadog-packages/cmd/datadog-package@$DATADOG_PACKAGES_VERSION
 
-rm -f /tmp/gitconfig
+if [ -n "$CI_JOB_TOKEN" ]; then
+    git config --global --unset url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf
+fi
