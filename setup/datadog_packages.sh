@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 # Go env might be set only here
 [ -f /root/.bashrc ] && . /root/.bashrc
+
+set -euo pipefail
 
 DATADOG_PACKAGES_VERSION=bb430d549b551c0aeb466f3f38470971dabdef2c
 
