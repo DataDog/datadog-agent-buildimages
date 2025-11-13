@@ -67,6 +67,8 @@ RUN apt update -qy && apt install -y \
     pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
     rpm tar gettext autopoint autoconf clang libtool-bin \
     pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
+    # xsltproc is required by libvirt-sdk used in the micro-vms scenario
+    xsltproc \
     linux-headers-generic jq libsystemd-dev clang-format libseccomp-dev shellcheck \
     ${ADDITIONAL_PACKAGE}
 
