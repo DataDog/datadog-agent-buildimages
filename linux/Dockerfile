@@ -13,6 +13,7 @@ ARG DATADOG_CI_VERSION=3.9.0
 ARG PROTOBUF_VERSION=29.3
 ARG AWSCLI_VERSION=2.27.30
 ARG DPKG_ARMHF_VERSION=1.18.4
+ARG PULUMI_VERSION=3.207.0
 
 # Architecture-specific build arguments
 ARG ARCH
@@ -59,13 +60,54 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 
 # Install common dependencies
 RUN apt update -qy && apt install -y \
-    wget xz-utils gpg build-essential flex texinfo unzip \
-    help2man file gawk libtool-bin bison libncurses-dev \
-    python-is-python3 git cmake curl fakeroot procps bzip2 \
-    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-    rpm tar gettext autopoint autoconf clang libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    linux-headers-generic jq libsystemd-dev clang-format libseccomp-dev shellcheck \
+    autoconf \
+    autopoint \
+    bison \
+    build-essential \
+    clang \
+    wget \
+    xz-utils \
+    flex \
+    texinfo \
+    unzip \
+    help2man \
+    file \
+    gawk \
+    libtool-bin \
+    libncurses-dev \
+    python-is-python3 \
+    git \
+    cmake \
+    curl \
+    fakeroot \
+    procps \
+    bzip2 \
+    pkg-config \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libexpat-dev \
+    libpq-dev \
+    libz-dev \
+    rpm \
+    tar \
+    gettext \
+    libtool-bin \
+    flex \
+    meson \
+    selinux-basics \
+    squashfs-tools \
+    gpg \
+    xz-utils \
+    gnupg2 \
+    patchelf \
+    cpio \
+    xsltproc \
+    linux-headers-generic \
+    jq \
+    libsystemd-dev \
+    clang-format \
+    libseccomp-dev \
+    shellcheck \
     ${ADDITIONAL_PACKAGE}
 
 # Git configuration
@@ -195,6 +237,14 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
     unzip -q awscliv2.zip && \
     ./aws/install && \
     rm -rf aws awscliv2.zip
+
+# Install Pulumi
+RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
+    mv ~/.pulumi/bin/* /usr/local/bin
+
+# Install dd-octo-sts
+COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+
 
 # Install CI uploader
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH} --output "/usr/local/bin/datadog-ci" && \
