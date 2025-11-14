@@ -3,7 +3,7 @@ IFS=$'\n\t'
 set -euxo pipefail
 
 # Use PAM for environment variable persistence
-apt-get update && apt-get install -y --no-install-recommends libpam0g-dev libpam-modules
+apt-get update && apt-get install -y --no-install-recommends libpam0g-dev libpam-modules automake
 
 cat <<'EOF' >> /etc/pam.d/sshd
 session required pam_env.so
