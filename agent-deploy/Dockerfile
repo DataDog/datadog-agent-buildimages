@@ -189,6 +189,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 # Install authanywhere for infra token management
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
+# Install datadog-packages
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts
 RUN chmod +x /deploy_scripts/check_apt_pool.sh
