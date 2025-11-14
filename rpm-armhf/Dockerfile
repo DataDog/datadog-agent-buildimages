@@ -133,7 +133,9 @@ ENV PATH "${HOME}/.cargo/bin:${PATH}"
 # CONDA
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
+RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
+    --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    /mnt/setup/python.sh
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
