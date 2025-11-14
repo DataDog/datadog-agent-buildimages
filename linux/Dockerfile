@@ -13,6 +13,7 @@ ARG DATADOG_CI_VERSION=3.9.0
 ARG PROTOBUF_VERSION=29.3
 ARG AWSCLI_VERSION=2.27.30
 ARG DPKG_ARMHF_VERSION=1.18.4
+ARG ORCHESTRION_VERSION=1.6.1
 
 # Architecture-specific build arguments
 ARG ARCH
@@ -171,6 +172,9 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 ENV GOPATH=/go
 RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Orchestrion setup
+RUN go install github.com/DataDog/orchestrion@${ORCHESTRION_VERSION}
 
 # Install & verify Bazelisk as Bazel bootstrapper
 RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
