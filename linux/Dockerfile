@@ -61,15 +61,54 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 
 # Install common dependencies
 RUN apt update -qy && apt install -y \
-    wget xz-utils gpg build-essential flex texinfo unzip \
-    help2man file gawk libtool-bin bison libncurses-dev \
-    python-is-python3 git cmake curl fakeroot procps bzip2 \
-    pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
-    rpm tar gettext autopoint autoconf clang libtool-bin \
-    pkg-config flex meson selinux-basics squashfs-tools gpg xz-utils gnupg2 patchelf cpio \
-    # xsltproc is required by libvirt-sdk used in the micro-vms scenario
+    autoconf \
+    autopoint \
+    bison \
+    build-essential \
+    clang \
+    wget \
+    xz-utils \
+    flex \
+    texinfo \
+    unzip \
+    help2man \
+    file \
+    gawk \
+    libtool-bin \
+    libncurses-dev \
+    python-is-python3 \
+    git \
+    cmake \
+    curl \
+    fakeroot \
+    procps \
+    bzip2 \
+    pkg-config \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libexpat-dev \
+    libpq-dev \
+    libz-dev \
+    rpm \
+    tar \
+    gettext \
+    libtool-bin \
+    flex \
+    meson \
+    selinux-basics \
+    squashfs-tools \
+    gpg \
+    xz-utils \
+    gnupg2 \
+    patchelf \
+    cpio \
     xsltproc \
-    linux-headers-generic jq libsystemd-dev clang-format libseccomp-dev shellcheck \
+    linux-headers-generic \
+    jq \
+    libsystemd-dev \
+    clang-format \
+    libseccomp-dev \
+    shellcheck \
     ${ADDITIONAL_PACKAGE}
 
 # Git configuration
@@ -202,7 +241,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 
 # Install Pulumi
 RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
-    mv ~/.pulumi/bin/* /usr/bin
+    mv ~/.pulumi/bin/* /usr/local/bin
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
