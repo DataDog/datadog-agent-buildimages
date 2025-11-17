@@ -3,7 +3,7 @@ FROM ubuntu:xenial
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KERNEL_EXTRA_CONFIG_VERSION=0.1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get clean && apt-get update && apt-get install -y --no-install-recommends \
     bison \
     flex \
     build-essential \

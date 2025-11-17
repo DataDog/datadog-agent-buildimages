@@ -27,6 +27,7 @@ case $DD_TARGET_ARCH in
     source /root/.bashrc
 
     if [ -f /etc/debian_version ] || [ "$DISTRIBUTION" == "Debian" ] || [ "$DISTRIBUTION" == "Ubuntu" ]; then
+        apt-get clean
         DEBIAN_FRONTEND=noninteractive apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y \
         zip wget build-essential checkinstall libreadline-gplv2-dev \

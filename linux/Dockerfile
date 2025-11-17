@@ -59,7 +59,7 @@ ENV CONDA_PATH=/root/miniforge3
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 # Install common dependencies
-RUN apt update -qy && apt install -y \
+RUN apt clean && apt update -qy && apt install -y \
     autoconf \
     autopoint \
     bison \

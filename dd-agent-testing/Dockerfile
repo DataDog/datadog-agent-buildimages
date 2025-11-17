@@ -14,7 +14,7 @@ ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get clean && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   apt-transport-https autoconf automake bison curl \
   g++ gawk gcc git jq \
   libc6-dev libffi-dev libssl-dev libgdbm-dev libgmp-dev libncurses5-dev \

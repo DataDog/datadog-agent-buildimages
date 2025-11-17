@@ -14,7 +14,7 @@ ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
 
-RUN apt-get update &&  \
+RUN apt-get clean && apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
       build-essential  \
       libssl-dev  \

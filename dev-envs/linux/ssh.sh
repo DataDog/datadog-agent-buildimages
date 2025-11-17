@@ -3,6 +3,7 @@ IFS=$'\n\t'
 set -euxo pipefail
 
 # Use PAM for environment variable persistence
+apt-get clean
 apt-get update && apt-get install -y --no-install-recommends libpam0g-dev libpam-modules
 
 cat <<'EOF' >> /etc/pam.d/sshd
