@@ -63,10 +63,6 @@ RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-$
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
 
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
-
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
 # Cannot use HTTPS here: cert name is invalid
