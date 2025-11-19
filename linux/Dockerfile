@@ -136,20 +136,20 @@ RUN cd /build && \
     gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E && \
     wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
     gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
-    tar xf crosstool-ng-${CTNG_VERSION}.tar.xz
-
-RUN cd /build/crosstool-ng-${CTNG_VERSION} && \
+    tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
+    cd /build/crosstool-ng-${CTNG_VERSION} && \
     patch -p1 < /root/ctng.patch && \
-    ./configure --enable-local && make -j$(nproc)
-
-RUN cd /build/crosstool-ng-${CTNG_VERSION} && \
+    ./configure --enable-local && make -j$(nproc) && \
     export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
     ./ct-ng upgradeconfig && \
-    ./ct-ng build
-
-RUN cd /build/crosstool-ng-${CTNG_VERSION} && \
+    ./ct-ng build && \
+    mkdir -p /opt/toolchains/ && \
+    mv /root/x-tools/${ARCH}-unknown-linux-gnu/ /opt/toolchains/${ARCH} && \
+    mv .config-${CROSS_ARCH} .config && \
     ./ct-ng upgradeconfig && \
-    ./ct-ng build
+    ./ct-ng build && \
+    mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
+    rm -rf /build
 
 RUN curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
     echo "${DPKG_ARMHF_SHA256}  dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" | sha256sum --check && \
