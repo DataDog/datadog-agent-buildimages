@@ -14,7 +14,7 @@ the same artifact that's distributed through the official Yum repository.
 
 If you're a Datadog employee building new images used in the Datadog Agent
 pipeline, you will have to replace the `DATADOG_AGENT_BUILDIMAGES` variable
-in the [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent/blob/master/.gitlab-ci.yml)
+in the [.gitlab-ci.yml](https://github.com/DataDog/datadog-agent/blob/main/.gitlab-ci.yml)
 of the [datadog-agent repository][agent] to use the newly created images.
 
 ## If you're modifying both datadog-agent and buildimages repositories
@@ -38,7 +38,7 @@ In your datadog-agent-buildimages's PR:
     - Once [datadog-agent][agent]'s PR is green, merge.
 
 [agent]: https://github.com/DataDog/datadog-agent
-[agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/master/docs/dev/agent_omnibus.md
+[agent-omnibus]: https://github.com/DataDog/datadog-agent/blob/main/docs/public/how-to/build/distributions.md
 
 ## Upgrading Golang version
 
