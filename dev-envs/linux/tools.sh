@@ -94,6 +94,7 @@ if [[ $arch == "x86_64" ]]; then
         --name "ambr" \
         --name "ambs"
 else
+    rustup default stable
     cargo install --locked amber@${AMBR_VERSION}
 fi
 
