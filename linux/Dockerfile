@@ -103,7 +103,7 @@ RUN apt update -qy && apt install -y \
     cpio \
     xsltproc \
     linux-headers-generic \
-    jq \
+    yq \
     libsystemd-dev \
     clang-format \
     libseccomp-dev \
