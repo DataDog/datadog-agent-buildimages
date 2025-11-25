@@ -78,7 +78,7 @@ case $DD_TARGET_ARCH in
     cat > /tmp/constraints.txt << 'EOF'
 msgspec<0.20.0
 EOF
-    python3 -m pip download -v -d /tmp/dda-install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    python3 -m pip download -v -d /tmp/dda-install -c /tmp/constraints.txt "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
     cd /tmp/dda-install
     for dist in *; do
         if [[ ! "$dist" =~ ^ada_url ]]; then
