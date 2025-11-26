@@ -47,6 +47,14 @@ if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
     CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
 fi
 
+# Pass the CI_JOB_TOKEN if necessary
+CI_JOB_TOKEN_SECRET=
+case "$IMAGE" in
+    gitlab_agent_deploy|linux)
+        CI_JOB_TOKEN_SECRET="--secret id=ci-job-token,env=CI_JOB_TOKEN"
+        ;;
+esac
+
 echo "Run buildx build"
 docker buildx build \
 --platform $PLATFORM \
@@ -58,6 +66,7 @@ $CACHE_PULL_ARGS \
 --build-arg ARCH=${ARCH:-} \
 --build-arg DD_TARGET_ARCH=${DD_TARGET_ARCH:-} \
 --build-arg BUILDENV_REGISTRY=${BUILDENV_REGISTRY:-} \
+$CI_JOB_TOKEN_SECRET \
 $GO_BUILD_ARGS \
 $DDA_BUILD_ARGS \
 ${CUSTOM_BUILD_ARGS:-} \

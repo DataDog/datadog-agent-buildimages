@@ -18,18 +18,46 @@ RUN apt-get install -y --no-install-recommends \
 # TODO: Investigate which ones are used in which stages and only install them there
 FROM extraction_base AS build_base
 RUN apt-get install -y --no-install-recommends \
+    autoconf \
+    automake \
+    autopoint \
+    bison \
     # Meta-package providing gcc, g++, make, libc6-dev, etc.
     build-essential \
-    automake autoconf autopoint gettext help2man \
-    libtool libtool-bin libz-dev libssl-dev \
-    libffi-dev libgdbm-dev libncurses-dev \
-    libpq-dev libreadline-dev libyaml-dev \
-    libcurl4-openssl-dev libexpat-dev libsystemd-dev libseccomp-dev \
-    wget curl git gpg dirmngr gpg-agent patch texinfo \
-    perl python3-dev \
-    bison flex pkg-config gawk \
+    curl \
+    dirmngr \
     file \
-    linux-headers-generic libcurl4-openssl-dev
+    flex \
+    gawk \
+    gettext \
+    gpg \
+    gpg-agent \
+    git \
+    help2man \
+    libcurl4-openssl-dev \
+    libcurl4-openssl-dev \
+    libexpat-dev \
+    libffi-dev \
+    libgdbm-dev \
+    libncurses-dev \
+    libpq-dev \
+    libreadline-dev \
+    libseccomp-dev \
+    libssl-dev \
+    libsystemd-dev \
+    libtool \
+    libtool-bin \
+    libyaml-dev \
+    libz-dev \
+    linux-headers-generic \
+    patch \
+    perl \
+    pkg-config \
+    python3-dev \
+    texinfo \
+    # Needed by pulumi
+    xsltproc \
+    wget
 
 FROM build_base AS texinfo_builder
 # Build texinfo to get a bugfix version
@@ -142,6 +170,10 @@ ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${G
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/scripts/go.sh cd /tmp/go && /mnt/scripts/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+FROM go_builder AS datadog_packages_builder
+ARG DATADOG_PACKAGES_VERSION
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+
 FROM common_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
 ARG BAZELISK_VERSION
@@ -186,6 +218,10 @@ ARG DATADOG_CI_ARCH
 ADD --checksum=sha256:${DATADOG_CI_SHA256} "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" /usr/local/bin/datadog-ci
 RUN chmod +x /usr/local/bin/datadog-ci
 
+FROM build_base AS pulumi_builder
+ARG PULUMI_VERSION
+RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && mv ~/.pulumi/bin/* /usr/local/bin && rm -rf ~/.pulumi
+
 FROM extraction_base AS authanywhere_builder
 # Install authanywhere for infra token management
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
@@ -222,6 +258,7 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     texinfo \
     unzip \
     wget \
+    xsltproc \
     xz-utils \
     zlib1g-dev \
     ${ADDITIONAL_PACKAGE} \
@@ -271,6 +308,16 @@ COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
 
+# Datadog Packages
+COPY --from=datadog_packages_builder /usr/local/bin/datadog-packages /usr/local/bin/datadog-packages
+
+# Pulumi
+COPY --from=pulumi_builder /usr/local/bin/pulumi /usr/local/bin/pulumi
+
+# DD Octo STS. We use specific version here because `--from` does not support wildcards.
+# TODO(agent-devx): test this workaround https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7 
+COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+
 # Conda & Python
 ENV CONDA_PATH=/root/miniforge3
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
@@ -317,6 +364,8 @@ ARG CTNG_VERSION
 ARG DPKG_ARMHF_VERSION
 ARG GO_VERSION
 ARG DDA_VERSION
+ARG PULUMI_VERSION
+ARG DD_OCTO_STS_VERSION
 
 LABEL protobuf_version="${PROTOBUF_VERSION}"
 LABEL vault_version="${VAULT_VERSION}"
@@ -331,7 +380,8 @@ LABEL ctng_version="${CTNG_VERSION}"
 LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
 LABEL go_version="${GO_VERSION}"
 LABEL dda_version="${DDA_VERSION}"
-
+LABEL pulumi_version="${PULUMI_VERSION}"
+LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh

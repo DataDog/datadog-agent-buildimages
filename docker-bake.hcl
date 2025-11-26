@@ -19,6 +19,8 @@ variable "versions" {
     PROTOBUF_VERSION    = "29.3"
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
+    PULUMI_VERSION      = "3.207.0"
+    DD_OCTO_STS_VERSION = "v1.9.3"
   }
 }
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables

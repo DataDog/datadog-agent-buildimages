@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="centos:7"
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2025-09-09
-ENV CACERT_BUNDLE_SHA256="f290e6acaf904a4121424ca3ebdd70652780707e28e8af999221786b86bb1975"
+ENV CACERT_BUNDLE_VERSION=2025-11-04
+ENV CACERT_BUNDLE_SHA256="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def"
 RUN apt-get update && apt-get install -y wget
 RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -78,9 +78,6 @@ COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
 
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config

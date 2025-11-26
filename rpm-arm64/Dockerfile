@@ -1,8 +1,8 @@
 ARG BASE_IMAGE=amazonlinux:2.0.20181114
 
 FROM ubuntu as CERT_GETTER
-ENV CACERT_BUNDLE_VERSION=2025-09-09
-ENV CACERT_BUNDLE_SHA256="f290e6acaf904a4121424ca3ebdd70652780707e28e8af999221786b86bb1975"
+ENV CACERT_BUNDLE_VERSION=2025-11-04
+ENV CACERT_BUNDLE_SHA256="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
@@ -62,10 +62,6 @@ RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-$
     && cd - \
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
-
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
