@@ -70,9 +70,15 @@ case $DD_TARGET_ARCH in
     # building ada-url is failing because it requires a newer C++ compiler e.g.:
     # ada_url/ada.h:21:23: fatal error: string_view: No such file or directory
     #
+    # building msgspec>=0.20.0 is failing because it requires C11 stdatomic.h e.g.:
+    # src/msgspec/_core.c:7:23: fatal error: stdatomic.h: No such file or directory
+    #
     # so we download the required packages and install them manually except for ada-url
     # as it's only used for developer telemetry
-    python3 -m pip download -v -d /tmp/dda-install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+    cat > /tmp/constraints.txt << 'EOF'
+msgspec<0.20.0
+EOF
+    python3 -m pip download -v -d /tmp/dda-install -c /tmp/constraints.txt "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
     cd /tmp/dda-install
     for dist in *; do
         if [[ ! "$dist" =~ ^ada_url ]]; then
