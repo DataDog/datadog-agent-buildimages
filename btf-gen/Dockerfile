@@ -7,7 +7,7 @@ ARG DDA_NO_DYNAMIC_DEPS
 ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get clean && apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang \
     curl \

@@ -34,7 +34,7 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get clean && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
     createrepo \
     curl \

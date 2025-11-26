@@ -15,7 +15,7 @@ ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 ARG XAR_CHECKSUM=9bd417fe646fc0c6ded939521d9f6adb2455cc778d46f95a8e6f751e41b70ac3
 
-RUN apt-get update &&  \
+RUN apt-get clean && apt-get update &&  \
     DEBIAN_FRONTEND=noninteractive apt-get install -y make  \
       build-essential  \
       libssl-dev  \
