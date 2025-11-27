@@ -9,13 +9,13 @@ $SoftwareTable = @{
     "SEVENZIP_STANDALONE_SHA256"="27cbe3d5804ad09e90bbcaa916da0d5c3b0be9462d0e0fb6cb54be5ed9030875";
 
     ## VisualStudio build tools for containers
-    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history
-    # LTSC 17.14
+    # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history#fixed-version-bootstrappers
+    # Current 17.14.21 (Build number 17.14.36717)
     "VSBUILDTOOLS_VERSION"="17.14";
-    "VSBUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/b4fab6d6d479c38a6081ec95e32d7a105d21d19b6ae7f97371f716dbea08303d/vs_BuildTools.exe";
+    "VSBUILDTOOLS_DOWNLOAD_URL"="https://download.visualstudio.microsoft.com/download/pr/3014ff35-1082-4da0-ba77-9d3664b7c38a/52367ab60e0f223d3f1d9c3406130e07ab711d7d48f922a407ccdb45b62937dd/vs_BuildTools.exe";
 
-    # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/e98d75fa-91b1-47a1-9cb7-b6556de592c5/b4fab6d6d479c38a6081ec95e32d7a105d21d19b6ae7f97371f716dbea08303d/vs_BuildTools.exe'))
-    "VSBUILDTOOLS_SHA256"="B4FAB6D6D479C38A6081EC95E32D7A105D21D19B6AE7F97371F716DBEA08303D";
+    # Get-FileHash -Algorithm SHA256 -InputStream ([System.Net.WebClient]::new().OpenRead('https://download.visualstudio.microsoft.com/download/pr/3014ff35-1082-4da0-ba77-9d3664b7c38a/52367ab60e0f223d3f1d9c3406130e07ab711d7d48f922a407ccdb45b62937dd/vs_BuildTools.exe'))
+    "VSBUILDTOOLS_SHA256"="52367AB60E0F223D3F1D9C3406130E07AB711D7D48F922A407CCDB45B62937DD";
 
     ## VisualStudio IDE
     # https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-notes
