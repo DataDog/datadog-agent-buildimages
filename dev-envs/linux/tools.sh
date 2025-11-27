@@ -181,10 +181,10 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 go install github.com/josharian/impl@latest
 go install github.com/fatih/gomodifytags@latest
 
-GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
+GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | grep -Po '/golangci-lint.+v\K.+')"
 install-binary \
     --version "${GOLANGCI_LINT_VERSION}" \
-    --digest "4037af8122871f401ed874852a471e54f147ff8ce80f5a304e020503bdb806ef" \
-    --digest "74782943b2d2edae1208be3701e0cafe62817ba90b9b4cc5ca52bdef26df12f9" \
+    --digest "499c864b5fd9841c4fa8e80b5e2be30f73f085cf186f1b111ff81a2783b7de12" \
+    --digest "a2f9c6fe1800d0a6ba2a94ada95debe2c498a636ffc12308ee03022f97be1f33" \
     --url "https://github.com/golangci/golangci-lint/releases/download/v{{version}}/golangci-lint-{{version}}-linux-${short_arch}.tar.gz" \
     --name "golangci-lint"
