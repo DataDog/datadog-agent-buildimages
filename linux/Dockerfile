@@ -168,7 +168,7 @@ ENV GOPATH=/go
 ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
 ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/scripts/go.sh cd /tmp/go && /mnt/scripts/go.sh && rm -rf /tmp/go
-ENV PATH="${GOPATH}/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:${GOPATH}/bin:${PATH}"
 
 FROM go_builder AS datadog_packages_builder
 ARG DATADOG_PACKAGES_VERSION
