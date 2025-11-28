@@ -125,7 +125,7 @@ ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
 ADD --checksum=sha256:${PROTOBUF_SHA256} "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME}" /tmp/protobuf/${PROTOBUF_FILENAME}
 RUN --mount=type=bind,src=./linux/scripts/protobuf.sh,dst=/mnt/scripts/protobuf.sh cd /tmp/protobuf && /mnt/scripts/protobuf.sh && rm -rf /tmp/protobuf
 
-FROM extraction_base AS go_builder
+FROM build_base AS go_builder
 # Go setup
 ARG GO_VERSION
 ARG GO_SHA256
