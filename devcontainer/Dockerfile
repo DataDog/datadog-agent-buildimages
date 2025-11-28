@@ -56,8 +56,6 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     echo 'datadog ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/datadog && \
     # Pin pyasn1 to 0.6.0 until the maintainers release a wheel for 0.6.1 version
     pip3 install --no-cache-dir pyasn1==0.6.0 && \
-    pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
-    dda -v self dep sync -f legacy-tasks && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
     # Omnibus setup
@@ -91,6 +89,13 @@ RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
     go install gotest.tools/gotestsum@latest
+
+# Install dda and sync dependencies
+# Run as root as dda needs to be installed system-wide
+USER root
+RUN pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
+    dda -v self dep sync -f legacy-tasks
+USER datadog # Switch back to the datadog user
 
 WORKDIR /home/datadog
 CMD [ "sleep", "infinity" ]
