@@ -3,21 +3,19 @@ ARG BASE_IMAGE=ubuntu:24.04
 # Create different base stages for subsequent build stages
 # Common dependencies for all stages
 FROM ${BASE_IMAGE} AS common_base
-RUN apt-get update -qy
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     ca-certificates
 
 # Minimal base for stages doing simple extraction (no compilation)
 FROM common_base AS extraction_base
 # Do an apt update only once at the beginning
-RUN apt-get update -qy
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     tar unzip xz-utils bzip2
 
 # Base for compilation stages - includes all other packages needed for building tools
 # TODO: Investigate which ones are used in which stages and only install them there
 FROM extraction_base AS build_base
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     # Meta-package providing gcc, g++, make, libc6-dev, etc.
     build-essential \
     automake autoconf autopoint gettext help2man \
