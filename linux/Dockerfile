@@ -186,7 +186,10 @@ ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-
 RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/setup/vault.sh cd /tmp/vault && /mnt/setup/vault.sh && rm -rf /tmp/vault
 
 # Install Pulumi
-RUN --mount=type=bind,src=./setup/pulumi.sh,dst=/mnt/setup/pulumi.sh /mnt/setup/pulumi.sh
+# TODO: Add logic to download the tarball directly instead of relying on this script
+# It's sort of dumb to checksum and cache a script instead of the actual tarball we're interested in
+ADD --checksum=sha256:1fe472a5915b416299df9a1b490e7e6d573d3c9f41c662ff4322a79bf4bf0550 https://get.pulumi.com/ /tmp/pulumi/get-pulumi.sh
+RUN chmod +x /tmp/pulumi/get-pulumi.sh && /tmp/pulumi/get-pulumi.sh --version $PULUMI_VERSION && mv ~/.pulumi/bin/* /usr/local/bin
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
