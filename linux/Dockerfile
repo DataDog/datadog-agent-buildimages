@@ -257,8 +257,8 @@ RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 # Install datadog-packages
 RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
 
-# Cleanup go caches
-RUN go clean -modcache -cache -testcache
+# Cleanup go caches - go env is only set in bashrc
+RUN /usr/local/go/bin/go clean -modcache -cache -testcache
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
