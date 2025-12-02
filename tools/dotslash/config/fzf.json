@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 3735552
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 3760128
+      }
+    }
+  },
+  "name": "fzf",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "59dc9d4e3bc780ce4dcd1aa3e425d857735c3ea17ed440fc1a9351d7b389fc73",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "fzf",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.55.0/fzf-0.55.0-linux_arm64.tar.gz"
+        }
+      ],
+      "size": 1446020
+    },
+    "linux-x86_64": {
+      "digest": "85b10cf79042093b9fa75bd72220d13c122e5922e18e04ee5aa8548f96871e1f",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "fzf",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.55.0/fzf-0.55.0-linux_amd64.tar.gz"
+        }
+      ],
+      "size": 1556217
+    }
+  }
+}

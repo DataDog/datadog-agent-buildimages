@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 5920408
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 6701640
+      }
+    }
+  },
+  "name": "procs",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "13a062387d616d390678fc7af84e4637bb5cfe4a36f4580b0a469716231dde29",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "procs",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.10/procs-v0.14.10-aarch64-linux.zip"
+        }
+      ],
+      "size": 2282059
+    },
+    "linux-x86_64": {
+      "digest": "9433cce7a903a8d07b85c3d9b9520d699759b4dedc00d5d1123b348355682e15",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "procs",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.10/procs-v0.14.10-x86_64-linux.zip"
+        }
+      ],
+      "size": 2483155
+    }
+  }
+}
