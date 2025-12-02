@@ -19,3 +19,6 @@ go install github.com/DataDog/datadog-packages/cmd/datadog-package@$DATADOG_PACK
 if [ -n "$CI_JOB_TOKEN" ]; then
     git config --global --unset url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf
 fi
+
+# Make sure to delete the source code after installing since the repo is private
+rm -rf /go/pkg/mod/github.com/\!data\!dog/datadog-packages*
