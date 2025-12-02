@@ -224,6 +224,8 @@ target "_fake_linux-local" {
   context    = "./"
   cache-from = [linux_cache_details_main]
   tags       = ["${repo_name}/linux:latest"]
+  # Outside CI, use GITLAB_TOKEN from env var
+  secret     = ["type=env,id=gitlab-token,env=GITLAB_TOKEN"]
 }
 
 // AMD64 architecture
@@ -270,6 +272,8 @@ variable "linux-image-tag" {
 
 # Fake target containing settings common for CI build targets
 target "_fake_linux-ci" {
+  # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
+  secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
   cache-from = [linux_cache_details_branch, linux_cache_details_main]
   cache-to   = [linux_cache_details_branch]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
