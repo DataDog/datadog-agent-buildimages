@@ -137,7 +137,7 @@ ENV GOPATH=/go
 ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
 ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/scripts/go.sh cd /tmp/go && /mnt/scripts/go.sh && rm -rf /tmp/go
-ENV PATH="${GOPATH}/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:${GOPATH}/bin:${PATH}"
 
 FROM common_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
@@ -202,8 +202,9 @@ FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
 ARG DATADOG_PACKAGES_VERSION
 ENV DATADOG_PACKAGES_VERSION=${DATADOG_PACKAGES_VERSION}
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/setup/datadog_packages.sh /mnt/setup/datadog_packages.sh
-
+RUN --mount=type=secret,id=gitlab-token,env=GITLAB_TOKEN,required=true \
+    --mount=type=bind,src=./linux/scripts/datadog_packages.sh,dst=/mnt/scripts/datadog_packages.sh \
+    /mnt/scripts/datadog_packages.sh
 
 FROM common_base AS final
 
