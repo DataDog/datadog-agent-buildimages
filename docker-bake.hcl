@@ -218,24 +218,26 @@ variable "linux_cache_details_branch" {
 }
 
 # ====== Local build targets ====== #
-// AMD64 architecture
-target "linux-amd64" {
+# Fake target containing settings common for local build targets
+target "_fake_linux-local" {
   dockerfile = "linux/Dockerfile"
   context    = "./"
-  platforms  = ["linux/amd64"]
-  args       = args_amd64
   cache-from = [linux_cache_details_main]
   tags       = ["${repo_name}/linux:latest"]
 }
 
+// AMD64 architecture
+target "linux-amd64" {
+  inherits = ["_fake_linux-local"]
+  platforms  = ["linux/amd64"]
+  args       = args_amd64
+}
+
 // ARM64 architecture
 target "linux-arm64" {
-  dockerfile = "linux/Dockerfile"
-  context    = "./"
+  inherits = ["_fake_linux-local"]
   platforms  = ["linux/arm64"]
   args       = args_arm64
-  cache-from = [linux_cache_details_main]
-  tags       = ["${repo_name}/linux:latest"]
 }
 
 # ====== CI build targets ====== #
@@ -266,12 +268,16 @@ variable "linux-image-tag" {
   default = "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-${get_arch()}"
 }
 
-target "linux-amd64-ci" {
-  inherits = ["linux-amd64"]
+# Fake target containing settings common for CI build targets
+target "_fake_linux-ci" {
   cache-from = [linux_cache_details_branch, linux_cache_details_main]
   cache-to   = [linux_cache_details_branch]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
   output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+}
+
+target "linux-amd64-ci" {
+  inherits = ["linux-amd64", "_fake_linux-ci"]
 }
 
 target "linux-amd64-ci_test_only" {
@@ -281,15 +287,12 @@ target "linux-amd64-ci_test_only" {
 }
 
 target "linux-arm64-ci" {
-  inherits = ["linux-arm64"]
-  cache-from = [linux_cache_details_branch, linux_cache_details_main]
-  cache-to   = [linux_cache_details_branch]
-  tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
-  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+  inherits = ["linux-arm64", "_fake_linux-ci"]
 }
 
 target "linux-arm64-ci_test_only" {
   inherits = ["linux-arm64-ci"]
+    # Override the tags and output from the linux-ci target to change the image name
   tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
   output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
 }
