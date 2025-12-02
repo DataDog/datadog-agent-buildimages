@@ -17,7 +17,9 @@ lint_devcontainer:
       - PLATFORM: [amd64, arm64]
   script:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DDA_VERSION_ARG="--build-arg $(grep DDA_VERSION dda.env)"
+    # TODO: remove this once permissions are fixed in the devcontainer image or when we moved to the standard developer image
+    # - DDA_VERSION_ARG=$(grep DDA_VERSION dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
+    - DDA_VERSION_ARG="--build-arg DDA_VERSION=v0.29.0"
     - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
 
 test_devcontainer:
