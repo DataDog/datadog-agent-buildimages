@@ -7,14 +7,14 @@
 
 set -euo pipefail
 
-if [ -n "$CI_JOB_TOKEN" ]; then
-    git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/"
+if [ -n "$GITLAB_TOKEN" ]; then
+    git config --global url."https://gitlab-ci-token:${GITLAB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf "https://github.com/DataDog/"
     go env -w GOPRIVATE="github.com/DataDog/*"
 fi
 go install github.com/DataDog/datadog-packages/cmd/datadog-package@$DATADOG_PACKAGES_VERSION
 
-if [ -n "$CI_JOB_TOKEN" ]; then
-    git config --global --unset url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf
+if [ -n "$GITLAB_TOKEN" ]; then
+    git config --global --unset url."https://gitlab-ci-token:${GITLAB_TOKEN}@gitlab.ddbuild.io/DataDog/".insteadOf
 fi
 
 # Make sure to delete the source code after installing since the repo is private

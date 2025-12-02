@@ -254,8 +254,9 @@ ENV GOPATH=/go
 ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
 ARG DATADOG_PACKAGES_VERSION
 ENV DATADOG_PACKAGES_VERSION=${DATADOG_PACKAGES_VERSION}
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
-
+RUN --mount=type=secret,id=gitlab-token,env=GITLAB_TOKEN,required=true \
+    --mount=type=bind,src=./linux/scripts/datadog_packages.sh,dst=/mnt/datadog_packages.sh \
+    /mnt/datadog_packages.sh
 
 FROM common_base AS final
 
