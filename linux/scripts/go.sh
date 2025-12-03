@@ -2,36 +2,8 @@
 
 set -eo pipefail
 
-case $DD_TARGET_ARCH in
-"x64")
-    GO_SHA256="${GO_SHA256_LINUX_AMD64}"
-    MSGO_SHA256="${MSGO_SHA256_LINUX_AMD64}"
-    GOARCH="amd64"
-    ;;
-"aarch64")
-    GO_SHA256="${GO_SHA256_LINUX_ARM64}"
-    MSGO_SHA256="${MSGO_SHA256_LINUX_ARM64}"
-    GOARCH="arm64"
-    ;;
-"armhf")
-    GO_SHA256="${GO_SHA256_LINUX_ARMV6L}"
-    MSGO_SHA256="${MSGO_SHA256_LINUX_ARMV6L}"
-    GOARCH="armv6l"
-    ;;
-*)
-    echo "Unknown or unsupported architecture ${DD_TARGET_ARCH}"
-    exit -1
-esac
-
-echo "Installing upstream Go"
-curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${GOARCH}.tar.gz
-echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
-tar -C /usr/local -xzf /tmp/golang.tar.gz && rm /tmp/golang.tar.gz
-
-echo "Installing Microsoft Go"
-curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GOARCH}.tar.gz
-echo "$MSGO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
-mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz && rm /tmp/golang.tar.gz;
+tar -C /usr/local -xzf /tmp/go/go.tar.gz && rm /tmp/go/go.tar.gz
+mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/go/msgo.tar.gz && rm /tmp/go/msgo.tar.gz;
 
 cat << EOF >> /root/.bashrc
 if [ "\$DD_GO_TOOLCHAIN" = "msgo" ]; then

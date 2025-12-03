@@ -79,16 +79,11 @@ FROM texinfo_builder AS crosstool_ng_builder
 RUN apt-get install -y --no-install-recommends \
     gperf libncurses5-dev rsync ninja-build
 
-ARG CTNG_VERSION=1.26.0
-ARG BUILDARCH
-ARG ARCH
-ARG CROSS_ARCH
+ARG CTNG_VERSION
+ARG CTNG_ARCH
+ARG CTNG_CROSS_ARCH
 ARG GLIBC_VERSION
 ARG CROSS_GLIBC_VERSION
-
-# Re-export as env for use in LABEL steps in the final stage
-ENV CTNG_VERSION=$CTNG_VERSION
-ENV GLIBC_VERSION=$GLIBC_VERSION
 
 # TODO: Add checksum
 # NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
@@ -96,19 +91,17 @@ ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-
     https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
     /tmp/crosstool-ng/
 
-COPY linux/${BUILDARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux/${BUILDARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY linux/${BUILDARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux/${BUILDARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux/${CTNG_ARCH}/toolchain_${CTNG_ARCH}.cmake /opt/cmake/${CTNG_ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
+COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
 COPY linux/ctng.patch /root/ctng.patch
 RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
 
 FROM build_base AS dpkg_armhf_builder
 # Build dpkg-armhf
-ARG DPKG_ARMHF_VERSION=1.18.4
+ARG DPKG_ARMHF_VERSION
 ARG DPKG_ARMHF_SHA256
-# Re-export as env for use in LABEL steps in the final stage
-ENV DPKG_ARMHF_VERSION=$DPKG_ARMHF_VERSION
 
 # Install dpkg-specific build dependencies
 RUN apt-get install -y --no-install-recommends \
@@ -119,17 +112,16 @@ ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/d
 RUN --mount=type=bind,src=./linux/scripts/dpkg.sh,dst=/mnt/dpkg.sh cd /tmp/dpkg-armhf && /mnt/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
 FROM build_base AS python_builder
-# CONDA setup
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
+# Python and Conda setup
 
-ARG DDA_VERSION
-ARG DDA_NO_DYNAMIC_DEPS=1
-# Re-export as env for use in LABEL steps in the final stage
-ENV DDA_VERSION=$DDA_VERSION
+ARG PY3_VERSION
+ARG CONDA_VERSION
+ARG CONDA_SHA256
+ARG CONDA_ARCH
+
 # Common environment variables
 ENV PYTHONUTF8=1
 ENV CONDA_PATH=/root/miniforge3
-ARG DD_TARGET_ARCH
 ARG DD_PIP_VERSION_PY3
 ARG DD_SETUPTOOLS_VERSION_PY3
 ARG DD_UV_VERSION
@@ -137,6 +129,9 @@ ENV DD_PIP_VERSION_PY3=$DD_PIP_VERSION_PY3
 ENV DD_SETUPTOOLS_VERSION_PY3=$DD_SETUPTOOLS_VERSION_PY3
 ENV DD_UV_VERSION=$DD_UV_VERSION
 ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
+ENV PATH="${CONDA_PATH}/condabin:${PATH}"
+
+ADD --checksum=sha256:${CONDA_SHA256} "https://github.com/conda-forge/miniforge/releases/download/${CONDA_VERSION}/Miniforge3-Linux-${CONDA_ARCH}.sh" /tmp/conda/miniconda.sh
 
 # Remove early return in .bashrc when running in non-interactive shell
 # This is needed for `conda init bash` to work properly
@@ -145,7 +140,11 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN --mount=type=bind,src=./linux/scripts/python.sh,dst=/mnt/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
     cd /tmp/conda && /mnt/python.sh && rm -rf /tmp/conda
-ENV PATH="${CONDA_PATH}/condabin:${PATH}"
+
+ARG DDA_VERSION
+ARG DDA_NO_DYNAMIC_DEPS=1
+ADD https://github.com/DataDog/datadog-agent-dev.git#${DDA_VERSION} /tmp/dda
+RUN --mount=type=bind,src=./linux/scripts/dda.sh,dst=/mnt/dda.sh cd /tmp/dda && /mnt/dda.sh && rm -rf /tmp/dda
 
 FROM python_builder AS rvm_builder
 # Somehow building RVM needs some OpenSSL stuff from the python_builder stage
@@ -165,7 +164,7 @@ RUN --mount=type=bind,src=./linux/scripts/rvm.sh,dst=/mnt/rvm.sh cd /tmp/rvm && 
 
 FROM extraction_base AS protobuf_builder
 # Protobuf
-ARG PROTOBUF_VERSION=29.3
+ARG PROTOBUF_VERSION
 ARG PROTOBUF_SHA256
 ARG PROTOBUF_ARCH
 ENV PROTOBUF_FILENAME="protoc-${PROTOBUF_VERSION}-linux-${PROTOBUF_ARCH}.zip"
@@ -175,60 +174,54 @@ RUN --mount=type=bind,src=./linux/scripts/protobuf.sh,dst=/mnt/protobuf.sh cd /t
 
 FROM build_base AS go_builder
 # Go setup
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ARG GO_VERSION
-ARG GO_SHA256_LINUX_AMD64
-ARG GO_SHA256_LINUX_ARM64
-ARG MSGO_SHA256_LINUX_AMD64
-ARG MSGO_SHA256_LINUX_ARM64
+ARG GO_SHA256
+ARG MSGO_SHA256
+ARG GO_ARCH
 ARG MSGO_PATCH
-
-ARG DD_TARGET_ARCH
-ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
-
-# Re-export as env for use in LABEL steps in the final stage
-ENV GO_VERSION=$GO_VERSION
 
 ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
+
+ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
+ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/go.sh cd /tmp/go && /mnt/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 FROM build_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
-# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
+ARG BAZELISK_VERSION
+ARG BAZELISK_ARCH
+ARG BAZELISK_SHA256
+
+ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}" /tmp/bazelisk/bazelisk
+ENV PATH="/usr/local/bin:${PATH}"
 RUN --mount=type=bind,src=./linux/scripts/bazelisk.sh,dst=/mnt/bazelisk.sh cd /tmp/bazelisk && /mnt/bazelisk.sh && rm -rf /tmp/bazelisk
 
 FROM common_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
-ARG RUST_VERSION=1.91.0
-ARG RUSTUP_VERSION=1.26.0
+ARG RUST_VERSION
+ARG RUSTUP_VERSION
 ARG RUSTUP_SHA256
-ARG ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV RUST_VERSION=$RUST_VERSION
-ENV RUSTUP_VERSION=$RUSTUP_VERSION
+ARG RUSTUP_ARCH
 
-ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
+ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
 RUN --mount=type=bind,src=./linux/scripts/rust.sh,dst=/mnt/rust.sh cd /tmp/rust && /mnt/rust.sh && rm -rf /tmp/rust
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM extraction_base AS vault_builder
 # Install vault & awscli
-ARG VAULT_VERSION=1.17.2
-ARG AWSCLI_VERSION=2.27.30
+ARG VAULT_VERSION
+ARG AWSCLI_VERSION
 ARG VAULT_SHA256
 ARG AWSCLI_SHA256
 ARG VAULT_ARCH
-ARG ARCH
-# Re-export as env for use in LABEL steps in the final stage
-ENV VAULT_VERSION=$VAULT_VERSION
-ENV AWSCLI_VERSION=$AWSCLI_VERSION
+ARG AWSCLI_ARCH
 ENV VAULT_FILENAME="vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip"
 
 ADD --checksum=sha256:${VAULT_SHA256} "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME}" /tmp/vault/vault.zip
-ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip" /tmp/vault/awscliv2.zip
+ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-linux-${AWSCLI_ARCH}-${AWSCLI_VERSION}.zip" /tmp/vault/awscliv2.zip
 RUN --mount=type=bind,src=./linux/scripts/vault.sh,dst=/mnt/vault.sh cd /tmp/vault && /mnt/vault.sh && rm -rf /tmp/vault
 
 
@@ -236,18 +229,16 @@ FROM build_base AS pulumi_builder
 # Install Pulumi
 # TODO: Add logic to download the tarball directly instead of relying on this script
 # It's sort of dumb to checksum and cache a script instead of the actual tarball we're interested in
-ADD --checksum=sha256:1fe472a5915b416299df9a1b490e7e6d573d3c9f41c662ff4322a79bf4bf0550 https://get.pulumi.com/ /tmp/pulumi/get-pulumi.sh
-ARG PULUMI_VERSION=3.207.0
+ARG PULUMI_SHA256
+ADD --checksum=sha256:${PULUMI_SHA256} https://get.pulumi.com/ /tmp/pulumi/get-pulumi.sh
+ARG PULUMI_VERSION
 RUN chmod +x /tmp/pulumi/get-pulumi.sh && /tmp/pulumi/get-pulumi.sh --version $PULUMI_VERSION && mv ~/.pulumi/bin/* /usr/local/bin
 
 FROM common_base AS datadog_ci_builder
 # Install CI uploader
-ARG DATADOG_CI_VERSION=3.9.0
+ARG DATADOG_CI_VERSION
 ARG DATADOG_CI_SHA256
 ARG DATADOG_CI_ARCH
-
-# Re-export as env for use in LABEL steps in the final stage
-ENV DATADOG_CI_VERSION=$DATADOG_CI_VERSION
 
 ADD --checksum=sha256:${DATADOG_CI_SHA256} "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" /usr/local/bin/datadog-ci
 RUN chmod +x /usr/local/bin/datadog-ci
@@ -261,6 +252,8 @@ FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
 ENV GOPATH=/go
 ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
+ARG DATADOG_PACKAGES_VERSION
+ENV DATADOG_PACKAGES_VERSION=${DATADOG_PACKAGES_VERSION}
 RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
 
 
@@ -351,7 +344,6 @@ COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 
-
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
@@ -388,9 +380,10 @@ RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Set up environment
-ARG ARCH
-ARG CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:${PATH}"
+ARG CONDA_PATH=/root/miniforge3
+ARG CTNG_ARCH
+ARG CTNG_CROSS_ARCH
+ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
@@ -400,6 +393,38 @@ ENV PKG_CONFIG_LIBDIR=""
 ARG RUST_VERSION=1.91.0
 RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
+# Label the image
+ARG PROTOBUF_VERSION
+ARG VAULT_VERSION
+ARG AWSCLI_VERSION
+ARG RVM_VERSION
+ARG BUNDLER_VERSION
+ARG RUSTUP_VERSION
+ARG DATADOG_CI_VERSION
+ARG GLIBC_VERSION
+ARG CTNG_VERSION
+ARG DPKG_ARMHF_VERSION
+ARG GO_VERSION
+ARG DDA_VERSION
+ARG DATADOG_PACKAGES_VERSION
+ARG PULUMI_VERSION
+
+LABEL protobuf_version="${PROTOBUF_VERSION}"
+LABEL vault_version="${VAULT_VERSION}"
+LABEL awscli_version="${AWSCLI_VERSION}"
+LABEL rvm_version="${RVM_VERSION}"
+LABEL bundler_version="${BUNDLER_VERSION}"
+LABEL rust_version="${RUST_VERSION}"
+LABEL rustup_version="${RUSTUP_VERSION}"
+LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
+LABEL glibc_version="${GLIBC_VERSION}"
+LABEL ctng_version="${CTNG_VERSION}"
+LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
+LABEL go_version="${GO_VERSION}"
+LABEL dda_version="${DDA_VERSION}"
+LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
+LABEL pulumi_version="${PULUMI_VERSION}"
+LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
