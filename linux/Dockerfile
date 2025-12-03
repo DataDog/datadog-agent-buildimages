@@ -225,6 +225,8 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     echo "${RUSTUP_SHA256}  /root/.cargo/bin/rustc" | sha256sum --check && \
     rm ./rustup-init
 ENV PATH="/root/.cargo/bin:${PATH}"
+RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
+
 
 # Install vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
