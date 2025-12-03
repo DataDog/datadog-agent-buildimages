@@ -326,8 +326,10 @@ COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/auth
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
 
-# Install dd-octo-sts
-COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+# DD Octo STS. We use specific version here because `--from` does not support wildcards.
+# TODO(agent-devx): test this workaround https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
+ARG DD_OCTO_STS_VERSION
+COPY --from=registry.ddbuild.io/dd-octo-sts:${DD_OCTO_STS_VERSION} /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
 # Datadog packages
 COPY --from=datadog_packages_builder /go/bin/datadog-package /go/bin/datadog-package
