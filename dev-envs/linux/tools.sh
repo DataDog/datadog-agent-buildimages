@@ -28,6 +28,7 @@ python3 /tools/dotslash/generate.py \
 # Install architecture-specific tools that don't have pre-built binaries for aarch64
 AMBR_VERSION="0.6.0"
 if [[ $arch == "aarch64" ]]; then
+    rustup default stable
     cargo install --locked amber@${AMBR_VERSION}
 fi
 
