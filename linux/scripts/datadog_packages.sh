@@ -2,9 +2,6 @@
 
 # This installs datadog-package binary from the datadog-packages repo
 
-DATADOG_PACKAGES_VERSION=bb430d549b551c0aeb466f3f38470971dabdef2c
-
-
 # Go env might be set only here
 [ -f /root/.bashrc ] && . /root/.bashrc
 
