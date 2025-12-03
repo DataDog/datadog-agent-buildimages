@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS builder_base
 
 # Common build arguments
 ARG DD_TARGET_ARCH
@@ -14,6 +14,18 @@ ARG PROTOBUF_VERSION=29.3
 ARG AWSCLI_VERSION=2.27.30
 ARG DPKG_ARMHF_VERSION=1.18.4
 ARG PULUMI_VERSION=3.207.0
+ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
+ENV DDA_VERSION=$DDA_VERSION
+ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
+ENV CTNG_VERSION=$CTNG_VERSION
+ENV RUST_VERSION=$RUST_VERSION
+ENV RUSTUP_VERSION=$RUSTUP_VERSION
+ENV BUNDLER_VERSION=$BUNDLER_VERSION
+ENV VAULT_VERSION=$VAULT_VERSION
+ENV DATADOG_CI_VERSION=$DATADOG_CI_VERSION
+ENV PROTOBUF_VERSION=$PROTOBUF_VERSION
+ENV AWSCLI_VERSION=$AWSCLI_VERSION
+ENV DPKG_ARMHF_VERSION=$DPKG_ARMHF_VERSION
 
 # Architecture-specific build arguments
 # BUILDARCH is autofilled by the build command
@@ -38,6 +50,28 @@ ARG PROTOBUF_SHA256
 ARG AWSCLI_SHA256
 ARG DPKG_ARMHF_SHA256
 ARG ADDITIONAL_PACKAGE
+ENV BUILDARCH=$BUILDARCH
+ENV ARCH=$ARCH
+ENV VAULT_ARCH=$VAULT_ARCH
+ENV DATADOG_CI_ARCH=$DATADOG_CI_ARCH
+ENV PROTOBUF_ARCH=$PROTOBUF_ARCH
+ENV CROSS_ARCH=$CROSS_ARCH
+ENV GLIBC_VERSION=$GLIBC_VERSION
+ENV CROSS_GLIBC_VERSION=$CROSS_GLIBC_VERSION
+ENV GO_VERSION=$GO_VERSION
+ENV GO_SHA256_LINUX_AMD64=$GO_SHA256_LINUX_AMD64
+ENV GO_SHA256_LINUX_ARM64=$GO_SHA256_LINUX_ARM64
+ENV MSGO_SHA256_LINUX_AMD64=$MSGO_SHA256_LINUX_AMD64
+ENV MSGO_SHA256_LINUX_ARM64=$MSGO_SHA256_LINUX_ARM64
+ENV MSGO_PATCH=$MSGO_PATCH
+ENV RUSTC_SHA256=$RUSTC_SHA256
+ENV RUSTUP_SHA256=$RUSTUP_SHA256
+ENV VAULT_SHA256=$VAULT_SHA256
+ENV DATADOG_CI_SHA256=$DATADOG_CI_SHA256
+ENV PROTOBUF_SHA256=$PROTOBUF_SHA256
+ENV AWSCLI_SHA256=$AWSCLI_SHA256
+ENV DPKG_ARMHF_SHA256=$DPKG_ARMHF_SHA256
+ENV ADDITIONAL_PACKAGE=$ADDITIONAL_PACKAGE
 
 LABEL maintainer="DataDog"
 LABEL glibc_version="${GLIBC_VERSION}"
@@ -117,20 +151,13 @@ RUN apt update -qy && \
     apt update -qy && \
     apt install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin
 
-# Git configuration
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
 
-# Copy architecture-specific configuration files
-# TODO: Do this cleaner
-COPY linux/${BUILDARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
-COPY linux/${BUILDARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY linux/ctng.patch /root/ctng.patch
-
+FROM builder_base AS texinfo_builder
 # Build texinfo to get a bugfix version
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
 RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh && rm -rf /tmp/texinfo
 
+FROM builder_base AS crosstool_ng_builder
 # Build cross-compilation toolchain
 # TODO: Add checksum
 # NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
@@ -140,13 +167,16 @@ ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-
 
 COPY linux/${BUILDARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux/${BUILDARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+COPY linux/ctng.patch /root/ctng.patch
 RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
 
+FROM builder_base AS dpkg_armhf_builder
 # Build dpkg-armhf
 ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" \
     /tmp/dpkg-armhf/
 RUN --mount=type=bind,src=./setup/dpkg.sh,dst=/mnt/dpkg.sh cd /tmp/dpkg-armhf && /mnt/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
+FROM builder_base AS python_builder
 # CONDA setup
 # TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ENV DDA_VERSION=$DDA_VERSION
@@ -156,6 +186,7 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
     /mnt/python.sh
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
+FROM builder_base AS rvm_builder
 # RVM setup
 ADD --checksum=sha256:fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e \
     "https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer" \
@@ -165,10 +196,12 @@ COPY ./rvm/gpg-keys /gpg-keys
 # The script we download does a lot of extra checking that we don't need in a Docker build.
 RUN --mount=type=bind,src=./setup/rvm.sh,dst=/mnt/rvm.sh cd /tmp/rvm && /mnt/rvm.sh && rm -rf /tmp/rvm
 
+FROM builder_base AS protobuf_builder
 # Protobuf
 ADD --checksum=sha256:${PROTOBUF_SHA256} "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME}" /tmp/protobuf/${PROTOBUF_FILENAME}
 RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/protobuf.sh cd /tmp/protobuf && /mnt/protobuf.sh && rm -rf /tmp/protobuf
 
+FROM builder_base AS go_builder
 # Go setup
 # TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ENV GOPATH=/go
@@ -176,47 +209,111 @@ ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/go.sh /mnt/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
+FROM builder_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
 # TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
 
+FROM builder_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
 ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
 RUN --mount=type=bind,src=./setup/rust.sh,dst=/mnt/rust.sh cd /tmp/rust && /mnt/rust.sh && rm -rf /tmp/rust
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
-
+FROM builder_base AS vault_builder
 # Install vault
 ADD --checksum=sha256:${VAULT_SHA256} "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME}" /tmp/vault/vault.zip
 ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip" /tmp/vault/awscliv2.zip
 RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/vault.sh cd /tmp/vault && /mnt/vault.sh && rm -rf /tmp/vault
 
+FROM builder_base AS pulumi_builder
 # Install Pulumi
 # TODO: Add logic to download the tarball directly instead of relying on this script
 # It's sort of dumb to checksum and cache a script instead of the actual tarball we're interested in
 ADD --checksum=sha256:1fe472a5915b416299df9a1b490e7e6d573d3c9f41c662ff4322a79bf4bf0550 https://get.pulumi.com/ /tmp/pulumi/get-pulumi.sh
 RUN chmod +x /tmp/pulumi/get-pulumi.sh && /tmp/pulumi/get-pulumi.sh --version $PULUMI_VERSION && mv ~/.pulumi/bin/* /usr/local/bin
 
-# Install dd-octo-sts
-COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
-
-
+FROM builder_base AS datadog_ci_builder
 # Install CI uploader
 ADD --checksum=sha256:${DATADOG_CI_SHA256} "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" /usr/local/bin/datadog-ci
 RUN chmod +x /usr/local/bin/datadog-ci
 
+FROM builder_base AS authanywhere_builder
 # Install authanywhere for infra token management
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
 RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/authanywhere.sh
+
+FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
 RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
 
-# Cleanup go caches - go env is only set in bashrc
-RUN /usr/local/go/bin/go clean -modcache -cache -testcache
+FROM builder_base AS final
+
+# Copy built tools
+# NOTE: We try to copy the least-often-used tools first to reduce the likelihood of cache misses
+
+# Texinfo
+COPY --from=texinfo_builder /usr/local/bin/info /usr/local/bin/info
+
+# Protobuf
+COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
+COPY --from=protobuf_builder /usr/include/google /usr/include/google
+
+# Vault
+COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
+COPY --from=vault_builder /usr/local/aws* /usr/local/
+
+# Authanywhere
+COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
+
+# Pulumi
+COPY --from=pulumi_builder /usr/local/bin/pulumi /usr/local/bin/pulumi
+
+# Install dd-octo-sts
+COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+
+# Datadog packages
+COPY --from=datadog_packages_builder /go/bin/datadog-package /go/bin/datadog-package
+
+# RVM
+COPY --from=rvm_builder /usr/local/rvm /usr/local/rvm
+
+# Rust
+COPY --from=rust_builder /root/.cargo /root/.cargo
+
+# Datadog CI
+COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
+
+# Crosstool-ng
+COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+
+# Dpkg-armhf
+COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
+
+# Bazelisk
+COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
+
+# Go
+COPY --from=go_builder /usr/local/go /usr/local/go
+# COPY --from=go_builder ${GOPATH} ${GOPATH}
+
+# Conda & Python
+COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
+
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Common environment setup
+# Git configuration
+RUN git config --global user.email "package@datadoghq.com" && \
+    git config --global user.name "Bits"
+
+# Copy architecture-specific configuration files
+# TODO: Do this cleaner
+COPY linux/${BUILDARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
+COPY linux/${BUILDARCH}/cargo-config.toml /root/.cargo/config.toml
+
+
 RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
 
@@ -225,6 +322,10 @@ ENV PATH=/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:$PATH
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
+
+# Set the version of the Rust toolchain to use by default
+ARG RUST_VERSION
+RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
