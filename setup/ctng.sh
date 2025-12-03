@@ -15,8 +15,8 @@ export CT_ALLOW_BUILD_AS_ROOT_SURE=yes
 ./ct-ng build
 
 mkdir -p /opt/toolchains/
-mv /root/x-tools/${ARCH}-unknown-linux-gnu/ /opt/toolchains/${ARCH}
-mv .config-${CROSS_ARCH} .config
+mv /root/x-tools/${CTNG_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CTNG_ARCH}
+mv .config-${CTNG_CROSS_ARCH} .config
 ./ct-ng upgradeconfig
 ./ct-ng build
-# mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH}
+mv /root/x-tools/${CTNG_CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CTNG_CROSS_ARCH}
