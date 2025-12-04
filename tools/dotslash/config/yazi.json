@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 11623208
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 14089936
+      }
+    }
+  },
+  "name": "yazi",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "dc28ee0843e7efb6b152945d4a43d48b063318d6720d6fad438a8fa88ede0558",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "yazi-aarch64-unknown-linux-musl/yazi",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/sxyazi/yazi/releases/download/v0.3.3/yazi-aarch64-unknown-linux-musl.zip"
+        }
+      ],
+      "size": 6775212
+    },
+    "linux-x86_64": {
+      "digest": "d037cdced2bb8cfdf5530e6b5d0f3b2021a0fce5df6cd5360d3475f953a37862",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "yazi-x86_64-unknown-linux-musl/yazi",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/sxyazi/yazi/releases/download/v0.3.3/yazi-x86_64-unknown-linux-musl.zip"
+        }
+      ],
+      "size": 7372800
+    }
+  }
+}

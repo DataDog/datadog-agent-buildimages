@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 1709616
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 2319424
+      }
+    }
+  },
+  "name": "jq",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "c195594f549766bfdf75127a7956980c1baa3fa9984ba6f5b5910ed946601d16",
+      "hash": "blake3",
+      "path": "jq-linux-arm64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-arm64"
+        }
+      ],
+      "size": 1709616
+    },
+    "linux-x86_64": {
+      "digest": "f4f456f3a1a9a0dbcd9b0c2a77e29d14bc1f8bb036db4f6ff06d8c76a99e5ef2",
+      "hash": "blake3",
+      "path": "jq-linux-amd64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64"
+        }
+      ],
+      "size": 2319424
+    }
+  }
+}

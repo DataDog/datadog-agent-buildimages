@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 14532121
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 15274595
+      }
+    }
+  },
+  "name": "staticcheck",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "570824c498b48d6c7da84b83f6511acd2911d46bd1dbb7cfb6077453bee77303",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "staticcheck/staticcheck",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dominikh/go-tools/releases/download/2025.1.1/staticcheck_linux_arm64.tar.gz"
+        }
+      ],
+      "size": 7690871
+    },
+    "linux-x86_64": {
+      "digest": "9dac6a08af4ac9e836c86783c9e488d86b0bfb37622d063eb25e380c746171b3",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "staticcheck/staticcheck",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dominikh/go-tools/releases/download/2025.1.1/staticcheck_linux_amd64.tar.gz"
+        }
+      ],
+      "size": 8275442
+    }
+  }
+}

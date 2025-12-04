@@ -3,7 +3,10 @@ set -euxo pipefail
 
 # Build and push to internal ECR
 WORKDIR="."
-if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then WORKDIR="dev-envs/linux"; fi
+if [[ "$DOCKERFILE" == "dev-envs/linux/Dockerfile" ]]; then
+    WORKDIR="dev-envs/linux"
+    BUILD_CONTEXT_ARGS="--build-context dotslash=tools/dotslash"
+fi
 
 # == Caching logic == #
 function sanitize() {
@@ -71,6 +74,7 @@ $GO_BUILD_ARGS \
 $DDA_BUILD_ARGS \
 ${CUSTOM_BUILD_ARGS:-} \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
+${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
 

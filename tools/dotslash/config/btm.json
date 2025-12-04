@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 3935199
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 4931143
+      }
+    }
+  },
+  "name": "btm",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "5b4dca7279956329b322592ca1d96f5cc58fce728f0dc06ce376fc9bf7b68d1f",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "btm",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.10.2/bottom_aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 1808205
+    },
+    "linux-x86_64": {
+      "digest": "402b50ec077c8c9bf3092a221e862e8e3211d1e7a9017cf63dfbd22317f6a8b5",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "btm",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.10.2/bottom_x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 2018204
+    }
+  }
+}

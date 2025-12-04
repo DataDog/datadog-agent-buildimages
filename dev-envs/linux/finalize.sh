@@ -6,6 +6,8 @@ set -euxo pipefail
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Remove cache directories
+dotslash -- clean
+
 cache_dirs=(
     "${HOME}/.cache/go-build"
     "/go/pkg/mod"

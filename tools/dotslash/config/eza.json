@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 1268656
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 2376520
+      }
+    }
+  },
+  "name": "eza",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "0f7df036275d5b68451bb9d4589f903c3009f04cc8728ea9538d1e8a6d9e719a",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "eza",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/eza-community/eza/releases/download/v0.20.2/eza_aarch64-unknown-linux-gnu.tar.gz"
+        }
+      ],
+      "size": 607934
+    },
+    "linux-x86_64": {
+      "digest": "b4702fdb8e933eb67a6a4273aa60768ec4915b3ecf3957e1f3570d1be7d2cb91",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "eza",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/eza-community/eza/releases/download/v0.20.2/eza_x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 1156613
+    }
+  }
+}

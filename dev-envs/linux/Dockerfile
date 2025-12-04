@@ -20,7 +20,9 @@ RUN --mount=type=bind,dst=/mnt /mnt/scripts.sh
 # Set up environment variables
 RUN --mount=type=bind,dst=/mnt /mnt/env-vars.sh
 # Set up tools
-RUN --mount=type=bind,dst=/mnt /mnt/tools.sh
+RUN --mount=type=bind,dst=/mnt \
+    --mount=type=bind,from=dotslash,target=/tools/dotslash \
+    /mnt/tools.sh
 # Set up Git
 RUN --mount=type=bind,dst=/mnt /mnt/git.sh
 # Set up Python

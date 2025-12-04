@@ -21,3 +21,14 @@ lint_dockerfiles:
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
   script:
     - hadolint dev-envs/linux/Dockerfile
+
+validate_tools:
+  stage: setup
+  tags: ["arch:amd64"]
+  image: $BUILDENV_REGISTRY/images/python:3.12.8
+  script:
+    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install "dda==${DDA_VERSION}"
+    - dda run tools check --integrity
