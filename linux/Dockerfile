@@ -1,5 +1,8 @@
 ARG BASE_IMAGE=ubuntu:24.04
 
+# Specify dd-octo-sts version in root scope as it is used in a stage definition (FROM instruction)
+ARG DD_OCTO_STS_VERSION=latest
+
 # Create different base stages for subsequent build stages
 # Common dependencies for all stages
 FROM ${BASE_IMAGE} AS common_base
@@ -198,6 +201,11 @@ FROM extraction_base AS authanywhere_builder
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/authanywhere.sh,dst=/mnt/scripts/authanywhere.sh cd /tmp/authanywhere && /mnt/scripts/authanywhere.sh && rm -rf /tmp/authanywhere
 
+FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
+# Dummy stage to download dd-octo-sts as it is distributed as a container image
+# This is a workaround since `--from` does not support variable interpolation, but declaring a stage and using it as a source for the next stage does
+# See https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
+
 FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
 ARG DATADOG_PACKAGES_VERSION
@@ -262,10 +270,8 @@ COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/auth
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi /usr/local/bin/pulumi
 
-# DD Octo STS. We use specific version here because `--from` does not support wildcards.
-# TODO(agent-devx): test this workaround https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
-ARG DD_OCTO_STS_VERSION
-COPY --from=registry.ddbuild.io/dd-octo-sts:${DD_OCTO_STS_VERSION} /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+# dd-octo-sts
+COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
 # Datadog packages
 COPY --from=datadog_packages_builder /go/bin/datadog-package /go/bin/datadog-package
@@ -342,6 +348,7 @@ ARG GO_VERSION
 ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
 ARG PULUMI_VERSION
+ARG DD_OCTO_STS_VERSION
 
 LABEL protobuf_version="${PROTOBUF_VERSION}"
 LABEL vault_version="${VAULT_VERSION}"
