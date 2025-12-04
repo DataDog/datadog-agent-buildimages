@@ -58,11 +58,52 @@ def _get_expected_sha256(version: str, base_url: str) -> list[tuple[Platform, st
     return shas
 
 
-def _get_go_upstream_sha256(version):
-    return _get_expected_sha256(version, "https://storage.googleapis.com/golang")
+def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
+    """Get SHA256 checksums for Go version from go.dev/dl API"""
+    import httpx
+
+    # Fetch the JSON data from go.dev/dl API
+    url = "https://go.dev/dl/?mode=json"
+    res = httpx.get(url, follow_redirects=True)
+    res.raise_for_status()
+
+    releases = res.json()
+
+    # Find the matching version
+    target_version = f"go{version}"
+    matching_release = None
+    for release in releases:
+        if release["version"] == target_version:
+            matching_release = release
+            break
+    else:
+        raise ValueError(f"Go version {target_version} not found in releases")
+
+    # Extract SHA256 for each platform
+    shas: list[tuple[Platform, str]] = []
+    for os, arch in PLATFORMS:
+        # Find the matching file for this platform
+        matching_file = None
+        for file_info in matching_release["files"]:
+            # Only consider archive files (tar.gz or zip)
+            if file_info.get("kind") != "archive":
+                continue
+            if file_info["os"] == os and file_info["arch"] == arch:
+                matching_file = file_info
+                break
+        else:
+            raise ValueError(f"No archive found for Go {target_version} on {os}/{arch}")
+
+        sha = matching_file["sha256"]
+        if len(sha) != 64:
+            raise ValueError(f"Invalid SHA256 format for Go {target_version} on {os}/{arch}: '{sha}'")
+
+        shas.append(((os, arch), sha))
+
+    return shas
 
 
-def _get_msgo_sha256(version, msgo_patch):
+def _get_msgo_sha256(version, msgo_patch) -> list[tuple[Platform, str]]:
     return _get_expected_sha256(
         f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest"
     )

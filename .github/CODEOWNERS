@@ -18,7 +18,7 @@ dda.env                             @DataDog/agent-devx
 
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
 
-.dda/scripts/run/update/go/         @DataDog/agent-runtimes
+.dda/extend/commands/run/update/go/         @DataDog/agent-runtimes
 
 /entrypoint-sysprobe.sh             @DataDog/ebpf-platform @DataDog/agent-devx
 
