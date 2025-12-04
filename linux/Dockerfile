@@ -211,6 +211,7 @@ RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PR
 
 # Go setup
 ENV GOPATH=/go
+ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
