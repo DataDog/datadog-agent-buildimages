@@ -3,7 +3,7 @@ IFS=$'\n\t'
 set -euxo pipefail
 
 VSCODE_VERSION="1.101.0"
-CURSOR_VERSION="1.1.3"
+CURSOR_VERSION="2.1.47"
 
 arch=$(uname -m)
 if [[ $arch == "aarch64" ]]; then
