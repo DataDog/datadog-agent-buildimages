@@ -10,6 +10,8 @@ else
     exit 1
 fi
 
+cd /tmp/authanywhere
 tar -xf authanywhere-tar.tar.gz authanywhere-linux-$authanywhere_arch
 mv "authanywhere-linux-$authanywhere_arch" /usr/local/bin/authanywhere
 chmod +x /usr/local/bin/authanywhere
+rm -r /tmp/authanywhere
