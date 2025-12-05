@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -ex
+set -euxo pipefail
 
 mkdir /tmp/texinfo
 cd /tmp/texinfo
@@ -13,8 +13,8 @@ git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47
 
 ./configure
 
-make -j$(ncproc)
+make -j$(nproc)
 
 make install
 
-rm -rf /tmp/texinfo
+rm -r /tmp/texinfo

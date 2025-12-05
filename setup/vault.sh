@@ -14,6 +14,6 @@ curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linu
 echo "${AWSCLI_SHA256} awscliv2.zip" | sha256sum --check
 unzip -q awscliv2.zip
 ./aws/install
-rm -rf aws awscliv2.zip
+rm -r aws awscliv2.zip
 
-rm -rf /tmp/vault
+rm -r /tmp/vault
