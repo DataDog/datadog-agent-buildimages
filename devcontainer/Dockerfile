@@ -49,7 +49,7 @@ RUN if [ "$TARGETARCH" = "amd64" ] ; then set -ex \
     && rm cmake.sh ; fi
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
 
 # Create user
 RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
