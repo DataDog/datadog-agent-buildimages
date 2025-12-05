@@ -122,7 +122,6 @@ COPY linux/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
-RUN ls /tmp/texinfo
 RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/setup/texinfo.sh cd /tmp/texinfo && /mnt/setup/texinfo.sh && rm -rf /tmp/texinfo
 
 # Build cross-compilation toolchain
