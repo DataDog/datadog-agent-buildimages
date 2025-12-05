@@ -19,4 +19,4 @@ mv /root/x-tools/${ARCH}-unknown-linux-gnu/ /opt/toolchains/${ARCH}
 mv .config-${CROSS_ARCH} .config
 ./ct-ng upgradeconfig
 ./ct-ng build
-# mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH}
+mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH}
