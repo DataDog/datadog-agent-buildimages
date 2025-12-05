@@ -178,7 +178,7 @@ ENV PATH="$PATH:/usr/local/go/bin"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
@@ -187,10 +187,10 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   rm ${VAULT_FILENAME}
 
 # Install authanywhere for infra token management
-RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/setup/datadog_packages.sh /mnt/setup/datadog_packages.sh
 
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts

@@ -128,7 +128,9 @@ RUN git config --global user.name "Bits"
 # CONDA
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
+RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
+    --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    /mnt/setup/python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
@@ -168,7 +170,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
 
 # Add systemd headers
 COPY ./rpm-headers/systemd /usr/include/systemd
@@ -183,7 +185,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install Codecov uploader
-RUN --mount=type=bind,dst=/mnt /mnt/setup/codecov.sh
+RUN --mount=type=bind,src=./setup/codecov.sh,dst=/mnt/setup/codecov.sh /mnt/setup/codecov.sh
 
 # Install clang and llvm version 8
 # Using build for sles11 because the versions built for other distros target glibcs that are too new to be used from this image
@@ -221,7 +223,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
   rm -rf aws awscliv2.zip
 
 # Install authanywhere for infra token management
-RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
