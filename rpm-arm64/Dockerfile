@@ -94,9 +94,9 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 # CONDA
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/setup/python.sh \
+RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
-    /mnt/setup/python.sh
+    /mnt/python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
@@ -143,7 +143,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/setup/bazelisk.sh /mnt/setup/bazelisk.sh
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init" \
@@ -164,7 +164,7 @@ RUN set -ex \
     && rm cmake.sh
 
 # Install Codecov uploader
-RUN --mount=type=bind,src=./setup/codecov.sh,dst=/mnt/setup/codecov.sh /mnt/setup/codecov.sh
+RUN --mount=type=bind,src=./setup/codecov.sh,dst=/mnt/codecov.sh /mnt/codecov.sh
 
 # Install clang and llvm version 8. Pre-built because building takes ~4 hours.
 # This was built from sources on centos 7, using the build-clang.sh script
@@ -188,7 +188,7 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 
 # Install authanywhere for infra token management
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
-RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/setup/authanywhere.sh /mnt/setup/authanywhere.sh
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/authanywhere.sh
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
