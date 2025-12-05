@@ -27,7 +27,7 @@ test_devcontainer:
   stage: devcontainer
   needs: [build_devcontainer]
   tags: ["arch:amd64"]
-  image: $BUILD_STABLE_REGISTRY/images/docker:27.3.1
+  image: $BUILD_STABLE_REGISTRY/images/docker:27.3.1-dind
   script:
     - docker run ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} dda --version
 
