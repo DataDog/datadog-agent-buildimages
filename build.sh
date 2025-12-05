@@ -51,11 +51,25 @@ BUILD_ARG_LIST=()
 [[ -n "${DD_TARGET_ARCH:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "DD_TARGET_ARCH=${DD_TARGET_ARCH}")
 [[ -n "${BUILDENV_REGISTRY:-}" ]]  && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
 
-BUILD_ARG_LIST+=("$(sed -e 's/^/--build-arg /' go.env | tr '\n' ' ')")
-BUILD_ARG_LIST+=("$(sed -e 's/^/--build-arg /' dda.env| tr '\n' ' ')")
+# Add build args from go.env
+if [[ -f "go.env" ]]; then
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
+    done < go.env
+fi
 
+# Add build args from dda.env
+if [[ -f "dda.env" ]]; then
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
+    done < dda.env
+fi
+
+# Add build args from custom build args file
 if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
-    BUILD_ARG_LIST+=("$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')")
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
+    done < "${BUILD_ARGS_FILE}"
 fi
 
 # Pass the CI_JOB_TOKEN if necessary
