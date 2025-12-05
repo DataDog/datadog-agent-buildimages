@@ -131,7 +131,6 @@ ARG DD_UV_VERSION
 ENV DD_PIP_VERSION_PY3=$DD_PIP_VERSION_PY3
 ENV DD_SETUPTOOLS_VERSION_PY3=$DD_SETUPTOOLS_VERSION_PY3
 ENV DD_UV_VERSION=$DD_UV_VERSION
-ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 ADD --checksum=sha256:${CONDA_SHA256} "https://github.com/conda-forge/miniforge/releases/download/${CONDA_VERSION}/Miniforge3-Linux-${CONDA_ARCH}.sh" /tmp/conda/miniconda.sh
