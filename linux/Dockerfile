@@ -80,6 +80,8 @@ RUN apt-get install -y --no-install-recommends \
     gperf flex libncurses5-dev rsync meson ninja-build
 
 ARG CTNG_VERSION=1.26.0
+ARG BUILDARCH
+ARG ARCH
 ARG CROSS_ARCH
 ARG GLIBC_VERSION
 ARG CROSS_GLIBC_VERSION
@@ -127,6 +129,14 @@ ENV DDA_VERSION=$DDA_VERSION
 # Common environment variables
 ENV PYTHONUTF8=1
 ENV CONDA_PATH=/root/miniforge3
+ARG DD_TARGET_ARCH
+ARG DD_PIP_VERSION_PY3
+ARG DD_SETUPTOOLS_VERSION_PY3
+ARG DD_UV_VERSION
+ENV DD_PIP_VERSION_PY3=$DD_PIP_VERSION_PY3
+ENV DD_SETUPTOOLS_VERSION_PY3=$DD_SETUPTOOLS_VERSION_PY3
+ENV DD_UV_VERSION=$DD_UV_VERSION
+ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
 
 RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
@@ -174,6 +184,9 @@ ARG MSGO_SHA256_LINUX_AMD64
 ARG MSGO_SHA256_LINUX_ARM64
 ARG MSGO_PATCH
 
+ARG DD_TARGET_ARCH
+ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
+
 # Re-export as env for use in LABEL steps in the final stage
 ENV GO_VERSION=$GO_VERSION
 
@@ -193,6 +206,7 @@ FROM common_base AS rust_builder
 ARG RUST_VERSION=1.91.0
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256
+ARG ARCH
 # Re-export as env for use in LABEL steps in the final stage
 ENV RUST_VERSION=$RUST_VERSION
 ENV RUSTUP_VERSION=$RUSTUP_VERSION
@@ -208,7 +222,7 @@ ARG AWSCLI_VERSION=2.27.30
 ARG VAULT_SHA256
 ARG AWSCLI_SHA256
 ARG VAULT_ARCH
-ARG AWSCLI_ARCH
+ARG ARCH
 # Re-export as env for use in LABEL steps in the final stage
 ENV VAULT_VERSION=$VAULT_VERSION
 ENV AWSCLI_VERSION=$AWSCLI_VERSION
