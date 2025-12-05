@@ -11,4 +11,4 @@ chmod +x ./rustup-init
 echo "${RUSTUP_SHA256}  /root/.cargo/bin/rustc" | sha256sum --check
 rm ./rustup-init
 
-rm -rf /tmp/rust
+rm -r /tmp/rust

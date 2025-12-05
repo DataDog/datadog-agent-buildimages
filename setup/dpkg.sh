@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -ex
+set -euxo pipefail
 
 # NOTE: This script will not work outside of the Dockerfile build context (writing to /build)
 
