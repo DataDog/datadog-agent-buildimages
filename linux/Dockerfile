@@ -245,6 +245,8 @@ RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/
 
 FROM go_builder AS datadog_packages_builder
 # Install datadog-packages
+ENV GOPATH=/go
+ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
 RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
 
 
