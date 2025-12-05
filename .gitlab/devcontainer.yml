@@ -3,6 +3,7 @@ variables:
   CI_IMAGE_REPO: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
   CI_REGISTRY_IMAGE: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
   CI_REGISTRY_IMAGE_TEST: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv-test"
+  WEB_UI_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/web-ui:v78625810-0398240@sha256:4677cb48b702a779584df82e738f38f02bcaab6e22f4abe68e420449c838a884
 
 lint_devcontainer:
   stage: devcontainer
@@ -22,17 +23,13 @@ build_devcontainer:
     - DDA_VERSION_ARG="--build-arg $(grep DDA_VERSION dda.env)"
     - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --push --no-cache --platform linux/amd64,linux/arm64 --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12} -f devcontainer/Dockerfile .
 
-# TODO
-# test_devcontainer:
-#   stage: devcontainer
-#   needs: [build_devcontainer]
-#   tags: ["arch:amd64"]
-#   image: ${BUILD_STABLE_REGISTRY}/images/docker:27.3.1
-#   script:
-#     - install node and yarn
-#     - install devcontainer CLI
-#     - devcontainer up --workspace-folder . on devcontainer image from CI_REGISTRY_IMAGE_TEST
-
+test_devcontainer:
+  stage: devcontainer
+  needs: [build_devcontainer]
+  tags: ["arch:amd64"]
+  image: $BUILD_STABLE_REGISTRY/images/docker:27.3.1
+  script:
+    - docker run ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} dda --version
 
 release_devcontainer:
   image: ${BUILD_STABLE_REGISTRY}/images/docker:27.3.1
