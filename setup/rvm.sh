@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -exo pipefail
 
 gpg --import /gpg-keys/*
 rm -rf /gpg-keys
