@@ -195,7 +195,7 @@ ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/go.sh /mnt/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-FROM common_base AS bazelisk_builder
+FROM build_base AS bazelisk_builder
 # Install & verify Bazelisk as Bazel bootstrapper
 # TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
