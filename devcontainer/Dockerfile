@@ -95,7 +95,9 @@ RUN go install golang.org/x/tools/gopls@latest && \
 USER root
 RUN pip3 install --no-cache-dir "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
     dda -v self dep sync -f legacy-tasks
-USER datadog # Switch back to the datadog user
+
+# Switch back to the datadog user
+USER datadog
 
 WORKDIR /home/datadog
 CMD [ "sleep", "infinity" ]
