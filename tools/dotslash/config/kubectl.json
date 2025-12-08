@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 58130616
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 60559544
+      }
+    }
+  },
+  "name": "kubectl",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "74aef94d2132b4b007e81957f06444fb1dc59799dd5fe515c61b55e192232548",
+      "hash": "blake3",
+      "path": "kubectl",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://dl.k8s.io/release/v1.34.2/bin/linux/arm64/kubectl"
+        }
+      ],
+      "size": 58130616
+    },
+    "linux-x86_64": {
+      "digest": "6e0155179f71e23f6dca4e2256661b856841798e1c8db668416d1e5b87e40778",
+      "hash": "blake3",
+      "path": "kubectl",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://dl.k8s.io/release/v1.34.2/bin/linux/amd64/kubectl"
+        }
+      ],
+      "size": 60559544
+    }
+  }
+}
