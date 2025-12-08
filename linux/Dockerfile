@@ -138,6 +138,10 @@ ENV DD_SETUPTOOLS_VERSION_PY3=$DD_SETUPTOOLS_VERSION_PY3
 ENV DD_UV_VERSION=$DD_UV_VERSION
 ENV DD_TARGET_ARCH=$DD_TARGET_ARCH
 
+# Remove early return in .bashrc when running in non-interactive shell
+# This is needed for `conda init bash` to work properly
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
+
 RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
     --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
     /mnt/python.sh
@@ -383,6 +387,10 @@ ENV PYTHONUTF8=1
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
+
+# Remove early return in .bashrc when running in non-interactive shell
+# This is needed for `conda init bash` to work properly
+RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
