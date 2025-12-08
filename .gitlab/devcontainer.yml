@@ -17,16 +17,24 @@ build_devcontainer:
   needs: [lint_devcontainer]
   tags: ["arch:amd64"]
   image: $BUILD_STABLE_REGISTRY/images/docker:27.3.1
+  # Build the image for both AMD64 and ARM64
+  # This allows us to build amd64 agent images on arm64 machines
+  parallel:
+    matrix:
+      - PLATFORM: [amd64, arm64]
   script:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_VERSION_ARG="--build-arg $(grep DDA_VERSION dda.env)"
-    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --push --no-cache --platform linux/amd64,linux/arm64 --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12} -f devcontainer/Dockerfile .
+    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --push --no-cache --platform linux/${PLATFORM} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}-${PLATFORM} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12}-${PLATFORM} -f devcontainer/Dockerfile .
 
 test_devcontainer:
   stage: devcontainer
   needs: [build_devcontainer]
   tags: ["arch:amd64"]
-  image: ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}
+  parallel:
+    matrix:
+      - PLATFORM: [amd64, arm64]
+  image: ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}-${PLATFORM}
   script:
     - dda --version
 
@@ -35,11 +43,13 @@ release_devcontainer:
   tags: ["arch:amd64"]
   stage: devcontainer
   needs: [build_devcontainer]
+  parallel:
+    matrix:
+      - PLATFORM: [amd64, arm64]
   script:
-    - crane copy ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}
-    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:latest
-    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:1-arm64
-    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:1-amd64
+    - crane copy ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}-${PLATFORM} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}-${PLATFORM}
+    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}-${PLATFORM} ${CI_REGISTRY_IMAGE}:latest-${PLATFORM}
+    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}-${PLATFORM} ${CI_REGISTRY_IMAGE}:1-${PLATFORM}
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
