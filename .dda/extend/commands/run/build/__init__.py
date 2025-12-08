@@ -74,7 +74,7 @@ def cmd(app: Application, *, relative_path: str, tag: str, args: tuple[str, ...]
 
     # Non-developer environment images expect to be built in the root directory
     if root_dir == "dev-envs":
-        build_args.append(relative_path)
+        build_args.extend((relative_path, "--build-context", "dotslash=tools/dotslash"))
     else:
         build_args.append(".")
         build_args.extend(("-f", os.path.join(relative_path, "Dockerfile")))

@@ -42,3 +42,7 @@ dda.env                             @DataDog/agent-devx
 /docker-x64/                        @DataDog/agent-build @DataDog/agent-devx
 /dev-envs/                          @DataDog/agent-devx
 /devcontainer/                      @DataDog/agent-devx @DataDog/container-platform
+
+# Tools
+/tools/                             @DataDog/agent-devx
+/tools/dotslash/config/             @DataDog/agent-devx @DataDog/agent-build

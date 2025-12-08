@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 5597265
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 6961825
+      }
+    }
+  },
+  "name": "rg",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "0b670b8fa0a3df2762af2fc82cc4932f684ca4c02dbd1260d4f3133fd4b2a515",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "ripgrep-14.1.1-aarch64-unknown-linux-gnu/rg",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-aarch64-unknown-linux-gnu.tar.gz"
+        }
+      ],
+      "size": 2047405
+    },
+    "linux-x86_64": {
+      "digest": "f73cca4e54d78c31f832c7f6e2c0b4db8b04fa3eaa747915727d570893dbee76",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "ripgrep-14.1.1-x86_64-unknown-linux-musl/rg",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 2566310
+    }
+  }
+}
