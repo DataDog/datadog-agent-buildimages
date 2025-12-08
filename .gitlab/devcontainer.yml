@@ -1,3 +1,9 @@
+variables:
+  BUILD_STABLE_REGISTRY: registry.ddbuild.io
+  CI_IMAGE_REPO: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
+  CI_REGISTRY_IMAGE: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
+  CI_REGISTRY_IMAGE_TEST: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv-test"
+
 lint_devcontainer:
   stage: devcontainer
   needs: []
@@ -6,34 +12,34 @@ lint_devcontainer:
     - hadolint devcontainer/Dockerfile
   tags: ["arch:amd64"]
 
-.build_devcontainer:
+build_devcontainer:
+  stage: devcontainer
+  needs: [lint_devcontainer]
   tags: ["arch:amd64"]
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10.3
-  variables:
-    DOCKER_TARGET: registry.ddbuild.io/ci/datadog-agent-devenv:1
-    PUSH: --push
-  parallel:
-    matrix:
-      - PLATFORM: [amd64, arm64]
+  image: $BUILD_STABLE_REGISTRY/images/docker:27.3.1
   script:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    # TODO: remove this once permissions are fixed in the devcontainer image or when we moved to the standard developer image
-    # - DDA_VERSION_ARG=$(grep DDA_VERSION dda.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - DDA_VERSION_ARG="--build-arg DDA_VERSION=v0.29.0"
-    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --no-cache --platform linux/${PLATFORM} --tag ${DOCKER_TARGET}-${PLATFORM} -f devcontainer/Dockerfile . ${PUSH}
+    - DDA_VERSION_ARG="--build-arg $(grep DDA_VERSION dda.env)"
+    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --push --no-cache --platform linux/amd64,linux/arm64 --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12} -f devcontainer/Dockerfile .
 
 test_devcontainer:
-  extends: .build_devcontainer
   stage: devcontainer
-  needs: [lint_devcontainer]
-  rules:
-    - if: '$CI_COMMIT_BRANCH != "main"'
-  variables:
-    PUSH: ""
+  needs: [build_devcontainer]
+  tags: ["arch:amd64"]
+  image: ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}
+  script:
+    - dda --version
 
-build_devcontainer:
-  extends: .build_devcontainer
+release_devcontainer:
+  image: ${BUILD_STABLE_REGISTRY}/images/docker:27.3.1
+  tags: ["arch:amd64"]
   stage: devcontainer
-  needs: [lint_devcontainer]
+  needs: [build_devcontainer]
+  script:
+    - crane copy ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}
+    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:latest
+    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:1-arm64
+    - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} ${CI_REGISTRY_IMAGE}:1-amd64
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
