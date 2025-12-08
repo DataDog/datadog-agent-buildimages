@@ -2,12 +2,7 @@
 
 set -euxo pipefail
 
-cd /build
-
-wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz
 gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E
-
-wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig
 gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig
 
 tar xf crosstool-ng-${CTNG_VERSION}.tar.xz
@@ -25,5 +20,3 @@ mv .config-${CROSS_ARCH} .config
 ./ct-ng upgradeconfig
 ./ct-ng build
 mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH}
-
-rm -rf /build
