@@ -59,12 +59,15 @@ ENV CONDA_PATH=/root/miniforge3
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 # Install common dependencies
-RUN apt update -qy && apt install -y \
+RUN apt update -qy && \
+    apt install -y gnupg2 \
     autoconf \
     autopoint \
     bison \
+    curl \
     build-essential \
     clang \
+    gpg \
     wget \
     xz-utils \
     flex \
@@ -78,7 +81,6 @@ RUN apt update -qy && apt install -y \
     python-is-python3 \
     git \
     cmake \
-    curl \
     fakeroot \
     procps \
     bzip2 \
@@ -96,9 +98,6 @@ RUN apt update -qy && apt install -y \
     meson \
     selinux-basics \
     squashfs-tools \
-    gpg \
-    google-cloud-sdk \
-    google-cloud-sdk-gke-gcloud-auth-plugin \
     xz-utils \
     gnupg2 \
     patchelf \
@@ -110,7 +109,11 @@ RUN apt update -qy && apt install -y \
     clang-format \
     libseccomp-dev \
     shellcheck \
-    ${ADDITIONAL_PACKAGE}
+    ${ADDITIONAL_PACKAGE} && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt update -qy && \
+    apt install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin
 
 # Git configuration
 RUN git config --global user.email "package@datadoghq.com" && \
