@@ -97,6 +97,8 @@ RUN apt update -qy && apt install -y \
     selinux-basics \
     squashfs-tools \
     gpg \
+    google-cloud-sdk \
+    google-cloud-sdk-gke-gcloud-auth-plugin \
     xz-utils \
     gnupg2 \
     patchelf \
