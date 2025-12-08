@@ -3,7 +3,6 @@ variables:
   CI_IMAGE_REPO: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
   CI_REGISTRY_IMAGE: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv"
   CI_REGISTRY_IMAGE_TEST: "${BUILD_STABLE_REGISTRY}/ci/datadog-agent-devenv-test"
-  WEB_UI_IMAGE: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/web-ui:v78625810-0398240@sha256:4677cb48b702a779584df82e738f38f02bcaab6e22f4abe68e420449c838a884
 
 lint_devcontainer:
   stage: devcontainer
