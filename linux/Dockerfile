@@ -77,7 +77,7 @@ FROM texinfo_builder AS crosstool_ng_builder
 
 # Install crosstool-ng specific dependencies (not included in build_base)
 RUN apt-get install -y --no-install-recommends \
-    gperf flex libncurses5-dev rsync meson ninja-build
+    gperf libncurses5-dev rsync ninja-build
 
 ARG CTNG_VERSION=1.26.0
 ARG BUILDARCH
@@ -148,13 +148,11 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 FROM python_builder AS rvm_builder
-# Somehow building RVM needs some opensslstuff from the python_builder stage
+# Somehow building RVM needs some OpenSSL stuff from the python_builder stage
 
 ARG RVM_VERSION=1.29.12
 ARG BUNDLER_VERSION=2.4.20
 ARG RVM_SHA256=fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e
-ARG CONDA_PATH
-ENV CONDA_PATH=$CONDA_PATH
 ENV RVM_VERSION=$RVM_VERSION
 ENV BUNDLER_VERSION=$BUNDLER_VERSION
 
@@ -272,7 +270,7 @@ FROM common_base AS final
 
 ARG ADDITIONAL_PACKAGE
 # Install extra runtime dependencies needed by the CI
-# These are the packages actually used when building datadog-agent, not for building the tools in this Dockerfile\
+# These are the packages actually used when building datadog-agent, not for building the tools in this Dockerfile
 # TODO: See if we can remove some of these, we currently reinstall everything that was present before #997
 RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     autoconf autopoint \
@@ -381,13 +379,14 @@ RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
 
 # Common environment setup
 # Git configuration
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
 
 RUN echo "umask 0022" >> /root/.bashrc && \
     mkdir -p /go/src/github.com/DataDog/datadog-agent
 
 # Set up environment
+ARG ARCH
+ARG CROSS_ARCH
+ARG CONDA_PATH=/root/miniforge3
 ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
