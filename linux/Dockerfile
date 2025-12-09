@@ -361,6 +361,7 @@ COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
 COPY --from=go_builder /usr/local/go /usr/local/go
 
 # Conda & Python
+ARG CONDA_PATH=/root/miniforge3
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
 # Copy conda's bash initialization
 COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
@@ -387,7 +388,6 @@ RUN echo "umask 0022" >> /root/.bashrc && \
 # Set up environment
 ARG ARCH
 ARG CROSS_ARCH
-ARG CONDA_PATH=/root/miniforge3
 ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${ARCH}/bin:/opt/toolchains/${CROSS_ARCH}/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
