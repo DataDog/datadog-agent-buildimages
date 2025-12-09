@@ -316,7 +316,6 @@ RUN git config --global user.email "package@datadoghq.com" && \
 # Protobuf
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
-LABEL protobuf_version="${PROTOBUF_VERSION}"
 
 # Texinfo
 COPY --from=texinfo_builder /usr/local /usr/local
@@ -325,16 +324,12 @@ COPY --from=texinfo_builder /usr/local /usr/local
 COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
 COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
 COPY --from=vault_builder /usr/local/aws* /usr/local/
-LABEL vault_version="${VAULT_VERSION}"
-LABEL awscli_version="${AWSCLI_VERSION}"
-
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
 
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi /usr/local/bin/pulumi
-LABEL pulumi_version="${PULUMI_VERSION}"
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
@@ -344,40 +339,30 @@ COPY --from=datadog_packages_builder /go/bin/datadog-package /go/bin/datadog-pac
 
 # RVM
 COPY --from=rvm_builder /usr/local/rvm /usr/local/rvm
-LABEL rvm_version="${RVM_VERSION}"
-LABEL bundler_version="${BUNDLER_VERSION}"
 
 # Rust
 COPY --from=rust_builder /root/.cargo /root/.cargo
-LABEL rust_version="${RUST_VERSION}"
-LABEL rustup_version="${RUSTUP_VERSION}"
 
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
-LABEL datadog_ci_version="${DATADOG_CI_VERSION}"
 
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 # Takes values from the ENV steps in the builder stage
-LABEL glibc_version="${GLIBC_VERSION}"
-LABEL ctng_version="${CTNG_VERSION}"
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
-LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
 
 # Bazelisk
 COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
-LABEL go_version="${GO_VERSION}"
 
 # Conda & Python
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
-LABEL dda_version="${DDA_VERSION}"
 # Copy conda's bash initialization
 COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 
