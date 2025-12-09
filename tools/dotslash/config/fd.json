@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 3396104
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 4220144
+      }
+    }
+  },
+  "name": "fd",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "0c95cd925704d489bafa00c16d4f7085cc7f659500e2166aaf8263a836b55150",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "fd-v10.2.0-aarch64-unknown-linux-musl/fd",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 1537874
+    },
+    "linux-x86_64": {
+      "digest": "67cc22c3a887c7cb55dec0f4f91243be0121d65b69ac4127f31abf57009c6760",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "fd-v10.2.0-x86_64-unknown-linux-musl/fd",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.2.0/fd-v10.2.0-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 1681679
+    }
+  }
+}

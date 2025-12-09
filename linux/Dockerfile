@@ -59,12 +59,15 @@ ENV CONDA_PATH=/root/miniforge3
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
 # Install common dependencies
-RUN apt update -qy && apt install -y \
+RUN apt update -qy && \
+    apt install -y gnupg2 \
     autoconf \
     autopoint \
     bison \
+    curl \
     build-essential \
     clang \
+    gpg \
     wget \
     xz-utils \
     flex \
@@ -78,7 +81,6 @@ RUN apt update -qy && apt install -y \
     python-is-python3 \
     git \
     cmake \
-    curl \
     fakeroot \
     procps \
     bzip2 \
@@ -96,7 +98,6 @@ RUN apt update -qy && apt install -y \
     meson \
     selinux-basics \
     squashfs-tools \
-    gpg \
     xz-utils \
     gnupg2 \
     patchelf \
@@ -108,155 +109,107 @@ RUN apt update -qy && apt install -y \
     clang-format \
     libseccomp-dev \
     shellcheck \
-    ${ADDITIONAL_PACKAGE}
+    ${ADDITIONAL_PACKAGE} && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt update -qy && \
+    apt install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin
 
 # Git configuration
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
 # Copy architecture-specific configuration files
-COPY linux/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /build/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+# TODO: Do this cleaner
 COPY linux/${DATADOG_CI_ARCH}/toolchain_${ARCH}.cmake /opt/cmake/${ARCH}-unknown-linux-gnu.toolchain.cmake
 COPY linux/${DATADOG_CI_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/ctng.patch /root/ctng.patch
 
 # Build texinfo to get a bugfix version
-RUN cd /build && \
-    git clone https://gnu.googlesource.com/texinfo && \
-    cd texinfo && \
-    git reset --hard 60d3edc4b74b4e1e5ef55e53de394d3b65506c47 && \
-    ./autogen.sh && \
-    ./configure && make -j$(ncproc) && make install && \
-    rm -rf /build/texinfo
+ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
+RUN --mount=type=bind,src=./setup/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh && rm -rf /tmp/texinfo
 
 # Build cross-compilation toolchain
-RUN cd /build && \
-    wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz && \
-    gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E && \
-    wget https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
-    gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig && \
-    tar xf crosstool-ng-${CTNG_VERSION}.tar.xz && \
-    cd /build/crosstool-ng-${CTNG_VERSION} && \
-    patch -p1 < /root/ctng.patch && \
-    ./configure --enable-local && make -j$(nproc) && \
-    export CT_ALLOW_BUILD_AS_ROOT_SURE=yes && \
-    ./ct-ng upgradeconfig && \
-    ./ct-ng build && \
-    mkdir -p /opt/toolchains/ && \
-    mv /root/x-tools/${ARCH}-unknown-linux-gnu/ /opt/toolchains/${ARCH} && \
-    mv .config-${CROSS_ARCH} .config && \
-    ./ct-ng upgradeconfig && \
-    ./ct-ng build && \
-    mv /root/x-tools/${CROSS_ARCH}-unknown-linux-gnu/ /opt/toolchains/${CROSS_ARCH} && \
-    rm -rf /build
+# TODO: Add checksum
+# NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
+ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz \
+    https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
+    /tmp/crosstool-ng/
 
-RUN curl -LO "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
-    echo "${DPKG_ARMHF_SHA256}  dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" | sha256sum --check && \
-    tar -xf "dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" && \
-    cd "dpkg-${DPKG_ARMHF_VERSION}" && \
-    echo "${DPKG_ARMHF_VERSION}" > .dist-version && \
-    autoreconf -vfi && \
-    mkdir build && cd build && \
-    export DPKG_PREFIX=/opt/dpkg-armhf && \
-    PKG_CONFIG_PATH=/usr/local/lib/pkgconfig \
-    ../configure \
-      --host=arm-linux-gnueabihf \
-      --build=arm-linux-gnueabihf \
-      --program-suffix=-armhf \
-      --prefix="${DPKG_PREFIX}" \
-      --sysconfdir="${DPKG_PREFIX}/etc" \
-      --localstatedir="${DPKG_PREFIX}/var" \
-      --disable-nls \
-      --disable-dselect && \
-    make -j"$(nproc)" && \
-    make install && \
-    mkdir -p "${DPKG_PREFIX}/var/lib/dpkg" "${DPKG_PREFIX}/var/cache/dpkg" && \
-    install -m 0755 /dev/stdin "${DPKG_PREFIX}/bin/dpkg" <<EOF
-#!/bin/sh
-exec "${DPKG_PREFIX}/bin/dpkg-armhf" \\
-    --admindir="${DPKG_PREFIX}/var/lib/dpkg" \\
-    --instdir="${DPKG_PREFIX}" \\
-    "\$@"
-EOF
+COPY linux/${DATADOG_CI_ARCH}/config-${ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
+COPY linux/${DATADOG_CI_ARCH}/config-${CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CROSS_ARCH}
+RUN --mount=type=bind,src=./setup/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
+
+# Build dpkg-armhf
+ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" \
+    /tmp/dpkg-armhf/
+RUN --mount=type=bind,src=./setup/dpkg.sh,dst=/mnt/dpkg.sh cd /tmp/dpkg-armhf && /mnt/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
 # CONDA setup
+# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ENV DDA_VERSION=$DDA_VERSION
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
-RUN --mount=type=bind,dst=/mnt /mnt/setup/python.sh
+RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
+    --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    /mnt/python.sh
 ENV PATH="${CONDA_PATH}/condabin:${PATH}"
 
 # RVM setup
+ADD --checksum=sha256:fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e \
+    "https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer" \
+    /tmp/rvm/get-rvm.sh
 COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/* && \
-    rm -rf /gpg-keys && \
-    curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer && \
-    echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check && \
-    bash get-rvm.sh stable --version 1.29.12 && \
-    echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check && \
-    rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements" && \
-    /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all" && \
-    /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document" && \
-    echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+# TODO: Maybe deprecate the get-rvm.sh script and manually download and extract a tar.
+# The script we download does a lot of extra checking that we don't need in a Docker build.
+RUN --mount=type=bind,src=./setup/rvm.sh,dst=/mnt/rvm.sh cd /tmp/rvm && /mnt/rvm.sh && rm -rf /tmp/rvm
 
 # Protobuf
-RUN curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME} \
-    && echo "${PROTOBUF_SHA256}  ${PROTOBUF_FILENAME}" | sha256sum --check \
-    && unzip -o ${PROTOBUF_FILENAME} -d protoc3 \
-    && mv protoc3/bin/* /usr/bin/ \
-    && mv protoc3/include/* /usr/include/ \
-    && rm -rf protoc3 \
-    && rm ${PROTOBUF_FILENAME}
+ADD --checksum=sha256:${PROTOBUF_SHA256} "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOBUF_FILENAME}" /tmp/protobuf/${PROTOBUF_FILENAME}
+RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/protobuf.sh cd /tmp/protobuf && /mnt/protobuf.sh && rm -rf /tmp/protobuf
 
 # Go setup
+# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
-RUN --mount=type=bind,dst=/mnt /mnt/setup/go.sh
+RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/go.sh /mnt/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
 # Install & verify Bazelisk as Bazel bootstrapper
-RUN --mount=type=bind,dst=/mnt /mnt/setup/bazelisk.sh
+# TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
 
 # Rust setup
-RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init && \
-    echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check && \
-    chmod +x ./rustup-init && \
-    ./rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} && \
-    echo "${RUSTUP_SHA256}  /root/.cargo/bin/rustc" | sha256sum --check && \
-    rm ./rustup-init
+# TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
+ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
+RUN --mount=type=bind,src=./setup/rust.sh,dst=/mnt/rust.sh cd /tmp/rust && /mnt/rust.sh && rm -rf /tmp/rust
 ENV PATH="/root/.cargo/bin:${PATH}"
+RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
+
 
 # Install vault
-RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
-    echo "${VAULT_SHA256} ${VAULT_FILENAME}" | sha256sum --check && \
-    unzip -o ${VAULT_FILENAME} -d /usr/bin vault && \
-    rm ${VAULT_FILENAME} && \
-    # AWS v2 cli
-    curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip && \
-    echo "${AWSCLI_SHA256} awscliv2.zip" | sha256sum --check && \
-    unzip -q awscliv2.zip && \
-    ./aws/install && \
-    rm -rf aws awscliv2.zip
+ADD --checksum=sha256:${VAULT_SHA256} "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME}" /tmp/vault/vault.zip
+ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip" /tmp/vault/awscliv2.zip
+RUN --mount=type=bind,src=./setup/vault.sh,dst=/mnt/vault.sh cd /tmp/vault && /mnt/vault.sh && rm -rf /tmp/vault
 
 # Install Pulumi
-RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
-    mv ~/.pulumi/bin/* /usr/local/bin
+# TODO: Add logic to download the tarball directly instead of relying on this script
+# It's sort of dumb to checksum and cache a script instead of the actual tarball we're interested in
+ADD --checksum=sha256:1fe472a5915b416299df9a1b490e7e6d573d3c9f41c662ff4322a79bf4bf0550 https://get.pulumi.com/ /tmp/pulumi/get-pulumi.sh
+RUN chmod +x /tmp/pulumi/get-pulumi.sh && /tmp/pulumi/get-pulumi.sh --version $PULUMI_VERSION && mv ~/.pulumi/bin/* /usr/local/bin
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
 
 # Install CI uploader
-RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH} --output "/usr/local/bin/datadog-ci" && \
-    echo "${DATADOG_CI_SHA256} /usr/local/bin/datadog-ci" | sha256sum --check && \
-    chmod +x /usr/local/bin/datadog-ci
+ADD --checksum=sha256:${DATADOG_CI_SHA256} "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" /usr/local/bin/datadog-ci
+RUN chmod +x /usr/local/bin/datadog-ci
 
 # Install authanywhere for infra token management
-RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
-
+ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
+RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/authanywhere.sh
 # Install datadog-packages
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
 
 # Cleanup go caches - go env is only set in bashrc
 RUN /usr/local/go/bin/go clean -modcache -cache -testcache
