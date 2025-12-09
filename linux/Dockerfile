@@ -273,7 +273,7 @@ ARG ADDITIONAL_PACKAGE
 # These are the packages actually used when building datadog-agent, not for building the tools in this Dockerfile
 # TODO: See if we can remove some of these, we currently reinstall everything that was present before #997
 RUN apt-get update -qy && apt-get install -y --no-install-recommends \
-    autoconf autopoint \
+    automake autoconf autopoint \
     bison build-essential \
     bzip2 \
     clang clang-format cmake cpio curl \
