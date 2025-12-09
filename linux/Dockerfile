@@ -409,7 +409,8 @@ ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bi
 ENV PKG_CONFIG_LIBDIR=""
 
 # Set the version of the Rust toolchain to use by default
-ARG RUST_VERSION
+# This is duplicated from the rust_builder stage, which is not great - but the incoming PR introducing Docker bake will make this better
+ARG RUST_VERSION=1.91.0
 RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
 LABEL maintainer="DataDog"
