@@ -320,8 +320,10 @@ COPY --from=texinfo_builder /usr/local /usr/local
 
 # Vault
 COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
-COPY --from=vault_builder /usr/local/bin/aws* /usr/local/bin/
-COPY --from=vault_builder /usr/local/aws* /usr/local/
+COPY --from=vault_builder /usr/local/aws-cli /usr/local/aws-cli
+# The AWS executable is located in the aws-cli directory, and needs to be symlinked to /usr/local/bin/aws
+# Simply copying it does not work because it will then have trouble finding some .so files it comes with.
+RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
@@ -343,7 +345,6 @@ COPY --from=rust_builder /root/.cargo /root/.cargo
 
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
-
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
