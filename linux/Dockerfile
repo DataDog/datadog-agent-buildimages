@@ -323,13 +323,13 @@ COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
 COPY --from=vault_builder /usr/local/aws-cli /usr/local/aws-cli
 # The AWS executable is located in the aws-cli directory, and needs to be symlinked to /usr/local/bin/aws
 # Simply copying it does not work because it will then have trouble finding some .so files it comes with.
-RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws
+RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws && ln -s /usr/local/aws-cli/v2/current/bin/aws_completer /usr/local/bin/aws_completer
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
 
 # Pulumi
-COPY --from=pulumi_builder /usr/local/bin/pulumi /usr/local/bin/pulumi
+COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
@@ -346,16 +346,18 @@ COPY --from=rust_builder /root/.cargo /root/.cargo
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
 
-# Crosstool-ng
+# # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
-# Takes values from the ENV steps in the builder stage
+# # Takes values from the ENV steps in the builder stage
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Bazelisk
-COPY --from=bazelisk_builder /usr/bin/bazel* /usr/bin/
+# Copy and create symlinks
+COPY --from=bazelisk_builder /usr/local/bin/bazelisk1.* /usr/local/bin/
+RUN ln -s /usr/local/bin/bazelisk1.* /usr/local/bin/bazelisk && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
