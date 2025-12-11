@@ -181,7 +181,7 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 go install github.com/josharian/impl@latest
 go install github.com/fatih/gomodifytags@latest
 
-GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
+GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/7.73.x/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
 install-binary \
     --version "${GOLANGCI_LINT_VERSION}" \
     --digest "4830e93721c979daa00921ebcb311bb0165d9ad9b0dc89708cbbca1b02ef1f0a" \
