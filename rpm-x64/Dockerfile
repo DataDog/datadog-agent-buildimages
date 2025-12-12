@@ -22,8 +22,7 @@ ARG CMAKE_SHA256="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4ded
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="7e2846ff60c181d1f27d97c23c25a2295f5730b6d88612ddd53b4cbb8177c4b9"
 ARG DD_TARGET_ARCH=x64
-ARG RUST_VERSION=1.76.0
-ARG RUSTC_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
+ARG RUST_VERSION=1.91.0
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BINUTILS_VERSION="2.39"
@@ -79,9 +78,6 @@ COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 # We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
 RUN yum remove -y ruby
 
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
@@ -208,7 +204,7 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && echo "${RUSTUP_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 

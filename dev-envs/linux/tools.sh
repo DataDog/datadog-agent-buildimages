@@ -111,11 +111,11 @@ procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
 sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
 
-PDU_VERSION="0.11.0"
+PDU_VERSION="0.21.1"
 if [[ $arch == "x86_64" ]]; then
     install-binary \
         --version "${PDU_VERSION}" \
-        --digest "7da2abd0c438e0317271b34e4122d1d5818b124e3d70867309d4a92bfb34ac69" \
+        --digest "04713f163ec80867edc60e17f078e1139fbfe9c0cef8a19defead7e207936dbe" \
         --url "https://github.com/KSXGitHub/parallel-disk-usage/releases/download/{{version}}/pdu-${arch}-unknown-linux-musl" \
         --name "pdu"
 else
@@ -181,7 +181,7 @@ go install github.com/go-delve/delve/cmd/dlv@latest
 go install github.com/josharian/impl@latest
 go install github.com/fatih/gomodifytags@latest
 
-GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
+GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/7.73.x/internal/tools/go.mod | awk -Fv '/golangci-lint/ {print $2}')"
 install-binary \
     --version "${GOLANGCI_LINT_VERSION}" \
     --digest "4037af8122871f401ed874852a471e54f147ff8ce80f5a304e020503bdb806ef" \

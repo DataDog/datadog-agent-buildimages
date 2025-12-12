@@ -14,8 +14,7 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
-ARG RUST_VERSION=1.76.0
-ARG RUSTC_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
+ARG RUST_VERSION=1.91.0
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
 ARG RUSTUP_ARCH="aarch64-unknown-linux-gnu"
@@ -63,10 +62,6 @@ RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-$
     && cd - \
     && rm -rf "binutils-${BINUTILS_VERSION}" \
     && rm -rf "binutils-${BINUTILS_VERSION}.tar.gz"
-
-# Upgrade some perl modules since some of our dependencies require some "new" features
-# that were not available in centos 7
-RUN cpanp -i List::Util 1.66
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
@@ -153,7 +148,7 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --profile minimal --default-toolchain "${RUST_VERSION}" \
-    && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
+    && echo "${RUSTUP_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 

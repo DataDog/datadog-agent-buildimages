@@ -14,8 +14,7 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARMV6L
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
-ARG RUST_VERSION=1.76.0
-ARG RUSTC_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
+ARG RUST_VERSION=1.91.0
 ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
 ARG RUSTUP_ARCH="armv7-unknown-linux-gnueabihf"
@@ -127,7 +126,7 @@ RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTU
     && echo "${RUSTUP_SHA256}  rustup-init" | sha256sum --check \
     && chmod +x ./rustup-init \
     && ./rustup-init -y --default-host=${RUSTUP_ARCH} --profile minimal --default-toolchain ${RUST_VERSION} \
-    && echo "${RUSTC_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
+    && echo "${RUSTUP_SHA256}  ${HOME}/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "${HOME}/.cargo/bin:${PATH}"
 
