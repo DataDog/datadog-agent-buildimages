@@ -170,6 +170,7 @@ RUN --mount=type=bind,src=./setup/protobuf.sh,dst=/mnt/protobuf.sh cd /tmp/proto
 # Go setup
 # TODO: Refactor this once we have multistage so that each architecture has its own intermediate image
 ENV GOPATH=/go
+ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 RUN --mount=type=bind,src=./setup/go.sh,dst=/mnt/go.sh /mnt/go.sh
 ENV PATH="${GOPATH}/bin:${PATH}"
 
