@@ -271,8 +271,10 @@ FROM common_base AS final
 ARG ADDITIONAL_PACKAGE
 # Install extra runtime dependencies needed by the CI
 # These are the packages actually used when building datadog-agent, not for building the tools in this Dockerfile
+# TODO: Explicitly install all packages needed by datadog-agent - currently we rely on some packages only installed as dependencies of other packages.
+# In particular, adding `--no-install-recommends` to the apt-get install command will break the build, as we rely on some packages only installed as recommended dependencies of other packages.
 # TODO: See if we can remove some of these, we currently reinstall everything that was present before #997
-RUN apt-get update -qy && apt-get install -y --no-install-recommends \
+RUN apt-get update -qy && apt-get install -y \
     automake autoconf autopoint \
     bison build-essential \
     bzip2 \
@@ -295,6 +297,7 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     xz-utils \
     zlib1g-dev \
     ${ADDITIONAL_PACKAGE} \
+    && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Google Cloud SDK
