@@ -364,6 +364,7 @@ RUN ln -s /usr/local/bin/bazelisk1.* /usr/local/bin/bazelisk && ln -s /usr/local
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
+COPY --from=go_builder /usr/local/msgo /usr/local/msgo
 
 # Conda & Python
 ARG CONDA_PATH=/root/miniforge3
