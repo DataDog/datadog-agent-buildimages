@@ -7,6 +7,7 @@ variable "versions" {
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.27.0"
+    TEST_BAZEL_VERSION  = "7.6.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.29.0"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
@@ -241,6 +242,12 @@ target "linux-arm64" {
   inherits = ["_fake_linux-local"]
   platforms  = ["linux/arm64"]
   args       = args_arm64
+}
+
+target "linux-arm64-bazelisk" {
+  inherits = ["linux-arm64"]
+  target = "bazelisk_builder"
+  tags = ["testimage-bake-bazelisk"]
 }
 
 # ====== CI build targets ====== #

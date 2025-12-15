@@ -190,16 +190,6 @@ ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${G
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/go.sh cd /tmp/go && /mnt/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-FROM build_base AS bazelisk_builder
-# Install & verify Bazelisk as Bazel bootstrapper
-ARG BAZELISK_VERSION
-ARG BAZELISK_ARCH
-ARG BAZELISK_SHA256
-
-ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}" /tmp/bazelisk/bazelisk
-ENV PATH="/usr/local/bin:${PATH}"
-RUN --mount=type=bind,src=./linux/scripts/bazelisk.sh,dst=/mnt/bazelisk.sh cd /tmp/bazelisk && /mnt/bazelisk.sh && rm -rf /tmp/bazelisk
-
 FROM common_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
@@ -356,8 +346,19 @@ COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Bazelisk
-COPY --from=bazelisk_builder /usr/local/bin/bazelisk1.* /usr/local/bin/
-RUN ln -s /usr/local/bin/bazelisk1.* /usr/local/bin/bazelisk && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
+# Nothing to do except download the file, so no need to declare a stage for it
+ARG BAZELISK_VERSION
+ARG BAZELISK_ARCH
+ARG BAZELISK_SHA256
+
+ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH}" /usr/local/bin/bazelisk
+# Symlink bazelisk to bazel
+RUN ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
+
+# Verify Bazelisk properly bootstraps Bazel - this also preinstalls Bazel ${TEST_BAZEL_VERSION}
+ARG TEST_BAZEL_VERSION
+RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk
+RUN BAZELISK_HOME=/tmp/bazelisk USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} bazel --version | tee /dev/stderr | grep -Fqx "bazel ${TEST_BAZEL_VERSION}"
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
