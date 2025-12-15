@@ -370,6 +370,7 @@ COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 
 # Set up missing environment variables
 ENV GOPATH=/go
+ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 ENV PYTHONUTF8=1
 
 # Merge conda initialization with main bashrc
