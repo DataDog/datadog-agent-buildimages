@@ -36,12 +36,6 @@ trigger_tests:
 
 push_to_datadog_agent:
   stage: test
-  rules:
-    - if: $CI_COMMIT_MESSAGE !~ /^\[push_to_datadog_agent\]/
-      when: never
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: never
-    - !reference [.on_push]
   tags: ["arch:amd64"]
   # TODO: This is not great, we probably should not rely on _test_only images but as we don't push a `latest` tag for validated images we don't really have a choice.
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
