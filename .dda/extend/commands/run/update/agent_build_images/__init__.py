@@ -23,38 +23,39 @@ WORKFLOW_ID = 80540190
 )
 @click.argument("images_id")
 @click.argument("branch")
-@click.option("--go-version", help="The version of Go to use for the buildimages")
+@click.option(
+    "--go-version",
+    help="The version of Go to use for the buildimages. Can also be specified via the GO_VERSION environment variable.",
+    envvar="GO_VERSION",
+    required=True,
+)
 @click.option("--ref", default="main", help="The ref to trigger the workflow on")
 @click.option("--test-version", is_flag=True, help="Whether the images_id was generated on a dev branch")
-@click.option("--token", help="The token to use for the GitHub API", envvar="GITHUB_TOKEN")
+@click.option(
+    "--token",
+    help="""
+    Token for use with the GitHub API. Needs the permission to trigger workflows on `datadog-agent`.
+    If running locally, you can use `ddtool auth github token` to get a token.
+    Can also be specified via the GITHUB_TOKEN environment variable.
+    """,
+    envvar="GITHUB_TOKEN",
+    required=True,
+)
 @pass_app
 def cmd(
     app: Application,
     *,
     images_id: str,
     branch: str,
-    go_version: str | None,
+    go_version: str,
     ref: str,
     test_version: bool,
-    token: str | None,
+    token: str,
 ) -> None:
     """
     Update Agent Build Images.
     """
-    import os
-
     import github
-
-    if go_version is None:
-        go_version = os.environ.get("GO_VERSION")
-        if go_version is None:
-            app.abort("Either the '--go-version' argument or the GO_VERSION environment variable has to be provided")
-
-    # get the installation auth token
-    if token is None:
-        app.abort(
-            "The '--token' argument or the GITHUB_TOKEN environment variable has to be provided. If running locally, you can use `ddtool auth github` to get a token."
-        )
 
     gh = github.Github(login_or_token=token)
     repo = gh.get_repo(REPO_NAME)
