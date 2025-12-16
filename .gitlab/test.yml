@@ -43,8 +43,10 @@ push_to_datadog_agent:
       when: never
     - !reference [.on_push]
   tags: ["arch:amd64"]
-  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:v58799063-651eeeea
+  # TODO: This is not great, we probably should not rely on _test_only images but as we don't push a `latest` tag for validated images we don't really have a choice.
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: [] # do not download artifacts from other jobs
+  needs: [build_multiarch] # wait for the multiarch image to be built as it is used for this job's execution environment
   variables:
     SSM_GITHUB_APP_KEY: ci.datadog-agent.platform-github-app-key
     GITHUB_INSTALLATION_ID: 45116690
