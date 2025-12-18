@@ -50,7 +50,7 @@ push_to_datadog_agent:
       aud: dd-octo-sts
   before_script:
     # Get a restricted-permissions token for datadog-agent repository
-    - dd-octo-sts version
+    - dd-octo-sts debug
     - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
   script:
     - source /root/.bashrc
