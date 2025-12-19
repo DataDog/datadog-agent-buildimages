@@ -23,46 +23,41 @@ WORKFLOW_ID = 80540190
 )
 @click.argument("images_id")
 @click.argument("branch")
-@click.option("--go-version", help="The version of Go to use for the buildimages")
+@click.option(
+    "--go-version",
+    help="The version of Go to use for the buildimages. Can also be specified via the GO_VERSION environment variable.",
+    envvar="GO_VERSION",
+    required=True,
+)
 @click.option("--ref", default="main", help="The ref to trigger the workflow on")
 @click.option("--test-version", is_flag=True, help="Whether the images_id was generated on a dev branch")
+@click.option(
+    "--token",
+    help="""
+    Token for use with the GitHub API. Needs the permission to trigger workflows on `datadog-agent`.
+    If running locally, you can use `ddtool auth github token` to get a token.
+    Can also be specified via the GITHUB_TOKEN environment variable.
+    """,
+    envvar="GITHUB_TOKEN",
+    required=True,
+)
 @pass_app
 def cmd(
     app: Application,
     *,
     images_id: str,
     branch: str,
-    go_version: str | None,
+    go_version: str,
     ref: str,
     test_version: bool,
+    token: str,
 ) -> None:
     """
     Update Agent Build Images.
     """
-    import base64
-    import os
-
     import github
 
-    if go_version is None:
-        go_version = os.environ.get("GO_VERSION")
-        if go_version is None:
-            app.abort(
-                "Either the '--go-version' argument or the GO_VERSION environment variable has to be provided"
-            )
-
-    # get the installation auth token
-    app_auth = github.Auth.AppAuth(
-        os.environ["GITHUB_APP_ID"],
-        base64.b64decode(os.environ["GITHUB_KEY_B64"]).decode("ascii"),
-    )
-    installation_id = os.environ["GITHUB_INSTALLATION_ID"]
-    inst_auth = app_auth.get_installation_auth(
-        int(installation_id),
-        token_permissions={"contents": "write", "actions": "write"},
-    )
-
-    gh = github.Github(auth=inst_auth)
+    gh = github.Github(login_or_token=token)
     repo = gh.get_repo(REPO_NAME)
     wf = repo.get_workflow(WORKFLOW_ID)
 
