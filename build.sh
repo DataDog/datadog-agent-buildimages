@@ -44,6 +44,14 @@ if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
 fi
 
 # == Build arguments == #
+function add_build_args_from_file() {
+    if [[ -f "$1" ]]; then
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
+    done < "$1"
+fi
+}
+
 BUILD_ARG_LIST=()
 [[ -n "${BASE_IMAGE:-}" ]]         && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE=${BASE_IMAGE}")
 [[ -n "${BASE_IMAGE_TAG:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE_TAG=${BASE_IMAGE_TAG}")
@@ -52,25 +60,13 @@ BUILD_ARG_LIST=()
 [[ -n "${BUILDENV_REGISTRY:-}" ]]  && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
 
 # Add build args from go.env
-if [[ -f "go.env" ]]; then
-    while IFS= read -r line; do
-        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
-    done < go.env
-fi
+add_build_args_from_file "go.env"
 
 # Add build args from dda.env
-if [[ -f "dda.env" ]]; then
-    while IFS= read -r line; do
-        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
-    done < dda.env
-fi
+add_build_args_from_file "dda.env"
 
 # Add build args from custom build args file
-if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
-    while IFS= read -r line; do
-        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
-    done < "${BUILD_ARGS_FILE}"
-fi
+add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
 # Pass the CI_JOB_TOKEN if necessary
 CI_JOB_TOKEN_SECRET=
