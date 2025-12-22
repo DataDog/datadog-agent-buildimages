@@ -257,8 +257,8 @@ variable "CI_PIPELINE_ID" {
   // Use the gitlab-provided env var - if it is not set, will be empty
   default = ""
   validation {
-    condition     = strlen(CI_PIPELINE_ID) == 8 || CI == ""
-    error_message = "CI_PIPELINE_ID must be 8 characters long in CI environment"
+    condition     = CI_PIPELINE_ID != "" || CI == ""
+    error_message = "CI_PIPELINE_ID must be set in CI environment"
   }
 }
 
