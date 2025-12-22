@@ -184,11 +184,6 @@ variable CI_COMMIT_BRANCH {
   }
 }
 
-variable "CI_DEFAULT_BRANCH" {
-  type = string
-  default = "main"
-}
-
 variable "default_branch_name" {
   type = string
   default = "main"
@@ -242,12 +237,6 @@ target "linux-arm64" {
   inherits = ["_fake_linux-local"]
   platforms  = ["linux/arm64"]
   args       = args_arm64
-}
-
-target "linux-arm64-bazelisk" {
-  inherits = ["linux-arm64"]
-  target = "bazelisk_builder"
-  tags = ["testimage-bake-bazelisk"]
 }
 
 # ====== CI build targets ====== #
