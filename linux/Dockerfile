@@ -349,16 +349,15 @@ COPY --from=rust_builder /root/.cargo /root/.cargo
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
 
-# # Crosstool-ng
+# Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
-# # Takes values from the ENV steps in the builder stage
+
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Bazelisk
-# Copy and create symlinks
 COPY --from=bazelisk_builder /usr/local/bin/bazelisk1.* /usr/local/bin/
 RUN ln -s /usr/local/bin/bazelisk1.* /usr/local/bin/bazelisk && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 
@@ -369,7 +368,6 @@ COPY --from=go_builder /usr/local/msgo /usr/local/msgo
 # Conda & Python
 ARG CONDA_PATH=/root/miniforge3
 COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
-# Copy conda's bash initialization
 COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 
 # Set up missing environment variables
