@@ -43,12 +43,30 @@ if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
     PUSH="--push"
 fi
 
-# Collect build arguments
-GO_BUILD_ARGS=$(sed -e 's/^/--build-arg /' go.env | tr '\n' ' ')
-DDA_BUILD_ARGS=$(sed -e 's/^/--build-arg /' dda.env| tr '\n' ' ')
-if [[ -f "${BUILD_ARGS_FILE:-}" ]]; then
-    CUSTOM_BUILD_ARGS=$(sed -e 's/^/--build-arg /' "${BUILD_ARGS_FILE}" | tr '\n' ' ')
+# == Build arguments == #
+function add_build_args_from_file() {
+    if [[ -f "$1" ]]; then
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && BUILD_ARG_LIST+=("--build-arg" "$line")
+    done < "$1"
 fi
+}
+
+BUILD_ARG_LIST=()
+[[ -n "${BASE_IMAGE:-}" ]]         && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE=${BASE_IMAGE}")
+[[ -n "${BASE_IMAGE_TAG:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE_TAG=${BASE_IMAGE_TAG}")
+[[ -n "${ARCH:-}" ]]               && BUILD_ARG_LIST+=("--build-arg" "ARCH=${ARCH}")
+[[ -n "${DD_TARGET_ARCH:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "DD_TARGET_ARCH=${DD_TARGET_ARCH}")
+[[ -n "${BUILDENV_REGISTRY:-}" ]]  && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
+
+# Add build args from go.env
+add_build_args_from_file "go.env"
+
+# Add build args from dda.env
+add_build_args_from_file "dda.env"
+
+# Add build args from custom build args file
+add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
 # Pass the CI_JOB_TOKEN if necessary
 CI_JOB_TOKEN_SECRET=
@@ -64,15 +82,8 @@ docker buildx build \
 --pull $PUSH \
 $CACHE_PUSH_ARGS \
 $CACHE_PULL_ARGS \
---build-arg BASE_IMAGE=${BASE_IMAGE:-} \
---build-arg BASE_IMAGE_TAG=${BASE_IMAGE_TAG:-} \
---build-arg ARCH=${ARCH:-} \
---build-arg DD_TARGET_ARCH=${DD_TARGET_ARCH:-} \
---build-arg BUILDENV_REGISTRY=${BUILDENV_REGISTRY:-} \
+"${BUILD_ARG_LIST[@]}" \
 $CI_JOB_TOKEN_SECRET \
-$GO_BUILD_ARGS \
-$DDA_BUILD_ARGS \
-${CUSTOM_BUILD_ARGS:-} \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \

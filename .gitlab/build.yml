@@ -59,7 +59,7 @@ build_linux_x64:
     DOCKERFILE: linux/Dockerfile
     IMAGE: linux
     IMAGE_VERSION: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}-x64
-    BUILD_ARGS_FILE: linux/x64/build.env
+    BUILD_ARGS_FILE: linux/amd64/build.env
 
 build_rpm_x64:
   extends: [.medium_build, .always, .x64]
