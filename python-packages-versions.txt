@@ -2,5 +2,6 @@
 # and variable definitions here. Also don't quote variable values.
 
 DD_PIP_VERSION_PY3=24.2
+DD_PYYAML_VERSION_PY3=5.4.1
 DD_SETUPTOOLS_VERSION_PY3=75.8.2
 DD_UV_VERSION=0.8.4
