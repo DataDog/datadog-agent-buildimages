@@ -6,7 +6,7 @@ set -euxo pipefail
 
 VERSION="5.9"
 DIGEST="9b8d1ecedd5b5e81fbf1918e876752a7dd948e05c1a0dba10ab863842d45acd5"
-url="https://www.zsh.org/pub/zsh-${VERSION}.tar.xz"
+url="https://sourceforge.net/projects/zsh/files/zsh/${VERSION}/zsh-${VERSION}.tar.xz/download"
 
 archive_name=$(basename "${url}")
 workdir="/tmp/setup-${archive_name}"
