@@ -4,9 +4,13 @@ set -euxo pipefail
 
 # https://zsh.sourceforge.io/FAQ/zshfaq01.html#l7
 
-VERSION="5.9"
+# NOTE: When updating, switch back to using the official zsh.org URL.
+# The sourceforge URL is only used because the official URL is down.
+# For version 5.9, we have verified the digest to be the same, but for future releases the official download URL should be used.
+# VERSION="5.9"
 DIGEST="9b8d1ecedd5b5e81fbf1918e876752a7dd948e05c1a0dba10ab863842d45acd5"
-url="https://sourceforge.net/projects/zsh/files/zsh/${VERSION}/zsh-${VERSION}.tar.xz/download"
+# url="https://www.zsh.org/pub/zsh-${VERSION}.tar.xz"
+url="https://sourceforge.net/projects/zsh/files/zsh/5.9/zsh-5.9.tar.xz/download"
 
 archive_name=$(basename "${url}")
 workdir="/tmp/setup-${archive_name}"
