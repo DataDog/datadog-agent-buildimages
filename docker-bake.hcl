@@ -39,8 +39,8 @@ variable "checksums_common" {
 variable "checksums_amd64" {
   type = map(string)
   default = {
-    GO_SHA256                = "9e9b755d63b36acf30c12a9a3fc379243714c1c6d3dd72861da637f336ebb35b"
-    MSGO_SHA256              = "48e42b9e3554e106326d326624733fa7da9c4f315cd7e04d764adeb3f285c582"
+    GO_SHA256                = "b395b5d51d45cf2a19e61855edd7bafaa2dfeaafaf8d9649cb3262fd8b81a96a"
+    MSGO_SHA256              = "fcb994a7dc669b2046ac6355065d0f8a1597cf345a4f09da3a51c30108a873be"
     CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
     BAZELISK_SHA256          = "e1508323f347ad1465a887bc5d2bfb91cffc232d11e8e997b623227c6b32fb76"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
@@ -56,8 +56,8 @@ variable "checksums_amd64" {
 variable "checksums_arm64" {
   type = map(string)
   default = {
-    GO_SHA256                = "b00b694903d126c588c378e72d3545549935d3982635ba3f7a964c9fa23fe3b9"
-    MSGO_SHA256              = "011bb6986c2fd978d5a74e70b5d3905ee6e35a24137732b78ec319dfdbdb077a"
+    GO_SHA256                = "b254925e2bc55467595e9d9b15a4f61a9102d763a92a972c853e471f0e8365a9"
+    MSGO_SHA256              = "afa3149e14780aaa11d3c76646ca8e8741403a5400548ce94a447cd1670a9f83"
     CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     BAZELISK_SHA256          = "bb608519a440d45d10304eb684a73a2b6bb7699c5b0e5434361661b25f113a5d"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
