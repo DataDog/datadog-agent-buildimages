@@ -2,8 +2,8 @@
 variable "versions" {
   type = map(string)
   default = {
-    GO_VERSION          = "1.25.5"
-    MSGO_PATCH          = "1" // Patch version of the Microsoft Go distribution
+    GO_VERSION          = "1.26rc1"
+    MSGO_PATCH          = "2" // Patch version of the Microsoft Go distribution
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.27.0"
