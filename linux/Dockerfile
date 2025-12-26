@@ -358,10 +358,10 @@ RUN ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 # Verify Bazelisk properly bootstraps Bazel - this also preinstalls Bazel ${TEST_BAZEL_VERSION}
 ARG TEST_BAZEL_VERSION
 RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk
-RUN BAZELISK_HOME=/tmp/bazelisk\
-USE_BAZEL_VERSION=${TEST_BAZEL_VERSION}\
+RUN BAZELISK_HOME=/tmp/bazelisk \
+USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} \
 # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
-BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download\
+BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
 bazel --version | tee /dev/stderr | grep -Fqx "bazel ${TEST_BAZEL_VERSION}"
 
 # Go
