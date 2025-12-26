@@ -34,6 +34,8 @@ try {
     $output = & {
         $env:BAZELISK_HOME = "$bazeliskHome"
         $env:USE_BAZEL_VERSION = '7.6.1'
+        # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
+        $env:BAZELISK_BASE_URL = 'https://github.com/bazelbuild/bazel/releases/download'
         bazel --version
     }
     if ($output -ne 'bazel 7.6.1') {
