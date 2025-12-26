@@ -186,7 +186,7 @@ ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 
 ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
-ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
+ADD https://github.com/pgimalac/msgo/releases/download/v1.26rc1-2/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/go.sh cd /tmp/go && /mnt/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
