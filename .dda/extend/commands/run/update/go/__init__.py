@@ -105,7 +105,7 @@ def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
 
 def _get_msgo_sha256(version, msgo_patch) -> list[tuple[Platform, str]]:
     return _get_expected_sha256(
-        f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest"
+        f"{version}", f"https://github.com/pgimalac/msgo/releases/download/v{version}-{msgo_patch}"
     )
 
 
@@ -151,9 +151,9 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
 
     from utils.constants import PROJECT_ROOT
 
-    if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
+    if not re.match("[0-9]+.[0-9]+(.[0-9]+|rc[0-9]+)", version):
         app.abort(
-            f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
+            f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot, or an rc version like 1.26rc1."
         )
 
     shas = _get_go_upstream_sha256(version)
@@ -161,7 +161,7 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
     if check_archive:
         try:
             _check_archive(app, version, shas, "https://go.dev/dl")
-            _check_archive(app, version, msgo_shas, "https://aka.ms/golang/release/latest")
+            _check_archive(app, version, msgo_shas, f"https://github.com/pgimalac/msgo/releases/download/v{version}-{msgo_patch}")
         except Exception as e:
             app.abort(str(e))
 
