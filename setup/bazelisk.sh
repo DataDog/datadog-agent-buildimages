@@ -23,4 +23,4 @@ ln -s bazelisk /usr/local/bin/bazel
 
 echo "Verifying Bazelisk $version properly bootstraps Bazel..."
 readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk$version
-BAZELISK_HOME=$tmp_dir USE_BAZEL_VERSION=7.6.1 bazel --version | tee /dev/stderr | grep -Fqx 'bazel 7.6.1'
+BAZELISK_HOME=$tmp_dir USE_BAZEL_VERSION=7.6.1 BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download bazel --version | tee /dev/stderr | grep -Fqx 'bazel 7.6.1'
