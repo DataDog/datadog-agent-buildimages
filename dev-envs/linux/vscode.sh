@@ -103,11 +103,13 @@ function install_vscode() {
     mkdir -p "${extensions_dir}"
     ln -s "${extensions_dir}" "${root_dir}/extensions"
 
-    # Ugly hack to remove github.copilot and yzhang.markdown-all-in-one extensions when we install cursor
+    # Ugly hack to remove incompatible extensions when installing cursor
+    # TODO(agent-devx): Install extensions using .vsix files instead of the extension gallery
     cp "$(dirname "${BASH_SOURCE[0]}")"/default-vscode-extensions.txt /tmp
     if [[ "${root_dir_name}" == ".cursor-server" ]]; then
         sed -i '/github.copilot/d' /tmp/default-vscode-extensions.txt
         sed -i '/yzhang.markdown-all-in-one/d' /tmp/default-vscode-extensions.txt
+        sed -i '/github.vscode-github-actions/d' /tmp/default-vscode-extensions.txt
     fi
 
     install-vscode-extensions /tmp/default-vscode-extensions.txt "${binary_name}-server"
