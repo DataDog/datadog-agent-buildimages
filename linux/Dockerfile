@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ubuntu:24.04
+ARG BASE_IMAGE=ubuntu:noble-20251013
 
 # Specify dd-octo-sts version in root scope as it is used in a stage definition (FROM instruction)
 ARG DD_OCTO_STS_VERSION=latest
