@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import TYPE_CHECKING, TypeAlias
 
 import click
@@ -145,6 +146,28 @@ def _update_go_env(
             f.write(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
 
 
+def _update_bakefile_override(
+    app: Application, version: str, msgo_patch: str, shas: dict[Platform, str], msgo_shas: dict[Platform, str]
+):
+    import json
+
+    from utils.constants import PROJECT_ROOT
+
+    # Trick to created a defaultdict of defaultdicts all the way down
+    nested_dict = lambda: defaultdict(nested_dict)  # type: ignore # noqa
+    data = nested_dict()
+
+    data["variable"]["go_versions"]["default"]["GO_VERSION"] = version
+    data["variable"]["go_versions"]["default"]["MSGO_PATCH"] = msgo_patch
+    data["variable"]["go_checksums_amd64"]["default"]["GO_SHA256"] = shas[("linux", "amd64")]
+    data["variable"]["go_checksums_arm64"]["default"]["GO_SHA256"] = shas[("linux", "arm64")]
+    data["variable"]["go_checksums_amd64"]["default"]["MSGO_SHA256"] = msgo_shas[("linux", "amd64")]
+    data["variable"]["go_checksums_arm64"]["default"]["MSGO_SHA256"] = msgo_shas[("linux", "arm64")]
+
+    with PROJECT_ROOT.joinpath("docker-bake.override.json").open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
 def _display_shas(app: Application, shas: dict[Platform, str], toolchain: str):
     app.display(f"--- {toolchain} ---")
     for os, arch in PLATFORMS:
@@ -189,3 +212,4 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
         app.abort(str(e))
 
     _update_go_env(app, version, msgo_patch, shas, msgo_shas)
+    _update_bakefile_override(app, version, msgo_patch, shas, msgo_shas)
