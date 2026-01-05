@@ -166,6 +166,7 @@ def _update_bakefile_override(
 
     with PROJECT_ROOT.joinpath("docker-bake.override.json").open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
+        f.write("\n")
 
 
 def _display_shas(app: Application, shas: dict[Platform, str], toolchain: str):
