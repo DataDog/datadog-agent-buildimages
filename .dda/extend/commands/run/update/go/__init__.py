@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, TypeAlias
 
 import click
@@ -34,11 +34,11 @@ def _get_archive_extension(os: str) -> str:
     return "tar.gz"
 
 
-def _get_expected_sha256(version: str, base_url: str) -> dict[Platform, str]:
+def _get_expected_sha256(version: str, base_url: str) -> OrderedDict[Platform, str]:
     """returns a map from platform to sha of the archive"""
     import httpx
 
-    shas: dict[Platform, str] = {}
+    shas: OrderedDict[Platform, str] = OrderedDict()
     for os, arch in PLATFORMS:
         ext = _get_archive_extension(os)
         url = f"{base_url}/go{version}.{os}-{arch}.{ext}.sha256"
@@ -60,7 +60,7 @@ def _get_expected_sha256(version: str, base_url: str) -> dict[Platform, str]:
     return shas
 
 
-def _get_go_upstream_sha256(version) -> dict[Platform, str]:
+def _get_go_upstream_sha256(version) -> OrderedDict[Platform, str]:
     """Get SHA256 checksums for Go version from go.dev/dl API"""
     import httpx
 
@@ -82,7 +82,7 @@ def _get_go_upstream_sha256(version) -> dict[Platform, str]:
         raise ValueError(f"Go version {target_version} not found in releases")
 
     # Extract SHA256 for each platform
-    shas: dict[Platform, str] = {}
+    shas: OrderedDict[Platform, str] = OrderedDict()
     for os, arch in PLATFORMS:
         # Find the matching file for this platform
         matching_file = None
@@ -105,11 +105,11 @@ def _get_go_upstream_sha256(version) -> dict[Platform, str]:
     return shas
 
 
-def _get_msgo_sha256(version, msgo_patch) -> dict[Platform, str]:
+def _get_msgo_sha256(version, msgo_patch) -> OrderedDict[Platform, str]:
     return _get_expected_sha256(f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest")
 
 
-def _check_archive(app: Application, version: str, shas: dict[Platform, str], base_url: str):
+def _check_archive(app: Application, version: str, shas: OrderedDict[Platform, str], base_url: str):
     """checks that the archive sha is the same as the given one"""
     import hashlib
 
@@ -132,8 +132,8 @@ def _update_go_env(
     app: Application,
     version: str,
     msgo_patch: str,
-    shas: dict[Platform, str],
-    msgo_shas: dict[Platform, str],
+    shas: OrderedDict[Platform, str],
+    msgo_shas: OrderedDict[Platform, str],
 ):
     from utils.constants import PROJECT_ROOT
 
@@ -147,7 +147,11 @@ def _update_go_env(
 
 
 def _update_bakefile_override(
-    app: Application, version: str, msgo_patch: str, shas: dict[Platform, str], msgo_shas: dict[Platform, str]
+    app: Application,
+    version: str,
+    msgo_patch: str,
+    shas: OrderedDict[Platform, str],
+    msgo_shas: OrderedDict[Platform, str],
 ):
     import json
 
