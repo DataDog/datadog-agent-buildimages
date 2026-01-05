@@ -123,33 +123,16 @@ variable "misc_args_arm64" {
   }
 }
 
-// Stub variables for Go-specific configs (defined in docker-bake.override.json)
-// These are defined here to prevent errors if override file is missing
-variable "go_versions" {
-  type = map(string)
-  default = {}
-}
-
-variable "go_checksums_amd64" {
-  type = map(string)
-  default = {}
-}
-
-variable "go_checksums_arm64" {
-  type = map(string)
-  default = {}
-}
-
 // AMD64 architecture specific arguments
 variable "args_amd64" {
   type = map(string)
   default = merge(
     versions,
-    go_versions,
+    go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_amd64,
     checksums_amd64,
-    go_checksums_amd64,
+    go_checksums_amd64, # Defined in docker-bake.override.json
     misc_args_amd64,
   )
 }
@@ -159,11 +142,11 @@ variable "args_arm64" {
   type = map(string)
   default = merge(
     versions,
-    go_versions,
+    go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_arm64,
     checksums_arm64,
-    go_checksums_arm64,
+    go_checksums_arm64, # Defined in docker-bake.override.json
     misc_args_arm64,
   )
 }
