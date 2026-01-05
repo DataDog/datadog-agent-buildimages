@@ -1,9 +1,15 @@
 # ====== Build arguments ====== #
+
+# === NOTE ABOUT GO === #
+# Everything related to Go is handled in the override file docker-bake.override.json
+# This makes it easier to update the Go version and checksums via the `dda run update go` command.
+# The override file is automatically loaded by docker buildx bake and updates some
+# Go-specific variables (go_versions, go_checksums_amd64, go_checksums_arm64) which are then
+# merged into the final args below.
+
 variable "versions" {
   type = map(string)
   default = {
-    GO_VERSION          = "1.25.5"
-    MSGO_PATCH          = "1" // Patch version of the Microsoft Go distribution
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.27.0"
@@ -39,8 +45,6 @@ variable "checksums_common" {
 variable "checksums_amd64" {
   type = map(string)
   default = {
-    GO_SHA256                = "9e9b755d63b36acf30c12a9a3fc379243714c1c6d3dd72861da637f336ebb35b"
-    MSGO_SHA256              = "48e42b9e3554e106326d326624733fa7da9c4f315cd7e04d764adeb3f285c582"
     CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
     BAZELISK_SHA256          = "e1508323f347ad1465a887bc5d2bfb91cffc232d11e8e997b623227c6b32fb76"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
@@ -56,8 +60,6 @@ variable "checksums_amd64" {
 variable "checksums_arm64" {
   type = map(string)
   default = {
-    GO_SHA256                = "b00b694903d126c588c378e72d3545549935d3982635ba3f7a964c9fa23fe3b9"
-    MSGO_SHA256              = "011bb6986c2fd978d5a74e70b5d3905ee6e35a24137732b78ec319dfdbdb077a"
     CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     BAZELISK_SHA256          = "bb608519a440d45d10304eb684a73a2b6bb7699c5b0e5434361661b25f113a5d"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
@@ -121,14 +123,33 @@ variable "misc_args_arm64" {
   }
 }
 
+// Stub variables for Go-specific configs (defined in docker-bake.override.json)
+// These are defined here to prevent errors if override file is missing
+variable "go_versions" {
+  type = map(string)
+  default = {}
+}
+
+variable "go_checksums_amd64" {
+  type = map(string)
+  default = {}
+}
+
+variable "go_checksums_arm64" {
+  type = map(string)
+  default = {}
+}
+
 // AMD64 architecture specific arguments
 variable "args_amd64" {
   type = map(string)
   default = merge(
     versions,
+    go_versions,
     checksums_common,
     architecture_defs_amd64,
     checksums_amd64,
+    go_checksums_amd64,
     misc_args_amd64,
   )
 }
@@ -138,9 +159,11 @@ variable "args_arm64" {
   type = map(string)
   default = merge(
     versions,
+    go_versions,
     checksums_common,
     architecture_defs_arm64,
     checksums_arm64,
+    go_checksums_arm64,
     misc_args_arm64,
   )
 }
