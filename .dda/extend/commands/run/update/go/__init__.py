@@ -104,9 +104,7 @@ def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
 
 
 def _get_msgo_sha256(version, msgo_patch) -> list[tuple[Platform, str]]:
-    return _get_expected_sha256(
-        f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest"
-    )
+    return _get_expected_sha256(f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest")
 
 
 def _check_archive(app: Application, version: str, shas: list[tuple[Platform, str]], base_url: str):
@@ -126,6 +124,24 @@ def _check_archive(app: Application, version: str, shas: list[tuple[Platform, st
         if sha != expected_sha:
             message = f"The SHA256 of Go on {os}/{arch} should be {expected_sha}, but got {sha}"
             raise ValueError(message)
+
+
+def _update_go_env(
+    app: Application,
+    version: str,
+    msgo_patch: str,
+    shas: list[tuple[Platform, str]],
+    msgo_shas: list[tuple[Platform, str]],
+):
+    from utils.constants import PROJECT_ROOT
+
+    with PROJECT_ROOT.joinpath("go.env").open("w", encoding="utf-8") as f:
+        f.write(f"GO_VERSION={version}\n")
+        f.write(f"MSGO_PATCH={msgo_patch}\n")
+        for (os, arch), sha in shas:
+            f.write(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
+        for (os, arch), sha in msgo_shas:
+            f.write(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
 
 
 def _display_shas(app: Application, shas: list[tuple[Platform, str]], toolchain: str):
@@ -149,8 +165,6 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
     """
     import re
 
-    from utils.constants import PROJECT_ROOT
-
     if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
         app.abort(
             f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
@@ -165,19 +179,11 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
         except Exception as e:
             app.abort(str(e))
 
-    app.display(
-        f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
-    )
+    app.display(f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:")
     try:
         _display_shas(app, shas, "Upstream Go")
         _display_shas(app, msgo_shas, "Microsoft Go")
     except Exception as e:
         app.abort(str(e))
 
-    with PROJECT_ROOT.joinpath("go.env").open("w", encoding="utf-8") as f:
-        f.write(f"GO_VERSION={version}\n")
-        f.write(f"MSGO_PATCH={msgo_patch}\n")
-        for (os, arch), sha in shas:
-            f.write(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
-        for (os, arch), sha in msgo_shas:
-            f.write(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
+    _update_go_env(app, version, msgo_patch, shas, msgo_shas)
