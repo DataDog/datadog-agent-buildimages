@@ -157,19 +157,20 @@ def _update_bakefile_override(
 
     from utils.constants import PROJECT_ROOT
 
-    # Trick to created a defaultdict of defaultdicts all the way down
-    nested_dict = lambda: defaultdict(nested_dict)  # type: ignore # noqa
-    data = nested_dict()
-
-    data["variable"]["go_versions"]["default"]["GO_VERSION"] = version
-    data["variable"]["go_versions"]["default"]["MSGO_PATCH"] = msgo_patch
-    data["variable"]["go_checksums_amd64"]["default"]["GO_SHA256"] = shas[("linux", "amd64")]
-    data["variable"]["go_checksums_arm64"]["default"]["GO_SHA256"] = shas[("linux", "arm64")]
-    data["variable"]["go_checksums_amd64"]["default"]["MSGO_SHA256"] = msgo_shas[("linux", "amd64")]
-    data["variable"]["go_checksums_arm64"]["default"]["MSGO_SHA256"] = msgo_shas[("linux", "arm64")]
+    bakefile_data = {
+        "variable": {
+            "go_versions": {"default": {"GO_VERSION": version, "MSGO_PATCH": msgo_patch}},
+            "go_checksums_amd64": {
+                "default": {"GO_SHA256": shas[("linux", "amd64")], "MSGO_SHA256": msgo_shas[("linux", "amd64")]}
+            },
+            "go_checksums_arm64": {
+                "default": {"GO_SHA256": shas[("linux", "arm64")], "MSGO_SHA256": msgo_shas[("linux", "arm64")]}
+            },
+        }
+    }
 
     with PROJECT_ROOT.joinpath("docker-bake.override.json").open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+        json.dump(bakefile_data, f, indent=2)
         f.write("\n")
 
 
