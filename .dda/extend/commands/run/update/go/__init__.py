@@ -26,6 +26,13 @@ PLATFORMS: list[Platform] = [
     ("windows", "amd64"),
 ]
 
+# Platforms used in the bakefile - only a subset are currently supported
+# The rest are used only for building legacy images
+BAKEFILE_PLATFORMS: list[Platform] = [
+    ("linux", "amd64"),
+    ("linux", "arm64"),
+]
+
 
 def _get_archive_extension(os: str) -> str:
     """returns the extension of the archive for the given os"""
@@ -160,14 +167,13 @@ def _update_bakefile_override(
     bakefile_data = {
         "variable": {
             "go_versions": {"default": {"GO_VERSION": version, "MSGO_PATCH": msgo_patch}},
-            "go_checksums_amd64": {
-                "default": {"GO_SHA256": shas[("linux", "amd64")], "MSGO_SHA256": msgo_shas[("linux", "amd64")]}
-            },
-            "go_checksums_arm64": {
-                "default": {"GO_SHA256": shas[("linux", "arm64")], "MSGO_SHA256": msgo_shas[("linux", "arm64")]}
-            },
         }
     }
+
+    for os, arch in BAKEFILE_PLATFORMS:
+        bakefile_data["variable"][f"go_checksums_{arch}"] = {
+            "default": {"GO_SHA256": shas[(os, arch)], "MSGO_SHA256": msgo_shas[(os, arch)]}
+        }
 
     with PROJECT_ROOT.joinpath("docker-bake.override.json").open("w", encoding="utf-8") as f:
         json.dump(bakefile_data, f, indent=2)
