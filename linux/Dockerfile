@@ -270,7 +270,6 @@ RUN apt-get update -qy && apt-get install -y \
     fakeroot file flex \
     gawk gettext git gnupg2 gpg \
     help2man \
-    yq \
     libcurl4-openssl-dev libexpat1-dev libgdbm-dev libgmp-dev libncurses-dev \
     libpq-dev libreadline-dev libseccomp-dev libsqlite3-dev libssl-dev \
     libsystemd-dev libtool-bin libyaml-dev linux-headers-generic \
