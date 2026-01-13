@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ubuntu:noble-20251013
+ARG BASE_IMAGE=ubuntu:jammy-20251013
 
 # Specify dd-octo-sts version in root scope as it is used in a stage definition (FROM instruction)
 ARG DD_OCTO_STS_VERSION=latest
@@ -61,7 +61,6 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     cpio \
     xsltproc \
     linux-headers-generic \
-    yq \
     libsystemd-dev \
     clang-format \
     libseccomp-dev \
