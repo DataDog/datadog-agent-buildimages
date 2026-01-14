@@ -21,7 +21,7 @@ release:
         IMG_DESTINATIONS: agent-buildimages-rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_x64:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-rpm_arm64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_arm64:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-x64,registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64,registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64
         IMG_DESTINATIONS: agent-buildimages-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-linux:latest
 
 release_windows:
