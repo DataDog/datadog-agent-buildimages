@@ -2,7 +2,7 @@
 # see https://github.com/DataDog/ci-identities/tree/main/apps/ci-identities-gitlab-job-client
 
 param (
-    [Parameter(Mandatory=$true)][string]$VERSION,
+    [Parameter(Mandatory=$true)][string]$VERSION
 )
 
 $DESTINATION = "C:\devtools\ci-identities-gitlab-job-client.exe"
