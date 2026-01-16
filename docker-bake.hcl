@@ -13,7 +13,7 @@ variable "versions" {
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.27.0"
-    TEST_BAZEL_VERSION  = "8.4.2" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
+    TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.31.0"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
