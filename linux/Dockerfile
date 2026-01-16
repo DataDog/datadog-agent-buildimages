@@ -255,6 +255,22 @@ RUN --mount=type=secret,id=gitlab-token,env=GITLAB_TOKEN,required=true \
     --mount=type=bind,src=./linux/scripts/datadog_packages.sh,dst=/mnt/datadog_packages.sh \
     /mnt/datadog_packages.sh
 
+FROM build_base AS bpftool_builder
+
+# Install deps from btf-gen image
+RUN apt-get update -qy && apt-get install -y --no-install-recommends \
+    clang make ninja-build \
+    libbz2-dev libcap-dev libelf-dev liblzma-dev libncurses5-dev \
+    libsqlite3-dev libxml2-dev libxmlsec1-dev zlib1g-dev \
+    lld llvm llvm-dev \
+    software-properties-common tk-dev unzip \
+    && apt autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install bpftool at a specific commit
+ADD --keep-git-dir https://github.com/libbpf/bpftool.git#77a72987353fcae8ce330fd87d4c7afb7677a169 /tmp/bpftool
+RUN cd /tmp/bpftool && git submodule update --init && make -C src/ V=1 install
+
 FROM common_base AS final
 
 ARG ADDITIONAL_PACKAGE
@@ -319,6 +335,9 @@ RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws && ln -s /usr
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
+
+# bpftool
+COPY --from=bpftool_builder /usr/local/sbin/bpftool /usr/local/sbin/bpftool
 
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
