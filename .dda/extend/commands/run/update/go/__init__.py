@@ -59,7 +59,7 @@ def _get_expected_sha256(version: str, base_url: str) -> list[tuple[Platform, st
 
 
 def _get_go_upstream_sha256(version):
-    return _get_expected_sha256(version, "https://storage.googleapis.com/golang")
+    return _get_expected_sha256(version, "https://dl.google.com/go/")
 
 
 def _get_msgo_sha256(version, msgo_patch):
