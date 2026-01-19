@@ -38,7 +38,7 @@ try {
         $env:BAZELISK_BASE_URL = 'https://github.com/bazelbuild/bazel/releases/download'
         bazel --version
     }
-    if ($output -ne 'bazel 7.6.1') {
+    if ($output -ne 'bazel 8.5.1') {
         throw "Unexpected bazel version: '$output'"
     }
 } finally {
