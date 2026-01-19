@@ -29,7 +29,6 @@ variable "versions" {
     DATADOG_PACKAGES_VERSION = "bb430d549b551c0aeb466f3f38470971dabdef2c"
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
-    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION = "v0.3.0"
   }
 }
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
