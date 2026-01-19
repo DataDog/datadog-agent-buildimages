@@ -33,6 +33,9 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
+# Install git from PPA to install latest version of git that is not available in Ubuntu 18.04 repos
+RUN apt-get update && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:git-core/ppa
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
