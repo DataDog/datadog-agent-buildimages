@@ -373,6 +373,7 @@ COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
 ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 ENV PYTHONUTF8=1
+ENV DDA_NO_DYNAMIC_DEPS=1
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
