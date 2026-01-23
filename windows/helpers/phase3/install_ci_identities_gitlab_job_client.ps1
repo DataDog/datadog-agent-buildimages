@@ -8,10 +8,23 @@ param (
 
 $DESTINATION = "C:\devtools\ci-identities-gitlab-job-client.exe"
 
-aws s3 cp s3://binaries-ddbuild-io-prod/ci-identities/ci-identities-gitlab-job-client/versions/$Version/ci-identities-gitlab-job-client-windows-amd64.exe $DESTINATION
+# the file was downloaded in the CI job before running the "docker build" command
+# because it's hard to run "aws s3 cp" in the build container;
+# see .gitlab/build.yml
+Copy-Item -Path "C:\mnt\ci-identities-gitlab-job-client-windows-amd64.exe" -Destination $DESTINATION
 
 if ( -not (Test-Path $DESTINATION)) {
     Write-Host -ForegroundColor Red "$DESTINATION not found"
+    exit 1
+}
+
+# Verify version
+$versionOutput = & $DESTINATION version 2>&1
+if ($versionOutput -notmatch [regex]::Escape($Version)) {
+    Write-Host -ForegroundColor Red "Version mismatch for $DESTINATION"
+    Write-Host -ForegroundColor Red "Expected version: $Version"
+    Write-Host -ForegroundColor Red "Actual output: $versionOutput"
+    Remove-Item $DESTINATION
     exit 1
 }
 
