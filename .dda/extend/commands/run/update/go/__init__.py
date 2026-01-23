@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
+from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, TypeAlias
 
 import click
@@ -25,6 +26,13 @@ PLATFORMS: list[Platform] = [
     ("windows", "amd64"),
 ]
 
+# Platforms used in the bakefile - only a subset are currently supported
+# The rest are used only for building legacy images
+BAKEFILE_PLATFORMS: list[Platform] = [
+    ("linux", "amd64"),
+    ("linux", "arm64"),
+]
+
 
 def _get_archive_extension(os: str) -> str:
     """returns the extension of the archive for the given os"""
@@ -33,11 +41,11 @@ def _get_archive_extension(os: str) -> str:
     return "tar.gz"
 
 
-def _get_expected_sha256(version: str, base_url: str) -> list[tuple[Platform, str]]:
+def _get_expected_sha256(version: str, base_url: str) -> OrderedDict[Platform, str]:
     """returns a map from platform to sha of the archive"""
     import httpx
 
-    shas: list[tuple[Platform, str]] = []
+    shas: OrderedDict[Platform, str] = OrderedDict()
     for os, arch in PLATFORMS:
         ext = _get_archive_extension(os)
         url = f"{base_url}/go{version}.{os}-{arch}.{ext}.sha256"
@@ -54,11 +62,12 @@ def _get_expected_sha256(version: str, base_url: str) -> list[tuple[Platform, st
         if len(sha) != 64:
             message = f"The SHA256 of Go on {os}/{arch} has an unexpected format: '{sha}'"
             raise ValueError(message)
-        shas.append(((os, arch), sha))
+        shas[(os, arch)] = sha
+
     return shas
 
 
-def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
+def _get_go_upstream_sha256(version) -> OrderedDict[Platform, str]:
     """Get SHA256 checksums for Go version from go.dev/dl API"""
     import httpx
 
@@ -80,7 +89,7 @@ def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
         raise ValueError(f"Go version {target_version} not found in releases")
 
     # Extract SHA256 for each platform
-    shas: list[tuple[Platform, str]] = []
+    shas: OrderedDict[Platform, str] = OrderedDict()
     for os, arch in PLATFORMS:
         # Find the matching file for this platform
         matching_file = None
@@ -98,24 +107,22 @@ def _get_go_upstream_sha256(version) -> list[tuple[Platform, str]]:
         if len(sha) != 64:
             raise ValueError(f"Invalid SHA256 format for Go {target_version} on {os}/{arch}: '{sha}'")
 
-        shas.append(((os, arch), sha))
+        shas[(os, arch)] = sha
 
     return shas
 
 
-def _get_msgo_sha256(version, msgo_patch) -> list[tuple[Platform, str]]:
-    return _get_expected_sha256(
-        f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest"
-    )
+def _get_msgo_sha256(version, msgo_patch) -> OrderedDict[Platform, str]:
+    return _get_expected_sha256(f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest")
 
 
-def _check_archive(app: Application, version: str, shas: list[tuple[Platform, str]], base_url: str):
+def _check_archive(app: Application, version: str, shas: OrderedDict[Platform, str], base_url: str):
     """checks that the archive sha is the same as the given one"""
     import hashlib
 
     import httpx
 
-    for (os, arch), expected_sha in shas:
+    for (os, arch), expected_sha in shas.items():
         ext = _get_archive_extension(os)
         url = f"{base_url}/go{version}.{os}-{arch}.{ext}"
         app.display(f"[check-archive] Fetching archive at {url}")
@@ -128,9 +135,55 @@ def _check_archive(app: Application, version: str, shas: list[tuple[Platform, st
             raise ValueError(message)
 
 
-def _display_shas(app: Application, shas: list[tuple[Platform, str]], toolchain: str):
+def _update_go_env(
+    app: Application,
+    version: str,
+    msgo_patch: str,
+    shas: OrderedDict[Platform, str],
+    msgo_shas: OrderedDict[Platform, str],
+):
+    from utils.constants import PROJECT_ROOT
+
+    with PROJECT_ROOT.joinpath("go.env").open("w", encoding="utf-8") as f:
+        f.write(f"GO_VERSION={version}\n")
+        f.write(f"MSGO_PATCH={msgo_patch}\n")
+        for (os, arch), sha in shas.items():
+            f.write(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
+        for (os, arch), sha in msgo_shas.items():
+            f.write(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
+
+
+def _update_bakefile_override(
+    app: Application,
+    version: str,
+    msgo_patch: str,
+    shas: OrderedDict[Platform, str],
+    msgo_shas: OrderedDict[Platform, str],
+):
+    import json
+
+    from utils.constants import PROJECT_ROOT
+
+    bakefile_data = {
+        "variable": {
+            "go_versions": {"default": {"GO_VERSION": version, "MSGO_PATCH": msgo_patch}},
+        }
+    }
+
+    for os, arch in BAKEFILE_PLATFORMS:
+        bakefile_data["variable"][f"go_checksums_{arch}"] = {
+            "default": {"GO_SHA256": shas[(os, arch)], "MSGO_SHA256": msgo_shas[(os, arch)]}
+        }
+
+    with PROJECT_ROOT.joinpath("docker-bake.override.json").open("w", encoding="utf-8") as f:
+        json.dump(bakefile_data, f, indent=2)
+        f.write("\n")
+
+
+def _display_shas(app: Application, shas: dict[Platform, str], toolchain: str):
     app.display(f"--- {toolchain} ---")
-    for (os, arch), sha in shas:
+    for os, arch in PLATFORMS:
+        sha = shas[(os, arch)]
         platform = f"[{os}/{arch}]"
         app.display(f"{platform: <15} {sha}")
 
@@ -149,8 +202,6 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
     """
     import re
 
-    from utils.constants import PROJECT_ROOT
-
     if not re.match("[0-9]+.[0-9]+.[0-9]+", version):
         app.abort(
             f"The version {version} doesn't have an expected format, it should be 3 numbers separated with a dot."
@@ -165,19 +216,12 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
         except Exception as e:
             app.abort(str(e))
 
-    app.display(
-        f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:"
-    )
+    app.display(f"Please check that you see the same SHAs on https://go.dev/dl for go{version}:")
     try:
         _display_shas(app, shas, "Upstream Go")
         _display_shas(app, msgo_shas, "Microsoft Go")
     except Exception as e:
         app.abort(str(e))
 
-    with PROJECT_ROOT.joinpath("go.env").open("w", encoding="utf-8") as f:
-        f.write(f"GO_VERSION={version}\n")
-        f.write(f"MSGO_PATCH={msgo_patch}\n")
-        for (os, arch), sha in shas:
-            f.write(f"GO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
-        for (os, arch), sha in msgo_shas:
-            f.write(f"MSGO_SHA256_{os.upper()}_{arch.upper()}={sha}\n")
+    _update_go_env(app, version, msgo_patch, shas, msgo_shas)
+    _update_bakefile_override(app, version, msgo_patch, shas, msgo_shas)
