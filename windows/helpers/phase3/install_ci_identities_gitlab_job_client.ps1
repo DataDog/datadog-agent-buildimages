@@ -29,7 +29,7 @@ if ($versionOutput -notmatch [regex]::Escape($Version)) {
 }
 
 $actualHash = (Get-FileHash -Algorithm SHA256 $DESTINATION).Hash
-if ($actualHash -ne $Sha256) {
+if ($actualHash.ToUpper() -ne $Sha256.ToUpper()) {
     Write-Host -ForegroundColor Red "Hash mismatch for $DESTINATION"
     Write-Host -ForegroundColor Red "Expected: $Sha256"
     Write-Host -ForegroundColor Red "Actual:   $actualHash"
