@@ -18,6 +18,15 @@ if ( -not (Test-Path $DESTINATION)) {
     throw "$DESTINATION not found"
 }
 
+$actualHash = (Get-FileHash -Algorithm SHA256 $DESTINATION).Hash
+if ($actualHash.ToUpper() -ne $Sha256.ToUpper()) {
+    Write-Host -ForegroundColor Red "Hash mismatch for $DESTINATION"
+    Write-Host -ForegroundColor Red "Expected: $Sha256"
+    Write-Host -ForegroundColor Red "Actual:   $actualHash"
+    Remove-Item $DESTINATION
+    throw "Hash mismatch for $DESTINATION. Expected: $Sha256, Actual: $actualHash"
+}
+
 # Verify version
 $versionOutput = (& $DESTINATION version 2>&1) | Out-String
 if ($versionOutput -notmatch [regex]::Escape($Version)) {
@@ -26,13 +35,4 @@ if ($versionOutput -notmatch [regex]::Escape($Version)) {
     Write-Host -ForegroundColor Red "Actual output: $versionOutput"
     Remove-Item $DESTINATION
     throw "Version mismatch for $DESTINATION. Expected: $Version, Got: $versionOutput"
-}
-
-$actualHash = (Get-FileHash -Algorithm SHA256 $DESTINATION).Hash
-if ($actualHash.ToUpper() -ne $Sha256.ToUpper()) {
-    Write-Host -ForegroundColor Red "Hash mismatch for $DESTINATION"
-    Write-Host -ForegroundColor Red "Expected: $Sha256"
-    Write-Host -ForegroundColor Red "Actual:   $actualHash"
-    Remove-Item $DESTINATION
-    throw "Hash mismatch for $DESTINATION. Expected: $Sha256, Actual: $actualHash"
 }
