@@ -19,7 +19,7 @@ if ( -not (Test-Path $DESTINATION)) {
 }
 
 # Verify version
-$versionOutput = & $DESTINATION version 2>&1
+$versionOutput = (& $DESTINATION version 2>&1) | Out-String
 if ($versionOutput -notmatch [regex]::Escape($Version)) {
     Write-Host -ForegroundColor Red "Version mismatch for $DESTINATION"
     Write-Host -ForegroundColor Red "Expected version: $Version"
