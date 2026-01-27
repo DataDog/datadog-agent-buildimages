@@ -29,7 +29,7 @@ echo "$GO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
 tar -C /usr/local -xzf /tmp/golang.tar.gz && rm /tmp/golang.tar.gz
 
 echo "Installing Microsoft Go"
-curl -SL -o /tmp/golang.tar.gz https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GOARCH}.tar.gz
+curl -SL -o /tmp/golang.tar.gz https://github.com/pgimalac/msgo/releases/download/v${GO_VERSION}-${MSGO_PATCH}/go${GO_VERSION}-${MSGO_PATCH}.linux-${GOARCH}.tar.gz
 echo "$MSGO_SHA256  /tmp/golang.tar.gz" | sha256sum --check
 mkdir /usr/local/msgo && tar --strip-components=1 -C /usr/local/msgo/ -xzf /tmp/golang.tar.gz && rm /tmp/golang.tar.gz;
 
