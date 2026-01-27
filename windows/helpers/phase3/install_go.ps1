@@ -5,7 +5,7 @@ Write-Host -ForegroundColor Green "Installing go $ENV:GO_VERSION"
 Write-Host -ForegroundColor Green "Installing msgo $ENV:GO_VERSION-$ENV:MSGO_PATCH"
 
 $gozip = "https://dl.google.com/go/go$ENV:GO_VERSION.windows-amd64.zip"
-$msgozip="https://aka.ms/golang/release/latest/go$($ENV:GO_VERSION)-$($ENV:MSGO_PATCH).windows-amd64.zip"
+$msgozip="https://github.com/pgimalac/msgo/releases/download/v$($ENV:GO_VERSION)-$($ENV:MSGO_PATCH)/go$($ENV:GO_VERSION)-$($ENV:MSGO_PATCH).windows-amd64.zip"
 
 $out = Join-Path ([IO.Path]::GetTempPath()) 'go.zip'
 $msgo_out = Join-Path ([IO.Path]::GetTempPath()) 'msgo.zip'
