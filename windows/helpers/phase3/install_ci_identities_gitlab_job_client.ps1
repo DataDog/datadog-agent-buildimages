@@ -15,7 +15,7 @@ Copy-Item -Path "C:\mnt\ci-identities-gitlab-job-client-windows-amd64.exe" -Dest
 
 if ( -not (Test-Path $DESTINATION)) {
     Write-Host -ForegroundColor Red "$DESTINATION not found"
-    exit 1
+    throw "$DESTINATION not found"
 }
 
 # Verify version
@@ -25,7 +25,7 @@ if ($versionOutput -notmatch [regex]::Escape($Version)) {
     Write-Host -ForegroundColor Red "Expected version: $Version"
     Write-Host -ForegroundColor Red "Actual output: $versionOutput"
     Remove-Item $DESTINATION
-    exit 1
+    throw "Version mismatch for $DESTINATION. Expected: $Version, Got: $versionOutput"
 }
 
 $actualHash = (Get-FileHash -Algorithm SHA256 $DESTINATION).Hash
@@ -34,5 +34,5 @@ if ($actualHash -ne $Sha256) {
     Write-Host -ForegroundColor Red "Expected: $Sha256"
     Write-Host -ForegroundColor Red "Actual:   $actualHash"
     Remove-Item $DESTINATION
-    exit 1
+    throw "Hash mismatch for $DESTINATION. Expected: $Sha256, Actual: $actualHash"
 }
