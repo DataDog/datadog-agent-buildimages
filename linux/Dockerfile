@@ -190,7 +190,7 @@ ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${G
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/go.sh cd /tmp/go && /mnt/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
-FROM common_base AS rust_builder
+FROM build_base AS rust_builder
 # Rust setup
 # TODO: Maybe deprecate the rustup-init script and manually download and extract a tar.
 ARG RUST_VERSION
