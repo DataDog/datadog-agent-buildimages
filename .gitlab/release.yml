@@ -37,3 +37,15 @@ release_windows:
     IMG_SIGNING: "false"
     IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
+
+# This job tags the Windows LTSC2022 build image as latest in our internal ddbuild registry.
+# This is equivalent to the `ltsc2022` tag we publish on DockerHub, but for internal use (such as for image pre-pulling on AMIs)
+release_windows_internal_latest:
+  stage: release
+  tags: ["arch:arm64"]
+  image: $BUILDENV_REGISTRY/images/docker:27.3.1
+  rules:
+    - !reference [.on_default_branch_push]
+  script:
+      - IMAGE_NAME=registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+      - crane tag ${IMAGE_NAME}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} latest
