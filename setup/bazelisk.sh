@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-version=1.27.0  # seldom updated; pinned primarily for integrity verification rather than reproducibility
+version=1.28.1  # seldom updated; pinned primarily for integrity verification rather than reproducibility
 
 echo "Installing Bazelisk $version as Bazel bootstrapper..."
 case $(uname -m) in
-  x86_64) arch=amd64 && sha256=e1508323f347ad1465a887bc5d2bfb91cffc232d11e8e997b623227c6b32fb76 ;;
-  aarch64) arch=arm64 && sha256=bb608519a440d45d10304eb684a73a2b6bb7699c5b0e5434361661b25f113a5d ;;
+  x86_64) arch=amd64 && sha256=22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8 ;;
+  aarch64) arch=arm64 && sha256=8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2 ;;
   *) echo >&2 "Unsupported machine: $(uname -m)"; exit 1 ;;
 esac
 

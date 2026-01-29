@@ -12,7 +12,7 @@ variable "versions" {
   default = {
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
-    BAZELISK_VERSION    = "1.27.0"
+    BAZELISK_VERSION    = "1.28.1"
     TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.31.0"
     CMAKE_VERSION       = "3.30.2"
@@ -46,7 +46,7 @@ variable "checksums_amd64" {
   type = map(string)
   default = {
     CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
-    BAZELISK_SHA256          = "e1508323f347ad1465a887bc5d2bfb91cffc232d11e8e997b623227c6b32fb76"
+    BAZELISK_SHA256          = "22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
@@ -61,7 +61,7 @@ variable "checksums_arm64" {
   type = map(string)
   default = {
     CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
-    BAZELISK_SHA256          = "bb608519a440d45d10304eb684a73a2b6bb7699c5b0e5434361661b25f113a5d"
+    BAZELISK_SHA256          = "8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
