@@ -208,7 +208,9 @@ build_dev_env_linux_arm64:
     CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
     DOCKERFILE: windows/Dockerfile
     DD_TARGET_ARCH: x64
+    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.3.0 # version and digest must be updated in windows/versions.ps1 as well
   script:
+    - aws s3 cp --only-show-errors s3://binaries-ddbuild-io-prod/ci-identities/ci-identities-gitlab-job-client/versions/$CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION/ci-identities-gitlab-job-client-windows-amd64.exe .
     - $OUTPUT_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
     - .\build-container.ps1 -BaseImage $BASE_IMAGE -Image $OUTPUT_IMAGE -Tag $IMAGE_VERSION -Buildkit
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
