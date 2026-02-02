@@ -73,5 +73,5 @@ $SoftwareTable = @{
     # this "version" variable is used to *check* that we downloaded the correct version;
     # it must updated in sync with the version in .gitlab/build.yml
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.3.0";
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="89b127046a0e5d01e2ed361eb6593376262b8ac51ae2c24227e3972759fcee00";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="2cfce3de0976245a6665f99585a7762b01d78b9af5c8748f5a917de312a9356d";
 }
