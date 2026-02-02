@@ -8,7 +8,7 @@ release:
     branch: main
     strategy: depend
   variables:
-    IMG_REGISTRIES: dockerhub
+    IMG_REGISTRIES: dev
     IMG_SIGNING: "false"
   # We cannot use the $IMAGE_VERSION variable directly because there is only one step of variable substitution.
   # See https://forum.gitlab.com/t/inconsistent-variable-behavior-in-multi-project-pipeline/77916.
@@ -33,7 +33,7 @@ release_windows:
     branch: main
     strategy: depend
   variables:
-    IMG_REGISTRIES: dockerhub
+    IMG_REGISTRIES: dev
     IMG_SIGNING: "false"
     IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
