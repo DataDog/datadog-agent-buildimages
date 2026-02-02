@@ -69,6 +69,9 @@ $SoftwareTable = @{
     "AWSCLI_SHA256"="986bf44e2176ed2f00f9f2fd8404fdf9d903a79d0ebf6c0f9da3fe09835ac3f1";
     "BAZELISK_VERSION"="1.28.1";
     "BAZELISK_SHA256"="b9d65a1f7c2d7af885a96a4fd5aa36b40fb41816d30944390569eef908bdc954";
+    # the CI ID client is actually downloaded in the CI job before running the "docker build" command
+    # this "version" variable is used to *check* that we downloaded the correct version;
+    # it must updated in sync with the version in .gitlab/build.yml
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.3.0";
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="8bb9f6c0b2d1084847f3610472fcbaa5787662c0122539d802756644f9413b5e";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="89b127046a0e5d01e2ed361eb6593376262b8ac51ae2c24227e3972759fcee00";
 }
