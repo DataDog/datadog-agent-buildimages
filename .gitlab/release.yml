@@ -47,5 +47,5 @@ release_windows_internal_latest:
   rules:
     - !reference [.on_default_branch_push]
   script:
-      - IMAGE_NAME=registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64
+      - IMAGE_NAME=registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64${ECR_TEST_ONLY}
       - crane tag ${IMAGE_NAME}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} latest
