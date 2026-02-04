@@ -31,6 +31,19 @@ variable "versions" {
     DD_OCTO_STS_VERSION    = "v1.9.3"
   }
 }
+
+variable "build_paths" {
+  type = map(string)
+  default = {
+    # Shared directory for repositories that are built
+    DD_REPO_ROOT          = "/repos"
+    # Shared directory for installed tools; usually exposed on PATH
+    DD_BUILD_INSTALL_ROOT = "/opt/dd"
+    # Shared directory for cache; safe to delete
+    DD_BUILD_CACHE_ROOT   = "/var/cache/dd"
+  }
+}
+
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
 
 variable "checksums_common" {
@@ -128,6 +141,7 @@ variable "args_amd64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_amd64,
@@ -142,6 +156,7 @@ variable "args_arm64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_arm64,

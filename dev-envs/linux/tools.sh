@@ -25,6 +25,9 @@ python3 /tools/dotslash/generate.py \
     --tools-file /mnt/tools.txt \
     --ignore-unavailable
 
+# Pre-install gosu since it's used by the entrypoint to drop to a host-mapped UID/GID
+dotslash -- fetch /usr/local/bin/gosu
+
 # Install architecture-specific tools that don't have pre-built binaries for aarch64
 AMBR_VERSION="0.6.0"
 if [[ $arch == "aarch64" ]]; then
@@ -42,10 +45,6 @@ git config --global core.pager delta
 git config --global interactive.diffFilter "delta --color-only"
 git config --global delta.navigate true
 git config --global merge.conflictStyle zdiff3
-
-mkdir -p "${HOME}/.config"
-mkdir -p "${DD_REPOS_DIR}"
-gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
 
 curl_opts=(
   --fail              # fail on HTTP errors (>=400), prevents saving an error page
