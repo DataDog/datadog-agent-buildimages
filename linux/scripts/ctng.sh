@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-gpg --keyserver keyserver.ubuntu.com --recv-keys 1F30EF2E
+gpg --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 1F30EF2E
 gpg --verify crosstool-ng-${CTNG_VERSION}.tar.xz.sig
 
 tar xf crosstool-ng-${CTNG_VERSION}.tar.xz
