@@ -2,4 +2,4 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-curl -fsSL https://claude.ai/install.sh | bash
+dda self mcp-server configure-editors

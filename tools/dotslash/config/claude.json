@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 237611685
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 240662792
+      }
+    }
+  },
+  "name": "claude",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "5b8955f12e8a865eddf3bd670b660275f3322a076e84b7a25f375497f97ffa71",
+      "hash": "blake3",
+      "path": "claude",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.69/linux-arm64/claude"
+        }
+      ],
+      "size": 237611685
+    },
+    "linux-x86_64": {
+      "digest": "1b783db8d44d785c21dd55d739a5af649f0e01d77bf0412aab9eb637688608f0",
+      "hash": "blake3",
+      "path": "claude",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.69/linux-x64/claude"
+        }
+      ],
+      "size": 240662792
+    }
+  }
+}

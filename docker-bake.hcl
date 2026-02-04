@@ -35,6 +35,23 @@ variable "versions" {
     MOLD_VERSION           = "2.40.4"
   }
 }
+
+variable "build_paths" {
+  type = map(string)
+  default = {
+    # Shared directory for repositories that are built
+    DD_REPO_ROOT          = "/repos"
+    # Shared directory for build tools that wouldn't change at runtime
+    DD_BUILD_INSTALL_ROOT = "/opt/dd"
+    # Shared directories for installed tools and application data
+    DD_BUILD_DATA_ROOT    = "/var/lib/dd"
+    # Shared directory for cache; safe to delete
+    DD_BUILD_CACHE_ROOT   = "/var/cache/dd"
+    # Shared directory for configuration files
+    DD_BUILD_CONFIG_ROOT  = "/var/config/dd"
+  }
+}
+
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
 
 variable "checksums_common" {
@@ -141,6 +158,7 @@ variable "args_amd64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_amd64,
@@ -155,6 +173,7 @@ variable "args_arm64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_arm64,

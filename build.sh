@@ -80,7 +80,7 @@ $CACHE_PULL_ARGS \
 "${BUILD_ARG_LIST[@]}" \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
-${TARGET:+--target $TARGET} \
+${IMAGE_VARIANT:+--target $IMAGE_VARIANT} \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
 --metadata-file ${METADATA_FILE}

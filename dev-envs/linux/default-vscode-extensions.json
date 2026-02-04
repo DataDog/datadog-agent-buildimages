@@ -1,0 +1,17 @@
+{
+  "bazelbuild.vscode-bazel": ["vscode", "cursor"],
+  "charliermarsh.ruff": ["vscode", "cursor"],
+  "dbaeumer.vscode-eslint": ["vscode", "cursor"],
+  "github.copilot": ["vscode"],
+  "github.vscode-github-actions": ["vscode"],
+  "golang.go": ["vscode", "cursor"],
+  "ms-azuretools.vscode-docker": ["vscode", "cursor"],
+  "ms-python.python": ["vscode", "cursor"],
+  "ms-vscode.cmake-tools": ["vscode", "cursor"],
+  "redhat.vscode-xml": ["vscode", "cursor"],
+  "redhat.vscode-yaml": ["vscode", "cursor"],
+  "rust-lang.rust-analyzer": ["vscode", "cursor"],
+  "timonwong.shellcheck": ["vscode", "cursor"],
+  "yzhang.markdown-all-in-one": ["vscode"],
+  "zxh404.vscode-proto3": ["vscode", "cursor"]
+}

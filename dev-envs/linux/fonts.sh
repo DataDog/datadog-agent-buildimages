@@ -2,7 +2,7 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
-fonts_dir="${HOME}/.local/share/fonts"
+fonts_dir="/usr/local/share/fonts"
 mkdir -p "${fonts_dir}"
 
 NE_VERSION="15046272"

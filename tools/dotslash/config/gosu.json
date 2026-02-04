@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 1830424
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 1769900
+      }
+    }
+  },
+  "name": "gosu",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "655cf5e74aa9d9716118ee2f6fa79c7e14a81b6bc06045b6dbda2d211c5b4b30",
+      "hash": "blake3",
+      "path": "gosu",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/tianon/gosu/releases/download/1.19/gosu-arm64"
+        }
+      ],
+      "size": 1830424
+    },
+    "linux-x86_64": {
+      "digest": "3dcdb48faab33b5fab1a74a0af04b306eb81b93a21ff0fd9fbdd835b853091ae",
+      "hash": "blake3",
+      "path": "gosu",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64"
+        }
+      ],
+      "size": 1769900
+    }
+  }
+}
