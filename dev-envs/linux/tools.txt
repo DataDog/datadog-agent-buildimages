@@ -9,11 +9,13 @@ fd
 fzf
 gfold
 gitui
+gosu
 hyperfine
 jq
 kubectl
 procs
 rg
 staticcheck
+uv
 ya
 yazi

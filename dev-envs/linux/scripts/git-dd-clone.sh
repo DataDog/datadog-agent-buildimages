@@ -3,10 +3,10 @@ IFS=$'\n\t'
 set -euxo pipefail
 
 remote="https://github.com/DataDog/$1"
-clone_dir="${DD_REPOS_DIR}/$1"
+clone_dir="${DD_REPO_ROOT}/$1"
 branch="${2:-}"
 
-if [[ -d "${clone_dir}" ]]; then
+if [[ -d "${clone_dir}" && -n "$(ls -A "${clone_dir}")" ]]; then
   exit
 fi
 
