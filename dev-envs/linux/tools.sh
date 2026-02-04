@@ -25,13 +25,6 @@ python3 /tools/dotslash/generate.py \
     --tools-file /mnt/tools.txt \
     --ignore-unavailable
 
-# Install architecture-specific tools that don't have pre-built binaries for aarch64
-AMBR_VERSION="0.6.0"
-if [[ $arch == "aarch64" ]]; then
-    rustup default stable
-    cargo install --locked amber@${AMBR_VERSION}
-fi
-
 procs --gen-config > "${HOME}/.procs.toml"
 # Necessary for working in our containers
 sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
@@ -43,10 +36,6 @@ git config --global interactive.diffFilter "delta --color-only"
 git config --global delta.navigate true
 git config --global merge.conflictStyle zdiff3
 
-mkdir -p "${HOME}/.config"
-mkdir -p "${DD_REPOS_DIR}"
-gfold -d classic "${DD_REPOS_DIR}" --dry-run > "${HOME}/.config/gfold.toml"
-
 curl_opts=(
   --fail              # fail on HTTP errors (>=400), prevents saving an error page
   --silent            # no progress meter or extra output
@@ -56,17 +45,23 @@ curl_opts=(
   --retry-connrefused # also if connection is refused (CDN saturation cases)
 )
 
-# The following tools are required for Visual Studio Code's Go extension:
-# https://github.com/golang/vscode-go#quick-start
-#
-# If any are unavailable the extension will download upon editor startup which is a poor experience
-go install golang.org/x/tools/gopls@latest
+(
+  export GOBIN=/usr/local/bin
+  # The following tools are required for Visual Studio Code's Go extension:
+  # https://github.com/golang/vscode-go#quick-start
+  #
+  # If any are unavailable the extension will download upon editor startup which is a poor experience
 
-# Optional tools for Visual Studio Code's Go extension:
-# https://github.com/golang/vscode-go/wiki/tools
-go install github.com/go-delve/delve/cmd/dlv@latest
-go install github.com/josharian/impl@latest
-go install github.com/fatih/gomodifytags@latest
+  # Feature request for standalone binaries:
+  # https://github.com/golang/go/issues/79066
+  go install golang.org/x/tools/gopls@latest
+
+  # Optional tools for Visual Studio Code's Go extension:
+  # https://github.com/golang/vscode-go/wiki/tools
+  go install github.com/go-delve/delve/cmd/dlv@latest
+  go install github.com/josharian/impl@latest
+  go install github.com/fatih/gomodifytags@latest
+)
 
 GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | grep -Po '/golangci-lint.+v\K.+')"
 install-binary \
