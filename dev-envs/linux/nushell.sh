@@ -11,7 +11,7 @@ else
     DIGEST="bf1224c7866a670022232c2e832a9f63141378d1f1c3552defa4200902c4379a"
 fi
 url="https://github.com/nushell/nushell/releases/download/${VERSION}/nu-${VERSION}-${arch}-unknown-linux-musl.tar.gz"
-install_dir="${HOME}/.nushell"
+install_dir="/usr/local/bin"
 
 mkdir -p "${install_dir}"
 curl "${url}" -Lo archive.tar.gz
@@ -54,11 +54,3 @@ cat <<'EOF' >> "${nu_config_file}"
 
 use ~/.cache/starship/init.nu
 EOF
-
-# Inject environment variables used in ~/.scripts
-(
-    cd "$(dirname "${BASH_SOURCE[0]}")"
-    export NUSHELL_ENV_FILE="$nu_env_file"
-    scripts/set-ev.sh NUSHELL_ENV_FILE "$NUSHELL_ENV_FILE"
-    scripts/path-append.sh "$install_dir"
-)
