@@ -2,6 +2,7 @@ ambr
 ambs
 bat
 btm
+claude
 delta
 dust
 eza
@@ -9,11 +10,15 @@ fd
 fzf
 gfold
 gitui
+gosu
 hyperfine
 jq
 kubectl
 procs
 rg
 staticcheck
+uv
+uvx
+watchexec
 ya
 yazi

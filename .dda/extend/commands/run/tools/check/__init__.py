@@ -91,7 +91,7 @@ def cmd(app: Application, *, integrity: bool, fix: bool, force: bool) -> None:
                     integrity_checks.append((
                         tool.name,
                         platform,
-                        tool.extra_metadata.platforms[platform] if tool.extra_metadata else None,
+                        tool.extra_metadata.platforms.get(platform) if tool.extra_metadata else None,
                         artifact,
                         i,
                     ))
