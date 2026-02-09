@@ -1,37 +1,42 @@
 param (
-    [Parameter(Mandatory=$true)][string]$Version,
-    [Parameter(Mandatory=$true)][string]$Sha256
+    [Parameter(Mandatory = $true)][string]$Version
 )
 
+# Required WiX extensions for the MSI build (must match WiX toolset version):
+# - Netfx: .NET Framework detection
+# - Util: Utility elements (RemoveFolderEx, EventSource, ServiceConfig, FailWhenDeferred)
+# - UI: Standard UI dialogs
+$RequiredExtensions = @(
+    "WixToolset.Netfx.wixext",
+    "WixToolset.Util.wixext",
+    "WixToolset.UI.wixext"
+)
 
-$shortenedver = $Version.Replace('.','')
-$splitver = $Version.split(".")
-$majmin = "$($splitver[0])$($splitver[1])" 
-
-# https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311.exe
-$wixzip = "https://github.com/wixtoolset/wix3/releases/download/wix$($shortenedver)rtm/wix$($majmin).exe"
-
-$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "wix" -Keyname "DownloadFile" -TargetValue $wixzip
-if($isInstalled) {
-    if(-not $isCurrent){
-        Write-Host -ForegroundColor Yellow "Not attempting to upgrade WiX"
-    }
+$isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "wix" -Keyname "version" -TargetValue $Version
+if ($isInstalled -and $isCurrent) {
+    Write-Host -ForegroundColor Green "WiX $Version already installed"
     return
 }
 
+Write-Host -ForegroundColor Green "Installing WiX $Version..."
 
-Write-Host  -ForegroundColor Green starting with WiX
-$out = Join-Path ([IO.Path]::GetTempPath()) 'wix.exe'
+& dotnet tool install --global wix --version $Version
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to install WiX tools."
+}
 
-Get-RemoteFile -RemoteFile $wixzip -LocalFile $out -VerifyHash $Sha256
+$dotnetTools = Join-Path $env:USERPROFILE ".dotnet" "tools"
+Add-ToPath -NewPath $dotnetTools -Local -Global
 
-Write-Host -ForegroundColor Green Done downloading wix, installing
-#Start-Process wix.exe -ArgumentList '/quiet' -Wait
-Start-Process $out -ArgumentList '/q' -Wait
+foreach ($ext in $RequiredExtensions) {
+    $expected = "$ext/$Version"
+    Write-Host "Installing WiX extension $expected..."
+    & wix extension remove -g $ext
+    & wix extension add -g $expected
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to install WiX extension $expected."
+    }
+}
 
-Add-ToPath -NewPath "${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin\" -Global
-Add-EnvironmentVariable -Variable "WIX" -Value "C:\Program Files (x86)\WiX Toolset v3.11\" -Global
-
-Remove-Item $out
-Set-InstalledVersionKey -Component "wix" -Keyname "DownloadFile" -TargetValue $wixzip
-Write-Host -ForegroundColor Green Done with WiX
+Set-InstalledVersionKey -Component "wix" -Keyname "version" -TargetValue $Version
+Write-Host -ForegroundColor Green "Done with WiX $Version"
