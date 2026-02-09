@@ -25,8 +25,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Failed to install WiX tools."
 }
 
-$dotnetTools = Join-Path $env:USERPROFILE ".dotnet" "tools"
-Add-ToPath -NewPath $dotnetTools -Local -Global
+Add-ToPath -NewPath "$($env:USERPROFILE)\.dotnet\tools" -Local -Global
 
 foreach ($ext in $RequiredExtensions) {
     $expected = "$ext/$Version"

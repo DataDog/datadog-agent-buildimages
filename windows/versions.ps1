@@ -30,7 +30,6 @@ $SoftwareTable = @{
     "RUBY_SHA256"="fbdf77a3e1fa36e25cf0af1303ac76f67dec7a6f739a829784a299702cad1492";
     "PYTHON_VERSION"="3.12.6";
     "PYTHON_SHA256"="5914748e6580e70bedeb7c537a0832b3071de9e09a2e4e7e3d28060616045e0a";
-    # WiX 5.x dotnet global tool (used by WixSharp_wix4 for MSI build)
     "WIX_VERSION"="5.0.2";
     "CMAKE_VERSION"="3.30.2";
     "CMAKE_SHA256"="31f799a9e7756305f74cd821970a793e599ead230925392886f45aed897a3c0e";
