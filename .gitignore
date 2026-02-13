@@ -1,3 +1,6 @@
 .vscode/settings.json
 **/__pycache__
 venv
+# Claude local settings and overrides
+**/.claude/settings.local.json
+**/CLAUDE.local.md
