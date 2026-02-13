@@ -97,12 +97,6 @@ build_docker_x64:
     DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
 
-build_btf_gen:
-  extends: [.fast_build, .always, .x64]
-  variables:
-    DOCKERFILE: btf-gen/Dockerfile
-    IMAGE: btf-gen
-
 build_kernel_version_testing_x64:
   extends: [.fast_build, .always, .x64]
   variables:
