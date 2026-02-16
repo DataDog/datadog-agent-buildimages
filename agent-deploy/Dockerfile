@@ -203,6 +203,9 @@ RUN chmod +x /deploy_scripts/fail_deb_is_pkg_already_exists.sh
 RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
     bundle install"
 
+# Install datadog-package
+COPY --from=registry.ddbuild.io/ci/datadog-packages/artifact:main / /usr/bin/
+
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
