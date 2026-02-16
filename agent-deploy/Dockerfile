@@ -7,6 +7,12 @@
 # When updating the gitlab-agent-deploy image, don't forget to update these three repos
 # and test that promotion jobs work as expected with the new image.
 
+# This is a workaround since `--from` does not support variable interpolation, but declaring a stage and using it as a source for the next stage does
+# See https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
+
+ARG DATADOG_PACKAGES_VERSION=cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34
+FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
+
 FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
@@ -29,7 +35,8 @@ ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
     RPM_S3_VERSION=$RPM_S3_VERSION_ARG \
     PYTHONUTF8=1 \
-    DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
+    DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS \
+    DATADOG_PACKAGES_VERSION=$DATADOG_PACKAGES_VERSION
 
 # Remove the early return on non-interactive shells, which makes sourcing the file not activate conda
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
@@ -193,9 +200,6 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
 RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/authanywhere.sh && rm -rf /tmp/authanywhere
 
-# Install datadog-packages
-RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,src=./setup/datadog_packages.sh,dst=/mnt/datadog_packages.sh /mnt/datadog_packages.sh
-
 # Add the deploy scripts
 COPY ./agent-deploy/deploy-scripts /deploy_scripts
 RUN chmod +x /deploy_scripts/check_apt_pool.sh
@@ -204,7 +208,7 @@ RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
     bundle install"
 
 # Install datadog-package
-COPY --from=registry.ddbuild.io/ci/datadog-packages/artifact:main / /usr/bin/
+COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh

@@ -26,7 +26,7 @@ variable "versions" {
     PROTOBUF_VERSION    = "29.3"
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
-    DATADOG_PACKAGES_VERSION = "bb430d549b551c0aeb466f3f38470971dabdef2c"
+    DATADOG_PACKAGES_VERSION = "cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34"
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
   }

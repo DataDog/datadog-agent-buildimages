@@ -2,6 +2,7 @@ ARG BASE_IMAGE=ubuntu:noble-20251013
 
 # Specify dd-octo-sts version in root scope as it is used in a stage definition (FROM instruction)
 ARG DD_OCTO_STS_VERSION=latest
+ARG DATADOG_PACKAGES_VERSION
 
 # Create different base stages for subsequent build stages
 # Common dependencies for all stages
@@ -242,18 +243,9 @@ RUN --mount=type=bind,src=./linux/scripts/authanywhere.sh,dst=/mnt/authanywhere.
 
 FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
 # Dummy stage to download dd-octo-sts as it is distributed as a container image
-# This is a workaround since `--from` does not support variable interpolation, but declaring a stage and using it as a source for the next stage does
-# See https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
 
-FROM go_builder AS datadog_packages_builder
-# Install datadog-packages
-ENV GOPATH=/go
-ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
-ARG DATADOG_PACKAGES_VERSION
-ENV DATADOG_PACKAGES_VERSION=${DATADOG_PACKAGES_VERSION}
-RUN --mount=type=secret,id=gitlab-token,env=GITLAB_TOKEN,required=true \
-    --mount=type=bind,src=./linux/scripts/datadog_packages.sh,dst=/mnt/datadog_packages.sh \
-    /mnt/datadog_packages.sh
+FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages_builder
+# Dummy stage to download datadog-packages as it is distributed as a container image
 
 FROM common_base AS final
 
@@ -315,7 +307,8 @@ COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
 COPY --from=vault_builder /usr/local/aws-cli /usr/local/aws-cli
 # The AWS executable is located in the aws-cli directory, and needs to be symlinked to /usr/local/bin/aws
 # Simply copying it does not work because it will then have trouble finding some .so files it comes with.
-RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws && ln -s /usr/local/aws-cli/v2/current/bin/aws_completer /usr/local/bin/aws_completer
+RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws &&  \
+    ln -s /usr/local/aws-cli/v2/current/bin/aws_completer /usr/local/bin/aws_completer
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
@@ -327,7 +320,7 @@ COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
 COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
 # Datadog packages
-COPY --from=datadog_packages_builder /go/bin/datadog-package /go/bin/datadog-package
+COPY --from=datadog_packages_builder /datadog-package /go/bin/datadog-package
 
 # RVM
 COPY --from=rvm_builder /usr/local/rvm /usr/local/rvm
