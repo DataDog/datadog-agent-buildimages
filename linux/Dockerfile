@@ -346,7 +346,12 @@ COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Codecov uploader
-RUN --mount=type=bind,src=./setup/codecov.sh,dst=/mnt/codecov.sh /mnt/codecov.sh
+# Nothing to do except download the file, so no need to declare a stage for it
+ARG CODECOV_VERSION
+ARG CODECOV_ARCH
+ARG CODECOV_SHA256
+
+ADD --chmod=755 --checksum=sha256:${CODECOV_SHA256} "https://uploader.codecov.io/v${CODECOV_VERSION}/${CODECOV_ARCH}/codecov" /usr/local/bin/codecov
 
 # Bazelisk
 # Nothing to do except download the file, so no need to declare a stage for it
