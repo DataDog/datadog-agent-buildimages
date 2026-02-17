@@ -68,14 +68,6 @@ add_build_args_from_file "dda.env"
 # Add build args from custom build args file
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
-# Pass the CI_JOB_TOKEN if necessary
-CI_JOB_TOKEN_SECRET=
-case "$IMAGE" in
-    gitlab_agent_deploy|linux)
-        CI_JOB_TOKEN_SECRET="--secret id=ci-job-token,env=CI_JOB_TOKEN"
-        ;;
-esac
-
 echo "Run buildx build"
 docker buildx build \
 --platform $PLATFORM \
@@ -83,7 +75,6 @@ docker buildx build \
 $CACHE_PUSH_ARGS \
 $CACHE_PULL_ARGS \
 "${BUILD_ARG_LIST[@]}" \
-$CI_JOB_TOKEN_SECRET \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \
