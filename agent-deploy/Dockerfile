@@ -139,9 +139,10 @@ RUN UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | xar
     && apt update \
     && apt install -y dotnet-sdk-6.0
 
-# Install Chocolatey
+# Install Chocolatey - can't use native ADD because the build requires a full clone (relies on GitVersion)
 RUN git clone https://github.com/chocolatey/choco.git \
     && cd choco \
+    && git checkout 4321c87bceeaf7f6262d2616f20bddd7e432e8d8 \
     && ./build.sh \
     && cp -r ./code_drop/temp/_PublishedApps/choco /opt/chocolatey \
     && cp ./docker/choco_wrapper /usr/local/bin/choco \
