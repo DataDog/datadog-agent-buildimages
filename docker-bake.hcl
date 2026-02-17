@@ -13,6 +13,7 @@ variable "versions" {
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
+    CODECOV_VERSION     = "0.6.1"
     TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.31.0"
     CMAKE_VERSION       = "3.30.2"
@@ -47,6 +48,7 @@ variable "checksums_amd64" {
   default = {
     CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
     BAZELISK_SHA256          = "22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8"
+    CODECOV_SHA256           = "0c9b79119b0d8dbe7aaf460dc3bd7c3094ceda06e5ae32b0d11a8ff56e2cc5c5"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
@@ -62,6 +64,7 @@ variable "checksums_arm64" {
   default = {
     CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
     BAZELISK_SHA256          = "8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2"
+    CODECOV_SHA256           = "75c2e69a2da905283ca8d01ff0c135be1a41097d4935dc5e0899aa4c1c80d066"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
@@ -84,6 +87,7 @@ variable "architecture_defs_amd64" {
     GO_ARCH              = "amd64"
     CONDA_ARCH           = "x86_64"
     BAZELISK_ARCH        = "amd64"
+    CODECOV_ARCH         = "linux"
     VAULT_ARCH           = "amd64"
     PROTOBUF_ARCH        = "x86_64"
     GLIBC_VERSION        = "2.17"
@@ -103,6 +107,7 @@ variable "architecture_defs_arm64" {
     GO_ARCH              = "arm64"
     CONDA_ARCH           = "aarch64"
     BAZELISK_ARCH        = "arm64"
+    CODECOV_ARCH         = "aarch64"
     VAULT_ARCH           = "arm64"
     PROTOBUF_ARCH        = "aarch_64"
     GLIBC_VERSION        = "2.23"
