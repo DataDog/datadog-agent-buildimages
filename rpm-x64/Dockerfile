@@ -1,5 +1,5 @@
-ARG BASE_IMAGE="centos:7"
 ARG BASE_IMAGE_REGISTRY=docker.io
+ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/centos:7
 
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:22.04 as CERT_GETTER
 ENV CACERT_BUNDLE_VERSION=2025-11-04
@@ -8,8 +8,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget "https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem" -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM $BASE_IMAGE
-ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 # Build Args
 ARG GIT_VERSION=2.10.1
