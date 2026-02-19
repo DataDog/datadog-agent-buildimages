@@ -222,7 +222,7 @@ build_windows_ltsc2022_x64:
   extends: [.build_windows_x64]
   tags: ["windows-v2:2022"]
   variables:
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022
+    BASE_IMAGE_TAG: 4.8-windowsservercore-ltsc2022
     IMAGE: windows_ltsc2022_x64
     WINDOWS_VERSION: 2022
 
@@ -230,6 +230,6 @@ build_windows_ltsc2025_x64:
   extends: [.build_windows_x64]
   tags: ["windows-v2:2025"]
   variables:
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2025
+    BASE_IMAGE_TAG: 4.8.1-windowsservercore-ltsc2025
     IMAGE: windows_ltsc2025_x64
     WINDOWS_VERSION: 2025

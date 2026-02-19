@@ -3,7 +3,9 @@
 # Use the Microsoft-provided .NET Runtime 4.8 image as the base image
 # because installing it in the image with Chocolatey requires a reboot.
 
-ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022
+ARG BASE_IMAGE_REGISTRY=mcr.microsoft.com
+ARG BASE_IMAGE_TAG=4.8-windowsservercore-ltsc2022
+ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/dotnet/framework/runtime:${BASE_IMAGE_TAG}
 
 FROM ${BASE_IMAGE}
 
