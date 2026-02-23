@@ -69,6 +69,7 @@ add_build_args_from_file "dda.env"
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
 echo "Run buildx build"
+METADATA_FILE=$(mktemp)
 docker buildx build \
 --platform $PLATFORM \
 --pull $PUSH \
@@ -78,7 +79,14 @@ $CACHE_PULL_ARGS \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \
+--metadata-file ${METADATA_FILE} \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+
+# Sign the image after push
+# https://datadoghq.atlassian.net/wiki/spaces/SECENG/pages/2744681107/Image+Integrity+User+Guide
+if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+    ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --docker-metadata-file ${METADATA_FILE}
+fi
 
 # Statistics
 if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
