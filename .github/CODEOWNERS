@@ -25,7 +25,6 @@ dda.env                             @DataDog/agent-devx
 /build-container.ps1                @DataDog/windows-products @DataDog/agent-devx
 
 # eBPF / KMT images
-/btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx
 /kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx
 
 # Linux test & build images
