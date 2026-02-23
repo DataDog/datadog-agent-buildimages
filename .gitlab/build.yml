@@ -171,8 +171,9 @@ build_multiarch:
       docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
       $TARGET_IMAGE:$IMAGE_VERSION-amd64
       $TARGET_IMAGE:$IMAGE_VERSION-arm64
+    - MANIFEST=$(docker manifest inspect $TARGET_IMAGE:$IMAGE_VERSION)
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
-    - DIGEST=$(crane digest $TARGET_IMAGE:$IMAGE_VERSION)
     - ddsign sign $TARGET_IMAGE:$IMAGE_VERSION@${DIGEST}
 
 build_dev_env_linux_x64:
