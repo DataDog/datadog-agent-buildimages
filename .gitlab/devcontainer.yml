@@ -27,14 +27,19 @@ test_devcontainer:
   needs: [build_devcontainer]
   tags: ["arch:amd64"]
   image: ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA}
+  before_script:
+    - git clone --depth=1 https://github.com/DataDog/datadog-agent.git /tmp/datadog-agent
+    - cd /tmp/datadog-agent
   script:
     - dda --version
+    - dda inv -- -e install-tools
+    - dda inv agent.build --build-exclude=systemd
 
 release_devcontainer:
   image: ${BUILD_STABLE_REGISTRY}/images/docker:27.3.1
   tags: ["arch:amd64"]
   stage: devcontainer
-  needs: [build_devcontainer]
+  needs: [test_devcontainer]
   script:
     - crane copy ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12}
     - crane tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA:0:12} latest
