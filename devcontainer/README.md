@@ -29,16 +29,16 @@ docker pull registry.ddbuild.io/ci/datadog-agent-devenv:1-<platform>
 
 Option 2: Build the image locally
 
-Set the DDA version
+From the repository root, set the DDA and Golang version:
 
 ```
-source .dda.env
+source dda.env && source go.env
 ```
 
 build the docker image
 
 ```
-DOCKER_BUILDKIT=1 docker build --build-arg="GO_VERSION=1.24.5" --build-arg="DDA_VERSION=${DDA_VERSION}" -t registry.ddbuild.io/ci/datadog-agent-devenv:1 .
+docker buildx build --platform linux/amd64,linux/arm64 --build-arg="GO_VERSION=${GO_VERSION}" --build-arg="DDA_VERSION=${DDA_VERSION}" -t registry.ddbuild.io/ci/datadog-agent-devenv:1 -f devcontainer/Dockerfile .
 ```
 
 The Go version currently in use in the default image can be found [here](https://github.com/DataDog/datadog-agent-buildimages/blob/main/go.env).
