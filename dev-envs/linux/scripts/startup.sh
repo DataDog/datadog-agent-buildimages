@@ -16,7 +16,7 @@ for shell in sh bash zsh; do
 done
 
 if [[ -d "${DD_SHARED_DIR}/shell/nu" ]]; then
-    nu_history_dir="$(dirname "${NUSHELL_ENV_FILE}")"
+    nu_history_dir="$(dirname "${HOME}/.config/nushell/env.nu")"
     find "${DD_SHARED_DIR}/shell/nu" -name "history.sqlite3*" -type f -print0 | while IFS= read -r -d '' history_file; do
         ln -s "${history_file}" "${nu_history_dir}/$(basename "${history_file}")"
     done
@@ -32,3 +32,23 @@ cat <<'EOF' >> "${HOME}/.config/starship.toml"
 [container]
 disabled = true
 EOF
+
+# Configure gfold
+gfold -d classic "${DD_REPO_ROOT}" --dry-run > "${HOME}/.config/gfold.toml"
+
+# Configure Git to use the user's name and email
+if [[ -n "${GIT_AUTHOR_NAME:-}" ]]; then
+    git config --global user.name "${GIT_AUTHOR_NAME}"
+fi
+if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
+    git config --global user.email "${GIT_AUTHOR_EMAIL}"
+fi
+
+# Reset saved data/cache directories from previous runs
+dda config restore
+
+# Configure telemetry if enabled
+if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
+    set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"
+    dda self telemetry enable
+fi

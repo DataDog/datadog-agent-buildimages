@@ -5,6 +5,17 @@ FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG DDA_VERSION=""
 
+# Ensure all setup runs as root, even though the base build image now defaults
+# to a non-root user. The entrypoint will later drop to a host-mapped UID/GID
+# for developers.
+# hadolint global ignore=DL3002
+USER root
+
+# Seed default user home files via /etc/skel during build
+ENV HOME=/etc/skel
+
+RUN mkdir -p "${HOME}"
+
 # We set up shells first so that config can be modified as part of subsequent steps.
 # Shells require scripts to set environment variables and add to PATH. These same
 # scripts require the shells to be set up, leaving us with a cyclical dependency.
@@ -12,7 +23,10 @@ ARG DDA_VERSION=""
 # hadolint global ignore=DL3059
 # 1. Set up shells using only workspace-mounted scripts to update environment variables, (no ~/.scripts yet)
 RUN --mount=type=bind,src=./zsh.sh,dst=/mnt/zsh.sh /mnt/zsh.sh
-RUN --mount=type=bind,src=./nushell.sh,dst=/mnt/nushell.sh --mount=type=bind,src=./scripts/,dst=/mnt/scripts/ /mnt/nushell.sh
+RUN --mount=type=bind,src=./nushell.sh,dst=/mnt/nushell.sh \
+    --mount=type=bind,src=./scripts/set-ev.sh,dst=/mnt/scripts/set-ev.sh \
+    --mount=type=bind,src=./scripts/path-append.sh,dst=/mnt/scripts/path-append.sh \
+    /mnt/nushell.sh
 # 2. Set up scripts into ~/.scripts and update PATH accordingly, (only explicit access to ~/.scripts)
 RUN --mount=type=bind,src=./scripts.sh,dst=/mnt/scripts.sh --mount=type=bind,src=./scripts/,dst=/mnt/scripts/ /mnt/scripts.sh
 # 3. Proceed with subsequent steps relying solely on the installed scripts in PATH.
@@ -32,7 +46,7 @@ RUN --mount=type=bind,src=./python.sh,dst=/mnt/python.sh /mnt/python.sh
 RUN --mount=type=bind,src=./dda.sh,dst=/mnt/dda.sh DDA_VERSION=${DDA_VERSION} /mnt/dda.sh
 # Set up Docker
 RUN --mount=type=bind,src=./docker.sh,dst=/mnt/docker.sh /mnt/docker.sh
-# Set up fonts
+# # Set up fonts
 RUN --mount=type=bind,src=./fonts.sh,dst=/mnt/fonts.sh /mnt/fonts.sh
 # Set up Starship prompt
 RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
@@ -47,6 +61,7 @@ RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV HOME=/root
 
 # SSH
 EXPOSE 22
