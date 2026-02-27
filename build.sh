@@ -53,11 +53,12 @@ fi
 }
 
 BUILD_ARG_LIST=()
-[[ -n "${BASE_IMAGE:-}" ]]         && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE=${BASE_IMAGE}")
-[[ -n "${BASE_IMAGE_TAG:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE_TAG=${BASE_IMAGE_TAG}")
-[[ -n "${ARCH:-}" ]]               && BUILD_ARG_LIST+=("--build-arg" "ARCH=${ARCH}")
-[[ -n "${DD_TARGET_ARCH:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "DD_TARGET_ARCH=${DD_TARGET_ARCH}")
-[[ -n "${BUILDENV_REGISTRY:-}" ]]  && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
+[[ -n "${BASE_IMAGE:-}" ]]            && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE=${BASE_IMAGE}")
+[[ -n "${BASE_IMAGE_TAG:-}" ]]        && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE_TAG=${BASE_IMAGE_TAG}")
+[[ -n "${BASE_IMAGE_REGISTRY:-}" ]]   && BUILD_ARG_LIST+=("--build-arg" "BASE_IMAGE_REGISTRY=${BASE_IMAGE_REGISTRY}")
+[[ -n "${ARCH:-}" ]]                  && BUILD_ARG_LIST+=("--build-arg" "ARCH=${ARCH}")
+[[ -n "${DD_TARGET_ARCH:-}" ]]        && BUILD_ARG_LIST+=("--build-arg" "DD_TARGET_ARCH=${DD_TARGET_ARCH}")
+[[ -n "${BUILDENV_REGISTRY:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
 
 # Add build args from go.env
 add_build_args_from_file "go.env"
@@ -67,6 +68,8 @@ add_build_args_from_file "dda.env"
 
 # Add build args from custom build args file
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
+
+METADATA_FILE=$(mktemp)
 
 echo "Run buildx build"
 docker buildx build \
@@ -78,7 +81,13 @@ $CACHE_PULL_ARGS \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \
---output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+--output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
+--metadata-file ${METADATA_FILE}
+
+# Sign the image after push
+if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+    ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --docker-metadata-file ${METADATA_FILE}
+fi
 
 # Statistics
 if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then

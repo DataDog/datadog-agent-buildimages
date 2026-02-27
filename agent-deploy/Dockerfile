@@ -10,10 +10,11 @@
 # This is a workaround since `--from` does not support variable interpolation, but declaring a stage and using it as a source for the next stage does
 # See https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
 
+ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
 ARG DATADOG_PACKAGES_VERSION=cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
-FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
+FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
 ARG BUNDLER_VERSION_ARG=2.5.21
