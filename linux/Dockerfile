@@ -115,6 +115,21 @@ ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/d
     /tmp/dpkg-armhf/
 RUN --mount=type=bind,src=./linux/scripts/dpkg.sh,dst=/mnt/dpkg.sh cd /tmp/dpkg-armhf && /mnt/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
+FROM build_base AS osxcross_builder
+# Build osxcross for macOS cross-compilation
+
+ARG MACOSX_SDK_VERSION
+
+# Install osxcross-specific build dependencies (not in build_base)
+RUN apt-get install -y --no-install-recommends \
+    clang libxml2-dev liblzma-dev libbz2-dev
+
+RUN git clone --depth 1 https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
+    curl -Lo /tmp/osxcross/tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
+        https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz && \
+    cd /tmp/osxcross && UNATTENDED=1 TARGET_DIR=/opt/osxcross ./build.sh && \
+    rm -rf /tmp/osxcross
+
 FROM build_base AS python_builder
 # Python and Conda setup
 
@@ -261,7 +276,7 @@ RUN apt-get update -qy && apt-get install -y \
     bzip2 \
     clang clang-format cmake cpio curl \
     fakeroot file flex \
-    gawk gettext git gnupg2 gpg \
+    gawk gcc-mingw-w64-x86-64 gettext git gnupg2 gpg g++-mingw-w64-x86-64 \
     help2man \
     yq \
     libcurl4-openssl-dev libexpat1-dev libgdbm-dev libgmp-dev libncurses-dev \
@@ -338,6 +353,9 @@ COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
+# Osxcross
+COPY --from=osxcross_builder /opt/osxcross /opt/osxcross
+
 # Codecov uploader
 # Nothing to do except download the file, so no need to declare a stage for it
 ARG CODECOV_VERSION
@@ -399,7 +417,7 @@ RUN echo "umask 0022" >> /root/.bashrc && \
 ARG CONDA_PATH=/root/miniforge3
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:/opt/osxcross/bin:${PATH}"
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
@@ -423,6 +441,7 @@ ARG DPKG_ARMHF_VERSION
 ARG GO_VERSION
 ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
+ARG MACOSX_SDK_VERSION
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
 
@@ -442,6 +461,7 @@ LABEL dda_version="${DDA_VERSION}"
 LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
+LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
