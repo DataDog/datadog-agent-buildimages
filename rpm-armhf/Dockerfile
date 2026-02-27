@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM ${BASE_IMAGE}
+FROM --platform=linux/armhf ${BASE_IMAGE}
 
 # Build Args
 ARG GO_VERSION
