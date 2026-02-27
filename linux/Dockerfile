@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_REGISTRY=docker.io/library
+ARG BASE_IMAGE_REGISTRY=docker.io
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/ubuntu:noble
 
 # Specify dd-octo-sts version in root scope as it is used in a stage definition (FROM instruction)
