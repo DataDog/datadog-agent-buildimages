@@ -27,6 +27,9 @@
 
 .build:
   stage: build
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   before_script:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
@@ -153,6 +156,9 @@ build_kernel_version_testing_arm64:
 build_multiarch:
   extends: [.no_schedule, .x64]
   stage: build
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   needs:
     - job: build_linux_amd64
     - job: build_linux_arm64
@@ -165,7 +171,10 @@ build_multiarch:
       docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
       $TARGET_IMAGE:$IMAGE_VERSION-amd64
       $TARGET_IMAGE:$IMAGE_VERSION-arm64
+    - MANIFEST=$(docker manifest inspect $TARGET_IMAGE:$IMAGE_VERSION)
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
+    - ddsign sign $TARGET_IMAGE:$IMAGE_VERSION@${DIGEST}
 
 build_dev_env_linux_x64:
   extends: [.fast_build, .no_schedule, .x64]

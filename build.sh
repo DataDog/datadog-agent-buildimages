@@ -69,6 +69,8 @@ add_build_args_from_file "dda.env"
 # Add build args from custom build args file
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
+METADATA_FILE=$(mktemp)
+
 echo "Run buildx build"
 docker buildx build \
 --platform $PLATFORM \
@@ -79,7 +81,13 @@ $CACHE_PULL_ARGS \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 --file $DOCKERFILE $WORKDIR \
---output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar
+--output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
+--metadata-file ${METADATA_FILE}
+
+# Sign the image after push
+if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+    ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --docker-metadata-file ${METADATA_FILE}
+fi
 
 # Statistics
 if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
