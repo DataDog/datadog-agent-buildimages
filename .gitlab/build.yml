@@ -209,10 +209,11 @@ build_dev_env_linux_arm64:
     DOCKERFILE: windows/Dockerfile
     DD_TARGET_ARCH: x64
     CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.3.0 # version and digest must be updated in windows/versions.ps1 as well
+    BASE_IMAGE_REGISTRY: registry.ddbuild.io/images/mirror
   script:
     - aws s3 cp --only-show-errors s3://binaries-ddbuild-io-prod/ci-identities/ci-identities-gitlab-job-client/versions/$CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION/ci-identities-gitlab-job-client-windows-amd64.exe .
     - $OUTPUT_IMAGE = "registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}"
-    - .\build-container.ps1 -BaseImage $BASE_IMAGE -Image $OUTPUT_IMAGE -Tag $IMAGE_VERSION -Buildkit
+    - .\build-container.ps1 -Image $OUTPUT_IMAGE -Tag $IMAGE_VERSION -BaseImageRegistry $BASE_IMAGE_REGISTRY -BaseImageTag $BASE_IMAGE_TAG -Buildkit
     - New-Item -ItemType File -Path "windows.image" -Force # Create a file to indicate that the image is built
   artifacts:
     paths: ["./windows.image"]
@@ -222,7 +223,7 @@ build_windows_ltsc2022_x64:
   extends: [.build_windows_x64]
   tags: ["windows-v2:2022"]
   variables:
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2022
+    BASE_IMAGE_TAG: 4.8-windowsservercore-ltsc2022
     IMAGE: windows_ltsc2022_x64
     WINDOWS_VERSION: 2022
 
@@ -230,6 +231,6 @@ build_windows_ltsc2025_x64:
   extends: [.build_windows_x64]
   tags: ["windows-v2:2025"]
   variables:
-    BASE_IMAGE: mcr.microsoft.com/dotnet/framework/runtime:4.8.1-windowsservercore-ltsc2025
+    BASE_IMAGE_TAG: 4.8.1-windowsservercore-ltsc2025
     IMAGE: windows_ltsc2025_x64
     WINDOWS_VERSION: 2025

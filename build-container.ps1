@@ -1,7 +1,8 @@
 param(
-    [Parameter(Mandatory = $true)][string] $BaseImage,
     [Parameter(Mandatory = $true)][string] $Image,
     [Parameter(Mandatory = $true)][string] $Tag,
+    [Parameter(Mandatory = $false)][string] $BaseImageRegistry = "",
+    [Parameter(Mandatory = $false)][string] $BaseImageTag = "",
     [Parameter(Mandatory = $false)][switch] $Buildkit = $false
 )
 
@@ -35,7 +36,8 @@ if ($Buildkit) {
 }
 
 # Get build arguments from environment variables
-$build_args += -split "${build_opt}BASE_IMAGE=${BaseImage}"
+if ($BaseImageTag)      { $build_args += -split "${build_opt}BASE_IMAGE_TAG=${BaseImageTag}" }
+if ($BaseImageRegistry) { $build_args += -split "${build_opt}BASE_IMAGE_REGISTRY=${BaseImageRegistry}" }
 foreach ($line in $(Get-Content go.env)) {
     if ( -not ($line -like "*LINUX*") ) {
         $build_args += -split "$build_opt$line"
