@@ -286,6 +286,9 @@ target "_fake_linux-ci" {
   cache-to   = [linux_cache_details_branch]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
   output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+  args       = {
+    BASE_IMAGE_REGISTRY = "registry.ddbuild.io/images/mirror"
+  }
 }
 
 target "linux-amd64-ci" {
