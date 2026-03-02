@@ -119,15 +119,18 @@ FROM build_base AS osxcross_builder
 # Build osxcross for macOS cross-compilation
 
 ARG MACOSX_SDK_VERSION
+ARG MACOSX_SDK_SHA256
+ARG OSXCROSS_VERSION
 
 # Install osxcross-specific build dependencies (not in build_base)
 RUN apt-get install -y --no-install-recommends \
     clang libxml2-dev liblzma-dev libbz2-dev
 
-RUN git clone --depth 1 https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
-    curl -Lo /tmp/osxcross/tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
-        https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz && \
-    cd /tmp/osxcross && UNATTENDED=1 TARGET_DIR=/opt/osxcross ./build.sh && \
+ADD https://github.com/tpoechtrager/osxcross.git#${OSXCROSS_VERSION} /tmp/osxcross
+ADD --checksum=sha256:${MACOSX_SDK_SHA256} \
+    https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
+    /tmp/osxcross/tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz
+RUN cd /tmp/osxcross && UNATTENDED=1 TARGET_DIR=/opt/osxcross ./build.sh && \
     rm -rf /tmp/osxcross
 
 FROM build_base AS python_builder
@@ -442,6 +445,7 @@ ARG GO_VERSION
 ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
 ARG MACOSX_SDK_VERSION
+ARG OSXCROSS_VERSION
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
 
@@ -462,6 +466,7 @@ LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
+LABEL osxcross_version="${OSXCROSS_VERSION}"
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
