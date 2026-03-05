@@ -127,15 +127,11 @@ RUN apt-get install -y --no-install-recommends \
     clang libxml2-dev liblzma-dev libbz2-dev
 
 RUN git clone https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
-    cd /tmp/osxcross && git checkout ${OSXCROSS_VERSION}
+    cd /tmp/osxcross && git checkout ${OSXCROSS_VERSION} && \
+    curl -Lo tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
+        https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz
 
-RUN curl -Lo /tmp/osxcross/tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
-        https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz && \
-    echo "${MACOSX_SDK_SHA256}  /tmp/osxcross/tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz" | sha256sum -c -
-
-RUN cd /tmp/osxcross && UNATTENDED=1 ./build.sh && \
-    mv /tmp/osxcross/target /opt/osxcross && \
-    rm -rf /tmp/osxcross
+RUN --mount=type=bind,src=./linux/scripts/osxcross.sh,dst=/mnt/osxcross.sh cd /tmp/osxcross && /mnt/osxcross.sh && rm -rf /tmp/osxcross
 
 FROM build_base AS python_builder
 # Python and Conda setup
