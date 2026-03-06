@@ -28,6 +28,8 @@ variable "versions" {
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
     DATADOG_PACKAGES_VERSION = "cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34"
+    MACOSX_SDK_VERSION       = "14.0"
+    OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
   }
@@ -38,6 +40,7 @@ variable "checksums_common" {
   type = map(string)
   default = {
     DPKG_ARMHF_SHA256  = "19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41"
+    MACOSX_SDK_SHA256  = "5e4d3be6b445f0eacc0333ff2117e93e4433d8c4fe44053a14f735033a98aaa9"
     RVM_SHA256         = "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e"
     PULUMI_SHA256      = "1fe472a5915b416299df9a1b490e7e6d573d3c9f41c662ff4322a79bf4bf0550"
   }
