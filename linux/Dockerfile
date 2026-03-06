@@ -126,7 +126,8 @@ ARG CONDA_ARCH
 
 # Common environment variables
 ENV PYTHONUTF8=1
-ENV CONDA_PATH=/root/miniforge3
+ARG DD_BUILD_INSTALL_ROOT
+ENV CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/miniforge3"
 ARG DD_PIP_VERSION_PY3
 ARG DD_SETUPTOOLS_VERSION_PY3
 ARG DD_UV_VERSION
@@ -156,6 +157,10 @@ FROM python_builder AS rvm_builder
 ARG RVM_VERSION
 ARG BUNDLER_VERSION
 ARG RVM_SHA256
+ARG DD_BUILD_INSTALL_ROOT
+ARG DD_BUILD_CACHE_ROOT
+ENV RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
+ENV RUBY_GEM_CACHE_DIR="${DD_BUILD_CACHE_ROOT}/ruby/gems"
 ENV BUNDLER_VERSION=$BUNDLER_VERSION
 
 ADD --checksum=sha256:${RVM_SHA256} \
@@ -250,6 +255,49 @@ FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION
 
 FROM common_base AS final
 
+# Shared root directories
+ARG DD_REPO_ROOT
+ARG DD_BUILD_INSTALL_ROOT
+ARG DD_BUILD_DATA_ROOT
+ARG DD_BUILD_CACHE_ROOT
+ARG DD_BUILD_CONFIG_ROOT
+ENV DD_REPO_ROOT=${DD_REPO_ROOT} \
+    DD_BUILD_INSTALL_ROOT=${DD_BUILD_INSTALL_ROOT} \
+    DD_BUILD_DATA_ROOT=${DD_BUILD_DATA_ROOT} \
+    DD_BUILD_CACHE_ROOT=${DD_BUILD_CACHE_ROOT} \
+    DD_BUILD_CONFIG_ROOT=${DD_BUILD_CONFIG_ROOT}
+
+# Configure default directories for XDG-compliant applications.
+ENV XDG_DATA_HOME="${DD_BUILD_DATA_ROOT}" \
+    XDG_CACHE_HOME="${DD_BUILD_CACHE_ROOT}" \
+    XDG_CONFIG_HOME="${DD_BUILD_CONFIG_ROOT}"
+
+# Build tool installations that should not change at runtime
+ENV RUSTUP_HOME="${DD_BUILD_INSTALL_ROOT}/rustup" \
+    CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/miniforge3" \
+    OMNIBUS_BASE_DIR="${DD_BUILD_INSTALL_ROOT}/omnibus" \
+    RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
+
+# Cache directories
+ENV BAZELISK_HOME="${XDG_CACHE_HOME}/bazelisk" \
+    DOTSLASH_CACHE="${XDG_CACHE_HOME}/dotslash" \
+    GOPATH="${XDG_CACHE_HOME}/go" \
+    GOCACHE="${XDG_CACHE_HOME}/go/build" \
+    CARGO_HOME="${XDG_CACHE_HOME}/cargo" \
+    UV_CACHE_DIR="${XDG_CACHE_HOME}/uv" \
+    PIP_CACHE_DIR="${XDG_CACHE_HOME}/pip" \
+    OMNIBUS_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/cache" \
+    OMNIBUS_GIT_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/git-cache" \
+    BUNDLE_PATH="${XDG_CACHE_HOME}/omnibus/bundle"
+
+# Installed tools and application data
+ENV GOBIN="${XDG_DATA_HOME}/go" \
+    CARGO_INSTALL_ROOT="${XDG_DATA_HOME}/cargo" \
+    UV_TOOL_DIR="${XDG_DATA_HOME}/uv/tools/data" \
+    UV_TOOL_BIN_DIR="${XDG_DATA_HOME}/uv/tools/bin" \
+    UV_PYTHON_INSTALL_DIR="${XDG_DATA_HOME}/uv/python/data" \
+    UV_PYTHON_BIN_DIR="${XDG_DATA_HOME}/uv/python/bin"
+
 ARG ADDITIONAL_PACKAGE
 # Install extra runtime dependencies needed by the CI
 # These are the packages actually used when building datadog-agent, not for building the tools in this Dockerfile
@@ -257,6 +305,7 @@ ARG ADDITIONAL_PACKAGE
 # In particular, adding `--no-install-recommends` to the apt-get install command will break the build, as we rely on some packages only installed as recommended dependencies of other packages.
 # TODO: See if we can remove some of these, we currently reinstall everything that was present before #997
 RUN apt-get update -qy && apt-get install -y \
+    acl \
     automake autoconf autopoint \
     bison build-essential \
     bzip2 \
@@ -278,9 +327,31 @@ RUN apt-get update -qy && apt-get install -y \
     xsltproc \
     xz-utils \
     zlib1g-dev \
+    sudo \
     ${ADDITIONAL_PACKAGE} \
     && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+
+# Group for shared writable build directories (must exist before COPY --chown)
+RUN groupadd -g 9001 build-shared
+
+# Prepare shared roots so non-root builds can write to them.
+RUN for dir in \
+        "${DD_BUILD_INSTALL_ROOT}" \
+        "${DD_BUILD_DATA_ROOT}" \
+        "${DD_BUILD_CACHE_ROOT}" \
+        "${DD_BUILD_CONFIG_ROOT}" \
+        "${DD_REPO_ROOT}"; do \
+        mkdir -p "${dir}"; \
+        chgrp build-shared "${dir}"; \
+        chmod g+rws,o+rx "${dir}"; \
+        setfacl -m g:build-shared:rwx,m:rwx "${dir}"; \
+        setfacl -d -m g:build-shared:rwx,m:rwx "${dir}"; \
+    done
+
+# Allow members of the `sudo` group to run passwordless sudo
+RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/90-sudo-nopass && \
+    chmod 0440 /etc/sudoers.d/90-sudo-nopass
 
 # Install Google Cloud SDK
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
@@ -289,19 +360,48 @@ RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -
     apt install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin && \
     rm -rf /var/lib/apt/lists/*
 
-# Git configuration
-RUN git config --global user.email "package@datadoghq.com" && \
-    git config --global user.name "Bits"
+# Git configuration (system-wide so non-root users see it too)
+RUN git config --system user.email "package@datadoghq.com" && \
+    git config --system user.name "Bits"
+
+# Ensure that each prefix used by Omnibus is creatable/writable by
+# members of build-shared for non-root builds.
+RUN for prefix in \
+        /opt/datadog-agent \
+        /etc/opt/datadog-agent \
+        /etc/datadog-agent \
+        /etc/init \
+        /etc/init.d \
+        /lib/pkgconfig \
+        /var/log/datadog; do \
+        mkdir -p "${prefix}"; \
+        chgrp build-shared "${prefix}"; \
+        chmod g+rws,o+rx "${prefix}"; \
+        setfacl -m g:build-shared:rwx,m:rwx "${prefix}"; \
+        setfacl -d -m g:build-shared:rwx,m:rwx "${prefix}"; \
+    done
+
+# Omnibus finalize may also move some binaries into system locations (e.g. /usr/bin).
+# Grant build-shared write access to the destination directory so non-root builds can
+# rename/copy into it.
+RUN setfacl -m g:build-shared:rwx,m:rwx /usr/bin
 
 # Copy built tools
-# NOTE: We try to copy the least-often-used tools first to reduce the likelihood of cache misses
+# NOTE: We try to copy the least-often-changed tools first to reduce the likelihood of cache misses
+
+# Texinfo
+COPY --from=texinfo_builder /usr/local /usr/local
+
+# Dpkg-armhf
+COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
+
+# Crosstool-ng
+COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 
 # Protobuf
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
-
-# Texinfo
-COPY --from=texinfo_builder /usr/local /usr/local
 
 # Vault
 COPY --from=vault_builder /usr/bin/vault /usr/bin/vault
@@ -311,33 +411,8 @@ COPY --from=vault_builder /usr/local/aws-cli /usr/local/aws-cli
 RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws &&  \
     ln -s /usr/local/aws-cli/v2/current/bin/aws_completer /usr/local/bin/aws_completer
 
-# Authanywhere
-COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
-
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
-
-# dd-octo-sts
-COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
-
-# Datadog packages
-COPY --from=datadog_packages_builder /datadog-package /go/bin/datadog-package
-
-# RVM
-COPY --from=rvm_builder /usr/local/rvm /usr/local/rvm
-
-# Rust
-COPY --from=rust_builder /root/.cargo /root/.cargo
-
-# Datadog CI
-COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
-
-# Crosstool-ng
-COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
-COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
-
-# Dpkg-armhf
-COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Codecov uploader
 # Nothing to do except download the file, so no need to declare a stage for it
@@ -360,26 +435,53 @@ RUN ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 # Verify Bazelisk properly bootstraps Bazel - this also preinstalls Bazel ${TEST_BAZEL_VERSION}
 ARG TEST_BAZEL_VERSION
 RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk
-RUN BAZELISK_HOME=/tmp/bazelisk \
-USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} \
-# TODO(incident-47542): Remove this once `releases.bazel.build` is back online
-BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
-bazel --version | tee /dev/stderr | grep -Fqx "bazel ${TEST_BAZEL_VERSION}"
+RUN --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
+    USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} \
+    # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
+    BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
+    bazel --version | tee /dev/stderr | grep -Fqx "bazel ${TEST_BAZEL_VERSION}" && \
+    /mnt/fix-shared-perms.sh "${BAZELISK_HOME}"
+
+# Rust
+COPY --from=rust_builder /usr/local/cargo-bin/ /usr/local/bin/
+RUN --mount=type=bind,from=rust_builder,source=/root/.rustup,target=/mnt/rustup \
+    --mount=type=bind,from=rust_builder,source=/root/.cargo,target=/mnt/cargo \
+    --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
+    cp -a /mnt/rustup "${RUSTUP_HOME}" && \
+    cp -a /mnt/cargo "${CARGO_HOME}" && \
+    /mnt/fix-shared-perms.sh "${RUSTUP_HOME}" "${CARGO_HOME}"
+
+# Conda & Python
+COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
+RUN --mount=type=bind,from=python_builder,source=${CONDA_PATH},target=/mnt/conda \
+    --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
+    cp -a /mnt/conda "${CONDA_PATH}" && \
+    /mnt/fix-shared-perms.sh "${CONDA_PATH}"
+
+# TODO: Decouple RVM from the Python stage, it currently depends on OpenSSL from Conda
+# RVM
+COPY --from=rvm_builder /etc/rvmrc /etc/rvmrc
+RUN --mount=type=bind,from=rvm_builder,source=${RVM_PATH},target=/mnt/rvm \
+    --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
+    cp -a /mnt/rvm "${RVM_PATH}" && \
+    /mnt/fix-shared-perms.sh "${RVM_PATH}"
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
 COPY --from=go_builder /usr/local/msgo /usr/local/msgo
+COPY --from=go_builder /root/.config/go/telemetry/mode ${XDG_CONFIG_HOME}/go/telemetry/mode
 
-# Conda & Python
-ARG CONDA_PATH=/root/miniforge3
-COPY --from=python_builder ${CONDA_PATH} ${CONDA_PATH}
-COPY --from=python_builder /root/.bashrc /root/.bashrc.conda
+# Authanywhere
+COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
 
-# Set up missing environment variables
-ENV GOPATH=/go
-ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
-ENV PYTHONUTF8=1
-ENV DDA_NO_DYNAMIC_DEPS=1
+# dd-octo-sts
+COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+
+# Datadog packages
+COPY --from=datadog_packages_builder /datadog-package /usr/local/bin/datadog-package
+
+# Datadog CI
+COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
@@ -388,27 +490,41 @@ RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
 # This is needed for `conda init bash` to work properly
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+RUN echo "source ${RVM_PATH}/scripts/rvm" >> /root/.bashrc
 
 # Common environment setup
-# Git configuration
+# TODO: Investigate whether the explicit setting of umask is still necessary as it was
+#       introduced a very long time ago and has been copied around ever since. See:
+#       https://github.com/DataDog/datadog-agent-buildimages/pull/11
+RUN echo "umask 0022" >> /root/.bashrc
 
-RUN echo "umask 0022" >> /root/.bashrc && \
-    mkdir -p /go/src/github.com/DataDog/datadog-agent
+# TODO: Remove this to decouple runtime configuration from build configuration
+RUN umask 0002 && mkdir -p "${DD_REPO_ROOT}/datadog-agent"
+
+RUN if [ -n "$(find "${DD_BUILD_DATA_ROOT}" -mindepth 1 -print -quit 2>/dev/null)" ]; then \
+        echo "DD_BUILD_DATA_ROOT must stay empty at image build time: ${DD_BUILD_DATA_ROOT}"; \
+        exit 1; \
+    fi
+
+# Default non-root user for CI and interactive use.
+# 1000 is the default UID for the first user on Debian-based systems.
+RUN useradd -m -u 1001 -g build-shared -G sudo -s /bin/bash dd-build && \
+    cp /root/.bashrc /home/dd-build/.bashrc && \
+    chown dd-build:build-shared /home/dd-build/.bashrc
 
 # Set up environment
-ARG CONDA_PATH=/root/miniforge3
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${PATH}"
+ENV PATH="\${HOME}/.local/bin:${CONDA_PATH}/condabin:${GOPATH}/bin:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${PATH}"
+ENV BUNDLE_GLOBAL_GEM_CACHE="true"
+
+# Set up missing environment variables
+ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
+ENV PYTHONUTF8=1
+ENV DDA_NO_DYNAMIC_DEPS=1
 
 # Ensure pkg-config will not look into the system directories
 ENV PKG_CONFIG_LIBDIR=""
-
-# Set the version of the Rust toolchain to use by default
-# This is duplicated from the rust_builder stage, which is not great - but the incoming PR introducing Docker bake will make this better
-ARG RUST_VERSION=1.91.0
-RUN /root/.cargo/bin/rustup default ${RUST_VERSION}
 
 # Label the image
 ARG PROTOBUF_VERSION
@@ -416,6 +532,7 @@ ARG VAULT_VERSION
 ARG AWSCLI_VERSION
 ARG RVM_VERSION
 ARG BUNDLER_VERSION
+ARG RUST_VERSION
 ARG RUSTUP_VERSION
 ARG DATADOG_CI_VERSION
 ARG GLIBC_VERSION
@@ -444,7 +561,11 @@ LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL maintainer="DataDog"
+
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
+
+# USER dd-build
+# WORKDIR /home/dd-build
 
 ENTRYPOINT ["/entrypoint.sh"]

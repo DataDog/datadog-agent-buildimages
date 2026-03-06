@@ -13,6 +13,6 @@ export PATH="\${PATH}:$1"
 EOF
 done
 
-cat <<EOF >> "${NUSHELL_ENV_FILE}"
+cat <<EOF >> "${XDG_CONFIG_HOME}/nushell/env.nu"
 \$env.PATH = (\$env.PATH | split row (char esep) | append '$1')
 EOF

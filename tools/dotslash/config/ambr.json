@@ -1,25 +1,41 @@
 {
   "__extra_metadata": {
     "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 3101016
+      },
       "linux-x86_64": {
-        "uncompressed_size": 5706504
+        "uncompressed_size": 3458424
       }
     }
   },
   "name": "ambr",
   "platforms": {
-    "linux-x86_64": {
-      "digest": "065adb956f327f60c50ad0e19e10257ce02df76121a91bbed30cd4c7a128b71c",
+    "linux-aarch64": {
+      "digest": "25c811e659d38cdba15ff2d92d02e9f0b62a2e8f992e905b828ff230623808b6",
       "format": "zip",
       "hash": "blake3",
       "path": "ambr",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/dalance/amber/releases/download/v0.6.0/amber-v0.6.0-x86_64-lnx.zip"
+          "url": "https://github.com/dalance/amber/releases/download/v0.6.1/amber-v0.6.1-aarch64-linux.zip"
         }
       ],
-      "size": 3700861
+      "size": 2439084
+    },
+    "linux-x86_64": {
+      "digest": "a4c2d0b37cff13cec7246ea935ecc38df5406f1c9e1ccf1c2183faa30b5d0cbc",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "ambr",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dalance/amber/releases/download/v0.6.1/amber-v0.6.1-x86_64-lnx.zip"
+        }
+      ],
+      "size": 2674616
     }
   }
 }
