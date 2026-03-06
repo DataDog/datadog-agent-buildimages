@@ -29,7 +29,7 @@ variable "versions" {
     DPKG_ARMHF_VERSION  = "1.18.4"
     DATADOG_PACKAGES_VERSION = "cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34"
     MACOSX_SDK_VERSION       = "14.0"
-    OSXCROSS_VERSION         = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
+    OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
   }

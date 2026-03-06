@@ -120,14 +120,14 @@ FROM build_base AS osxcross_builder
 
 ARG MACOSX_SDK_VERSION
 ARG MACOSX_SDK_SHA256
-ARG OSXCROSS_VERSION
+ARG OSXCROSS_COMMIT
 
 # Install osxcross-specific build dependencies (not in build_base)
 RUN apt-get install -y --no-install-recommends \
     clang libxml2-dev liblzma-dev libbz2-dev
 
 RUN git clone https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
-    cd /tmp/osxcross && git checkout ${OSXCROSS_VERSION} && \
+    cd /tmp/osxcross && git checkout ${OSXCROSS_COMMIT} && \
     curl -Lo tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz \
         https://github.com/joseluisq/macosx-sdks/releases/download/${MACOSX_SDK_VERSION}/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz
 
@@ -445,7 +445,7 @@ ARG GO_VERSION
 ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
 ARG MACOSX_SDK_VERSION
-ARG OSXCROSS_VERSION
+ARG OSXCROSS_COMMIT
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
 
@@ -466,7 +466,7 @@ LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
-LABEL osxcross_version="${OSXCROSS_VERSION}"
+LABEL osxcross_version="${OSXCROSS_COMMIT}"
 LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
