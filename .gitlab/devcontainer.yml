@@ -20,7 +20,7 @@ build_devcontainer:
   script:
     - GO_VERSION_ARG=$(grep GO_VERSION go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - DDA_VERSION_ARG="--build-arg $(grep DDA_VERSION dda.env)"
-    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --push --no-cache --platform linux/amd64,linux/arm64 --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12} -f devcontainer/Dockerfile .
+    - docker buildx build $GO_VERSION_ARG $DDA_VERSION_ARG --build-arg BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror --push --no-cache --platform linux/amd64,linux/arm64 --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHORT_SHA} --tag ${CI_REGISTRY_IMAGE_TEST}:${CI_COMMIT_SHA:0:12} -f devcontainer/Dockerfile .
 
 test_devcontainer:
   stage: devcontainer
