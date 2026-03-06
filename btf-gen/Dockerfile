@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxmlsec1-dev  \
     libffi-dev  \
     liblzma-dev \
+    zstd \
     && apt-get clean \
     && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
     && echo "${AWSCLI_CHECKSUM} awscliv2.zip" | sha256sum --check \

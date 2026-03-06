@@ -296,6 +296,7 @@ RUN apt-get update -qy && apt-get install -y \
     xsltproc \
     xz-utils \
     zlib1g-dev \
+    zstd \
     ${ADDITIONAL_PACKAGE} \
     && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
