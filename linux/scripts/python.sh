@@ -4,7 +4,7 @@ set -ex
 
 source "$(dirname "${BASH_SOURCE[0]}")"/python-packages-versions.txt
 
-bash miniconda.sh -b
+bash miniconda.sh -b -p "${CONDA_PATH}"
 rm miniconda.sh
 
 conda init bash
