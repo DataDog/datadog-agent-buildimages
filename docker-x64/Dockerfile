@@ -42,6 +42,7 @@ RUN apt-get update && \
       autoconf \
       skopeo \
       p7zip-full \
+      zstd \
       yq && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
