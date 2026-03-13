@@ -5,7 +5,7 @@ source /root/.bashrc
 uv export --no-editable --no-hashes -o requirements.txt
 
 # The repo is cloned without any git metadata, so we need this otherwise setuptools-scm will fail
-export SETUPTOOLS_SCM_PRETEND_VERSION=${DDA_VERSION}
+export SETUPTOOLS_SCM_PRETEND_VERSION="9000.42"
 
 # building msgspec>=0.20.0 is failing because it requires C11 stdatomic.h e.g.:
 # src/msgspec/_core.c:7:23: fatal error: stdatomic.h: No such file or directory
