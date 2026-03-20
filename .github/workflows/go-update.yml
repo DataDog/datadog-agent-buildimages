@@ -22,6 +22,11 @@ on:
         required: false
         type: string
         default: ''
+      target_branch:
+        description: 'Target branch for the PR (defaults to "main")'
+        required: false
+        type: string
+        default: 'main'
 
 permissions: {}
 
@@ -68,7 +73,8 @@ jobs:
         if: ${{ inputs.open_pr }}
         with:
           token: ${{ steps.octo-sts.outputs.token }}
-          commit-message: "[push_to_datadog_agent] Update go version to ${{ inputs.go_version }}"
+          commit-message: "[push_to_datadog_agent][${{ inputs.target_branch }}] Update go version to ${{ inputs.go_version }}"
+          base: ${{ inputs.target_branch }}
           branch: ${{ env.BRANCH_NAME }}
           sign-commits: true
           title: "Update Go version to ${{ inputs.go_version }}"
