@@ -65,14 +65,13 @@ RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-lib
     && yum clean all
 
 # Build zstd from source (not available in CentOS 7 armhfp repos)
-RUN curl --retry 10 -fsSLo zstd-${ZSTD_VERSION}.tar.gz https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
-    && echo "${ZSTD_SHA256}  zstd-${ZSTD_VERSION}.tar.gz" | sha256sum --check \
-    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
-    && cd zstd-${ZSTD_VERSION} \
+ADD --checksum=sha256:${ZSTD_SHA256} https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz /tmp/zstd-${ZSTD_VERSION}.tar.gz
+RUN tar -xzf /tmp/zstd-${ZSTD_VERSION}.tar.gz -C /tmp \
+    && cd /tmp/zstd-${ZSTD_VERSION} \
     && make -j$(nproc) \
     && make install \
-    && cd .. \
-    && rm -rf zstd-${ZSTD_VERSION} zstd-${ZSTD_VERSION}.tar.gz
+    && cd / \
+    && rm -rf /tmp/zstd-${ZSTD_VERSION} /tmp/zstd-${ZSTD_VERSION}.tar.gz
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
