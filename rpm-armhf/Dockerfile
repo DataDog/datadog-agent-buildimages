@@ -30,6 +30,8 @@ ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM="bda85007d2d1dc5b76a1391165953c0ba4ccc9d3a61d25452b035a60fb4c7c27"
 ARG CMAKE_VERSION=4.0.2
 ARG CMAKE_CHECKSUM="1c3a82c8ca7cf12e0b17178f9d0c32f7ac773bd5651a98fcfd80fbf4977f8d48"
+ARG ZSTD_VERSION=1.5.7
+ARG ZSTD_SHA256="eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"
 
 # Environment
 ENV PYTHONUTF8 1
@@ -57,10 +59,19 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo && \
 # The last two lines contain dependencies for build of newer rpm
 RUN yum -y install @development which perl-ExtUtils-MakeMaker ncurses-compat-libs git procps \
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static tar pkgconfig  \
-    libtool autoconf policycoreutils-python zstd \
+    libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
     libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java \
     && yum clean all
+
+# Build zstd from source (not available in CentOS 7 armhfp repos)
+ADD --checksum=sha256:${ZSTD_SHA256} https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz /tmp/zstd-${ZSTD_VERSION}.tar.gz
+RUN tar -xzf /tmp/zstd-${ZSTD_VERSION}.tar.gz -C /tmp \
+    && cd /tmp/zstd-${ZSTD_VERSION} \
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/zstd-${ZSTD_VERSION} /tmp/zstd-${ZSTD_VERSION}.tar.gz
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
