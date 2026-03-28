@@ -15,7 +15,7 @@ variable "versions" {
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
     TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
-    DDA_VERSION         = "v0.31.0"
+    DDA_VERSION         = "v0.33.1"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
     RUST_VERSION        = "1.91.0"
