@@ -54,7 +54,7 @@
 
 .build_linux:
   stage: build
-  timeout: 1h30m
+  timeout: 2h
   before_script:
     - !reference [.build, before_script]
   variables:
