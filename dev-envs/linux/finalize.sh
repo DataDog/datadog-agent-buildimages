@@ -2,6 +2,8 @@
 IFS=$'\n\t'
 set -euxo pipefail
 
+groupadd -f dog
+
 # Remove side effects of APT installations
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
