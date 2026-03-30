@@ -5,10 +5,6 @@ set -euxo pipefail
 # Use PAM for environment variable persistence
 apt-get update && apt-get install -y --no-install-recommends libpam0g-dev libpam-modules
 
-cat <<'EOF' >> /etc/pam.d/sshd
-session required pam_env.so
-EOF
-
 install-from-source \
     --version "V_9_9_P2" \
     --digest "082dffcf651b9db762ddbe56ca25cc75a0355a7bea41960b47f3c139974c5e3e" \
