@@ -5,6 +5,11 @@ set -euxo pipefail
 groupadd -f dog
 useradd -m -g dog -s /bin/bash dog
 
+# Base image installs AWS CLI v2; dev-env does not need it
+# https://docs.aws.amazon.com/cli/latest/userguide/uninstall.html
+rm -f /usr/local/bin/aws /usr/local/bin/aws_completer
+rm -rf /usr/local/aws-cli
+
 # Remove side effects of APT installations
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
