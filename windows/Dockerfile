@@ -34,6 +34,7 @@ RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/ph
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
     --mount=type=bind,source=/python-packages-versions.txt,dst=/mnt/python-packages-versions.txt `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
+COPY --from=registry.ddbuild.io/windows-code-signer/go@sha256:2a308fb8a524445be2e0c7f303dac973625438208c9f3aabd4d3337c45c4d565 C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
     --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 3
