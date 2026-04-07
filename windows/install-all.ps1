@@ -12,6 +12,12 @@ $ErrorActionPreference = 'Stop'
 # this includes the helper functions
 . .\helpers.ps1
 
+function Invoke-Script {
+    param([scriptblock]$Script)
+    & $Script
+    if ($LASTEXITCODE) { throw "Script exited with code $LASTEXITCODE" }
+}
+
 # set the environment variables from the versions file
 
 # Global Variables for saving env variables and path additions on the local build
@@ -40,7 +46,7 @@ foreach ($h in $SoftwareTable.GetEnumerator()){
     [Environment]::SetEnvironmentVariable($key, $val, [System.EnvironmentVariableTarget]::Process)
 }
 
-.\helpers\install_cert.ps1
+Invoke-Script { .\helpers\install_cert.ps1 }
 
 ## only do this if building the container
 if($TargetContainer){
@@ -60,44 +66,44 @@ try {
     # Phase 4 is empty by default. Before starting work on updating an item move the script to Phase 4.
     #
     if ($Phase -eq 0 -or $Phase -eq 1) {
-        .\helpers\phase1\install_net35.ps1
-        .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
-        .\helpers\phase1\install_7zip_standalone.ps1 -Version $ENV:SEVENZIP_STANDALONE_VERSION -Sha256 $ENV:SEVENZIP_STANDALONE_SHA256
-        .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
-        .\helpers\phase1\install_vstudio.ps1
-        .\helpers\phase1\install_wdk.ps1
-        .\helpers\phase1\install_dotnetcore.ps1
-        .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION
-        .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256
-        .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256
+        Invoke-Script { .\helpers\phase1\install_net35.ps1 }
+        Invoke-Script { .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256 }
+        Invoke-Script { .\helpers\phase1\install_7zip_standalone.ps1 -Version $ENV:SEVENZIP_STANDALONE_VERSION -Sha256 $ENV:SEVENZIP_STANDALONE_SHA256 }
+        Invoke-Script { .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256 }
+        Invoke-Script { .\helpers\phase1\install_vstudio.ps1 }
+        Invoke-Script { .\helpers\phase1\install_wdk.ps1 }
+        Invoke-Script { .\helpers\phase1\install_dotnetcore.ps1 }
+        Invoke-Script { .\helpers\phase1\install_wix.ps1 -Version $ENV:WIX_VERSION }
+        Invoke-Script { .\helpers\phase1\install_nuget.ps1 -Version $ENV:NUGET_VERSION -Sha256 $ENV:NUGET_SHA256 }
+        Invoke-Script { .\helpers\phase1\install_cmake.ps1 -Version $ENV:CMAKE_VERSION -Sha256 $ENV:CMAKE_SHA256 }
         # # vcpkg depends on cmake
-        .\helpers\phase1\install_vcpkg.ps1
-        .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256
+        Invoke-Script { .\helpers\phase1\install_vcpkg.ps1 }
+        Invoke-Script { .\helpers\phase1\install_codecov.ps1 -Version $ENV:CODECOV_VERSION -Sha256 $ENV:CODECOV_SHA256 }
     }
 
     if ($Phase -eq 0 -or $Phase -eq 2) {
-        .\helpers\phase2\install_docker.ps1
-        .\helpers\phase2\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256
+        Invoke-Script { .\helpers\phase2\install_docker.ps1 }
+        Invoke-Script { .\helpers\phase2\install_ruby.ps1 -Version $ENV:RUBY_VERSION -Sha256 $ENV:RUBY_SHA256 }
         # msys depends on ruby
-        .\helpers\phase2\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256
-        .\helpers\phase2\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256
-        .\helpers\phase2\install_gcloud_sdk.ps1
-        .\helpers\phase2\install_embedded_pythons.ps1
+        Invoke-Script { .\helpers\phase2\install_msys.ps1 -Version $ENV:MSYS_VERSION -Sha256 $ENV:MSYS_SHA256 }
+        Invoke-Script { .\helpers\phase2\install_python.ps1 -Version $ENV:PYTHON_VERSION -Sha256 $ENV:PYTHON_SHA256 }
+        Invoke-Script { .\helpers\phase2\install_gcloud_sdk.ps1 }
+        Invoke-Script { .\helpers\phase2\install_embedded_pythons.ps1 }
     }
 
     if ($Phase -eq 0 -or $Phase -eq 3) {
-        .\helpers\phase3\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256
-        .\helpers\phase3\install_go.ps1
-        .\helpers\phase3\install_codeql.ps1
-        .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256
-        .\helpers\phase3\install_java.ps1
-        .\helpers\phase3\install_vault.ps1 -Version $ENV:VAULT_VERSION -Sha256 $ENV:VAULT_HASH
-        .\helpers\phase3\install_winsign.ps1
-        .\helpers\phase3\install_rust.ps1 -Rustup_Version $ENV:RUSTUP_VERSION -Rustup_Sha256 $ENV:RUSTUP_SHA256 -Rust_Version $ENV:RUST_VERSION
-        .\helpers\phase3\install_datadog_ci.ps1 -Version $ENV:DATADOG_CI_VERSION -Sha256 $ENV:DATADOG_CI_SHA256
-        .\helpers\phase3\install_awscli.ps1 -Version $ENV:AWSCLI_VERSION -Sha256 $ENV:AWSCLI_SHA256
-        .\helpers\phase3\install_bazelisk.ps1 -Version $ENV:BAZELISK_VERSION -Sha256 $ENV:BAZELISK_SHA256
-        .\helpers\phase3\install_ci_identities_gitlab_job_client.ps1 -Version $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION -Sha256 $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256 # requires the AWS CLI
+        Invoke-Script { .\helpers\phase3\install_winget.ps1 -Version $ENV:WINGET_VERSION -Sha256 $ENV:WINGET_SHA256 }
+        Invoke-Script { .\helpers\phase3\install_go.ps1 }
+        Invoke-Script { .\helpers\phase3\install_codeql.ps1 }
+        Invoke-Script { .\helpers\phase3\install_ninja.ps1 -Version $ENV:NINJA_VERSION -Sha256 $ENV:NINJA_SHA256 }
+        Invoke-Script { .\helpers\phase3\install_java.ps1 }
+        Invoke-Script { .\helpers\phase3\install_vault.ps1 -Version $ENV:VAULT_VERSION -Sha256 $ENV:VAULT_HASH }
+        Invoke-Script { .\helpers\phase3\install_winsign.ps1 }
+        Invoke-Script { .\helpers\phase3\install_rust.ps1 -Rustup_Version $ENV:RUSTUP_VERSION -Rustup_Sha256 $ENV:RUSTUP_SHA256 -Rust_Version $ENV:RUST_VERSION }
+        Invoke-Script { .\helpers\phase3\install_datadog_ci.ps1 -Version $ENV:DATADOG_CI_VERSION -Sha256 $ENV:DATADOG_CI_SHA256 }
+        Invoke-Script { .\helpers\phase3\install_awscli.ps1 -Version $ENV:AWSCLI_VERSION -Sha256 $ENV:AWSCLI_SHA256 }
+        Invoke-Script { .\helpers\phase3\install_bazelisk.ps1 -Version $ENV:BAZELISK_VERSION -Sha256 $ENV:BAZELISK_SHA256 }
+        Invoke-Script { .\helpers\phase3\install_ci_identities_gitlab_job_client.ps1 -Version $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION -Sha256 $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256 } # requires the AWS CLI
 
         ## # Add signtool to path
         Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
