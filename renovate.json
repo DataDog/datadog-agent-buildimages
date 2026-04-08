@@ -27,5 +27,5 @@
       "datasourceTemplate": "github-releases"
     }
   ],
-  "minimumReleaseAge": "14 days"
+  "minimumReleaseAge": "2 days"
 }
