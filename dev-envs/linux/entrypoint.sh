@@ -22,8 +22,7 @@ if ! [[ -f "${startup_indicator}" ]]; then
 
     # https://github.com/moby/moby/issues/2569#issuecomment-27973910
     # https://github.com/jenkinsci/docker-ssh-agent/issues/33#issuecomment-597217350
-    env | grep -Ev "^(USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
-
+    
     # Enable telemetry if the API key is set
     if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
         set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"

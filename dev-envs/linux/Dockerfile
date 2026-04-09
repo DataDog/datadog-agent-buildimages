@@ -45,6 +45,8 @@ RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
+RUN --mount=type=bind,src=./dump-build-env-profile-d.sh,dst=/mnt/dump-build-env-profile-d.sh /mnt/dump-build-env-profile-d.sh
+
 # SSH
 EXPOSE 22
 # MCP
