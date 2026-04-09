@@ -23,7 +23,7 @@ variable "versions" {
     RUSTUP_VERSION      = "1.26.0"
     BUNDLER_VERSION     = "2.4.20"
     VAULT_VERSION       = "1.17.2"
-    DATADOG_CI_VERSION  = "3.9.0"
+    DATADOG_CI_VERSION  = "5.12.1"
     PROTOBUF_VERSION    = "34.0"
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
@@ -56,7 +56,7 @@ variable "checksums_amd64" {
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
     VAULT_SHA256             = "a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8"
-    DATADOG_CI_SHA256        = "1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5"
+    DATADOG_CI_SHA256        = "86fcf24d5211f5ae714e947354ccb621e74e2bba4162247890454c6461e74ca5"
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
     AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
   }
@@ -72,7 +72,7 @@ variable "checksums_arm64" {
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
     VAULT_SHA256             = "1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9"
-    DATADOG_CI_SHA256        = "abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d"
+    DATADOG_CI_SHA256        = "a192622b4aba3e040f12dadb73e8cf7158a11027c3aab5a16404b152940991d6"
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
     AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
   }
