@@ -7,6 +7,9 @@ ARG BASE_IMAGE_REGISTRY=mcr.microsoft.com
 ARG BASE_IMAGE_TAG=4.8-windowsservercore-ltsc2022
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/dotnet/framework/runtime:${BASE_IMAGE_TAG}
 
+# required for the COPY --from instruction later
+FROM registry.ddbuild.io/windows-code-signer/go:v0.6.0@sha256:2a308fb8a524445be2e0c7f303dac973625438208c9f3aabd4d3337c45c4d565 AS windows-code-signer
+
 FROM ${BASE_IMAGE}
 
 
@@ -14,10 +17,6 @@ ENV WINDOWS_VERSION=2022
 
 ENV TARGET_ARCH=x64
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
-
-# Using ARG
-# because ENV is not usable in a COPY --from
-ARG WINDOWS_CODE_SIGNER_VERSION=":v0.6.0@sha256:e51bd1e36773114cc2dee43f02246acde4f8163e84e6e5928a8ef188cb4abb63"
 
 ARG DDA_NO_DYNAMIC_DEPS
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
@@ -38,7 +37,7 @@ RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/ph
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
     --mount=type=bind,source=/python-packages-versions.txt,dst=/mnt/python-packages-versions.txt `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
-COPY --from=registry.ddbuild.io/windows-code-signer/go${WINDOWS_CODE_SIGNER_VERSION} C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
+COPY --from=windows-code-signer C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
     --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 3
