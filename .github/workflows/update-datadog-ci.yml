@@ -49,14 +49,10 @@ jobs:
           sed -i '/^variable "checksums_arm64"/,/^}/{ /DATADOG_CI_SHA256/s/[a-f0-9]\{64\}/'"${SHA_LINUX_ARM64}"'/ }' docker-bake.hcl
 
           # Update version + x64 SHA in x64 Dockerfiles
-          for f in rpm-x64/Dockerfile docker-x64/Dockerfile dd-agent-testing/Dockerfile; do
+          for f in rpm-x64/Dockerfile docker-x64/Dockerfile dd-agent-testing/Dockerfile agent-deploy/Dockerfile; do
             sed -i "/^ARG DATADOG_CI_VERSION/s/=.*/=${VERSION}/" "$f"
             sed -i "/^ARG DATADOG_CI_SHA/s/[a-f0-9]\{64\}/${SHA_LINUX_X64}/" "$f"
           done
-
-          # agent-deploy uses DATADOG_CI_SHASUM instead of DATADOG_CI_SHA
-          sed -i "/^ARG DATADOG_CI_VERSION/s/=.*/=${VERSION}/" agent-deploy/Dockerfile
-          sed -i "/^ARG DATADOG_CI_SHASUM/s/[a-f0-9]\{64\}/${SHA_LINUX_X64}/" agent-deploy/Dockerfile
 
           # Update version + arm64 SHA in arm64 Dockerfiles
           for f in rpm-arm64/Dockerfile docker-arm64/Dockerfile; do
