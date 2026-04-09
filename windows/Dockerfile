@@ -13,6 +13,9 @@
 # TODO: Once the 1809 windows-docker host image is updated, update the base container image.
 ARG BASE_IMAGE=mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
 
+# required for the COPY --from instruction later
+FROM registry.ddbuild.io/windows-code-signer/go:v0.9.0@sha256:445a5dcdeb37718560e67186a94ed94f2cb54fa7818618b5c7dd1c13977cd8f1 AS windows-code-signer
+
 FROM ${BASE_IMAGE}
 
 SHELL ["powershell", "-Command"]
@@ -72,6 +75,7 @@ COPY ./windows/helpers/phase1/*.ps1 c:/scripts/helpers/phase1/
 RUN .\install-all.ps1 -TargetContainer -Phase 1
 COPY ./windows/helpers/phase2/*.ps1 c:/scripts/helpers/phase2/
 RUN .\install-all.ps1 -TargetContainer -Phase 2
+COPY --from=windows-code-signer C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
 COPY ./ci-identities-gitlab-job-client-windows-amd64.exe c:/mnt/
 COPY ./windows/helpers/phase3/*.ps1 c:/scripts/helpers/phase3/
 RUN .\install-all.ps1 -TargetContainer -Phase 3

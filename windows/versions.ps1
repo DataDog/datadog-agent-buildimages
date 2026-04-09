@@ -62,4 +62,9 @@ $SoftwareTable = @{
     # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.7";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="c39c35f1db9daddaca6b47080e5bcb4b8ffd5cf7e7fe61b02ed56690e749928c";
+    # windows-code-signer.exe is copied from its container image during the "docker build"
+    # with a "COPY --from" instruction in the Dockerfile; this version and hash are used
+    # to check it. Update the image digest in the Dockerfile together with them.
+    "WINDOWS_CODE_SIGNER_VERSION"="v0.9.0";
+    "WINDOWS_CODE_SIGNER_SHA256"="5519b9e9c692f4b73437df21ab0c680433f50c46dee2890eff2001b38a3bdc25";
 }
