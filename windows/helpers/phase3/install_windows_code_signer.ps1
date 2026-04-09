@@ -10,6 +10,13 @@ param (
 
 $DESTINATION = "C:\devtools\windows-code-signer.exe"
 
+if($Env:DD_DEV_TARGET -ne "Container") {
+    # the binary is downloaded in the Dockerfile,
+    # so if we are not building the container
+    # the binary is not present
+    return
+}
+
 if ( -not (Test-Path $DESTINATION)) {
     Write-Host -ForegroundColor Red "$DESTINATION not found"
     throw "$DESTINATION not found"
