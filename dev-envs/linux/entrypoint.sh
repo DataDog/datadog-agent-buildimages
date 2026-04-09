@@ -45,4 +45,4 @@ if ! [[ -f "${startup_indicator}" ]]; then
     touch "${startup_indicator}"
 fi
 
-/usr/local/sbin/sshd -D -e
+sleep infinity
