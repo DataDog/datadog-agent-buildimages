@@ -23,7 +23,7 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
-ARG DATADOG_CI_SHASUM=86fcf24d5211f5ae714e947354ccb621e74e2bba4162247890454c6461e74ca5
+ARG DATADOG_CI_SHA=86fcf24d5211f5ae714e947354ccb621e74e2bba4162247890454c6461e74ca5
 ARG DATADOG_CI_VERSION=5.12.1
 ARG PYTHON_VERSION=3.12.6
 ARG VAULT_VERSION=1.17.2
@@ -82,7 +82,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt update \
     && apt install gh -y \
     && curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64 --output "/usr/local/bin/datadog-ci" \
-    && echo "${DATADOG_CI_SHASUM} /usr/local/bin/datadog-ci" | sha256sum --check \
+    && echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check \
     && chmod +x /usr/local/bin/datadog-ci \
     # AWS v2 cli
     && curl --retry 10 -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
