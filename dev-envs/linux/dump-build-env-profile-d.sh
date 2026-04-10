@@ -6,7 +6,7 @@ set -euxo pipefail
 # /etc/profile.d so interactive sessions see the same variables as at the end
 # of the image build (after all prior RUN steps in this Dockerfile).
 
-readonly out="/etc/profile.d/99-datadog-agent-dev-build-env.sh"
+readonly out="/etc/profile.d/99-dd-agent-workspace-env.sh"
 
 # Variables to omit: session-specific, identity (wrong for non-root users), or
 # bash dynamic state that must not be pinned.

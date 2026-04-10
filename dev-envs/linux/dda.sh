@@ -1,9 +1,16 @@
 #!/bin/bash -l
 IFS=$'\n\t'
 set -euxo pipefail
-export UV_TOOL_BIN_DIR="/usr/local/bin"
 
-uv tool install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}"
+ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+    GO_ARCH="linux-amd64"; \
+    elif [ "$ARCH" = "arm64" ]; then \
+    GO_ARCH="linux-arm64"; \
+    fi && \
+    curl -fsSL --retry 4 "https://github.com/DataDog/datadog-agent-dev/releases/download/${DDA_VERSION}/dda-${GO_ARCH}-unknown-linux-gnu.tar.gz" \
+    | tar -xzf - -C /usr/local/bin && \
+    chmod +x /usr/local/bin/dda
 
 dda self telemetry disable
 dda config set update.mode check
