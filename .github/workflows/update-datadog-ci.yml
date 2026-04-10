@@ -1,0 +1,77 @@
+name: Update datadog-ci checksums
+
+on:
+  push:
+    branches:
+      - 'renovate/**'
+    paths:
+      - 'docker-bake.hcl'
+
+permissions: {}
+
+jobs:
+  update-checksums:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Extract version and fetch checksums
+        id: version
+        run: |
+          VERSION=$(grep 'DATADOG_CI_VERSION' docker-bake.hcl | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          curl -fsSL "https://github.com/DataDog/datadog-ci/releases/download/v${VERSION}/checksums.txt" -o /tmp/checksums.txt
+
+          SHA_LINUX_X64=$(awk '/datadog-ci_linux-x64$/{print $1}' /tmp/checksums.txt)
+          SHA_LINUX_ARM64=$(awk '/datadog-ci_linux-arm64$/{print $1}' /tmp/checksums.txt)
+          SHA_WIN_X64=$(awk '/datadog-ci_win-x64$/{print $1}' /tmp/checksums.txt)
+
+          echo "sha_linux_x64=${SHA_LINUX_X64}" >> "$GITHUB_OUTPUT"
+          echo "sha_linux_arm64=${SHA_LINUX_ARM64}" >> "$GITHUB_OUTPUT"
+          echo "sha_win_x64=${SHA_WIN_X64}" >> "$GITHUB_OUTPUT"
+
+      - name: Update checksums and propagate version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA_LINUX_X64: ${{ steps.version.outputs.sha_linux_x64 }}
+          SHA_LINUX_ARM64: ${{ steps.version.outputs.sha_linux_arm64 }}
+          SHA_WIN_X64: ${{ steps.version.outputs.sha_win_x64 }}
+        run: |
+          # Update SHAs in docker-bake.hcl (version already updated by Renovate)
+          sed -i '/^variable "checksums_amd64"/,/^}/{ /DATADOG_CI_SHA256/s/[a-f0-9]\{64\}/'"${SHA_LINUX_X64}"'/ }' docker-bake.hcl
+          sed -i '/^variable "checksums_arm64"/,/^}/{ /DATADOG_CI_SHA256/s/[a-f0-9]\{64\}/'"${SHA_LINUX_ARM64}"'/ }' docker-bake.hcl
+
+          # Update version + x64 SHA in x64 Dockerfiles
+          for f in rpm-x64/Dockerfile docker-x64/Dockerfile dd-agent-testing/Dockerfile agent-deploy/Dockerfile; do
+            sed -i "/^ARG DATADOG_CI_VERSION/s/=.*/=${VERSION}/" "$f"
+            sed -i "/^ARG DATADOG_CI_SHA/s/[a-f0-9]\{64\}/${SHA_LINUX_X64}/" "$f"
+          done
+
+          # Update version + arm64 SHA in arm64 Dockerfiles
+          for f in rpm-arm64/Dockerfile docker-arm64/Dockerfile; do
+            sed -i "/^ARG DATADOG_CI_VERSION/s/=.*/=${VERSION}/" "$f"
+            sed -i "/^ARG DATADOG_CI_SHA/s/[a-f0-9]\{64\}/${SHA_LINUX_ARM64}/" "$f"
+          done
+
+          # Update Windows
+          sed -i 's|\("DATADOG_CI_VERSION"="\)[^"]*|\1'"${VERSION}"'|' windows/versions.ps1
+          sed -i 's|\("DATADOG_CI_SHA256"="\)[^"]*|\1'"${SHA_WIN_X64}"'|' windows/versions.ps1
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Update datadog-ci checksums and propagate v${{ steps.version.outputs.version }}"
+          git push
