@@ -13,7 +13,9 @@ mkdir -p target/SDK
 tar xJf "tarballs/MacOSX${MACOSX_SDK_VERSION}.sdk.tar.xz" -C target/SDK/
 
 # Build osxcross
-UNATTENDED=1 ./build.sh
+UNATTENDED=1 TARGET_DIR=/opt/osxcross ./build.sh
 
-# Move the built toolchain to the final location
-mv target /opt/osxcross
+# Remove unnecessary content like man pages and files supporting iOS
+rm -rf \
+    "/opt/osxcross/SDK/MacOSX${MACOSX_SDK_VERSION}.sdk/System/iOSSupport" \
+    "/opt/osxcross/SDK/MacOSX${MACOSX_SDK_VERSION}.sdk/usr/share/man"
