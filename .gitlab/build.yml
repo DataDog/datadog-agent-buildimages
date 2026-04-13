@@ -37,21 +37,6 @@
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Temporary: debug Docker environment to determine whether the docker-container
-    # buildx driver can be used to set per-job BuildKit memory limits.
-    - |
-      echo "=== Docker environment debug ==="
-      echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
-      echo "DOCKER_TLS_VERIFY=${DOCKER_TLS_VERIFY:-not set}"
-      echo "DOCKER_CERT_PATH=${DOCKER_CERT_PATH:-not set}"
-      docker context ls 2>&1 || true
-      docker info --format 'DockerRootDir={{.DockerRootDir}} ServerVersion={{.ServerVersion}} OperatingSystem={{.OperatingSystem}}' 2>&1 || true
-      echo "=== Buildx builders ==="
-      docker buildx ls 2>&1 || true
-      echo "=== Attempting docker buildx create --driver docker-container ==="
-      docker buildx create --name debug-builder --driver docker-container --use "${DOCKER_HOST:-unix:///var/run/docker.sock}" 2>&1 && echo "SUCCESS" || echo "FAILED (exit $?)"
-      docker buildx rm debug-builder 2>/dev/null || true
-      echo "=== End debug ==="
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
