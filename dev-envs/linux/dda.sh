@@ -4,7 +4,7 @@ set -euxo pipefail
 
 ARCH=$(dpkg --print-architecture) && \
     if [ "$ARCH" = "amd64" ]; then \
-    GO_ARCH="x84_64"; \
+    GO_ARCH="x86_64"; \
     elif [ "$ARCH" = "arm64" ]; then \
     GO_ARCH="aarch64"; \
     fi && \
