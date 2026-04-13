@@ -37,20 +37,36 @@
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # Create a BuildKit builder with an explicit memory limit.
+    # When BuildKit exceeds BUILDKIT_MEMORY_LIMIT it exits with a clear OOM error instead of
+    # hanging indefinitely (https://github.com/docker/buildx/issues/556).
+    # KUBERNETES_SERVICE_MEMORY_LIMIT (set per job class below) must be > BUILDKIT_MEMORY_LIMIT
+    # so that the Docker daemon itself is not killed before BuildKit can report the failure.
+    - docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt memory=${BUILDKIT_MEMORY_LIMIT} --use
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
 
 # Default timeout of 2h is too long for build stage, we want to fail faster if it's hanging
 # Due to an upstream buildx issue (https://github.com/docker/buildx/issues/556), when the remote build container is killed, the command does not fail but instead hangs indefinitely.
+# BUILDKIT_MEMORY_LIMIT (set per job class below) causes BuildKit to exit cleanly on OOM
+# rather than hanging, which means the job fails immediately instead of waiting for the timeout.
 # Timeout values were chosen to be just above the longest historically-available runtime of the corresponding job's successful runs
 .fast_build:
   extends: .build
   timeout: 30m
+  variables:
+    KUBERNETES_SERVICE_MEMORY_LIMIT: "10Gi"
+    KUBERNETES_SERVICE_MEMORY_REQUEST: "10Gi"
+    BUILDKIT_MEMORY_LIMIT: "8g"
 
 .medium_build:
   extends: .build
   timeout: 45m
+  variables:
+    KUBERNETES_SERVICE_MEMORY_LIMIT: "10Gi"
+    KUBERNETES_SERVICE_MEMORY_REQUEST: "10Gi"
+    BUILDKIT_MEMORY_LIMIT: "8g"
 
 .build_linux:
   stage: build
@@ -60,6 +76,9 @@
   variables:
     IMAGE: linux
     IMAGE_VERSION_ROOT: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
+    KUBERNETES_SERVICE_MEMORY_LIMIT: "48Gi"
+    KUBERNETES_SERVICE_MEMORY_REQUEST: "48Gi"
+    BUILDKIT_MEMORY_LIMIT: "44g"
   script:
     - |
       PUSH=""
