@@ -42,7 +42,7 @@
     # hanging indefinitely (https://github.com/docker/buildx/issues/556).
     # KUBERNETES_SERVICE_MEMORY_LIMIT (set per job class below) must be > BUILDKIT_MEMORY_LIMIT
     # so that the Docker daemon itself is not killed before BuildKit can report the failure.
-    - docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt memory=${BUILDKIT_MEMORY_LIMIT} --use
+    - '[ -z "${BUILDKIT_MEMORY_LIMIT:-}" ] || docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt memory=${BUILDKIT_MEMORY_LIMIT} --use'
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
