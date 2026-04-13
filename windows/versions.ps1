@@ -71,7 +71,8 @@ $SoftwareTable = @{
     # the CI ID client is actually downloaded in the CI job before running the "docker build" command
     # this "version" variable is used to *check* that we downloaded the correct version;
     # it must updated in sync with the version in .gitlab/build.yml
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.3.0";
+    # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.3";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="2cfce3de0976245a6665f99585a7762b01d78b9af5c8748f5a917de312a9356d";
     # Similarly for windows-code-signer.exe,
     # except that it's downloaded during the "docker build"
