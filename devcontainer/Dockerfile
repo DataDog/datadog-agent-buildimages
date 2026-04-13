@@ -9,6 +9,9 @@ ARG PYTHON_VERSION=3.12
 ARG CMAKE_VERSION=3.30.2
 ARG CMAKE_SHA256_AMD64="33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
 ARG CMAKE_SHA256_ARM64="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
+ARG MOLD_VERSION=2.40.4
+ARG MOLD_SHA256_AMD64="4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
+ARG MOLD_SHA256_ARM64="c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 ENV DDA_NO_DYNAMIC_DEPS=${DDA_NO_DYNAMIC_DEPS}
@@ -48,6 +51,19 @@ RUN if [ "$TARGETARCH" = "amd64" ] ; then set -ex \
     && sh cmake.sh --skip-license --prefix=/opt/cmake \
     && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
     && rm cmake.sh ; fi
+
+# Mold linker
+RUN if [ "$TARGETARCH" = "arm64" ] ; then \
+    curl -sL -o /tmp/mold.tar.gz "https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-aarch64-linux.tar.gz" \
+    && echo "${MOLD_SHA256_ARM64}  /tmp/mold.tar.gz" | sha256sum --check \
+    && tar -C /usr/local --strip-components=1 -xzf /tmp/mold.tar.gz \
+    && rm /tmp/mold.tar.gz ; fi
+
+RUN if [ "$TARGETARCH" = "amd64" ] ; then \
+    curl -sL -o /tmp/mold.tar.gz "https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-x86_64-linux.tar.gz" \
+    && echo "${MOLD_SHA256_AMD64}  /tmp/mold.tar.gz" | sha256sum --check \
+    && tar -C /usr/local --strip-components=1 -xzf /tmp/mold.tar.gz \
+    && rm /tmp/mold.tar.gz ; fi
 
 # Install & verify Bazelisk as Bazel bootstrapper
 RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh

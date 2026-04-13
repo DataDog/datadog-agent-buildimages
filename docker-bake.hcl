@@ -32,6 +32,7 @@ variable "versions" {
     OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
+    MOLD_VERSION           = "2.40.4"
   }
 }
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
@@ -59,6 +60,7 @@ variable "checksums_amd64" {
     DATADOG_CI_SHA256        = "1b62407af5d4e99827a6903a0e893a17cadf94d1da42e86a76fb5f2b44b2a1e5"
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
     AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
+    MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
   }
 }
 
@@ -75,6 +77,7 @@ variable "checksums_arm64" {
     DATADOG_CI_SHA256        = "abb2ef649b3407496fbcf9b634a4b1dbe5f6d5141e273d7fdf272a3e4bc3de4d"
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
     AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
+    MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
   }
 }
 
@@ -93,6 +96,7 @@ variable "architecture_defs_amd64" {
     CODECOV_ARCH         = "linux"
     VAULT_ARCH           = "amd64"
     PROTOBUF_ARCH        = "x86_64"
+    MOLD_ARCH            = "x86_64"
     GLIBC_VERSION        = "2.17"
     CROSS_GLIBC_VERSION  = "2.23"
   }
@@ -113,6 +117,7 @@ variable "architecture_defs_arm64" {
     CODECOV_ARCH         = "aarch64"
     VAULT_ARCH           = "arm64"
     PROTOBUF_ARCH        = "aarch_64"
+    MOLD_ARCH            = "aarch64"
     GLIBC_VERSION        = "2.23"
     CROSS_GLIBC_VERSION  = "2.17"
   }
