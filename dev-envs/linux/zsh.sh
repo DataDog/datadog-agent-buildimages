@@ -27,7 +27,7 @@ fi
 
 tar -xf "${workdir}/${archive_name}" -C "${workdir}" --strip-components 1
 pushd "${workdir}"
-./configure --with-tcsetpgrp
+./configure --with-tcsetpgrp --sysconfdir=/etc/zsh --enable-etcdir=/etc/zsh
 make -j "$(nproc)"
 make install
 popd
