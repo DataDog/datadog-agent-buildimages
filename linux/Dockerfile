@@ -332,6 +332,7 @@ COPY --from=protobuf_builder /usr/include/google /usr/include/google
 
 # Mold linker
 COPY --from=mold_builder /tmp/mold-install/bin/mold /usr/local/bin/mold
+COPY --from=mold_builder /tmp/mold-install/bin/ld.mold /usr/local/bin/ld.mold
 COPY --from=mold_builder /tmp/mold-install/lib/mold /usr/local/lib/mold
 
 # Texinfo
