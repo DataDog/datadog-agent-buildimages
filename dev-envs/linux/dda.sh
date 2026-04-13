@@ -4,9 +4,9 @@ set -euxo pipefail
 
 ARCH=$(dpkg --print-architecture) && \
     if [ "$ARCH" = "amd64" ]; then \
-    GO_ARCH="linux-amd64"; \
+    GO_ARCH="x84_64"; \
     elif [ "$ARCH" = "arm64" ]; then \
-    GO_ARCH="linux-arm64"; \
+    GO_ARCH="aarch64"; \
     fi && \
     curl -fsSL --retry 4 "https://github.com/DataDog/datadog-agent-dev/releases/download/${DDA_VERSION}/dda-${GO_ARCH}-unknown-linux-gnu.tar.gz" \
     | tar -xzf - -C /usr/local/bin && \
