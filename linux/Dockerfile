@@ -184,6 +184,17 @@ COPY ./rvm/gpg-keys /gpg-keys
 # The script we download does a lot of extra checking that we don't need in a Docker build.
 RUN --mount=type=bind,src=./linux/scripts/rvm.sh,dst=/mnt/rvm.sh cd /tmp/rvm && /mnt/rvm.sh && rm -rf /tmp/rvm
 
+FROM extraction_base AS mold_builder
+# Mold linker
+ARG MOLD_VERSION
+ARG MOLD_SHA256
+ARG MOLD_ARCH
+
+ADD --checksum=sha256:${MOLD_SHA256} "https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-${MOLD_ARCH}-linux.tar.gz" /tmp/mold.tar.gz
+RUN mkdir -p /tmp/mold-install \
+    && tar -C /tmp/mold-install --strip-components=1 -xzf /tmp/mold.tar.gz \
+    && rm /tmp/mold.tar.gz
+
 FROM extraction_base AS protobuf_builder
 # Protobuf
 ARG PROTOBUF_VERSION
@@ -319,6 +330,11 @@ RUN git config --global user.email "package@datadoghq.com" && \
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
 
+# Mold linker
+COPY --from=mold_builder /tmp/mold-install/bin/mold /usr/local/bin/mold
+COPY --from=mold_builder /tmp/mold-install/bin/ld.mold /usr/local/bin/ld.mold
+COPY --from=mold_builder /tmp/mold-install/lib/mold /usr/local/lib/mold
+
 # Texinfo
 COPY --from=texinfo_builder /usr/local /usr/local
 
@@ -448,6 +464,7 @@ ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
 ARG MACOSX_SDK_VERSION
 ARG OSXCROSS_COMMIT
+ARG MOLD_VERSION
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
 
@@ -465,6 +482,7 @@ LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
 LABEL go_version="${GO_VERSION}"
 LABEL dda_version="${DDA_VERSION}"
 LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
+LABEL mold_version="${MOLD_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
