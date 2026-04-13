@@ -37,27 +37,6 @@
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Create a BuildKit builder with a memory limit so that OOM results in a clear error
-    # rather than a silent hang (https://github.com/docker/buildx/issues/556).
-    # Only created when BUILDKIT_MEMORY_LIMIT is set (i.e. for fast/medium/linux job classes).
-    # The Docker daemon endpoint is passed explicitly so this works whether DOCKER_HOST points
-    # to a TCP socket or the default Unix socket.
-    - |
-      if [ -n "${BUILDKIT_MEMORY_LIMIT:-}" ]; then
-        docker buildx create \
-          --name datadog-agent-builder \
-          --driver docker-container \
-          --driver-opt memory=${BUILDKIT_MEMORY_LIMIT} \
-          --use \
-          "${DOCKER_HOST:-unix:///var/run/docker.sock}" || {
-          echo "=== docker buildx create failed, collecting debug info ==="
-          echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
-          docker version 2>&1 || true
-          docker context ls 2>&1 || true
-          docker buildx ls 2>&1 || true
-          exit 1
-        }
-      fi
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
@@ -71,7 +50,6 @@
   variables:
     KUBERNETES_SERVICE_MEMORY_LIMIT: "10Gi"
     KUBERNETES_SERVICE_MEMORY_REQUEST: "10Gi"
-    BUILDKIT_MEMORY_LIMIT: "8g"
 
 .medium_build:
   extends: .build
@@ -79,7 +57,6 @@
   variables:
     KUBERNETES_SERVICE_MEMORY_LIMIT: "10Gi"
     KUBERNETES_SERVICE_MEMORY_REQUEST: "10Gi"
-    BUILDKIT_MEMORY_LIMIT: "8g"
 
 .build_linux:
   stage: build
@@ -91,7 +68,6 @@
     IMAGE_VERSION_ROOT: v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     KUBERNETES_SERVICE_MEMORY_LIMIT: "48Gi"
     KUBERNETES_SERVICE_MEMORY_REQUEST: "48Gi"
-    BUILDKIT_MEMORY_LIMIT: "44g"
   script:
     - |
       PUSH=""
