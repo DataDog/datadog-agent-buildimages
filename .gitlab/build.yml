@@ -37,6 +37,39 @@
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    # Try to create a local docker-container buildx builder so BuildKit memory can be
+    # capped per job (https://github.com/docker/buildx/issues/556).
+    # If it fails we fall through: builds still work via the pre-configured k8s builders.
+    - |
+      echo "=== Docker endpoint discovery ==="
+      echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
+      echo "DOCKER_TLS_VERIFY=${DOCKER_TLS_VERIFY:-not set}"
+      docker context inspect --format '{{.Endpoints.docker.Host}}' default 2>/dev/null || true
+      docker info --format '{{.DockerRootDir}}' 2>/dev/null || echo "docker info failed"
+      echo "=== Trying docker-container builder at candidate endpoints ==="
+      _BUILDX_CREATED=0
+      for _ENDPOINT in \
+          "${DOCKER_HOST:-}" \
+          "tcp://localhost:2375" \
+          "tcp://docker:2375" \
+          "tcp://localhost:2376" \
+          "unix:///var/run/docker.sock"; do
+        [ -z "$_ENDPOINT" ] && continue
+        echo "Trying endpoint: $_ENDPOINT"
+        if docker buildx create \
+            --name datadog-agent-builder \
+            --driver docker-container \
+            --driver-opt "memory=${BUILDKIT_MEMORY_LIMIT}" \
+            --use \
+            "$_ENDPOINT" 2>&1; then
+          echo "SUCCESS with endpoint: $_ENDPOINT"
+          _BUILDX_CREATED=1
+          break
+        fi
+      done
+      if [ "$_BUILDX_CREATED" -eq 0 ]; then
+        echo "WARNING: could not create docker-container builder, falling back to pre-configured builder"
+      fi
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
