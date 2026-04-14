@@ -37,18 +37,6 @@
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # Debug Docker environment - individual steps so output is indexed in logs
-    - echo "DBG DOCKER_HOST=${DOCKER_HOST:-not set}"
-    - echo "DBG DOCKER_TLS_VERIFY=${DOCKER_TLS_VERIFY:-not set}"
-    - docker context inspect --format 'DBG context host={{.Endpoints.docker.Host}}' default 2>&1 || echo "DBG context inspect failed"
-    - docker info --format 'DBG DockerRootDir={{.DockerRootDir}}' 2>&1 || echo "DBG docker info failed"
-    # Try candidate Docker endpoints for docker-container buildx driver
-    - docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt "memory=${BUILDKIT_MEMORY_LIMIT}" --use "${DOCKER_HOST:-}" 2>&1 && echo "DBG buildx SUCCESS DOCKER_HOST" || echo "DBG buildx FAILED DOCKER_HOST"
-    - docker buildx rm datadog-agent-builder 2>/dev/null || true
-    - docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt "memory=${BUILDKIT_MEMORY_LIMIT}" --use tcp://localhost:2375 2>&1 && echo "DBG buildx SUCCESS tcp://localhost:2375" || echo "DBG buildx FAILED tcp://localhost:2375"
-    - docker buildx rm datadog-agent-builder 2>/dev/null || true
-    - docker buildx create --name datadog-agent-builder --driver docker-container --driver-opt "memory=${BUILDKIT_MEMORY_LIMIT}" --use tcp://docker:2375 2>&1 && echo "DBG buildx SUCCESS tcp://docker:2375" || echo "DBG buildx FAILED tcp://docker:2375"
-    - docker buildx rm datadog-agent-builder 2>/dev/null || true
   script:
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
