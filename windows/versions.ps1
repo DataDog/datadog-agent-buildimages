@@ -60,8 +60,8 @@ $SoftwareTable = @{
     "RUSTUP_VERSION"="1.26.0";
     "RUSTUP_SHA256"="365D072AC4EF47F8774F4D2094108035E2291A0073702DB25FA7797A30861FC9";
     "RUST_VERSION"="1.91.0";
-    "DATADOG_CI_VERSION"="3.9.0";
-    "DATADOG_CI_SHA256"="c3cd6a1842253d34ad2aac53d4359c1029342e05e5e105e1bf8a44dfcae0800d";
+    "DATADOG_CI_VERSION"="5.12.1";
+    "DATADOG_CI_SHA256"="4b8320d0b5644c9370e01fd9e38e6f0306c709757c45238416b8eae679c41f75";
     "CODECOV_VERSION"="v0.6.1";
     "CODECOV_SHA256"="6b95584fbb252b721b73ddfe970d715628879543d119f1d2ed08b073155f7d06";
     "AWSCLI_VERSION"="2.27.30";
@@ -73,4 +73,11 @@ $SoftwareTable = @{
     # it must updated in sync with the version in .gitlab/build.yml
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.3.0";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="2cfce3de0976245a6665f99585a7762b01d78b9af5c8748f5a917de312a9356d";
+    # Similarly for windows-code-signer.exe,
+    # except that it's downloaded during the "docker build"
+    # with a "COPY --from" instruction in the Dockerfile
+    # recall to update the digest of the image in the Dockerfile
+    # when updating the version
+    "WINDOWS_CODE_SIGNER_VERSION"="v0.6.0";
+    "WINDOWS_CODE_SIGNER_SHA256"="e51bd1e36773114cc2dee43f02246acde4f8163e84e6e5928a8ef188cb4abb63";
 }

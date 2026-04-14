@@ -1,3 +1,7 @@
+# Legacy code installing the old Python-based Windows Code Signer "dd-wcs";
+# see "install_windows_code_signer.ps1" for the new version.
+# TODO remove this file after confirming it's not used anymore by users of this image
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 

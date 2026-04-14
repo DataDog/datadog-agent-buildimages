@@ -74,7 +74,7 @@
       if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
         PUSH="--push"
       fi
-    - docker buildx bake $PUSH $BAKE_TARGET
+    - docker buildx bake $PUSH ${PREVENT_CACHE:+--no-cache} $BAKE_TARGET
     - |
       if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
         crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq

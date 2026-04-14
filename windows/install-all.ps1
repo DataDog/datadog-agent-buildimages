@@ -98,6 +98,7 @@ try {
         .\helpers\phase3\install_awscli.ps1 -Version $ENV:AWSCLI_VERSION -Sha256 $ENV:AWSCLI_SHA256
         .\helpers\phase3\install_bazelisk.ps1 -Version $ENV:BAZELISK_VERSION -Sha256 $ENV:BAZELISK_SHA256
         .\helpers\phase3\install_ci_identities_gitlab_job_client.ps1 -Version $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION -Sha256 $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256 # requires the AWS CLI
+        .\helpers\phase3\install_windows_code_signer.ps1 -Version $ENV:WINDOWS_CODE_SIGNER_VERSION -Sha256 $ENV:WINDOWS_CODE_SIGNER_SHA256
 
         ## # Add signtool to path
         Add-ToPath -NewPath "${env:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64\" -Global
