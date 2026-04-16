@@ -80,5 +80,5 @@ $SoftwareTable = @{
     # recall to update the digest of the image in the Dockerfile
     # when updating the version
     "WINDOWS_CODE_SIGNER_VERSION"="v0.7.0";
-    "WINDOWS_CODE_SIGNER_SHA256"="e51bd1e36773114cc2dee43f02246acde4f8163e84e6e5928a8ef188cb4abb63";
+    "WINDOWS_CODE_SIGNER_SHA256"="89eb7490e7bec62fea47fdbe4b202f65c8a068b84ce2d2c629a33ce924774cf7";
 }
