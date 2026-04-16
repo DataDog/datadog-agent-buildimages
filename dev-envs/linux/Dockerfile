@@ -40,12 +40,14 @@ RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
 RUN --mount=type=bind,src=./vscode.sh,dst=/mnt/vscode.sh --mount=type=bind,src=./default-vscode-extensions.txt,dst=/mnt/default-vscode-extensions.txt /mnt/vscode.sh
 # Set up Claude Code
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
+# Set up OpenSSH server
+# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
+RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
 # Run steps that must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-RUN --mount=type=bind,src=./dump-build-env-profile-d.sh,dst=/mnt/dump-build-env-profile-d.sh /mnt/dump-build-env-profile-d.sh
 
 # SSH
 EXPOSE 22
