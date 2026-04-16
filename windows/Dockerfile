@@ -8,7 +8,7 @@ ARG BASE_IMAGE_TAG=4.8-windowsservercore-ltsc2022
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/dotnet/framework/runtime:${BASE_IMAGE_TAG}
 
 # required for the COPY --from instruction later
-FROM registry.ddbuild.io/windows-code-signer/go:v0.6.0@sha256:2a308fb8a524445be2e0c7f303dac973625438208c9f3aabd4d3337c45c4d565 AS windows-code-signer
+FROM registry.ddbuild.io/windows-code-signer/go:v0.7.0@sha256:64aa5ad1fccf9b7ab05c110f756e3e055be6e9e3941275b7797c8e14489a2180 AS windows-code-signer
 
 FROM ${BASE_IMAGE}
 
