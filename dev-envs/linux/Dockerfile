@@ -52,6 +52,10 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV WORKSPACE=${WORKSPACE}
 
+# Create the dog group and user
+RUN set -x \
+    && groupadd --gid 501 dog  \
+    && useradd --gid 501 --uid 501 --create-home --groups users dog
 # SSH
 EXPOSE 22
 # MCP
