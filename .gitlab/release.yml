@@ -31,6 +31,35 @@ release_dev_env_linux_multiarch_test_only:
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
     - ddsign sign $TARGET_IMAGE:$IMAGE_VERSION@${DIGEST}
 
+release_dev_env_linux_workspace_multiarch_test_only:
+  extends: [.x64]
+  stage: release
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $ECR_TEST_ONLY == "_test_only"
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
+  needs:
+    - job: build_dev_env_linux_workspace_x64
+    - job: build_dev_env_linux_workspace_arm64
+  variables:
+    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace${ECR_TEST_ONLY}
+    AMD64_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-x64${ECR_TEST_ONLY}
+    ARM64_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-aarch64${ECR_TEST_ONLY}
+  before_script:
+    - !reference [.build, before_script]
+  script:
+    - >
+      docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
+      $AMD64_IMAGE:$IMAGE_VERSION
+      $ARM64_IMAGE:$IMAGE_VERSION
+    - MANIFEST=$(docker manifest inspect $TARGET_IMAGE:$IMAGE_VERSION)
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
+    - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
+    - ddsign sign $TARGET_IMAGE:$IMAGE_VERSION@${DIGEST}
+
 release:
   stage: release
   rules:
@@ -49,6 +78,8 @@ release:
     matrix:
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-dev-env-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux:latest
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+        IMG_DESTINATIONS: agent-dev-env-linux-workspace:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux-workspace:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_x64:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}

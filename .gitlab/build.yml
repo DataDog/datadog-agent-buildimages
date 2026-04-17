@@ -196,6 +196,28 @@ build_dev_env_linux_arm64:
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION-arm64
 
+build_dev_env_linux_workspace_x64:
+  extends: [.fast_build, .no_schedule, .x64]
+  needs:
+    - job: build_linux_amd64
+  variables:
+    DOCKERFILE: dev-envs/linux/Dockerfile
+    IMAGE: dev-env-linux-workspace-$DD_TARGET_ARCH
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION-amd64
+    WORKSPACE: "true"
+
+build_dev_env_linux_workspace_arm64:
+  extends: [.fast_build, .no_schedule, .arm]
+  needs:
+    - job: build_linux_arm64
+  variables:
+    DOCKERFILE: dev-envs/linux/Dockerfile
+    IMAGE: dev-env-linux-workspace-$DD_TARGET_ARCH
+    BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+    BASE_IMAGE_TAG: $IMAGE_VERSION-arm64
+    WORKSPACE: "true"
+
 .build_windows_x64:
   stage: build
   rules:

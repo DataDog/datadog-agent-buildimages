@@ -45,4 +45,8 @@ if ! [[ -f "${startup_indicator}" ]]; then
     touch "${startup_indicator}"
 fi
 
-/usr/local/sbin/sshd -D -e
+if [[ "${WORKSPACE:-false}" == "true" ]]; then
+    exec sleep infinity
+else
+    exec /usr/local/sbin/sshd -D -e
+fi

@@ -4,6 +4,7 @@ ARG BASE_IMAGE_TAG=latest
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG DDA_VERSION=""
+ARG WORKSPACE=false
 
 # We set up shells first so that config can be modified as part of subsequent steps.
 # Shells require scripts to set environment variables and add to PATH. These same
@@ -42,12 +43,14 @@ RUN --mount=type=bind,src=./vscode.sh,dst=/mnt/vscode.sh --mount=type=bind,src=.
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
 # Set up OpenSSH server
 # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
-RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
+
+RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh \
+    if [ "${WORKSPACE}" != "true" ]; then /mnt/ssh.sh; fi
 # Run steps that must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
-
+ENV WORKSPACE=${WORKSPACE}
 
 # SSH
 EXPOSE 22
