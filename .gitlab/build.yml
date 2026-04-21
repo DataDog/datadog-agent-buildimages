@@ -211,10 +211,9 @@ build_dev_env_linux_arm64:
         compare_to: $COMPARE_TO_BRANCH
   timeout: 2h 30m
   id_tokens:
-    CI_IDENTITY_GITLAB_JWT:
-      aud: https://vault.us1.ddbuild.io
+    CI_IDENTITIES_GITLAB_ID_TOKEN:
+      aud: ci-identities
   variables:
-    CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
     DOCKERFILE: windows/Dockerfile
     DD_TARGET_ARCH: x64
     CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.3.0 # version and digest must be updated in windows/versions.ps1 as well
