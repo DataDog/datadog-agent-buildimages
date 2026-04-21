@@ -25,6 +25,8 @@ ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
 ARG DATADOG_CI_SHA=86fcf24d5211f5ae714e947354ccb621e74e2bba4162247890454c6461e74ca5
 ARG DATADOG_CI_VERSION=5.12.1
+ARG COMMIT_HEADLESS_SHA=d5f214cbf1b4be97685dbc7c15e605f5f3fec4f2af25c84c7d85b2545daed9df
+ARG COMMIT_HEADLESS_VERSION=ad3668640012ec69186398f43d61923f6878bbbe
 ARG PYTHON_VERSION=3.12.6
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
@@ -215,6 +217,11 @@ COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c820ea4ef600ab4375c5b696a24151c7f0dd931ffee6 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
+
+# Install commit-headless
+RUN curl -fsSL https://raw.githubusercontent.com/DataDog/commit-headless/${COMMIT_HEADLESS_VERSION}/dist/commit-headless-linux-amd64 --output "/usr/local/bin/commit-headless" \
+    && echo "${COMMIT_HEADLESS_SHA} /usr/local/bin/commit-headless" | sha256sum --check \
+    && chmod +x /usr/local/bin/commit-headless
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
