@@ -5,13 +5,6 @@ set -euxo pipefail
 # Remove side effects of APT installations
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
-if [[ "${WORKSPACE:-false}" == "true" ]]; then
-    # Base image installs AWS CLI v2; dev-env does not need it
-    # https://docs.aws.amazon.com/cli/latest/userguide/uninstall.html
-    rm -f /usr/local/bin/aws /usr/local/bin/aws_completer
-    rm -rf /usr/local/aws-cli
-fi
-
 # Remove cache directories
 dotslash -- clean
 

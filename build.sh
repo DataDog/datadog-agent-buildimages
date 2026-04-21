@@ -59,7 +59,6 @@ BUILD_ARG_LIST=()
 [[ -n "${ARCH:-}" ]]                  && BUILD_ARG_LIST+=("--build-arg" "ARCH=${ARCH}")
 [[ -n "${DD_TARGET_ARCH:-}" ]]        && BUILD_ARG_LIST+=("--build-arg" "DD_TARGET_ARCH=${DD_TARGET_ARCH}")
 [[ -n "${BUILDENV_REGISTRY:-}" ]]     && BUILD_ARG_LIST+=("--build-arg" "BUILDENV_REGISTRY=${BUILDENV_REGISTRY}")
-[[ -n "${WORKSPACE:-}" ]]             && BUILD_ARG_LIST+=("--build-arg" "WORKSPACE=${WORKSPACE}")
 
 # Add build args from go.env
 add_build_args_from_file "go.env"
@@ -81,6 +80,7 @@ $CACHE_PULL_ARGS \
 "${BUILD_ARG_LIST[@]}" \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
+${TARGET:+--target $TARGET} \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
 --metadata-file ${METADATA_FILE}
