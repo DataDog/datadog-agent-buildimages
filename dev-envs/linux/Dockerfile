@@ -44,10 +44,7 @@ RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
-# Create the dog group and user
-RUN set -x \
-    && groupadd --gid 501 dog  \
-    && useradd --gid 501 --uid 501 --create-home --groups users dog
+
 # MCP
 EXPOSE 9000
 
@@ -68,7 +65,12 @@ ENTRYPOINT ["/entrypoint.sh"]
 # ---- workspace: no SSH, no AWS CLI ----
 FROM base AS workspace
 
-# Remove AWS CLI v2 (not needed in dev-env)
+# Create the dog group and user
+RUN set -x \
+    && groupadd --gid 501 dog  \
+    && useradd --gid 501 --uid 501 --create-home --groups users dog
+
+# Remove AWS CLI v2 (breaking if we keep it, because we try to reinstall it in workspace base feature)
 # https://docs.aws.amazon.com/cli/latest/userguide/uninstall.html
 RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
     && rm -rf /usr/local/aws-cli
