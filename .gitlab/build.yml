@@ -153,17 +153,12 @@ build_kernel_version_testing_arm64:
     DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
     IMAGE: kernel-version-testing_arm64
 
-build_multiarch:
+.build_multiarch:
   extends: [.no_schedule, .x64]
   stage: build
   id_tokens:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
-  needs:
-    - job: build_linux_amd64
-    - job: build_linux_arm64
-  variables:
-    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
   before_script:
     - !reference [.build, before_script]
   script:
@@ -171,6 +166,31 @@ build_multiarch:
       docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
       $TARGET_IMAGE:$IMAGE_VERSION-amd64
       $TARGET_IMAGE:$IMAGE_VERSION-arm64
+    - MANIFEST=$(docker manifest inspect $TARGET_IMAGE:$IMAGE_VERSION)
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
+    - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
+    - ddsign sign $TARGET_IMAGE:$IMAGE_VERSION@${DIGEST}
+
+build_multiarch_linux:
+  extends: [.build_multiarch]
+  needs:
+    - job: build_linux_amd64
+    - job: build_linux_arm64
+  variables:
+    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
+
+build_multiarch_devenv_workspace:
+  extends: [.build_multiarch]
+  needs:
+    - job: build_dev_env_workspace_x64
+    - job: build_dev_env_workspace_arm64
+  variables:
+    TARGET_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-workspace$ECR_TEST_ONLY
+  script:
+    - >
+      docker manifest create $TARGET_IMAGE:$IMAGE_VERSION
+      registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-workspace-amd64$ECR_TEST_ONLY:$IMAGE_VERSION
+      registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-workspace-arm64$ECR_TEST_ONLY:$IMAGE_VERSION
     - MANIFEST=$(docker manifest inspect $TARGET_IMAGE:$IMAGE_VERSION)
     - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
     - docker manifest push $TARGET_IMAGE:$IMAGE_VERSION
@@ -204,7 +224,7 @@ build_dev_env_workspace_x64:
     - job: build_linux_amd64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
-    IMAGE: dev-env-workspace-$DD_TARGET_ARCH
+    IMAGE: dev-env-workspace-amd64
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION-amd64
     TARGET: workspace
@@ -215,7 +235,7 @@ build_dev_env_workspace_arm64:
     - job: build_linux_arm64
   variables:
     DOCKERFILE: dev-envs/linux/Dockerfile
-    IMAGE: dev-env-workspace-$DD_TARGET_ARCH
+    IMAGE: dev-env-workspace-arm64
     BASE_IMAGE: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY
     BASE_IMAGE_TAG: $IMAGE_VERSION-arm64
     TARGET: workspace
