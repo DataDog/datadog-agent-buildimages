@@ -4,4 +4,4 @@ set -euxo pipefail
 
 source /entrypoint-common.sh
 
-exec /usr/local/sbin/sshd -D -e
+exec sleep infinity

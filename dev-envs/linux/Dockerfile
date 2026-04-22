@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=datadog/agent-buildimages-linux
 ARG BASE_IMAGE_TAG=latest
 
-FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
+FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG} AS base
 
 ARG DDA_VERSION=""
 
@@ -40,18 +40,40 @@ RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
 RUN --mount=type=bind,src=./vscode.sh,dst=/mnt/vscode.sh --mount=type=bind,src=./default-vscode-extensions.txt,dst=/mnt/default-vscode-extensions.txt /mnt/vscode.sh
 # Set up Claude Code
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
-# Set up OpenSSH server
-# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
-RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
 # Run steps that must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# SSH
-EXPOSE 22
 # MCP
 EXPOSE 9000
 
+COPY entrypoint-common.sh /entrypoint-common.sh
+
+# ---- devenv: full dev-env with SSH ----
+FROM base AS devenv
+
+# Set up OpenSSH server
+# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
+RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
+# SSH
+EXPOSE 22
+
 COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+# ---- workspace: no SSH, no AWS CLI ----
+FROM base AS workspace
+
+# Create the dog group and user
+RUN set -x \
+    && groupadd --gid 501 dog  \
+    && useradd --gid 501 --uid 501 --create-home --groups users dog
+
+# Remove AWS CLI v2 (breaking if we keep it, because we try to reinstall it in workspace base feature)
+# https://docs.aws.amazon.com/cli/latest/userguide/uninstall.html
+RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
+    && rm -rf /usr/local/aws-cli
+
+COPY entrypoint-workspace.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
