@@ -17,8 +17,8 @@ release:
     matrix:
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-dev-env-linux:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux:latest
-      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-linux-workspace-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
-        IMG_DESTINATIONS: agent-dev-env-linux-workspace:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-linux-workspace:latest
+      - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-workspace-x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA},registry.ddbuild.io/ci/datadog-agent-buildimages/dev-env-workspace-aarch64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
+        IMG_DESTINATIONS: agent-dev-env-workspace:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-dev-env-workspace:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_x64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
         IMG_DESTINATIONS: agent-buildimages-rpm_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-rpm_x64:latest
       - IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/rpm_arm64:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
