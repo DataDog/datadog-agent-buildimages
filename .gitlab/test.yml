@@ -46,7 +46,7 @@ push_to_datadog_agent:
   # TODO: This is not great, we probably should not rely on _test_only images but as we don't push a `latest` tag for validated images we don't really have a choice.
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: [] # do not download artifacts from other jobs
-  needs: [build_multiarch] # wait for the multiarch image to be built as it is used for this job's execution environment
+  needs: [build_multiarch_linux] # wait for the multiarch image to be built as it is used for this job's execution environment
   variables:
     REF: main
     BRANCH: buildimages/$CI_COMMIT_BRANCH
