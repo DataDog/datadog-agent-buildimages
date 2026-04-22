@@ -216,14 +216,6 @@ COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c820ea4ef600ab4375c5b696a24151c7f0dd931ffee6 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
-# Install commit-headless
-RUN cd /tmp \
-    && git clone --depth=1 https://github.com/DataDog/commit-headless.git \
-    && cd commit-headless \
-    && git checkout ad3668640012ec69186398f43d61923f6878bbbe \
-    && CGO_ENABLED=0 GOTOOLCHAIN=local go build -o /usr/local/bin/commit-headless . \
-    && rm -rf /tmp/commit-headless
-
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

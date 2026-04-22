@@ -248,6 +248,23 @@ ADD --checksum=sha256:${AWSCLI_SHA256} "https://awscli.amazonaws.com/awscli-exe-
 RUN --mount=type=bind,src=./linux/scripts/vault.sh,dst=/mnt/vault.sh cd /tmp/vault && /mnt/vault.sh && rm -rf /tmp/vault
 
 
+FROM extraction_base AS commit_headless_builder
+ARG COMMIT_HEADLESS_VERSION
+ARG COMMIT_HEADLESS_SHA256
+ARG GO_ARCH
+
+ADD --checksum=sha256:${COMMIT_HEADLESS_SHA256} "https://raw.githubusercontent.com/DataDog/commit-headless/${COMMIT_HEADLESS_VERSION}/dist/commit-headless-linux-${GO_ARCH}" /usr/local/bin/commit-headless
+RUN chmod +x /usr/local/bin/commit-headless
+
+FROM extraction_base AS gh_builder
+ARG GH_VERSION
+ARG GH_SHA256
+ARG GH_ARCH
+
+ADD --checksum=sha256:${GH_SHA256} "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" /tmp/gh/gh.tar.gz
+RUN tar -xzf /tmp/gh/gh.tar.gz -C /tmp/gh --strip-components=1 \
+    && rm /tmp/gh/gh.tar.gz
+
 FROM build_base AS pulumi_builder
 # Install Pulumi
 # TODO: Add logic to download the tarball directly instead of relying on this script
@@ -367,6 +384,12 @@ COPY --from=rust_builder /root/.cargo /root/.cargo
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
 
+# commit-headless
+COPY --from=commit_headless_builder /usr/local/bin/commit-headless /usr/local/bin/commit-headless
+
+# gh
+COPY --from=gh_builder /tmp/gh/bin/gh /usr/local/bin/gh
+
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
@@ -467,6 +490,8 @@ ARG OSXCROSS_COMMIT
 ARG MOLD_VERSION
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
+ARG GH_VERSION
+ARG COMMIT_HEADLESS_VERSION
 
 LABEL protobuf_version="${PROTOBUF_VERSION}"
 LABEL vault_version="${VAULT_VERSION}"
@@ -485,6 +510,8 @@ LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL mold_version="${MOLD_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
+LABEL gh_version="${GH_VERSION}"
+LABEL commit_headless_version="${COMMIT_HEADLESS_VERSION}"
 LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
 LABEL osxcross_version="${OSXCROSS_COMMIT}"
 LABEL maintainer="DataDog"

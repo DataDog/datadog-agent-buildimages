@@ -33,6 +33,8 @@ variable "versions" {
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
+    GH_VERSION             = "2.90.0"
+    COMMIT_HEADLESS_VERSION = "ad3668640012ec69186398f43d61923f6878bbbe"
   }
 }
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
@@ -61,6 +63,8 @@ variable "checksums_amd64" {
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
     AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
     MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
+    GH_SHA256                = "b2aef7b23ec6899bf27f37a32c57a7935d0a178568ac33dc9bb03842f724195a"
+    COMMIT_HEADLESS_SHA256   = "d5f214cbf1b4be97685dbc7c15e605f5f3fec4f2af25c84c7d85b2545daed9df"
   }
 }
 
@@ -78,6 +82,8 @@ variable "checksums_arm64" {
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
     AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
     MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
+    GH_SHA256                = "1139e1ad912fcddb5ef4b957530184c2c30d9937ff65ff4e641fbf6ca5f28c7c"
+    COMMIT_HEADLESS_SHA256   = "bbe561082c11897eac69dba4ab430cff24eb3179a206d63a693381be6d6300e7"
   }
 }
 
@@ -97,6 +103,7 @@ variable "architecture_defs_amd64" {
     VAULT_ARCH           = "amd64"
     PROTOBUF_ARCH        = "x86_64"
     MOLD_ARCH            = "x86_64"
+    GH_ARCH              = "amd64"
     GLIBC_VERSION        = "2.17"
     CROSS_GLIBC_VERSION  = "2.23"
   }
@@ -118,6 +125,7 @@ variable "architecture_defs_arm64" {
     VAULT_ARCH           = "arm64"
     PROTOBUF_ARCH        = "aarch_64"
     MOLD_ARCH            = "aarch64"
+    GH_ARCH              = "arm64"
     GLIBC_VERSION        = "2.23"
     CROSS_GLIBC_VERSION  = "2.17"
   }
