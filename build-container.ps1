@@ -20,8 +20,18 @@ if ($Buildkit) {
     .\containerd.ps1
     .\cni.ps1
     .\buildkit.ps1
-    # Start buildkitd
+    # Start buildkitd and wait for it to be ready
     Start-Process -FilePath "buildkitd.exe"
+    $timeout = 30
+    $elapsed = 0
+    while (-not (Test-Path "\\.\pipe\buildkitd") -and $elapsed -lt $timeout) {
+        Start-Sleep -Seconds 1
+        $elapsed++
+    }
+    if (-not (Test-Path "\\.\pipe\buildkitd")) {
+        Write-Error "buildkitd did not start within $timeout seconds"
+        exit 1
+    }
     $build_opt = "--opt build-arg:"
     $cmd_args = -split "--progress=plain --output type=image,name=$OUTPUT_IMAGE,push=true --frontend=dockerfile.v0 --local context=. --local dockerfile=.\windows "
     # Set cache arguments
