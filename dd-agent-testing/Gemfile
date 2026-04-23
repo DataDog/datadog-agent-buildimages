@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem "berkshelf", '~> 7.0.8'
+gem "berkshelf", '~> 7.2.0'
 gem "chef", '~> 15.3.4'
 gem "chef-dk", '~> 4.3.13'
 gem "rake", '~> 12.3.2'
