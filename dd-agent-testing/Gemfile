@@ -21,7 +21,7 @@ group :azure do
 end
 
 group :ec2 do
-  gem "kitchen-ec2", '~> 3.13.0'
+  gem "kitchen-ec2", '~> 3.22.0'
 end
 
 group :vagrant do
