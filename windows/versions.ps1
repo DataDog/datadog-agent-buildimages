@@ -72,7 +72,7 @@ $SoftwareTable = @{
     # this "version" variable is used to *check* that we downloaded the correct version;
     # it must updated in sync with the version in .gitlab/build.yml
     # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.3";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.4";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="8fa93bac14796ac3d383c6f8b531f2e3c23f3879751d93b837add48088da52a9";
     # Similarly for windows-code-signer.exe,
     # except that it's downloaded during the "docker build"

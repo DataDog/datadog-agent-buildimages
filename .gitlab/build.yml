@@ -217,7 +217,7 @@ build_dev_env_linux_arm64:
     CI_IDENTITY_ROLE_NAME_OVERRIDE: windows-ci-tmp-gitlab-id-token-datadog-agent-buildimages-all-refs
     DOCKERFILE: windows/Dockerfile
     DD_TARGET_ARCH: x64
-    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.6.3 # version and digest must be updated in windows/versions.ps1 as well
+    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.6.4 # version and digest must be updated in windows/versions.ps1 as well
     BASE_IMAGE_REGISTRY: registry.ddbuild.io/images/mirror
   script:
     - aws s3 cp --only-show-errors s3://binaries-ddbuild-io-prod/ci-identities/ci-identities-gitlab-job-client/versions/$CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION/ci-identities-gitlab-job-client-windows-amd64.exe .
