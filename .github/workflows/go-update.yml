@@ -36,6 +36,12 @@ jobs:
       id-token: write # needed for dd-octo-sts token exchange
 
     steps:
+      - name: Get access token via dd-octo-sts
+        uses: DataDog/dd-octo-sts-action@acaa02eee7e3bb0839e4272dacb37b8f3b58ba80 # v1.0.3
+        id: octo-sts
+        with:
+          scope: DataDog/datadog-agent-buildimages
+          policy: self.go-update.create-pr
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -45,14 +51,7 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.12"
-
-      - name: Get access token via dd-octo-sts
-        uses: DataDog/dd-octo-sts-action@acaa02eee7e3bb0839e4272dacb37b8f3b58ba80 # v1.0.3
-        id: octo-sts
-        with:
-          scope: DataDog/datadog-agent-buildimages
-          policy: self.go-update.create-pr
-
+    
       - name: Install dependencies
         run: |
           DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
