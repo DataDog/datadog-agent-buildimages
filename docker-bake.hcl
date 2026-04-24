@@ -348,7 +348,7 @@ target "_fake_docker_x64-local" {
   platforms  = ["linux/amd64"]
   cache-from = [docker_x64_cache_details_main]
   tags       = ["${repo_name}/docker_x64:latest"]
-  args       = merge(versions, go_versions, go_checksums_amd64, { BUILDENV_REGISTRY = BUILDENV_REGISTRY })
+  args       = merge(versions, go_versions, checksums_amd64, go_checksums_amd64, { BUILDENV_REGISTRY = BUILDENV_REGISTRY })
 }
 
 target "docker_x64" {
