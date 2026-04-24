@@ -95,10 +95,12 @@ build_dd_agent_testing:
     IMAGE: dd-agent-testing
 
 build_docker_x64:
-  extends: [.fast_build, .always, .x64]
+  extends: [.build_linux, .always, .x64]
+  timeout: 30m
   variables:
-    DOCKERFILE: docker-x64/Dockerfile
     IMAGE: docker_x64
+    IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
+    BAKE_TARGET: docker_x64-amd64-ci
 
 build_btf_gen:
   extends: [.fast_build, .always, .x64]

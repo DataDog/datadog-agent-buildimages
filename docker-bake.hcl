@@ -186,6 +186,11 @@ variable "repo_name" {
   default = "datadog-agent-buildimages"
 }
 
+variable "BUILDENV_REGISTRY" {
+  type    = string
+  default = ""
+}
+
 # ====== Caching details ====== #
 variable "CI" {
   type = string
@@ -323,4 +328,41 @@ target "linux-arm64-ci_test_only" {
 // Default group - automatically builds the target for the current architecture
 group "default" {
   targets = ["linux-${get_arch()}"]
+}
+
+# ====== docker_x64 build targets ====== #
+
+variable "docker_x64_cache_details_main" {
+  type    = string
+  default = "type=registry,ref=${registry_name}/${repo_name}/docker_x64:${cache_key_main}"
+}
+
+variable "docker_x64_cache_details_branch" {
+  type    = string
+  default = "type=registry,ref=${registry_name}/${repo_name}/docker_x64:${cache_key_branch}"
+}
+
+target "_fake_docker_x64-local" {
+  dockerfile = "docker-x64/Dockerfile"
+  context    = "./"
+  cache-from = [docker_x64_cache_details_main]
+  tags       = ["${repo_name}/docker_x64:latest"]
+  args       = merge(versions, go_versions, go_checksums_amd64, { BUILDENV_REGISTRY = BUILDENV_REGISTRY })
+}
+
+target "docker_x64-amd64" {
+  inherits  = ["_fake_docker_x64-local"]
+  platforms = ["linux/amd64"]
+}
+
+target "_fake_docker_x64-ci" {
+  cache-from = [docker_x64_cache_details_branch, docker_x64_cache_details_main]
+  cache-to   = [docker_x64_cache_details_branch]
+  tags       = ["${registry_name}/${repo_name}/docker_x64:${linux-image-tag}"]
+  output     = ["type=docker,dest=./docker_x64-${linux-image-tag}.tar"]
+  args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }
+}
+
+target "docker_x64-amd64-ci" {
+  inherits = ["docker_x64-amd64", "_fake_docker_x64-ci"]
 }
