@@ -366,3 +366,9 @@ target "_fake_docker_x64-ci" {
 target "docker_x64-amd64-ci" {
   inherits = ["docker_x64-amd64", "_fake_docker_x64-ci"]
 }
+
+target "docker_x64-amd64-ci_test_only" {
+  inherits = ["docker_x64-amd64-ci"]
+  tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${linux-image-tag}"]
+  output   = ["type=docker,dest=./docker_x64_test_only-${linux-image-tag}.tar"]
+}
