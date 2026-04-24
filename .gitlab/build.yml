@@ -103,7 +103,7 @@ build_docker_x64:
   variables:
     IMAGE: docker_x64
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
-    BAKE_TARGET: docker_x64-amd64-ci$ECR_TEST_ONLY
+    BAKE_TARGET: docker_x64-ci$ECR_TEST_ONLY
   script:
     - !reference [.build_bake, script]
     - |

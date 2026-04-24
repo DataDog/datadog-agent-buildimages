@@ -345,14 +345,14 @@ variable "docker_x64_cache_details_branch" {
 target "_fake_docker_x64-local" {
   dockerfile = "docker-x64/Dockerfile"
   context    = "./"
+  platforms  = ["linux/amd64"]
   cache-from = [docker_x64_cache_details_main]
   tags       = ["${repo_name}/docker_x64:latest"]
   args       = merge(versions, go_versions, go_checksums_amd64, { BUILDENV_REGISTRY = BUILDENV_REGISTRY })
 }
 
-target "docker_x64-amd64" {
-  inherits  = ["_fake_docker_x64-local"]
-  platforms = ["linux/amd64"]
+target "docker_x64" {
+  inherits = ["_fake_docker_x64-local"]
 }
 
 target "_fake_docker_x64-ci" {
@@ -363,12 +363,12 @@ target "_fake_docker_x64-ci" {
   args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }
 }
 
-target "docker_x64-amd64-ci" {
-  inherits = ["docker_x64-amd64", "_fake_docker_x64-ci"]
+target "docker_x64-ci" {
+  inherits = ["docker_x64", "_fake_docker_x64-ci"]
 }
 
-target "docker_x64-amd64-ci_test_only" {
-  inherits = ["docker_x64-amd64-ci"]
+target "docker_x64-ci_test_only" {
+  inherits = ["docker_x64-ci"]
   tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${linux-image-tag}"]
   output   = ["type=docker,dest=./docker_x64_test_only-${linux-image-tag}.tar"]
 }
