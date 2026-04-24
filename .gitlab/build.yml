@@ -97,10 +97,21 @@ build_dd_agent_testing:
 build_docker_x64:
   extends: [.build_bake, .always, .x64]
   timeout: 30m
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   variables:
     IMAGE: docker_x64
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: docker_x64-amd64-ci$ECR_TEST_ONLY
+  script:
+    - !reference [.build_bake, script]
+    - |
+      if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+        MANIFEST=$(crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION})
+        DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
+        ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:${IMAGE_VERSION}@${DIGEST}
+      fi
 
 build_btf_gen:
   extends: [.fast_build, .always, .x64]
