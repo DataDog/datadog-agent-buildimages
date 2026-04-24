@@ -6,7 +6,7 @@ FROM registry.ddbuild.io/dd-octo-sts:${DD_OCTO_STS_VERSION} AS dd_octo_sts_build
 
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 
-ARG PYTHON_VERSION=3.12.6
+ARG PY3_VERSION
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS=1
 ARG GO_VERSION
@@ -59,8 +59,8 @@ ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
-     pyenv install ${PYTHON_VERSION} && \
-     pyenv global ${PYTHON_VERSION}
+     pyenv install ${PY3_VERSION} && \
+     pyenv global ${PY3_VERSION}
 
 RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
  && dda -v self dep sync -f legacy-build -f legacy-notifications -f gcp \
