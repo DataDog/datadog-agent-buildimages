@@ -70,10 +70,10 @@ $SoftwareTable = @{
     "BAZELISK_SHA256"="b9d65a1f7c2d7af885a96a4fd5aa36b40fb41816d30944390569eef908bdc954";
     # the CI ID client is actually downloaded in the CI job before running the "docker build" command
     # this "version" variable is used to *check* that we downloaded the correct version;
-    # it must updated in sync with the version in .gitlab/build.yml
+    # it must be updated in sync with the version in .gitlab/build.yml
     # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.4";
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="8fa93bac14796ac3d383c6f8b531f2e3c23f3879751d93b837add48088da52a9";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="ea05f5486ed0755177c754eaecea94de0d9a3a9ddf225fc2a2e8f4c1a3babfa0";
     # Similarly for windows-code-signer.exe,
     # except that it's downloaded during the "docker build"
     # with a "COPY --from" instruction in the Dockerfile
