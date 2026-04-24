@@ -52,7 +52,7 @@
   extends: .build
   timeout: 45m
 
-.build_linux:
+.build_bake:
   stage: build
   timeout: 2h
   before_script:
@@ -76,7 +76,7 @@
       fi
 
 build_linux_amd64:
-  extends: [.build_linux, .x64]
+  extends: [.build_bake, .x64]
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
@@ -95,7 +95,7 @@ build_dd_agent_testing:
     IMAGE: dd-agent-testing
 
 build_docker_x64:
-  extends: [.build_linux, .always, .x64]
+  extends: [.build_bake, .always, .x64]
   timeout: 30m
   variables:
     IMAGE: docker_x64
@@ -122,7 +122,7 @@ build_gitlab_agent_deploy:
     IMAGE: gitlab_agent_deploy
 
 build_linux_arm64:
-  extends: [.build_linux, .arm]
+  extends: [.build_bake, .arm]
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
