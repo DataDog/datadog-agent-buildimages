@@ -1,7 +1,7 @@
 ARG BASE_IMAGE_REGISTRY=docker.io
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/centos:7
 
-FROM ${BASE_IMAGE_REGISTRY}/ubuntu:22.04 as CERT_GETTER
+FROM ${BASE_IMAGE_REGISTRY}/ubuntu:22.04 as UBUNTU_ARM64
 ENV CACERT_BUNDLE_VERSION=2025-11-04
 ENV CACERT_BUNDLE_SHA256="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def"
 RUN apt-get update && apt-get install -y wget
@@ -73,7 +73,7 @@ RUN tar -xzf /tmp/zstd-${ZSTD_VERSION}.tar.gz -C /tmp \
     && cd / \
     && rm -rf /tmp/zstd-${ZSTD_VERSION} /tmp/zstd-${ZSTD_VERSION}.tar.gz
 
-COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
+COPY --from=UBUNTU_ARM64 /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
 # Build new rpm
 COPY patches/rpm-4.15.1-fix-rpmbuild-segfault.patch /tmp
@@ -160,6 +160,14 @@ RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.
   && rm -f /tmp/golang.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV PATH="${GOPATH}/bin:${PATH}"
+
+# Install & verify Bazelisk as Bazel bootstrapper
+# 1. use Bazel for arm64 (matching kernel) with min sysroot (no Bazel for armv7l exists, fakearmv7l only spoofs `uname`)
+# 2. also borrow C.utf8 (without it, Bazel's JVM defaults to US-ASCII, breaking Go tarball extraction on go1.25+)
+RUN test ! -e /usr/lib/aarch64-linux-gnu && test ! -e /usr/lib/locale/C.utf8 && ln -s aarch64-linux-gnu/ld-linux-aarch64.so.1 /usr/lib/
+COPY --from=UBUNTU_ARM64 /usr/lib/aarch64-linux-gnu/*.so.* /usr/lib/aarch64-linux-gnu/
+COPY --from=UBUNTU_ARM64 /usr/lib/locale/C.utf8 /usr/lib/locale/C.utf8
+RUN --mount=type=bind,src=./setup/bazelisk.sh,dst=/mnt/bazelisk.sh /mnt/bazelisk.sh
 
 # Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
 RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILENAME} && \
