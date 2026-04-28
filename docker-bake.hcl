@@ -342,6 +342,11 @@ variable "docker_x64_cache_details_branch" {
   default = "type=registry,ref=${registry_name}/${repo_name}/docker_x64:${cache_key_branch}"
 }
 
+variable "docker_x64-image-tag" {
+  type = string
+  default = "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+}
+
 target "_fake_docker_x64-local" {
   dockerfile = "docker-x64/Dockerfile"
   context    = "./"
@@ -358,8 +363,8 @@ target "docker_x64" {
 target "_fake_docker_x64-ci" {
   cache-from = [docker_x64_cache_details_branch, docker_x64_cache_details_main]
   cache-to   = [docker_x64_cache_details_branch]
-  tags       = ["${registry_name}/${repo_name}/docker_x64:${linux-image-tag}"]
-  output     = ["type=docker,dest=./docker_x64-${linux-image-tag}.tar"]
+  tags       = ["${registry_name}/${repo_name}/docker_x64:${docker_x64-image-tag}"]
+  output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar"]
   args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }
 }
 
@@ -369,6 +374,6 @@ target "docker_x64-ci" {
 
 target "docker_x64-ci_test_only" {
   inherits = ["docker_x64-ci"]
-  tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${linux-image-tag}"]
-  output   = ["type=docker,dest=./docker_x64_test_only-${linux-image-tag}.tar"]
+  tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${docker_x64-image-tag}"]
+  output   = ["type=docker,dest=./docker_x64_test_only-${docker_x64-image-tag}.tar"]
 }

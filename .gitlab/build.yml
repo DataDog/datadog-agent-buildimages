@@ -102,7 +102,7 @@ build_docker_x64:
       aud: image-integrity
   variables:
     IMAGE: docker_x64
-    IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
+    IMAGE_VERSION: $IMAGE_VERSION_ROOT
     BAKE_TARGET: docker_x64-ci$ECR_TEST_ONLY
   script:
     - !reference [.build_bake, script]
