@@ -13,7 +13,7 @@ if [[ ! -f "${startup_indicator}" ]]; then
     TARGET_GROUP="dd"
     # Choose a UID higher than the one used by the base build image's default user (1001)
     TARGET_UID="${HOST_UID:-1002}"
-    TARGET_GID="${HOST_GID:-${HOST_UID}}"
+    TARGET_GID="${HOST_GID:-${TARGET_UID}}"
 
     # Create primary user and group
     groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
