@@ -3,14 +3,14 @@ IFS=$'\n\t'
 set -euxo pipefail
 PS4='+[$(date +%T.%3N)] '
 
-startup_indicator="/.started"
+TARGET_USER="dd"
+TARGET_GROUP="dd"
 
 # Reassert shared-root metadata on every start so it survives root recreation.
 /init/ensure-shared-roots.sh
 
+startup_indicator="/.started"
 if [[ ! -f "${startup_indicator}" ]]; then
-    TARGET_USER="dd"
-    TARGET_GROUP="dd"
     # Choose a UID higher than the one used by the base build image's default user (1001)
     TARGET_UID="${HOST_UID:-1002}"
     TARGET_GID="${HOST_GID:-${TARGET_UID}}"
