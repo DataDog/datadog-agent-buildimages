@@ -14,6 +14,7 @@ USER root
 # Set up HOME as root-owned and build-shared writable so host-mapped users
 # with unknown UID/GID can use it without chown.
 ENV HOME=/home/dd
+ENV PATH="${HOME}/.local/bin:${PATH}"
 RUN mkdir -p "${HOME}" && \
     chgrp build-shared "${HOME}" && \
     chmod g+rws,o+rx "${HOME}" && \
