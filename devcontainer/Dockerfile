@@ -23,8 +23,12 @@ RUN apt-get update && apt-get upgrade -y && \
     openjdk-11-jre-headless \
     # System-probe dependencies
     clang llvm bpfcc-tools libbpfcc-dev libelf-dev linux-headers-generic &&\
-    # Python setup
-    add-apt-repository -y 'ppa:deadsnakes/ppa' &&\
+    # Python setup: bypass add-apt-repository (Launchpad REST API is timeout-prone)
+    curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF23C5A6CF475977595C89F51BA6932366A755776" \
+        | gpg --dearmor -o /etc/apt/trusted.gpg.d/deadsnakes-ubuntu-ppa.gpg && \
+    echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" \
+        >/etc/apt/sources.list.d/deadsnakes-ubuntu-ppa-jammy.list && \
+    apt-get update && \
     apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
 
