@@ -1,7 +1,0 @@
-#!/bin/bash -l
-IFS=$'\n\t'
-set -euxo pipefail
-
-source /entrypoint-common.sh
-
-exec /usr/local/sbin/sshd -D -e

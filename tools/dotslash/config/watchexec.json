@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 8050178
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 9402538
+      }
+    }
+  },
+  "name": "watchexec",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "1eb8779f1d300ab5475f19a0c5084a641af38dbeb6fa86b2a0ccb77d69c8cdf6",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "watchexec-2.4.3-aarch64-unknown-linux-musl/watchexec",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.4.3/watchexec-2.4.3-aarch64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 2460472
+    },
+    "linux-x86_64": {
+      "digest": "46cd1a654dc5de3a0789a4717961e836986504da7157ce25ff2e831402644532",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "watchexec-2.4.3-x86_64-unknown-linux-musl/watchexec",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.4.3/watchexec-2.4.3-x86_64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 2892712
+    }
+  }
+}
