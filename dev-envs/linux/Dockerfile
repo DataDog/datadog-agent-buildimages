@@ -74,15 +74,15 @@ ENTRYPOINT ["/init/entrypoint.sh"]
 # This is a variant used by Datadog-internal tooling.
 FROM base AS workspace
 
-# Create the dog group and user
-RUN set -x \
-    && groupadd --gid 501 dog  \
-    && useradd --gid 501 --uid 501 --create-home --groups users dog
+# Keep uv's standalone installer aligned with scripts that move from ~/.local/bin.
+ENV UV_INSTALL_DIR="${HOME}/.local/bin"
 
-# Remove AWS CLI v2 (breaking if we keep it, because we try to reinstall it in workspace base feature)
-# https://docs.aws.amazon.com/cli/latest/userguide/uninstall.html
-RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
-    && rm -rf /usr/local/aws-cli
+# Set up user/group prerequisites.
+RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
+    /mnt/workspaces-setup.sh
+
+# Configure environment for the bits user.
+COPY variants/workspaces/bits-env.sh /etc/profile.d/01-bits-env.sh
 
 # Finalization must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
