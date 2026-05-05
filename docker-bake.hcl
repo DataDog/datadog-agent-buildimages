@@ -14,7 +14,6 @@ variable "versions" {
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
-    TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.33.3"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
@@ -33,6 +32,8 @@ variable "versions" {
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
+    # Version of Bazel to test that Bazelisk properly bootstraps Bazel, which will also be pre-installed into the final image.
+    TEST_BAZEL_VERSION  = "9.1.0"
   }
 }
 
