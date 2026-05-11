@@ -74,21 +74,36 @@ ENTRYPOINT ["/init/entrypoint.sh"]
 # This is a variant used by Datadog-internal tooling.
 FROM base AS workspace
 
-# Keep uv's standalone installer aligned with scripts that move from ~/.local/bin.
-ENV UV_INSTALL_DIR="${HOME}/.local/bin"
+ENV DD_TARGET_USER=bits
+ENV DD_TARGET_GROUP=dog
 
 # Set up user/group prerequisites.
 RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
     /mnt/workspaces-setup.sh
+COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
-# Configure environment for the bits user.
-COPY variants/workspaces/bits-env.sh /etc/profile.d/01-bits-env.sh
+# Run workspace sessions as the pre-created Workspaces SSH user.
+ENV HOME=/home/bits
+ENV IN_WORKSPACE=1
+ENV XDG_BIN_HOME="${HOME}/.local/bin"
+ENV PATH="${XDG_BIN_HOME}:${PATH}"
+
+# Set up OpenSSH server
+# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
+RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
+RUN printf '%s\n' \
+    'StreamLocalBindUnlink yes' \
+    'PasswordAuthentication no' \
+    >> /usr/local/etc/sshd_config
 
 # Finalization must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 
-# Sleep indefinitely to keep the container running
-CMD ["sleep", "infinity"]
+# SSH
+EXPOSE 22
+
+# Run SSH server
+CMD ["/usr/local/sbin/sshd", "-D", "-e"]
 
 # This is the standard image used by Agent dev env tooling and it
 # MUST be the last stage in the file so that it's the default target.
