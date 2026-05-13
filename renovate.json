@@ -30,7 +30,7 @@
       "fileMatch": ["docker-bake\\.hcl", "agent-deploy/Dockerfile"],
       "matchStrings": ["DATADOG_PACKAGES_VERSION\\s*=\\s*\"?(?<currentDigest>[a-f0-9]{40})\"?"],
       "depNameTemplate": "DataDog/datadog-packages",
-      "datasourceTemplate": "github-commits",
+      "datasourceTemplate": "git-refs",
       "currentValueTemplate": "main"
     }
   ]
