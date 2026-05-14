@@ -302,8 +302,7 @@ ENV XDG_DATA_HOME="${DD_BUILD_DATA_ROOT}" \
     XDG_CONFIG_HOME="${DD_BUILD_CONFIG_ROOT}"
 
 # Build tool installations that should not change at runtime
-ENV RUSTUP_HOME="${DD_BUILD_INSTALL_ROOT}/rustup" \
-    OMNIBUS_BASE_DIR="${DD_BUILD_INSTALL_ROOT}/omnibus"
+ENV RUSTUP_HOME="${DD_BUILD_INSTALL_ROOT}/rustup"
 # ^ but these are not used directly at runtime
 ARG OSXCROSS_PATH="${DD_BUILD_INSTALL_ROOT}/osxcross" \
     CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/conda" \
@@ -314,11 +313,14 @@ ENV BAZELISK_HOME="${XDG_CACHE_HOME}/bazelisk" \
     DOTSLASH_CACHE="${XDG_CACHE_HOME}/dotslash" \
     GOPATH="${XDG_CACHE_HOME}/go" \
     GOCACHE="${XDG_CACHE_HOME}/go/build" \
+    GOMODCACHE="${XDG_CACHE_HOME}/go/pkg/mod" \
     CARGO_HOME="${XDG_CACHE_HOME}/cargo" \
     UV_CACHE_DIR="${XDG_CACHE_HOME}/uv" \
     PIP_CACHE_DIR="${XDG_CACHE_HOME}/pip" \
+    OMNIBUS_BASE_DIR="${XDG_CACHE_HOME}/omnibus" \
     OMNIBUS_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/cache" \
     OMNIBUS_GIT_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/git-cache" \
+    OMNIBUS_GOMODCACHE="${XDG_CACHE_HOME}/go/pkg/mod" \
     BUNDLE_PATH="${XDG_CACHE_HOME}/omnibus/bundle"
 
 # Installed tools and application data
