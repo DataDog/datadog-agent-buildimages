@@ -9,7 +9,8 @@ PS4='+[$(date +%T.%3N)] '
 # we copy what is in the volume to the proper location and then modify that.
 
 # Seed persisted config with image defaults without overwriting user changes.
-cp -r --update=none "${DD_DEFAULT_CONFIG_ROOT}/." "${XDG_CONFIG_HOME}/"
+# New files should be writable by later build-shared users on persisted volumes.
+cp -r --update=none --no-preserve=mode,ownership "${DD_DEFAULT_CONFIG_ROOT}/." "${XDG_CONFIG_HOME}/"
 
 # Persist history files
 for shell in sh bash zsh; do

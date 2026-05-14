@@ -3,6 +3,9 @@ IFS=$'\n\t'
 set -euxo pipefail
 PS4='+[$(date +%T.%3N)] '
 
+# Preserve group write on setgid build-shared directories without default ACLs.
+umask 0002
+
 TARGET_USER="${DD_TARGET_USER:-dd}"
 TARGET_GROUP="${DD_TARGET_GROUP:-${TARGET_USER}}"
 TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6 || true)"

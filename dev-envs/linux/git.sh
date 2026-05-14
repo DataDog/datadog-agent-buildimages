@@ -1,6 +1,7 @@
 #!/bin/bash -l
 IFS=$'\n\t'
 set -euxo pipefail
+umask 0002
 
 # Set up signing:
 # https://github.blog/open-source/git/highlights-from-git-2-34/#tidbits

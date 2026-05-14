@@ -17,9 +17,7 @@ ENV HOME=/home/dd
 ENV PATH="${HOME}/.local/bin:${PATH}"
 RUN mkdir -p "${HOME}" && \
     chgrp build-shared "${HOME}" && \
-    chmod g+rws,o+rx "${HOME}" && \
-    setfacl -m g:build-shared:rwx,m:rwx "${HOME}" && \
-    setfacl -d -m g:build-shared:rwx,m:rwx "${HOME}"
+    chmod g+rwxs,o+rx "${HOME}"
 
 # We set up shells first so that config can be modified as part of subsequent steps.
 # Shells require scripts to set environment variables and add to PATH. These same

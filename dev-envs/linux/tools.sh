@@ -25,16 +25,22 @@ python3 /tools/dotslash/generate.py \
     --tools-file /mnt/tools.txt \
     --ignore-unavailable
 
-procs --gen-config > "${HOME}/.procs.toml"
-# Necessary for working in our containers
-sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
+(
+  umask 0002
+  procs --gen-config > "${HOME}/.procs.toml"
+  # Necessary for working in our containers
+  sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
+)
 
 # Configure Git to use delta as the pager:
 # https://dandavison.github.io/delta/get-started.html
-git config --global core.pager delta
-git config --global interactive.diffFilter "delta --color-only"
-git config --global delta.navigate true
-git config --global merge.conflictStyle zdiff3
+(
+  umask 0002
+  git config --global core.pager delta
+  git config --global interactive.diffFilter "delta --color-only"
+  git config --global delta.navigate true
+  git config --global merge.conflictStyle zdiff3
+)
 
 curl_opts=(
   --fail              # fail on HTTP errors (>=400), prevents saving an error page

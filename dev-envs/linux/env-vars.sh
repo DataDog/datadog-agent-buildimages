@@ -1,6 +1,7 @@
 #!/bin/bash -l
 IFS=$'\n\t'
 set -euxo pipefail
+umask 0002
 
 set-ev DD_SHARED_DIR "/.shared"
 

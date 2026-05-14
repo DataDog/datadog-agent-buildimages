@@ -336,7 +336,6 @@ ARG ADDITIONAL_PACKAGE
 # In particular, adding `--no-install-recommends` to the apt-get install command will break the build, as we rely on some packages only installed as recommended dependencies of other packages.
 # TODO: See if we can remove some of these, we currently reinstall everything that was present before #997
 RUN apt-get update -qy && apt-get install -y \
-    acl \
     automake autoconf autopoint \
     bison build-essential \
     bzip2 \
@@ -376,9 +375,7 @@ RUN for dir in \
         "${DD_REPO_ROOT}"; do \
         mkdir -p "${dir}"; \
         chgrp build-shared "${dir}"; \
-        chmod g+rws,o+rx "${dir}"; \
-        setfacl -m g:build-shared:rwx,m:rwx "${dir}"; \
-        setfacl -d -m g:build-shared:rwx,m:rwx "${dir}"; \
+        chmod g+rwxs,o+rx "${dir}"; \
     done
 
 # Allow members of the `sudo` group to run passwordless sudo
@@ -410,15 +407,14 @@ RUN for prefix in \
         /var/log/datadog; do \
         mkdir -p "${prefix}"; \
         chgrp build-shared "${prefix}"; \
-        chmod g+rws,o+rx "${prefix}"; \
-        setfacl -m g:build-shared:rwx,m:rwx "${prefix}"; \
-        setfacl -d -m g:build-shared:rwx,m:rwx "${prefix}"; \
+        chmod g+rwxs,o+rx "${prefix}"; \
     done
 
 # Omnibus finalize may also move some binaries into system locations (e.g. /usr/bin).
 # Grant build-shared write access to the destination directory so non-root builds can
 # rename/copy into it.
-RUN setfacl -m g:build-shared:rwx,m:rwx /usr/bin
+RUN chgrp build-shared /usr/bin && \
+    chmod g+rwxs /usr/bin
 
 # Copy built tools
 # NOTE: We try to copy the least-often-changed tools first to reduce the likelihood of cache misses
@@ -535,13 +531,12 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN echo "source ${RVM_PATH}/scripts/rvm" >> /root/.bashrc
 
 # Common environment setup
-# TODO: Investigate whether the explicit setting of umask is still necessary as it was
-#       introduced a very long time ago and has been copied around ever since. See:
-#       https://github.com/DataDog/datadog-agent-buildimages/pull/11
-RUN echo "umask 0022" >> /root/.bashrc
+# Keep setgid build-shared directories writable by subsequent non-root writers.
+RUN echo "umask 0002" >> /root/.bashrc
 
 # TODO: Remove this to decouple runtime configuration from build configuration
-RUN mkdir -p "${DD_REPO_ROOT}/datadog-agent"
+RUN mkdir -p "${DD_REPO_ROOT}/datadog-agent" && \
+    chmod g+rwxs,o+rx "${DD_REPO_ROOT}/datadog-agent"
 
 RUN if [ -n "$(find "${DD_BUILD_DATA_ROOT}" -mindepth 1 -print -quit 2>/dev/null)" ]; then \
         echo "DD_BUILD_DATA_ROOT must stay empty at image build time: ${DD_BUILD_DATA_ROOT}"; \

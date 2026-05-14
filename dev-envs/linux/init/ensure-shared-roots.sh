@@ -7,9 +7,7 @@ ensure_shared_root() {
     root="$1"
     mkdir -p "${root}"
     chgrp build-shared "${root}"
-    chmod g+rws,o+rx "${root}"
-    setfacl -m g:build-shared:rwx,m:rwx "${root}"
-    setfacl -d -m g:build-shared:rwx,m:rwx "${root}"
+    chmod g+rwxs,o+rx "${root}"
 }
 
 roots=("$@")
