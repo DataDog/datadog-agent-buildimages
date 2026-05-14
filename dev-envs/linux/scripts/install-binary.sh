@@ -9,6 +9,7 @@ DIGESTS=()
 ALGORITHM="sha256"
 TOP_LEVEL="0"
 UNPACK_COMMAND=""
+IGNORE_DIGESTS="0"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -25,6 +26,10 @@ while [[ $# -gt 0 ]]; do
         --digest)
             DIGESTS+=("$2")
             shift
+            shift
+            ;;
+        --ignore-digests)
+            IGNORE_DIGESTS="1"
             shift
             ;;
         --name)
@@ -60,22 +65,24 @@ file_path="/tmp/${file_name}"
 
 curl "${URL}" -Lo "${file_path}"
 
-digest=$(openssl dgst -"${ALGORITHM}" "${file_path}" | cut -d' ' -f2)
-match="0"
-for d in "${DIGESTS[@]}"; do
-    if [[ "${d}" == "${digest}" ]]; then
-        match="1"
-        break
-    fi
-done
-if [[ "${match}" == "0" ]]; then
-    echo "Digest mismatch"
-    echo "Expected:"
+if [[ "${IGNORE_DIGESTS}" == "0" ]]; then
+    digest=$(openssl dgst -"${ALGORITHM}" "${file_path}" | cut -d' ' -f2)
+    match="0"
     for d in "${DIGESTS[@]}"; do
-        echo "    ${d}"
+        if [[ "${d}" == "${digest}" ]]; then
+            match="1"
+            break
+        fi
     done
-    echo "Got: ${digest}"
-    exit 1
+    if [[ "${match}" == "0" ]]; then
+        echo "Digest mismatch"
+        echo "Expected:"
+        for d in "${DIGESTS[@]}"; do
+            echo "    ${d}"
+        done
+        echo "Got: ${digest}"
+        exit 1
+    fi
 fi
 
 if [[ "${file_name}" =~ \.tar\.gz$ ]]; then
