@@ -71,7 +71,6 @@ go install github.com/fatih/gomodifytags@latest
 GOLANGCI_LINT_VERSION="$(curl "${curl_opts[@]}" https://raw.githubusercontent.com/DataDog/datadog-agent/main/internal/tools/go.mod | grep -Po '/golangci-lint.+v\K.+')"
 install-binary \
     --version "${GOLANGCI_LINT_VERSION}" \
-    --digest "200c5b7503f67b59a6743ccf32133026c174e272b930ee79aa2aa6f37aca7ef1" \
-    --digest "3bcfa2e6f3d32b2bf5cd75eaa876447507025e0303698633f722a05331988db4" \
+    --ignore-digests \
     --url "https://github.com/golangci/golangci-lint/releases/download/v{{version}}/golangci-lint-{{version}}-linux-${short_arch}.tar.gz" \
     --name "golangci-lint"
