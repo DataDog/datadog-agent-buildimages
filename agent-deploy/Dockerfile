@@ -11,7 +11,7 @@
 # See https://forums.docker.com/t/how-can-i-expand-a-variable-within-a-copy-command-in-the-dockerfile/113538/7
 
 ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
-ARG DATADOG_PACKAGES_VERSION=cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34
+ARG DATADOG_PACKAGES_VERSION=06f042c7c59144f3ac54122debe4fb59b598cf7d
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
