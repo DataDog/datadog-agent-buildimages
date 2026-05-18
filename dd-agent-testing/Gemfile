@@ -6,7 +6,7 @@ gem "chef-dk", '~> 4.3.13'
 gem "rake", '~> 12.3.2'
 
 group :development do
-  gem "guard", '~> 2.15.0'
+  gem "guard", '~> 2.20.0'
   gem "guard-foodcritic", '~> 3.0.0'
   gem "guard-rspec", '~> 4.7.3'
 end
