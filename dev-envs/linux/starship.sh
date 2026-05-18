@@ -9,6 +9,7 @@ COMMIT="cbc22a316db52f253719e258a3cd3c8fa4e1495b"
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/starship/starship/${COMMIT}/install/install.sh)" -- --yes --version "${VERSION}"
 
+umask 0002
 cat <<'EOF' >> "${HOME}/.zshrc"
 eval "$(starship init zsh)"
 EOF

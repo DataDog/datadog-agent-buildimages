@@ -14,7 +14,6 @@ variable "versions" {
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
-    TEST_BAZEL_VERSION  = "8.5.1" # Version of Bazel to test that Bazelisk properly bootstraps Bazel, will also be preinstalled into the final image
     DDA_VERSION         = "v0.33.3"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
@@ -33,8 +32,27 @@ variable "versions" {
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
+    # Version of Bazel to test that Bazelisk properly bootstraps Bazel, which will also be pre-installed into the final image.
+    TEST_BAZEL_VERSION  = "9.1.0"
   }
 }
+
+variable "build_paths" {
+  type = map(string)
+  default = {
+    # Shared directory for repositories that are built
+    DD_REPO_ROOT          = "/repos"
+    # Shared directory for build tools that wouldn't change at runtime
+    DD_BUILD_INSTALL_ROOT = "/opt/dd"
+    # Shared directories for installed tools and application data
+    DD_BUILD_DATA_ROOT    = "/var/lib/dd"
+    # Shared directory for cache; safe to delete
+    DD_BUILD_CACHE_ROOT   = "/var/cache/dd"
+    # Shared directory for configuration files
+    DD_BUILD_CONFIG_ROOT  = "/var/config/dd"
+  }
+}
+
 // NOTE: Glibc versions are different for amd64 and arm64 and thus are defined in the architecture_defs variables
 
 variable "checksums_common" {
@@ -141,6 +159,7 @@ variable "args_amd64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_amd64,
@@ -155,6 +174,7 @@ variable "args_arm64" {
   type = map(string)
   default = merge(
     versions,
+    build_paths,
     go_versions, # Defined in docker-bake.override.json
     checksums_common,
     architecture_defs_arm64,
