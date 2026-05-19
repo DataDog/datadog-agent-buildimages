@@ -27,11 +27,13 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["docker-bake\\.hcl", "agent-deploy/Dockerfile"],
+      "managerFilePatterns": ["docker-bake\\.hcl", "agent-deploy/Dockerfile"],
       "matchStrings": ["DATADOG_PACKAGES_VERSION\\s*=\\s*\"?(?<currentDigest>[a-f0-9]{40})\"?"],
-      "depNameTemplate": "DataDog/datadog-packages",
+      "currentValueTemplate": "main",
+      "depNameTemplate": "datadog-packages",
+      "packageNameTemplate": "https://github.com/DataDog/datadog-packages",
       "datasourceTemplate": "git-refs",
-      "currentValueTemplate": "main"
+      "registryUrlTemplate": ""
     }
   ]
 }
