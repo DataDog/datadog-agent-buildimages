@@ -552,7 +552,7 @@ RUN useradd -m -u 1001 -g build-shared -G sudo -s /bin/bash dd-build && \
 # Set up environment
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOPATH}/bin:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:${PATH}"
 ENV BUNDLE_GLOBAL_GEM_CACHE="true"
 
 # Set up missing environment variables
