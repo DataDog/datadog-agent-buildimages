@@ -96,7 +96,6 @@ ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-
     https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
     /tmp/crosstool-ng/
 
-COPY linux/${CTNG_ARCH}/toolchain_${CTNG_ARCH}.cmake /opt/cmake/${CTNG_ARCH}-unknown-linux-gnu.toolchain.cmake
 COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
@@ -429,7 +428,6 @@ COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Crosstool-ng
 COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
-COPY --from=crosstool_ng_builder /opt/cmake /opt/cmake
 
 # Osxcross
 COPY --from=osxcross_builder /opt/osxcross ${OSXCROSS_PATH}
