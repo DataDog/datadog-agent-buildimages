@@ -86,14 +86,6 @@ ENV IN_WORKSPACE=1
 ENV XDG_BIN_HOME="${HOME}/.local/bin"
 ENV PATH="${XDG_BIN_HOME}:${PATH}"
 
-# Set up OpenSSH server
-# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
-RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
-RUN printf '%s\n' \
-    'StreamLocalBindUnlink yes' \
-    'PasswordAuthentication no' \
-    >> /usr/local/etc/sshd_config
-
 # Finalization must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 
@@ -101,7 +93,7 @@ RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 EXPOSE 22
 
 # Run SSH server
-CMD ["/usr/local/sbin/sshd", "-D", "-e"]
+CMD ["sleep", "infinity"]
 
 # This is the standard image used by Agent dev env tooling and it
 # MUST be the last stage in the file so that it's the default target.
