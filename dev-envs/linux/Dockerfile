@@ -76,8 +76,8 @@ ENV DD_TARGET_USER=bits
 ENV DD_TARGET_GROUP=dog
 
 # # Set up user/group prerequisites.
-# RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
-#     /mnt/workspaces-setup.sh
+RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
+    /mnt/workspaces-setup.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
 ENV HOME=/home/bits
