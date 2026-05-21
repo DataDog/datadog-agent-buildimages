@@ -78,7 +78,6 @@ ENV DD_TARGET_GROUP=dog
 # Set up user/group prerequisites.
 RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
     /mnt/workspaces-setup.sh
-COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
 ENV HOME=/home/bits
