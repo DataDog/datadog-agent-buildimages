@@ -32,6 +32,7 @@ ARG CMAKE_VERSION=4.0.2
 ARG CMAKE_CHECKSUM="1c3a82c8ca7cf12e0b17178f9d0c32f7ac773bd5651a98fcfd80fbf4977f8d48"
 ARG ZSTD_VERSION=1.5.7
 ARG ZSTD_SHA256="eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"
+ARG DD_PKG_VERSION=latest
 
 # Environment
 ENV PYTHONUTF8 1
@@ -152,6 +153,10 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# Install dd-pkg
+ADD "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_arm64.tar.gz" /tmp/dd-pkg.tar.gz
+RUN tar -C /usr/local/bin -xzf /tmp/dd-pkg.tar.gz dd-pkg && rm /tmp/dd-pkg.tar.gz
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
