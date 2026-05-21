@@ -285,7 +285,8 @@ FROM extraction_base AS dd_pkg_builder
 # Install dd-pkg from the release archive so CI jobs do not download it at runtime.
 ARG DD_PKG_VERSION
 ARG DD_PKG_ARCH
-ADD "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" /tmp/dd-pkg/dd-pkg.tar.gz
+ARG DD_PKG_SHA256
+ADD --checksum=sha256:${DD_PKG_SHA256} "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" /tmp/dd-pkg/dd-pkg.tar.gz
 RUN tar -C /tmp/dd-pkg -xzf /tmp/dd-pkg/dd-pkg.tar.gz dd-pkg
 
 FROM common_base AS final
