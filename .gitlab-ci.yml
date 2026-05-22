@@ -74,7 +74,7 @@ default:
 
 get_agent_version:
   stage: setup
-  image: python:3.11.9
+  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
   script:
     - pip install invoke --quiet
     - VERSION=$(inv agent.version)
