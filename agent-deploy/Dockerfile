@@ -14,6 +14,8 @@ ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
 ARG DATADOG_PACKAGES_VERSION=06f042c7c59144f3ac54122debe4fb59b598cf7d
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
@@ -31,8 +33,6 @@ ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aa
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
-ARG DD_PKG_VERSION=0.7.2
-ARG DD_PKG_SHA256_LINUX_AMD64=c602338653daf7f91e54078b22facacedf74a7ccc3f17dbceb91fcaa2ea32a21
 
 ENV RUBY_VERSION=$RUBY_VERSION_ARG \
     BUNDLER_VERSION=$BUNDLER_VERSION_ARG \
@@ -216,8 +216,7 @@ RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
 COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
 
 # Install dd-pkg
-ADD --checksum=sha256:${DD_PKG_SHA256_LINUX_AMD64} "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_x86_64.tar.gz" /tmp/dd-pkg.tar.gz
-RUN tar -C /usr/local/bin -xzf /tmp/dd-pkg.tar.gz dd-pkg && rm /tmp/dd-pkg.tar.gz
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c820ea4ef600ab4375c5b696a24151c7f0dd931ffee6 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts

@@ -281,13 +281,8 @@ FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages_builder
 # Dummy stage to download datadog-packages as it is distributed as a container image
 
-FROM extraction_base AS dd_pkg_builder
-# Install dd-pkg from the release archive so CI jobs do not download it at runtime.
-ARG DD_PKG_VERSION
-ARG DD_PKG_ARCH
-ARG DD_PKG_SHA256
-ADD --checksum=sha256:${DD_PKG_SHA256} "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" /tmp/dd-pkg/dd-pkg.tar.gz
-RUN tar -C /tmp/dd-pkg -xzf /tmp/dd-pkg/dd-pkg.tar.gz dd-pkg
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg_builder
+# Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
 
 FROM common_base AS final
 
@@ -527,7 +522,7 @@ COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-oct
 COPY --from=datadog_packages_builder /datadog-package /usr/local/bin/datadog-package
 
 # dd-pkg
-COPY --from=dd_pkg_builder /tmp/dd-pkg/dd-pkg /usr/local/bin/dd-pkg
+COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
@@ -589,7 +584,6 @@ ARG DPKG_ARMHF_VERSION
 ARG GO_VERSION
 ARG DDA_VERSION
 ARG DATADOG_PACKAGES_VERSION
-ARG DD_PKG_VERSION
 ARG MACOSX_SDK_VERSION
 ARG OSXCROSS_COMMIT
 ARG MOLD_VERSION
@@ -610,7 +604,6 @@ LABEL dpkg_armhf_version="${DPKG_ARMHF_VERSION}"
 LABEL go_version="${GO_VERSION}"
 LABEL dda_version="${DDA_VERSION}"
 LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
-LABEL dd_pkg_version="${DD_PKG_VERSION}"
 LABEL mold_version="${MOLD_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"

@@ -8,10 +8,6 @@
     {
       "matchDepNames": ["DataDog/datadog-agent-dev"],
       "changelogUrl": "https://github.com/DataDog/datadog-agent-dev/releases/tag/v{{newValue}}"
-    },
-    {
-      "matchDepNames": ["DataDog/dd-pkg"],
-      "changelogUrl": "https://github.com/DataDog/dd-pkg/compare/{{currentValue}}...{{newValue}}"
     }
   ],
   "customManagers": [
@@ -28,14 +24,6 @@
       "matchStrings": ["DATADOG_CI_VERSION\\s*=\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""],
       "depNameTemplate": "DataDog/datadog-ci",
       "datasourceTemplate": "github-releases"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": ["docker-bake\\.hcl"],
-      "matchStrings": ["DD_PKG_VERSION\\s*=\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""],
-      "depNameTemplate": "DataDog/dd-pkg",
-      "datasourceTemplate": "github-tags",
-      "versioningTemplate": "semver"
     }
   ]
 }

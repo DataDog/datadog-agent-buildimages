@@ -27,7 +27,6 @@ variable "versions" {
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
     DATADOG_PACKAGES_VERSION = "06f042c7c59144f3ac54122debe4fb59b598cf7d"
-    DD_PKG_VERSION           = "0.7.2"
     MACOSX_SDK_VERSION       = "14.0"
     OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
     PULUMI_VERSION         = "3.207.0"
@@ -79,7 +78,6 @@ variable "checksums_amd64" {
     DATADOG_CI_SHA256        = "86fcf24d5211f5ae714e947354ccb621e74e2bba4162247890454c6461e74ca5"
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
     AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
-    DD_PKG_SHA256            = "c602338653daf7f91e54078b22facacedf74a7ccc3f17dbceb91fcaa2ea32a21"
     MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
   }
 }
@@ -97,7 +95,6 @@ variable "checksums_arm64" {
     DATADOG_CI_SHA256        = "a192622b4aba3e040f12dadb73e8cf7158a11027c3aab5a16404b152940991d6"
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
     AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
-    DD_PKG_SHA256            = "c1215209f3f43e08b1b122e1b8fb51305583c25aaf9f871c4e5165bf45aa4dfe"
     MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
   }
 }
@@ -113,7 +110,6 @@ variable "architecture_defs_amd64" {
     RUSTUP_ARCH          = "x86_64"
     GO_ARCH              = "amd64"
     CONDA_ARCH           = "x86_64"
-    DD_PKG_ARCH          = "x86_64"
     BAZELISK_ARCH        = "amd64"
     CODECOV_ARCH         = "linux"
     VAULT_ARCH           = "amd64"
@@ -135,7 +131,6 @@ variable "architecture_defs_arm64" {
     RUSTUP_ARCH          = "aarch64"
     GO_ARCH              = "arm64"
     CONDA_ARCH           = "aarch64"
-    DD_PKG_ARCH          = "arm64"
     BAZELISK_ARCH        = "arm64"
     CODECOV_ARCH         = "aarch64"
     VAULT_ARCH           = "arm64"
