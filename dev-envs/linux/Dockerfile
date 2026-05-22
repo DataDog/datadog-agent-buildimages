@@ -51,6 +51,8 @@ RUN --mount=type=bind,src=./docker.sh,dst=/mnt/docker.sh /mnt/docker.sh
 RUN --mount=type=bind,src=./fonts.sh,dst=/mnt/fonts.sh /mnt/fonts.sh
 # Set up Starship prompt
 RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
+# Set up Claude
+RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
 # Set up editor integrations
 RUN --mount=type=bind,src=./editors.sh,dst=/mnt/editors.sh /mnt/editors.sh
 
