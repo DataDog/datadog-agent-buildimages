@@ -277,6 +277,9 @@ FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages_builder
 # Dummy stage to download datadog-packages as it is distributed as a container image
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg_builder
+# Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
+
 FROM common_base AS final
 
 ARG ADDITIONAL_PACKAGE
@@ -418,6 +421,9 @@ ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 ENV PYTHONUTF8=1
 ENV DDA_NO_DYNAMIC_DEPS=1
+
+# dd-pkg
+COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
