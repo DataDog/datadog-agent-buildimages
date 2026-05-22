@@ -14,6 +14,8 @@ ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
 ARG DATADOG_PACKAGES_VERSION=06f042c7c59144f3ac54122debe4fb59b598cf7d
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
@@ -212,6 +214,9 @@ RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
 
 # Install datadog-package
 COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
+
+# Install dd-pkg
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c820ea4ef600ab4375c5b696a24151c7f0dd931ffee6 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts

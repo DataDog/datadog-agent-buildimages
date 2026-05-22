@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+
 FROM --platform=linux/armhf ${BASE_IMAGE}
 
 # Build Args
@@ -152,6 +154,9 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# Install dd-pkg
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Go
 RUN curl -sL -o /tmp/golang.tar.gz https://go.dev/dl/go$GO_VERSION.linux-armv6l.tar.gz \
