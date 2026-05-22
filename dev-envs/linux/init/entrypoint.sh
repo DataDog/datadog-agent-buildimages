@@ -23,8 +23,10 @@ if [[ ! -f "${startup_indicator}" ]]; then
         TARGET_UID="${HOST_UID:-1002}"
         TARGET_GID="${HOST_GID:-${TARGET_UID}}"
 
-        # Create primary user and group
-        groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
+        # Create the primary group if the host GID is not already present.
+        if ! getent group "${TARGET_GID}" >/dev/null; then
+            groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
+        fi
         useradd -u "${TARGET_UID}" -g "${TARGET_GID}" "${TARGET_USER}"
         TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6)"
 
