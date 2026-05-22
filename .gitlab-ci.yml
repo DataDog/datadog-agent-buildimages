@@ -76,8 +76,7 @@ get_agent_version:
   stage: setup
   image: registry.ddbuild.io/ci/datadog-agent-buildimages:v30023992-5c09d40b
   script:
-    - pip install invoke --quiet
-    - VERSION=$(inv agent.version)
+    - VERSION=$(python3 -c "import json; print(json.load(open('release.json'))['agent_version'])")
     - echo "AGENT_VERSION=$VERSION"
     - echo "AGENT_VERSION=$VERSION" >> version.env
   artifacts:
