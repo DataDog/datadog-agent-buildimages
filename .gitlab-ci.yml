@@ -91,7 +91,6 @@ get_agent_version:
     ARCH: x86_64
     DD_TARGET_ARCH: x64
     PLATFORM: linux/amd64
-    DOCKER_CONFIG: /tmp/docker-config
 
 .arm:
   tags: ["arch:arm64"]
@@ -100,7 +99,6 @@ get_agent_version:
     ARCH: aarch64
     DD_TARGET_ARCH: aarch64
     PLATFORM: linux/arm64
-    DOCKER_CONFIG: /tmp/docker-config
 
 .build:
   stage: build
@@ -110,14 +108,15 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    # Use a fresh minimal docker config (no credsStore) so docker login stores credentials in plaintext
-    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
+    # Strip credsStore from existing docker config so docker login stores credentials in plaintext
+    # This preserves any pre-configured credentials (including for registry.ddbuild.io) while
+    # allowing us to add Docker Hub and ECR credentials without hitting a missing credential helper
+    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     # ECR login for pulling base images during build
     - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
-    # registry.ddbuild.io push auth is handled by the buildx K8s driver via IRSA — no explicit login needed
   script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -137,11 +136,10 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
-    # registry.ddbuild.io push auth is handled by the buildx K8s driver via IRSA — no explicit login needed
   script:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -283,7 +281,7 @@ build_circleci_runner:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
   script:
