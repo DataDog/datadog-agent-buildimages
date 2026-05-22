@@ -74,7 +74,7 @@ default:
 
 get_agent_version:
   stage: setup
-  image: $BUILDENV_REGISTRY/images/docker:20.10-py3
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages:v30023992-5c09d40b
   script:
     - pip install invoke --quiet
     - VERSION=$(inv agent.version)
