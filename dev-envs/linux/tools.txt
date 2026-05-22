@@ -1,5 +1,6 @@
 ambr
 ambs
+aws-vault
 bat
 btm
 claude

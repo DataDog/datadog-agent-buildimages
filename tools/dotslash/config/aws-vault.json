@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 13923318
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 14645544
+      }
+    }
+  },
+  "name": "aws-vault",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "176fa59b9e3981720361cd6ed87b5389741953c62ba0a6fa4f2db401f8bef735",
+      "hash": "sha256",
+      "path": "aws-vault",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/99designs/aws-vault/releases/download/v7.2.0/aws-vault-linux-arm64"
+        }
+      ],
+      "size": 13923318
+    },
+    "linux-x86_64": {
+      "digest": "b92bcfc4a78aa8c547ae5920d196943268529c5dbc9c5aca80b797a18a5d0693",
+      "hash": "sha256",
+      "path": "aws-vault",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/99designs/aws-vault/releases/download/v7.2.0/aws-vault-linux-amd64"
+        }
+      ],
+      "size": 14645544
+    }
+  }
+}
