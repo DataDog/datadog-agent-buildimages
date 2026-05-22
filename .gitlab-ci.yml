@@ -110,9 +110,8 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    # Copy existing docker config (preserves pre-configured registry.ddbuild.io credentials)
-    # then add Docker Hub and ECR credentials on top
-    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
+    # Use a fresh minimal docker config (no credsStore) so docker login stores credentials in plaintext
+    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
@@ -138,7 +137,7 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
@@ -284,7 +283,7 @@ build_circleci_runner:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /tmp/docker-config && echo '{}' > /tmp/docker-config/config.json && export DOCKER_CONFIG=/tmp/docker-config
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
     - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin registry.ddbuild.io
