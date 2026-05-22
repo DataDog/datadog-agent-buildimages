@@ -4,11 +4,17 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 
-# Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update
-RUN sed -i 's|http://deb.debian.org/debian|https://archive.debian.org/debian|g; s|http://security.debian.org/debian-security|https://archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+# Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update.
+# Use HTTP initially (buster image has outdated CAs that can't verify archive.debian.org HTTPS),
+# then switch to HTTPS after ca-certificates is installed.
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g; s|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list && \
     echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/10archive
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
+
+# Switch to HTTPS now that ca-certificates is installed
+RUN sed -i 's|http://archive.debian.org/|https://archive.debian.org/|g' /etc/apt/sources.list
+
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb https://archive.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list
 
