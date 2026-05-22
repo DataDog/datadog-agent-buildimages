@@ -74,7 +74,7 @@ default:
 
 get_agent_version:
   stage: setup
-  image: python:3.11-slim
+  image: python:3.11.9
   script:
     - pip install invoke --quiet
     - VERSION=$(inv agent.version)
