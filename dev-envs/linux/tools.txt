@@ -2,6 +2,7 @@ ambr
 ambs
 bat
 btm
+claude
 delta
 dust
 eza

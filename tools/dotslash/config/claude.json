@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 232437384
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 232572624
+      }
+    }
+  },
+  "name": "claude",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "dc931e24f62afbadc8dc68115278b08493825a3ed1ea753d587077181a6cc63b",
+      "hash": "sha256",
+      "path": "claude",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://downloads.claude.ai/claude-code-releases/2.1.141/linux-arm64/claude"
+        }
+      ],
+      "size": 232437384
+    },
+    "linux-x86_64": {
+      "digest": "832be26e8f15b2ae99e520a22b034fc4bfad1cb5b84de6b706487072c56bb42e",
+      "hash": "sha256",
+      "path": "claude",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://downloads.claude.ai/claude-code-releases/2.1.141/linux-x64/claude"
+        }
+      ],
+      "size": 232572624
+    }
+  }
+}
