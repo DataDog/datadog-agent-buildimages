@@ -90,6 +90,7 @@ get_agent_version:
   variables:
     ARCH: x86_64
     DD_TARGET_ARCH: x64
+    PLATFORM: linux/amd64
     DOCKER_CONFIG: /tmp/docker-config
 
 .arm:
@@ -98,6 +99,7 @@ get_agent_version:
   variables:
     ARCH: aarch64
     DD_TARGET_ARCH: aarch64
+    PLATFORM: linux/arm64
     DOCKER_CONFIG: /tmp/docker-config
 
 .build:
@@ -108,17 +110,19 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    # Use a temp dir for docker config to avoid credential helper issues
-    - mkdir -p /tmp/docker-config && export DOCKER_CONFIG=/tmp/docker-config
+    # Copy existing docker config (preserves pre-configured registry.ddbuild.io credentials)
+    # then add Docker Hub and ECR credentials on top
+    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
     # Docker Hub login to reduce risk of rate limiting.
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-  script:
-    # ECR login
+    # ECR login (covers both 486234852809.dkr.ecr.us-east-1.amazonaws.com and registry.ddbuild.io)
     - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin registry.ddbuild.io
+  script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker buildx build --push --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
+    - docker buildx build --push --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
     # Also tag as pipeline-ID-only for testing purposes
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
@@ -134,13 +138,15 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin registry.ddbuild.io
   script:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker buildx build --push --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --label target=none --file $DOCKERFILE .
+    - docker buildx build --push --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --label target=none --file $DOCKERFILE .
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
@@ -278,13 +284,14 @@ build_circleci_runner:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/docker-config && export DOCKER_CONFIG=/tmp/docker-config
+    - mkdir -p /tmp/docker-config && if [ -f /root/.docker/config.json ]; then cp /root/.docker/config.json /tmp/docker-config/config.json; fi && export DOCKER_CONFIG=/tmp/docker-config
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
     - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin registry.ddbuild.io
   script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
-    - docker buildx build --push --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
+    - docker buildx build --push --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag datadog/agent-buildimages-${IMAGE}${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
 
 trigger_build_kernels:
   stage: trigger_build_kernels
