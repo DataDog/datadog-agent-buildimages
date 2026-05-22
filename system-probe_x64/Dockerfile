@@ -6,6 +6,10 @@ ARG GO_SHA256_LINUX_AMD64
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 
+# Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update
+RUN sed -i 's|http://deb.debian.org/debian|https://archive.debian.org/debian|g; s|http://security.debian.org/debian-security|https://archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/10archive
+
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.

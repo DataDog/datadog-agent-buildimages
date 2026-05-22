@@ -4,6 +4,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
 
+# Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update
+RUN sed -i 's|http://deb.debian.org/debian|https://archive.debian.org/debian|g; s|http://security.debian.org/debian-security|https://archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/10archive
+
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 # We need up-to-date kernel headers to be able to use newly available eBPF helpers in programs.
 RUN echo "deb https://archive.debian.org/debian buster-backports main" | tee -a /etc/apt/sources.list

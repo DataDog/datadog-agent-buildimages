@@ -297,17 +297,11 @@ build_circleci_runner:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /tmp/login-config && echo '{}' > /tmp/login-config/config.json
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker --config /tmp/login-config login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - |
-      if [ -f /root/.docker/config.json ]; then
-        jq -s '.[0].auths * .[1].auths | {auths: .} + (.[0] | del(.auths, .credsStore, .credHelpers))' \
-          /root/.docker/config.json /tmp/login-config/config.json > /tmp/merged-config.json \
-          && mv /tmp/merged-config.json /root/.docker/config.json
-      else
-        cp /tmp/login-config/config.json /root/.docker/config.json
-      fi
+    - DOCKER_REGISTRY_PWD=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text)
+    # Build DOCKER_AUTH_CONFIG so the K8s buildx builder pod gets Docker Hub credentials for push
+    - DOCKER_HUB_AUTH=$(printf "%s:%s" "$DOCKER_REGISTRY_LOGIN" "$DOCKER_REGISTRY_PWD" | base64 -w0)
+    - export DOCKER_AUTH_CONFIG="{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$DOCKER_HUB_AUTH\"}}}"
   script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
