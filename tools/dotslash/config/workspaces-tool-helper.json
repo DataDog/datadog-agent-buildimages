@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 24408162
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 24408162
+      }
+    }
+  },
+  "name": "workspaces-tool-helper",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "4dc40fac4c1287a65ad496bcb7154409270e65bc0184a080c2ee2aff5072f8ba",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "workspaces-tool-helper-linux-arm64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/dd-source/workspaces-tool-helper/v0.3.1/workspaces-tool-helper-tar.tar.gz"
+        }
+      ],
+      "size": 12913279
+    },
+    "linux-x86_64": {
+      "digest": "4dc40fac4c1287a65ad496bcb7154409270e65bc0184a080c2ee2aff5072f8ba",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "workspaces-tool-helper-linux-amd64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/dd-source/workspaces-tool-helper/v0.3.1/workspaces-tool-helper-tar.tar.gz"
+        }
+      ],
+      "size": 12913279
+    }
+  }
+}

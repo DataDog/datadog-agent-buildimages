@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 277359853
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 277359853
+      }
+    }
+  },
+  "name": "ddtool",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "dbfcbe70c89b7a32b89c606aec44d6af16520c0772e6b794451dedffc221c237",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "ddtool_linux_arm64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/ddtool/v1.110.0/ddtool.tar.gz"
+        }
+      ],
+      "size": 85822742
+    },
+    "linux-x86_64": {
+      "digest": "dbfcbe70c89b7a32b89c606aec44d6af16520c0772e6b794451dedffc221c237",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "ddtool_linux_amd64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/ddtool/v1.110.0/ddtool.tar.gz"
+        }
+      ],
+      "size": 85822742
+    }
+  }
+}

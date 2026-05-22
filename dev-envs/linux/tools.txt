@@ -4,6 +4,8 @@ aws-vault
 bat
 btm
 claude
+dd-gitsign
+ddtool
 delta
 dust
 eza
@@ -21,5 +23,6 @@ staticcheck
 uv
 uvx
 watchexec
+workspaces-tool-helper
 ya
 yazi

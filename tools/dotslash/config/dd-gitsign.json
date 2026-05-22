@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 67292970
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 67292970
+      }
+    }
+  },
+  "name": "dd-gitsign",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "4fe4bf6ac5d14b4fcdbab2d213c7b6d74c916975c62cec4bfa376c4c167ab660",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "dd-gitsign-linux-arm64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/dd-source/dd-gitsign/v1.8.0/dd-gitsign-tar.tar.gz"
+        }
+      ],
+      "size": 33106380
+    },
+    "linux-x86_64": {
+      "digest": "4fe4bf6ac5d14b4fcdbab2d213c7b6d74c916975c62cec4bfa376c4c167ab660",
+      "format": "tar.gz",
+      "hash": "sha256",
+      "path": "dd-gitsign-linux-amd64",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://binaries.ddbuild.io/dd-source/dd-gitsign/v1.8.0/dd-gitsign-tar.tar.gz"
+        }
+      ],
+      "size": 33106380
+    }
+  }
+}
