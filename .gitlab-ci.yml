@@ -16,7 +16,7 @@ variables:
   # the buildimage for the highest Windows version supported.
   # This image must use the same Windows version as the Windows version of the Gitlab runner used in .winrelease
   WINDOWS_RELEASE_IMAGE: $BUILDENV_REGISTRY/ci/datadog-agent-buildimages/windows_ltsc2022_x64
-S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
+  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
   S3_PERMANENT_ARTIFACTS_URI: s3://dd-ci-persistent-artefacts-build-stable/datadog-agent
   DATADOG_AGENT_EMBEDDED_PATH: /opt/datadog-agent/embedded
   S3_OMNIBUS_CACHE_BUCKET: dd-ci-datadog-agent-omnibus-cache-build-stable
@@ -74,8 +74,9 @@ default:
 
 get_agent_version:
   stage: setup
-  image: $CI_IMAGE
+  image: python:3.11-slim
   script:
+    - pip install invoke --quiet
     - VERSION=$(inv agent.version)
     - echo "AGENT_VERSION=$VERSION"
     - echo "AGENT_VERSION=$VERSION" >> version.env
