@@ -108,15 +108,23 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    # Strip credsStore from existing docker config so docker login stores credentials in plaintext
-    # This preserves any pre-configured credentials (including for registry.ddbuild.io) while
-    # allowing us to add Docker Hub and ECR credentials without hitting a missing credential helper
-    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
-    # Docker Hub login to reduce risk of rate limiting.
+    # Use a separate docker config dir for our logins to avoid the credsStore credential helper
+    # in the runner image's config (which references a helper not available at runtime).
+    # We pass --config explicitly to each login call, then merge the auths into the system config
+    # so the buildx K8s driver (which uses /root/.docker/config.json) gets all credentials.
+    - mkdir -p /tmp/login-config && echo '{}' > /tmp/login-config/config.json
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    # ECR login for pulling base images during build
-    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker --config /tmp/login-config login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - aws ecr get-login-password --region us-east-1 | docker --config /tmp/login-config login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    # Merge our new auth entries into the existing system config (preserving registry.ddbuild.io auth)
+    - |
+      if [ -f /root/.docker/config.json ]; then
+        jq -s '.[0].auths * .[1].auths | {auths: .} + (.[0] | del(.auths, .credsStore, .credHelpers))' \
+          /root/.docker/config.json /tmp/login-config/config.json > /tmp/merged-config.json \
+          && mv /tmp/merged-config.json /root/.docker/config.json
+      else
+        cp /tmp/login-config/config.json /root/.docker/config.json
+      fi
   script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -125,7 +133,7 @@ get_agent_version:
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
-    - export SIZE=$(docker buildx imagetools inspect --raw registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} | python3 -c "import sys,json; m=json.load(sys.stdin); print(m.get('config',{}).get('size',0) + sum(l['size'] for l in m.get('layers',[])))" 2>/dev/null || echo 0)
+    - export SIZE=$(docker buildx imagetools inspect --raw registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} | jq '[.config.size // 0, (.layers // [] | map(.size) | add // 0)] | add' 2>/dev/null || echo 0)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
 
 .build_ddregistry:
@@ -136,10 +144,18 @@ get_agent_version:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
+    - mkdir -p /tmp/login-config && echo '{}' > /tmp/login-config/config.json
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
-    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker --config /tmp/login-config login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - aws ecr get-login-password --region us-east-1 | docker --config /tmp/login-config login --username AWS --password-stdin 486234852809.dkr.ecr.us-east-1.amazonaws.com
+    - |
+      if [ -f /root/.docker/config.json ]; then
+        jq -s '.[0].auths * .[1].auths | {auths: .} + (.[0] | del(.auths, .credsStore, .credHelpers))' \
+          /root/.docker/config.json /tmp/login-config/config.json > /tmp/merged-config.json \
+          && mv /tmp/merged-config.json /root/.docker/config.json
+      else
+        cp /tmp/login-config/config.json /root/.docker/config.json
+      fi
   script:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
@@ -147,7 +163,7 @@ get_agent_version:
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
-    - export SIZE=$(docker buildx imagetools inspect --raw registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} | python3 -c "import sys,json; m=json.load(sys.stdin); print(m.get('config',{}).get('size',0) + sum(l['size'] for l in m.get('layers',[])))" 2>/dev/null || echo 0)
+    - export SIZE=$(docker buildx imagetools inspect --raw registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} | jq '[.config.size // 0, (.layers // [] | map(.size) | add // 0)] | add' 2>/dev/null || echo 0)
     - ./send-metrics.sh $IMAGE $SIZE $CI_COMMIT_REF_NAME
 
 build_ci_image:
@@ -281,9 +297,17 @@ build_circleci_runner:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
     - ./aws/install
-    - mkdir -p /root/.docker && python3 -c "import json,os; p='/root/.docker/config.json'; d=json.load(open(p)) if os.path.exists(p) else {}; d.pop('credsStore',None); d.pop('credHelpers',None); json.dump(d,open(p,'w'))"
+    - mkdir -p /tmp/login-config && echo '{}' > /tmp/login-config/config.json
     - DOCKER_REGISTRY_LOGIN=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_login --with-decryption --query "Parameter.Value" --out text)
-    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.docker_hub_pwd --with-decryption --query "Parameter.Value" --out text | docker --config /tmp/login-config login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
+    - |
+      if [ -f /root/.docker/config.json ]; then
+        jq -s '.[0].auths * .[1].auths | {auths: .} + (.[0] | del(.auths, .credsStore, .credHelpers))' \
+          /root/.docker/config.json /tmp/login-config/config.json > /tmp/merged-config.json \
+          && mv /tmp/merged-config.json /root/.docker/config.json
+      else
+        cp /tmp/login-config/config.json /root/.docker/config.json
+      fi
   script:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
