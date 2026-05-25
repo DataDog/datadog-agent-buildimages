@@ -79,7 +79,7 @@ su - bits << EOF
     export PASS_GPG_HOME=\$HOME/.config/password-store/gpg
     mkdir -m 700 -p \$PASS_GPG_HOME
     gpg --homedir \$PASS_GPG_HOME --batch --passphrase '' --quick-generate-key --yes password-store
-    PASSWORD_STORE_GPG_OPTS="--homedir \$PASS_GPG_HOME" pass init 'password-store'
+    export PASSWORD_STORE_GPG_OPTS="--homedir \$PASS_GPG_HOME" pass init 'password-store'
 
     if [ -e /etc/container-config/compose.yaml ]; then
         echo "Copying some files"
@@ -89,7 +89,7 @@ su - bits << EOF
     if command -v dd-gitsign &> /dev/null; then
         echo "Setting up dd-gitsign"
         GIT_DISPLAY_NAME=\$(curl -s https://api.github.com/users/${github_username} | jq -r '.name // "${github_username}"')
-        GIT_EMAIL="${workspace_user}@datadoghq.com"
+        GIT_EMAIL="${real_user}@datadoghq.com"
         dd-gitsign install --remote --github="${github_username}" --name "\${GIT_DISPLAY_NAME}" --email "\${GIT_EMAIL}"
     fi
 EOF
