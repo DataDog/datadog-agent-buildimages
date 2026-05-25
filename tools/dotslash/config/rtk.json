@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 8478640
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 10026176
+      }
+    }
+  },
+  "name": "rtk",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "75d9226191363426ba7233510280c182a843d2f72aa061e040ae70132a2d1f0d",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "rtk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/rtk-ai/rtk/releases/download/v0.42.0/rtk-aarch64-unknown-linux-gnu.tar.gz"
+        }
+      ],
+      "size": 4079178
+    },
+    "linux-x86_64": {
+      "digest": "d8897324f523fd0ef13cac418ebdb460c7f1da70ed2458ce5881bf34cd34f8f5",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "rtk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/rtk-ai/rtk/releases/download/v0.42.0/rtk-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 4444925
+    }
+  }
+}

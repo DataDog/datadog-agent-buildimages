@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 25571976
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 28053456
+      }
+    }
+  },
+  "name": "jj",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "3c9cf55393962cba01a03545e1e71d4859a410b64b379b2441565fa21c81c967",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "jj",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jj-vcs/jj/releases/download/v0.41.0/jj-v0.41.0-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 10041274
+    },
+    "linux-x86_64": {
+      "digest": "a3a2d5720879943387752afaf7243c604d1b9b6da76c228067a4597a8ab556c6",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "jj",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jj-vcs/jj/releases/download/v0.41.0/jj-v0.41.0-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 10700500
+    }
+  }
+}

@@ -16,6 +16,6 @@ EOF
 done
 
 # https://www.nushell.sh/book/configuration.html#configuration-overview
-cat <<EOF >> "${XDG_CONFIG_HOME}/nushell/env.nu"
+cat <<EOF >> "${XDG_CONFIG_HOME}/nushell/config.nu"
 \$env.$1 = '$2'
 EOF

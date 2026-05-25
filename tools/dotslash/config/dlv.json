@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 19624480
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 22578088
+      }
+    }
+  },
+  "name": "dlv",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "b999655d61f7bf04c1d870f89854e392fa9e25dfb0f44e028bdeb39020ed9531",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "dlv",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/go-delve/delve/releases/download/v1.26.3/dlv_1.26.3_linux_arm64.tar.gz"
+        }
+      ],
+      "size": 10147252
+    },
+    "linux-x86_64": {
+      "digest": "368eedca3e28a553dcea00175053d6361f2d8a6ef39120d6b17c257b00b3190c",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "dlv",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/go-delve/delve/releases/download/v1.26.3/dlv_1.26.3_linux_amd64.tar.gz"
+        }
+      ],
+      "size": 11818440
+    }
+  }
+}

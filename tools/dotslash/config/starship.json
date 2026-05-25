@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 10241792
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 12147096
+      }
+    }
+  },
+  "name": "starship",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "381f67a78f3d72a7db83063bf06476e112db3ee31a070fc6b06b2cffaaf59994",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "starship",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/starship/starship/releases/download/v1.25.1/starship-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 4652881
+    },
+    "linux-x86_64": {
+      "digest": "e62bacfa45b92e0cc58f26c77994bc76eb9db08199f26a1f221107d1cf430b8c",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "starship",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/starship/starship/releases/download/v1.25.1/starship-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 5046130
+    }
+  }
+}

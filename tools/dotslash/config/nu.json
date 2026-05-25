@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 257670265
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 264646129
+      }
+    }
+  },
+  "name": "nu",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "d335056a4769607e52f0fee5b014186724b0805da66578dc39533ea00293b6d8",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "nu-0.113.0-aarch64-unknown-linux-musl/nu",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/nushell/nushell/releases/download/0.113.0/nu-0.113.0-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 79156084
+    },
+    "linux-x86_64": {
+      "digest": "f4b19a5dba51fc67d2629174d741c36f2b748d07c08715c2e761da5e52be2539",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "nu-0.113.0-x86_64-unknown-linux-musl/nu",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/nushell/nushell/releases/download/0.113.0/nu-0.113.0-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 82299419
+    }
+  }
+}

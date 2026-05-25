@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 51021352
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 51432936
+      }
+    }
+  },
+  "name": "ast-grep",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "f770612a9742416811f7a4ab65dd1700ae2f57cf1d90ddb8f7448545cb4cb320",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "ast-grep",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/ast-grep/ast-grep/releases/download/0.42.3/app-aarch64-unknown-linux-gnu.zip"
+        }
+      ],
+      "size": 7587177
+    },
+    "linux-x86_64": {
+      "digest": "ed5888bb0a0ccd6f77048e579341745ead43f019f6e29f6e0722160dd98fcabc",
+      "format": "zip",
+      "hash": "blake3",
+      "path": "ast-grep",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/ast-grep/ast-grep/releases/download/0.42.3/app-x86_64-unknown-linux-gnu.zip"
+        }
+      ],
+      "size": 7864746
+    }
+  }
+}

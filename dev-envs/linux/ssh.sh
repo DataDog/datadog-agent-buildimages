@@ -38,7 +38,4 @@ github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+V
 EOF
 
 # Force SSH for Go dependencies
-cat <<'EOF' >> "${HOME}/.gitconfig"
-[url "ssh://git@github.com/"]
-insteadOf = https://github.com/
-EOF
+git config --global 'url.ssh://git@github.com/.insteadOf' 'https://github.com/'

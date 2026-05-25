@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 38423248
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 41011920
+      }
+    }
+  },
+  "name": "dd-pkg",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "f7d872a560744901da31c18329b962e319f6f318a728f093e67834e4709ec025",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "dd-pkg",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://dd-package-tools.s3.us-east-1.amazonaws.com/dd-pkg/0.7.3/dd-pkg_Linux_arm64.tar.gz"
+        }
+      ],
+      "size": 11038617
+    },
+    "linux-x86_64": {
+      "digest": "906e31a2372800f9ef6534096bf55540736899d0fe76bdd86507b1131a493b21",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "dd-pkg",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://dd-package-tools.s3.us-east-1.amazonaws.com/dd-pkg/0.7.3/dd-pkg_Linux_x86_64.tar.gz"
+        }
+      ],
+      "size": 12270437
+    }
+  }
+}

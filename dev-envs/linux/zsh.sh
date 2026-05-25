@@ -39,13 +39,13 @@ OH_MY_ZSH_COMMIT="61bacd95b285a9792a05d1c818d9cee15ebe53c6"
 (
     umask 0002
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${OH_MY_ZSH_COMMIT}/tools/install.sh)"
+
+    # Set up Starship for zsh.
+    cat <<'EOF' >> "${HOME}/.zshrc"
+eval "$(starship init zsh)"
+EOF
 )
 
-# Fix locale broken by Oh My Zsh:
-# https://github.com/starship/starship/issues/2176#issuecomment-1783086362
-umask 0002
-cat <<'EOF' >> "${HOME}/.zshrc"
-export LC_ALL="C.UTF-8"
-export LANG="C.UTF-8"
-EOF
+# Fix permissions broken by Oh My Zsh:
+# https://github.com/ohmyzsh/ohmyzsh/blob/43c68566be2cddd094bd2228a053769107c8a47f/tools/install.sh#L286-L291
 chmod g+rw "${HOME}/.zshrc"

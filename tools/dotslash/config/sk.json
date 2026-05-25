@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 4696562
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 5692490
+      }
+    }
+  },
+  "name": "sk",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "d04ef2c935d28e5375949d385e788ed976d3758eee027b6f0192942594206cae",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "skim-aarch64-unknown-linux-musl/sk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/skim-rs/skim/releases/download/v4.7.0/skim-aarch64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 1454288
+    },
+    "linux-x86_64": {
+      "digest": "9957ef0436bf18d85591f5f7998a253f2688279cf5f323a48914194b618775b1",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "skim-x86_64-unknown-linux-musl/sk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/skim-rs/skim/releases/download/v4.7.0/skim-x86_64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 1733232
+    }
+  }
+}
