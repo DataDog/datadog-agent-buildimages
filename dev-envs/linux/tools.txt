@@ -5,7 +5,6 @@ bat
 btm
 claude
 dd-gitsign
-ddtool
 delta
 dust
 eza
