@@ -41,6 +41,10 @@ cat >/etc/sudoers.d/95-dog-nopasswd <<'EOF'
 EOF
 chmod 0440 /etc/sudoers.d/95-dog-nopasswd
 
+
+su bits -c "${DD_BUILD_INSTALL_ROOT}/conda/condabin/conda init --all"
+
+echo "conda activate ddpy3" >> /home/bits/.zshrc
 # zsh does not source /etc/profile.d by default. Workspaces and the Agent
 # feature both write *-workspace-env.sh snippets there.
 install -d /etc/zsh

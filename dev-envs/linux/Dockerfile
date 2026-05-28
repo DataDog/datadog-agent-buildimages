@@ -62,6 +62,9 @@ ENV DD_DEFAULT_CONFIG_ROOT="/var/config/dd-defaults"
 # Runtime config should target the persisted config root.
 ENV XDG_CONFIG_HOME="${DD_BUILD_CONFIG_ROOT}"
 
+# Install pass password manager
+RUN apt-get update && apt-get install -y pass && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # MCP
 EXPOSE 9000
 

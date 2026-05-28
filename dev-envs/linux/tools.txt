@@ -1,7 +1,10 @@
 ambr
 ambs
+aws-vault
 bat
 btm
+claude
+dd-gitsign
 delta
 dust
 eza
@@ -19,5 +22,6 @@ staticcheck
 uv
 uvx
 watchexec
+workspaces-tool-helper
 ya
 yazi

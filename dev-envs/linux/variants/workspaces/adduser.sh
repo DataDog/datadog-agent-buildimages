@@ -67,6 +67,32 @@ if [[ -z "${github_username}" ]]; then
     echo "GitHub username is required to authorize ${workspace_user}" >&2
     exit 1
 fi
+# do user specific configuration *as* the user (to ensure permissions and paths are correct)
+su - bits << EOF
+    echo "Fetching keys from github.com/${github_username}"
+    curl "https://github.com/${github_username}.keys" -o ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+
+    echo "Setting up password-store"
+    # NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
+    # homedir. This ensures we don't conflict with a forwarded gpg-agent
+    export PASS_GPG_HOME=\$HOME/.config/password-store/gpg
+    mkdir -m 700 -p \$PASS_GPG_HOME
+    gpg --homedir \$PASS_GPG_HOME --batch --passphrase '' --quick-generate-key --yes password-store
+    export PASSWORD_STORE_GPG_OPTS="--homedir \$PASS_GPG_HOME" pass init 'password-store'
+
+    if [ -e /etc/container-config/compose.yaml ]; then
+        echo "Copying some files"
+        cp /etc/container-config/compose.yaml ~/dd/compose.yaml
+    fi
+
+    if command -v dd-gitsign &> /dev/null; then
+        echo "Setting up dd-gitsign"
+        GIT_DISPLAY_NAME=\$(curl -s https://api.github.com/users/${github_username} | jq -r '.name // "${github_username}"')
+        GIT_EMAIL="${real_user}@datadoghq.com"
+        dd-gitsign install --remote --github="${github_username}" --name "\${GIT_DISPLAY_NAME}" --email "\${GIT_EMAIL}"
+    fi
+EOF
 
 curl --fail --silent --show-error --location \
     "https://github.com/${github_username}.keys" \
