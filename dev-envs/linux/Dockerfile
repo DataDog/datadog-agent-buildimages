@@ -11,6 +11,9 @@ ARG DDA_VERSION=""
 # hadolint global ignore=DL3002
 USER root
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 # Set up HOME as root-owned and build-shared writable so host-mapped users
 # with unknown UID/GID can use it without chown.
 ENV HOME=/home/dd
@@ -49,13 +52,9 @@ RUN --mount=type=bind,src=./dda.sh,dst=/mnt/dda.sh DDA_VERSION=${DDA_VERSION} /m
 RUN --mount=type=bind,src=./docker.sh,dst=/mnt/docker.sh /mnt/docker.sh
 # Set up fonts
 RUN --mount=type=bind,src=./fonts.sh,dst=/mnt/fonts.sh /mnt/fonts.sh
-# Set up Starship prompt
-RUN --mount=type=bind,src=./starship.sh,dst=/mnt/starship.sh /mnt/starship.sh
 # Set up editor integrations
 RUN --mount=type=bind,src=./editors.sh,dst=/mnt/editors.sh /mnt/editors.sh
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
 # This is where we store default configuration for the image
 # which is used to seed the user's configuration.
 ENV DD_DEFAULT_CONFIG_ROOT="/var/config/dd-defaults"

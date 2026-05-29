@@ -33,19 +33,30 @@ make install
 popd
 rm -rf "${workdir}"
 
-# https://github.com/ohmyzsh/ohmyzsh#basic-installation
-OH_MY_ZSH_COMMIT="61bacd95b285a9792a05d1c818d9cee15ebe53c6"
+# https://github.com/ohmyzsh/ohmyzsh
+OH_MY_ZSH_COMMIT="b26b5002633e865b70e17933536fe4dc99127898"
 
 (
     umask 0002
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${OH_MY_ZSH_COMMIT}/tools/install.sh)"
+    mkdir -p "${HOME}/.oh-my-zsh"
+    curl -fsSL "https://github.com/ohmyzsh/ohmyzsh/archive/${OH_MY_ZSH_COMMIT}.tar.gz" |
+        tar -xz -C "${HOME}/.oh-my-zsh" --strip-components 1
+
+    mkdir -p "${HOME}/.config/zsh"
+    cat <<'EOF' > "${HOME}/.config/zsh/oh-my-zsh.zsh"
+export ZSH="${HOME}/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+zstyle ':omz:update' mode disabled
+plugins=(
+    git
 )
 
-# Fix locale broken by Oh My Zsh:
-# https://github.com/starship/starship/issues/2176#issuecomment-1783086362
-umask 0002
-cat <<'EOF' >> "${HOME}/.zshrc"
-export LC_ALL="C.UTF-8"
-export LANG="C.UTF-8"
+source "${ZSH}/oh-my-zsh.sh"
 EOF
-chmod g+rw "${HOME}/.zshrc"
+
+    # Set up Oh My Zsh and Starship toggles.
+    cat <<'EOF' >> "${HOME}/.zshrc"
+source "${HOME}/.config/zsh/oh-my-zsh.zsh"
+# eval "$(starship init zsh)"
+EOF
+)

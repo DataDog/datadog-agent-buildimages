@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 36504708
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 39036220
+      }
+    }
+  },
+  "name": "git-wt",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "598f289802974e287e1861805541a06dcc76a97732230910f8ddaf27dade5aa2",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "worktrunk-aarch64-unknown-linux-musl/git-wt",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.53.0/worktrunk-aarch64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 5388516
+    },
+    "linux-x86_64": {
+      "digest": "7c0bc40dd114712022ae3e85b2cc380458c0b316e29b50f4e5f5e3262d97537f",
+      "format": "tar.xz",
+      "hash": "blake3",
+      "path": "worktrunk-x86_64-unknown-linux-musl/git-wt",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/max-sixty/worktrunk/releases/download/v0.53.0/worktrunk-x86_64-unknown-linux-musl.tar.xz"
+        }
+      ],
+      "size": 5931036
+    }
+  }
+}

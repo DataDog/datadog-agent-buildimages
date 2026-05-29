@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 2055884
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 2564404
+      }
+    }
+  },
+  "name": "sd",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "b02af0dd79664107768bb4df3da754fd1594b89bbd14a3326eb891c1c811662f",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "sd-v1.1.0-aarch64-unknown-linux-musl/sd",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 924956
+    },
+    "linux-x86_64": {
+      "digest": "8f5c6e51b1682012fb7fe9db2751b57f08fd0297fdd7b9abef24d5f3392fb97b",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "sd-v1.1.0-x86_64-unknown-linux-musl/sd",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 1049511
+    }
+  }
+}

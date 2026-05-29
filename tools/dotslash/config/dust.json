@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 2601543
+        "uncompressed_size": 2562169
       },
       "linux-x86_64": {
-        "uncompressed_size": 3241119
+        "uncompressed_size": 3177185
       }
     }
   },
   "name": "dust",
   "platforms": {
     "linux-aarch64": {
-      "digest": "5daee72cdc8e5a065e5510713d8a10a0d8fd7a09dbec0caf846d0a19f7035c49",
+      "digest": "6dd0630fc6c76f75241a722a21277d46043c9cf69f840bef549f867e08933f12",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "dust-v1.2.3-aarch64-unknown-linux-musl/dust",
+      "path": "dust-v1.2.4-aarch64-unknown-linux-musl/dust",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/bootandy/dust/releases/download/v1.2.3/dust-v1.2.3-aarch64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-aarch64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 1197265
+      "size": 1180113
     },
     "linux-x86_64": {
-      "digest": "af6bb0279b3e8ee8eac7eb60b641de8774872d0a2d21b6c87612ae7c68ed445b",
+      "digest": "b2098c162616b16f38d8d17ff1b6dc23ddbce3c518aa11183c13e511fab2b05d",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "dust-v1.2.3-x86_64-unknown-linux-musl/dust",
+      "path": "dust-v1.2.4-x86_64-unknown-linux-musl/dust",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/bootandy/dust/releases/download/v1.2.3/dust-v1.2.3-x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 1337100
+      "size": 1319411
     }
   }
 }

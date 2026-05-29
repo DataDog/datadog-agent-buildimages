@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 1966384
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 2356176
+      }
+    }
+  },
+  "name": "gitas",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "c37c619730d95504afd5c8a1eaabe59d0b6031a527c7e17e891b9e72b5f9c030",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "gitas",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/letmutex/gitas/releases/download/v0.0.7/gitas-v0.0.7-linux-arm64.tar.gz"
+        }
+      ],
+      "size": 1168295
+    },
+    "linux-x86_64": {
+      "digest": "2cd713ffb1c37e5d8a0ff44fff600d227313dbe82b5e399a0a91fb664d86aa2c",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "gitas",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/letmutex/gitas/releases/download/v0.0.7/gitas-v0.0.7-linux-x64.tar.gz"
+        }
+      ],
+      "size": 1234635
+    }
+  }
+}

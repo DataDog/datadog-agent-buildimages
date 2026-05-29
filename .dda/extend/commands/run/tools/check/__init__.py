@@ -53,7 +53,11 @@ def cmd(app: Application, *, integrity: bool, fix: bool, force: bool) -> None:
 
     from utils.constants import PROJECT_ROOT, TOOL_CONFIG_DIR
     from utils.tools.dotslash.artifact import DotSlashArtifact
-    from utils.tools.dotslash.schema import ExtendedDotSlashToolConfig
+    from utils.tools.dotslash.schema import (
+        DotSlashArtifactMetadata,
+        DotSlashToolMetadata,
+        ExtendedDotSlashToolConfig,
+    )
 
     if fix and integrity and not force:
         app.display_error("Run with --force to trust providers for integrity fixes")
@@ -126,7 +130,7 @@ def cmd(app: Application, *, integrity: bool, fix: bool, force: bool) -> None:
                 try:
                     metadata, errors, tool_name, platform, artifact_index = future.result()
                 except Exception as e:
-                    tool_name, platform, _, artifact_index = futures[future]
+                    tool_name, platform, *_, artifact_index = futures[future]
                     failed_tools[tool_name][platform][artifact_index] = [str(e)]
                 else:
                     if errors:
@@ -172,12 +176,17 @@ def cmd(app: Application, *, integrity: bool, fix: bool, force: bool) -> None:
         for tool_name, platforms in sorted(pending_fixes.items()):
             config_file = TOOL_CONFIG_DIR.joinpath(f"{tool_name}.json")
             config_text = config_file.read_text(encoding="utf-8")
-            tool = json.decode(config_text)
+            tool = json.decode(config_text, type=ExtendedDotSlashToolConfig)
             for platform, artifacts in sorted(platforms.items()):
-                for artifact_index, metadata in artifacts.items():
-                    tool["platforms"][platform]["digest"] = metadata.digest
-                    tool["platforms"][platform]["size"] = metadata.size
-                    tool.setdefault("__extra_metadata", {}).setdefault("platforms", {}).setdefault(platform, {})["uncompressed_size"] = metadata.uncompressed.size
+                for metadata in artifacts.values():
+                    artifact_config = tool.platforms[platform]
+                    artifact_config.digest = metadata.digest
+                    artifact_config.size = metadata.size
+                    if tool.extra_metadata is None:
+                        tool.extra_metadata = DotSlashToolMetadata(platforms={})
+                    tool.extra_metadata.platforms[platform] = DotSlashArtifactMetadata(
+                        uncompressed_size=metadata.uncompressed.size,
+                    )
 
             config_file.write_text(construct_tool_config(tool), encoding="utf-8")
             app.display_success(f"Fixed {config_file.relative_to(PROJECT_ROOT)}")

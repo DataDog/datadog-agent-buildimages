@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 21828696
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 24862032
+      }
+    }
+  },
+  "name": "hk",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "cee647238545de8edba33a4a2647318c15756203d380462f99fdbdbd77735c8c",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "hk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jdx/hk/releases/download/v1.45.0/hk-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 9062963
+    },
+    "linux-x86_64": {
+      "digest": "0bb958fecd588a4d0ccc4fe648bda9f682b80b12edc3869d5b0ef81a34fc1c9f",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "hk",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/jdx/hk/releases/download/v1.45.0/hk-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "size": 9255148
+    }
+  }
+}

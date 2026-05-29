@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 9983368
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 11420912
+      }
+    }
+  },
+  "name": "agent-browser",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "c9edec860bd49eaa7902d37947d4208a49c90e7bd551a5d04aa5d8e4c210d24a",
+      "hash": "blake3",
+      "path": "agent-browser",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/vercel-labs/agent-browser/releases/download/v0.27.0/agent-browser-linux-musl-arm64"
+        }
+      ],
+      "size": 9983368
+    },
+    "linux-x86_64": {
+      "digest": "fab01fef427be8077ecaed7d12e47801495c22ca2d2797941186b149d9347043",
+      "hash": "blake3",
+      "path": "agent-browser",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/vercel-labs/agent-browser/releases/download/v0.27.0/agent-browser-linux-musl-x64"
+        }
+      ],
+      "size": 11420912
+    }
+  }
+}

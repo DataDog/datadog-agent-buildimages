@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 21299384
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 22458552
+      }
+    }
+  },
+  "name": "gh-dash",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "ee0abaaf645ac0f98008ccc0d4dda87803943beda8eb89db86f58ad802918185",
+      "hash": "blake3",
+      "path": "gh-dash",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dlvhdr/gh-dash/releases/download/v4.24.1/gh-dash_v4.24.1_linux-arm64"
+        }
+      ],
+      "size": 21299384
+    },
+    "linux-x86_64": {
+      "digest": "72de8482da7643946801552e74bde25d707fdae2f71e8279c01f9ac9ff00c9ce",
+      "hash": "blake3",
+      "path": "gh-dash",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/dlvhdr/gh-dash/releases/download/v4.24.1/gh-dash_v4.24.1_linux-amd64"
+        }
+      ],
+      "size": 22458552
+    }
+  }
+}

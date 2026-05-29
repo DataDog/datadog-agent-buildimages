@@ -19,7 +19,4 @@ git config --global push.autoSetupRemote true
 # TODO: Change the pattern to `${DD_REPO_ROOT}/*` when we upgrade
 #       Git to 2.46.0+ for `safe.directory` improvements, see:
 #       https://github.com/git/git/blob/master/Documentation/RelNotes/2.46.0.adoc#fixes-since-v245
-cat <<EOF >> "${HOME}/.gitconfig"
-[safe]
-directory = *
-EOF
+git config --global --add safe.directory "*"

@@ -25,21 +25,66 @@ python3 /tools/dotslash/generate.py \
     --tools-file /mnt/tools.txt \
     --ignore-unavailable
 
+set-ev SKIM_DEFAULT_COMMAND "fd ."
+
 (
   umask 0002
-  procs --gen-config > "${HOME}/.procs.toml"
+  procs_config_dir="${DD_BUILD_CONFIG_ROOT}/procs"
+  mkdir -p "${procs_config_dir}"
+
   # Necessary for working in our containers
-  sed -i 's/show_self_parents = false/show_self_parents = true/' "${HOME}/.procs.toml"
+  cat > "${procs_config_dir}/config.toml" <<'EOF'
+show_self_parents = true
+EOF
 )
 
-# Configure Git to use delta as the pager:
-# https://dandavison.github.io/delta/get-started.html
 (
   umask 0002
-  git config --global core.pager delta
-  git config --global interactive.diffFilter "delta --color-only"
-  git config --global delta.navigate true
-  git config --global merge.conflictStyle zdiff3
+  # TODO: Use our path when `XDG_CONFIG_HOME` is supported.
+  # https://github.com/bootandy/dust/issues/577
+  # dust_config_dir="${DD_BUILD_CONFIG_ROOT}/dust"
+  dust_config_dir="${HOME}/.config/dust"
+  mkdir -p "${dust_config_dir}"
+
+  # Note that the option names aren't identical to the command-line options.
+  # https://github.com/bootandy/dust/blob/master/src/config.rs
+  cat > "${dust_config_dir}/config.toml" <<'EOF'
+no-bars = true
+collapse = [".git"]
+EOF
+)
+
+(
+  umask 0002
+  git_config_dir="${DD_BUILD_CONFIG_ROOT}/git"
+  delta_gitconfig="${git_config_dir}/delta"
+  jj_config_dir="${DD_BUILD_CONFIG_ROOT}/jj"
+  mkdir -p "${git_config_dir}" "${jj_config_dir}"
+
+  # Configure Git to use diffnav as the diff pager and Delta for everything else
+  cat > "${delta_gitconfig}" <<'EOF'
+[core]
+pager = delta
+[pager]
+diff = diffnav
+[interactive]
+diffFilter = delta --color-only
+[merge]
+conflictStyle = zdiff3
+[delta]
+navigate = true
+hyperlinks = true
+true-color = always
+EOF
+  git config --global include.path "${delta_gitconfig}"
+
+  # Configure Jujutsu to use Delta:
+  # https://dandavison.github.io/delta/configuration.html#jujutsu
+  cat > "${jj_config_dir}/config.toml" <<'EOF'
+[ui]
+pager = "delta"
+diff-formatter = ":git"
+EOF
 )
 
 curl_opts=(
@@ -52,7 +97,10 @@ curl_opts=(
 )
 
 (
+  # Ensure that these are installed to the system-wide bin directory rather than
+  # a directory persisted for users.
   export GOBIN=/usr/local/bin
+
   # The following tools are required for Visual Studio Code's Go extension:
   # https://github.com/golang/vscode-go#quick-start
   #
@@ -64,7 +112,6 @@ curl_opts=(
 
   # Optional tools for Visual Studio Code's Go extension:
   # https://github.com/golang/vscode-go/wiki/tools
-  go install github.com/go-delve/delve/cmd/dlv@latest
   go install github.com/josharian/impl@latest
   go install github.com/fatih/gomodifytags@latest
 )
@@ -75,3 +122,8 @@ install-binary \
     --ignore-digests \
     --url "https://github.com/golangci/golangci-lint/releases/download/v{{version}}/golangci-lint-{{version}}-linux-${short_arch}.tar.gz" \
     --name "golangci-lint"
+
+# We need to add the binary directory to PATH because `ddtool` creates helpers that are symlinked to and live
+# alongside itself which are expected to be available to users after running the helper installation command.
+ddtool_binary_dir="$(dirname "$(dotslash -- fetch /usr/local/bin/ddtool)")"
+path-append "${ddtool_binary_dir}"
