@@ -24,6 +24,16 @@
       "matchStrings": ["DATADOG_CI_VERSION\\s*=\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""],
       "depNameTemplate": "DataDog/datadog-ci",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["docker-bake\\.hcl", "agent-deploy/Dockerfile"],
+      "matchStrings": ["DATADOG_PACKAGES_VERSION\\s*=\\s*\"?(?<currentDigest>[a-f0-9]{40})\"?"],
+      "currentValueTemplate": "main",
+      "depNameTemplate": "datadog-packages",
+      "packageNameTemplate": "https://github.com/DataDog/datadog-packages",
+      "datasourceTemplate": "git-refs",
+      "registryUrlTemplate": ""
     }
   ]
 }

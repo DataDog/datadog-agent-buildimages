@@ -4,6 +4,8 @@ ARG BUILDENV_REGISTRY
 FROM registry.ddbuild.io/dd-octo-sts:${DD_OCTO_STS_VERSION} AS dd_octo_sts_builder
 # Dummy stage to download dd-octo-sts as it is distributed as a container image
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 
 ARG PY3_VERSION
@@ -118,3 +120,5 @@ RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/
 ARG DD_OCTO_STS_VERSION
 COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
+
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
