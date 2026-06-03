@@ -7,10 +7,14 @@ bits_home="/home/bits"
 
 groupadd --gid 501 dog
 useradd --gid dog --uid 501 --home-dir "${dog_home}" --shell /bin/bash --groups users,build-shared,sudo dog
-useradd --gid dog --uid 2000 --home-dir "${bits_home}" --shell /usr/local/bin/zsh --groups users,build-shared,sudo bits
-if getent group docker >/dev/null; then
-    usermod -a -G docker bits
-fi
+
+# bits user is NOT pre-baked here. The workspace base devcontainer feature
+# (dd-source domains/devcontainers/features/base/install.sh:47) creates bits
+# at provision time via `useradd --uid 2000 -g dog bits`. Pre-baking bits caused
+# a collision because the base feature's useradd is unconditional. The agent's
+# own devcontainer feature (install.sh) adds bits to build-shared and docker
+# after the base feature runs, via `usermod -aG build-shared bits`.
+# See: .claude/plans/workspace-s2-group-ownership.md for full rationale.
 
 seed_home() {
     local home="$1"
@@ -24,15 +28,11 @@ seed_home() {
 }
 
 seed_home "${dog_home}" dog dog
-seed_home "${bits_home}" bits dog
 
 install -d -m 0755 -o dog -g dog "${dog_home}/sbin"
-install -d -m 700 -o bits -g dog "${bits_home}/.ssh"
 
 passwd -d dog
-passwd -d bits
 usermod -U dog
-usermod -U bits
 
 # Workspaces historically grants sudo through the dog group. Keep that contract
 # while the build image's sudo group rule covers local dev-env behavior.
