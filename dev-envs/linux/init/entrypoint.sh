@@ -58,6 +58,14 @@ if [[ ! -f "${startup_indicator}" ]]; then
         exit 1
     fi
 
+    # Make the target home look like a normal user-owned home before startup creates runtime state.
+    # As this is only necessary for the initial run of the container, we first verify the correct owner
+    # to potentially improve the time it takes to restart.
+    if [[ "$(stat -c %U "${TARGET_HOME}")" != "${TARGET_USER}" ]]; then
+        chown -R "${TARGET_USER}:" "${TARGET_HOME}"
+    fi
+    chmod 0755 "${TARGET_HOME}"
+
     # Persist environment for SSH sessions
     env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
 
