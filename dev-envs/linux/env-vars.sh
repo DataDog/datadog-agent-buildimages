@@ -27,3 +27,7 @@ set-ev GEM_PATH "/opt/dd/rvm/gems/${ruby_version_line}:/opt/dd/rvm/gems/${ruby_v
 "${HOME}/.scripts/path-prepend" "/opt/dd/rvm/rubies/${ruby_version_line}/bin"
 "${HOME}/.scripts/path-prepend" "/opt/dd/rvm/gems/${ruby_version_line}@global/bin"
 "${HOME}/.scripts/path-prepend" "/opt/dd/rvm/gems/${ruby_version_line}/bin"
+
+# Claude Code and Codex CLI: keep global state under XDG config (seeded from image defaults).
+"${HOME}/.scripts/set-ev" CLAUDE_CONFIG_DIR "${XDG_CONFIG_HOME}/claude"
+"${HOME}/.scripts/set-ev" CODEX_HOME "${XDG_CONFIG_HOME}/codex"

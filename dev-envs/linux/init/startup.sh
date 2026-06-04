@@ -27,6 +27,22 @@ if [[ -d "${DD_SHARED_DIR}/shell/nu" ]]; then
     done
 fi
 
+if [[ -d "${DD_SHARED_DIR}/shell/claude" ]]; then
+    claude_config_dir="${XDG_CONFIG_HOME}/claude"
+    mkdir -p "${claude_config_dir}"
+    find "${DD_SHARED_DIR}/shell/claude" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+        ln -sf "${state_file}" "${claude_config_dir}/$(basename "${state_file}")"
+    done
+fi
+
+if [[ -d "${DD_SHARED_DIR}/shell/codex" ]]; then
+    codex_home="${XDG_CONFIG_HOME}/codex"
+    mkdir -p "${codex_home}"
+    find "${DD_SHARED_DIR}/shell/codex" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+        ln -sf "${state_file}" "${codex_home}/$(basename "${state_file}")"
+    done
+fi
+
 # Remove annoying container indicator from prompt:
 # https://github.com/starship/starship/issues/6174
 if [[ -f "${DD_SHARED_DIR}/shell/starship.toml" ]]; then
@@ -38,6 +54,8 @@ disabled = true
 EOF
 # https://github.com/starship/starship/issues/896
 set-ev STARSHIP_CONFIG "${XDG_CONFIG_HOME}/starship.toml"
+
+
 
 # Persist remote SSH servers for VS Code-based editors
 vscode_editors_root="${XDG_DATA_HOME}/editors"
