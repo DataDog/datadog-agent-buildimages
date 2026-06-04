@@ -13,34 +13,43 @@ if [[ -z "${TARGET_HOME}" ]]; then
     TARGET_HOME="${HOME}"
 fi
 
+startup_indicator="/.started"
+
+# On first start, realign the image-provided user to the host's UID/GID before anything
+# else runs. This must happen up front because the startup below writes host-owned
+# files, and because editors and CLIs exec in as this user as soon as the container
+# runs, so it must already exist with the right IDs. The image normally pre-creates the
+# user, so this only adjusts its IDs; the fallback handles images that do not.
+if [[ ! -f "${startup_indicator}" ]]; then
+    TARGET_UID="${HOST_UID:-}"
+    TARGET_GID="${HOST_GID:-${TARGET_UID}}"
+
+    if ! id "${TARGET_USER}" >/dev/null 2>&1; then
+        # Create the user when the image did not pre-create it.
+        TARGET_UID="${TARGET_UID:-1000}"
+        TARGET_GID="${TARGET_GID:-${TARGET_UID}}"
+        getent group "${TARGET_GID}" >/dev/null || groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
+        useradd -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
+    elif [[ -n "${TARGET_UID}" ]]; then
+        # Realign the pre-created user's GID and then its UID to the host's.
+        if [[ "$(id -g "${TARGET_USER}")" != "${TARGET_GID}" ]]; then
+            if getent group "${TARGET_GID}" >/dev/null; then
+                usermod -g "${TARGET_GID}" "${TARGET_USER}"
+            else
+                groupmod -g "${TARGET_GID}" "$(id -gn "${TARGET_USER}")"
+            fi
+        fi
+        if [[ "$(id -u "${TARGET_USER}")" != "${TARGET_UID}" ]]; then
+            usermod -u "${TARGET_UID}" "${TARGET_USER}"
+        fi
+    fi
+    TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6)"
+fi
+
 # Reassert shared-root metadata on every start so it survives root recreation.
 /init/ensure-shared-roots.sh
 
-startup_indicator="/.started"
 if [[ ! -f "${startup_indicator}" ]]; then
-    if ! id "${TARGET_USER}" >/dev/null 2>&1; then
-        # Choose a UID higher than the one used by the base build image's default user (1001)
-        TARGET_UID="${HOST_UID:-1002}"
-        TARGET_GID="${HOST_GID:-${TARGET_UID}}"
-
-        # Create the primary group if the host GID is not already present.
-        if ! getent group "${TARGET_GID}" >/dev/null; then
-            groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
-        fi
-        useradd -u "${TARGET_UID}" -g "${TARGET_GID}" "${TARGET_USER}"
-        TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6)"
-
-        supplemental_groups=(
-            # Write access to shared build directories
-            build-shared
-            # Allow passwordless sudo
-            sudo
-        )
-        for group in "${supplemental_groups[@]}"; do
-            usermod -a -G "${group}" "${TARGET_USER}"
-        done
-    fi
-
     # Allow passwordless SSH login for the target user
     passwd -d "${TARGET_USER}"
     usermod -U "${TARGET_USER}"
