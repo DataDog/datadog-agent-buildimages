@@ -38,25 +38,47 @@ OH_MY_ZSH_COMMIT="b26b5002633e865b70e17933536fe4dc99127898"
 
 (
     umask 0002
-    mkdir -p "${HOME}/.oh-my-zsh"
-    curl -fsSL "https://github.com/ohmyzsh/ohmyzsh/archive/${OH_MY_ZSH_COMMIT}.tar.gz" |
-        tar -xz -C "${HOME}/.oh-my-zsh" --strip-components 1
+    zsh_config_dir="${DD_BUILD_CONFIG_ROOT}/zsh"
+    omz_config="${zsh_config_dir}/oh-my-zsh.zsh"
+    mkdir -p "${zsh_config_dir}"
+    cat <<EOF > "${omz_config}"
+export ZSH="\${XDG_DATA_HOME}/oh-my-zsh"
+OH_MY_ZSH_COMMIT="${OH_MY_ZSH_COMMIT}"
 
-    mkdir -p "${HOME}/.config/zsh"
-    cat <<'EOF' > "${HOME}/.config/zsh/oh-my-zsh.zsh"
-export ZSH="${HOME}/.oh-my-zsh"
+if [[ ! -f "\${ZSH}/oh-my-zsh.sh" ]]; then
+    echo "Setting up Oh My Zsh ..."
+    zsh_data_dir="\$(dirname "\${ZSH}")"
+    mkdir -p "\${zsh_data_dir}"
+    omz_tmp="\$(mktemp -d "\${zsh_data_dir}/oh-my-zsh.tmp.XXXXXX")"
+    # Keep full ancestry so Oh My Zsh updates can fast-forward cleanly from the pinned commit.
+    git clone --quiet --filter=blob:none --single-branch --no-checkout https://github.com/ohmyzsh/ohmyzsh.git "\${omz_tmp}"
+    git -C "\${omz_tmp}" reset --quiet --hard "\${OH_MY_ZSH_COMMIT}"
+    # Oh My Zsh's compaudit refuses to load completions from group/other-writable directories.
+    chmod -R go-w "\${omz_tmp}"
+    rm -rf "\${ZSH}"
+    mv "\${omz_tmp}" "\${ZSH}"
+fi
+
 ZSH_THEME="robbyrussell"
-zstyle ':omz:update' mode disabled
 plugins=(
     git
 )
 
-source "${ZSH}/oh-my-zsh.sh"
-EOF
+# Use append-only history for bind-mounted history files whose ownership may differ.
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+unsetopt HIST_SAVE_BY_COPY
+unsetopt SHARE_HISTORY
 
-    # Set up Oh My Zsh and Starship toggles.
-    cat <<'EOF' >> "${HOME}/.zshrc"
-source "${HOME}/.config/zsh/oh-my-zsh.zsh"
-# eval "$(starship init zsh)"
+source "\${ZSH}/oh-my-zsh.sh"
 EOF
 )
+
+# Set up Oh My Zsh and Starship toggles.
+cat <<'EOF' >> "${HOME}/.zshrc"
+# Set up Oh My Zsh.
+source "${XDG_CONFIG_HOME}/zsh/oh-my-zsh.zsh"
+
+# Set up Starship.
+# eval "$(starship init zsh)"
+EOF

@@ -14,8 +14,8 @@ USER root
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# Set up HOME as root-owned and build-shared writable so host-mapped users
-# with unknown UID/GID can use it without chown.
+# Set up HOME during the image build. The entrypoint assigns it to the
+# runtime target user before startup creates user state.
 ENV HOME=/home/dd
 ENV PATH="${HOME}/.local/bin:${PATH}"
 RUN mkdir -p "${HOME}" && \
