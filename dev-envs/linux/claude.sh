@@ -12,7 +12,7 @@ mkdir -p "${CLAUDE_CONFIG_DIR}"
 claude mcp add -s user --transport http "ddci-mcp-prod" \
   'https://ddci-mcp.mcp.us1.ddbuild.io/internal/mcp'
 
-claude mcp add datadog-google-workspace -s user--transport http https://google-workspace-mcp-server-834963730936.us-central1.run.app/mcp
+claude mcp add datadog-google-workspace -s user --transport http https://google-workspace-mcp-server-834963730936.us-central1.run.app/mcp
 
 claude mcp add --transport http -s user atlassian https://mcp.atlassian.com/v1/mcp
 
