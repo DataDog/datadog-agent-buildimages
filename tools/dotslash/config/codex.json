@@ -1,0 +1,53 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 60432262
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 87916443
+      }
+    }
+  },
+  "name": "codex",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "fb2eeeb03c48950fb361c77d8a65c32b56aafdc1a1cc68e3ebd7b0db2c5ef117",
+      "format": "tar.zst",
+      "hash": "blake3",
+      "path": "bin/codex",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/openai/codex/releases/download/rust-v0.137.0/codex-package-aarch64-unknown-linux-musl.tar.zst"
+        },
+        {
+          "name": "codex-package-aarch64-unknown-linux-musl.tar.zst",
+          "repo": "openai/codex",
+          "tag": "rust-v0.137.0",
+          "type": "github-release"
+        }
+      ],
+      "size": 60432262
+    },
+    "linux-x86_64": {
+      "digest": "717bb1c97ef8e98d440208b052da211329f1280dbb3d37722c622afff03591ee",
+      "format": "tar.zst",
+      "hash": "blake3",
+      "path": "bin/codex",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/openai/codex/releases/download/rust-v0.137.0/codex-package-x86_64-unknown-linux-musl.tar.zst"
+        },
+        {
+          "name": "codex-package-x86_64-unknown-linux-musl.tar.zst",
+          "repo": "openai/codex",
+          "tag": "rust-v0.137.0",
+          "type": "github-release"
+        }
+      ],
+      "size": 65318495
+    }
+  }
+}
