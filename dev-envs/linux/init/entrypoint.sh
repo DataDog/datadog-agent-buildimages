@@ -19,7 +19,8 @@ startup_indicator="/.started"
 # else runs. This must happen up front because the startup below writes host-owned
 # files, and because editors and CLIs exec in as this user as soon as the container
 # runs, so it must already exist with the right IDs. The image normally pre-creates the
-# user, so this only adjusts its IDs; the fallback handles images that do not.
+# user, so this only adjusts its IDs; the fallback handles images that do not. The
+# workspace variant pins a fixed UID, so it is exempt from this remap.
 if [[ ! -f "${startup_indicator}" ]]; then
     TARGET_UID="${HOST_UID:-}"
     TARGET_GID="${HOST_GID:-${TARGET_UID}}"
@@ -30,7 +31,7 @@ if [[ ! -f "${startup_indicator}" ]]; then
         TARGET_GID="${TARGET_GID:-${TARGET_UID}}"
         getent group "${TARGET_GID}" >/dev/null || groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
         useradd -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
-    elif [[ -n "${TARGET_UID}" ]]; then
+    elif [[ -n "${TARGET_UID}" && -z "${IN_WORKSPACE:-}" ]]; then
         # Realign the pre-created user's GID and then its UID to the host's.
         if [[ "$(id -g "${TARGET_USER}")" != "${TARGET_GID}" ]]; then
             if getent group "${TARGET_GID}" >/dev/null; then
