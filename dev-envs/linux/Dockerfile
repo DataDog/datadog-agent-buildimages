@@ -16,7 +16,7 @@ ENV LANG=C.UTF-8
 
 # Set up HOME during the image build. The entrypoint assigns it to the
 # runtime target user before startup creates user state.
-ENV HOME=/home/dd
+ARG HOME=/home/dd
 ENV PATH="${HOME}/.local/bin:${PATH}"
 RUN mkdir -p "${HOME}" && \
     chgrp build-shared "${HOME}" && \
@@ -83,10 +83,9 @@ RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
 # COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
-ENV HOME=
 ENV IN_WORKSPACE=1
-ENV XDG_BIN_HOME="${HOME}/.local/bin"
-# ENV PATH="${XDG_BIN_HOME}:${PATH}"
+RUN echo "$HOME"
+RUN echo "$XDG_BIN_HOME"
 
 # # Set up OpenSSH server
 # # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
