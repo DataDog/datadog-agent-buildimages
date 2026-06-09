@@ -83,7 +83,7 @@ RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
 # COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
-ENV HOME=/home/bits
+ENV HOME=
 ENV IN_WORKSPACE=1
 ENV XDG_BIN_HOME="${HOME}/.local/bin"
 # ENV PATH="${XDG_BIN_HOME}:${PATH}"
