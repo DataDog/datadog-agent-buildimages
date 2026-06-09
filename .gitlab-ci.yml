@@ -360,14 +360,6 @@ trigger_tests:
   after_script:
     - docker rmi registry.ddbuild.io/ci/datadog-agent-buildimages/${IMAGE}${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-$($CI_COMMIT_SHA.SubString(0,8))
 
-build_windows_1809_x64:
-  extends: .winbuild
-  tags: ["windows-v2:1809"]
-  variables:
-    DOCKERFILE: windows/Dockerfile
-    IMAGE: windows_1809_x64
-    DD_TARGET_ARCH: x64
-
 build_windows_ltsc2022_x64:
   extends: .winbuild
   tags: ["windows-v2:2022"]
@@ -463,13 +455,6 @@ release_system-probe_arm64:
   extends: .release
   variables:
     IMAGE: system-probe_arm64
-
-release_windows_1809_x64:
-  extends: .winrelease
-  variables:
-    IMAGE: windows_1809_x64
-    DOCKERHUB_IMAGE: agent-buildimages-windows_x64
-    DOCKERHUB_TAG_PREFIX: "1809"
 
 release_windows_ltsc2022_x64:
   extends: .winrelease
