@@ -8,7 +8,6 @@ btm
 claude
 dd-gitsign
 dd-pkg
-ddtool
 delta
 diffnav
 dlv
