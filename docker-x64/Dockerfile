@@ -4,7 +4,7 @@ ARG BUILDENV_REGISTRY
 FROM registry.ddbuild.io/dd-octo-sts:${DD_OCTO_STS_VERSION} AS dd_octo_sts_builder
 # Dummy stage to download dd-octo-sts as it is distributed as a container image
 
-FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.4 AS dd_pkg
 
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 

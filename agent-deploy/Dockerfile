@@ -14,7 +14,7 @@ ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
 ARG DATADOG_PACKAGES_VERSION=42796a26609b975947ddaafe1672dd04f47418ea
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
-FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.4 AS dd_pkg
 
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
 
