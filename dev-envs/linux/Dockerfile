@@ -84,8 +84,10 @@ RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
 ENV IN_WORKSPACE=1
+ENV XDG_DATA_HOME=
 RUN echo "$HOME"
 RUN echo "$XDG_BIN_HOME"
+RUN echo "$XDG_DATA_HOME"
 
 # # Set up OpenSSH server
 # # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
