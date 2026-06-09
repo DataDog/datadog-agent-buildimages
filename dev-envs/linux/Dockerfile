@@ -83,10 +83,10 @@ RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
 # COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
-# ENV HOME=/home/bits
+ENV HOME=/home/bits
 ENV IN_WORKSPACE=1
-# ENV XDG_BIN_HOME="${HOME}/.local/bin"
-# ENV PATH="${XDG_BIN_HOME}:${PATH}"
+ENV XDG_BIN_HOME="${HOME}/.local/bin"
+ENV PATH="${XDG_BIN_HOME}:${PATH}"
 
 # # Set up OpenSSH server
 # # IMPORTANT: make sure this comes last so Git operations don't use SSH during building

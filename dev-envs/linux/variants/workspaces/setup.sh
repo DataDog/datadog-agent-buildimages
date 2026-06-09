@@ -17,7 +17,7 @@ seed_home() {
     local owner="$2"
     local group="$3"
     install -d -m 0755 -o "${owner}" -g "${group}" "${home}"
-    cp -a /home/dd/. "${home}/"
+    # cp -a /home/dd/. "${home}/"
     chown -R "${owner}:${group}" "${home}"
     chmod -R u+rwX,go+rX "${home}"
     chmod 0755 "${home}"
