@@ -11,6 +11,9 @@ useradd --gid dog --uid 501 --home-dir "${dog_home}" --shell /bin/bash --groups 
 # if getent group docker >/dev/null; then
 #     usermod -a -G docker bits
 # fi
+    
+env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/profile.d/dd-agent-workspace-env.sh
+
 
 seed_home() {
     local home="$1"
