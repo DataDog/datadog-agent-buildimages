@@ -1,6 +1,6 @@
 . .\helpers.ps1
-$Version = "6.0.100"
-$url = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe"
+$Version = "8.0.302"
+$url = "https://download.visualstudio.microsoft.com/download/pr/b6f19ef3-52ca-40b1-b78b-0712d3c8bf4d/426bd0d376479d551ce4d5ac0ecf63a5/dotnet-sdk-8.0.302-win-x64.exe"
 
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component "dotnetcore" -Keyname "DownloadFile" -TargetValue $url
 if($isInstalled -and $isCurrent){
@@ -14,7 +14,7 @@ if(-not $isCurrent){
 Write-Host -ForegroundColor Green "Installing dotnetcore from $($Url)"
 
 $out = "$($PSScriptRoot)\dotnetcoresdk.exe"
-$sha256 = "1fcf6b9efd37d25e75b426cd8430eb3c006092bee07d748967f1dbfc3f9a0190"
+$sha256 = "BC6019E0192EDD180CA7B299A16B95327941B0B53806CDB125BE194AEA12492D"
 
 Get-RemoteFile -RemoteFile $url -LocalFile $out -VerifyHash $sha256
 Write-Host -ForegroundColor Green Downloading $Url to $out
