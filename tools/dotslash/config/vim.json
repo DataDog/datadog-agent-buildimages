@@ -1,0 +1,39 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 4405480
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 4351032
+      }
+    }
+  },
+  "name": "vim",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "6ee3d552839693405845de6e0b91f4790c3998762912210d47d1a779ecb388f9",
+      "hash": "blake3",
+      "path": "vim",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/heywoodlh/vim-builds/releases/download/9.2/vim-arm64"
+        }
+      ],
+      "size": 4405480
+    },
+    "linux-x86_64": {
+      "digest": "4c6487a9434231e3dd144c15ff6f4cbaf201b003e1efd1ddc6526c8ab12bd5a6",
+      "hash": "blake3",
+      "path": "vim",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/heywoodlh/vim-builds/releases/download/9.2/vim-x86_64"
+        }
+      ],
+      "size": 4351032
+    }
+  }
+}

@@ -39,6 +39,7 @@ starship
 staticcheck
 uv
 uvx
+vim
 watchexec
 workspaces-tool-helper
 ya
