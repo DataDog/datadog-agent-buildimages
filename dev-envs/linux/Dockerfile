@@ -44,6 +44,9 @@ RUN --mount=type=bind,src=./tools.sh,dst=/mnt/tools.sh \
     --mount=type=bind,src=./tools.txt,dst=/mnt/tools.txt \
     --mount=type=bind,from=dotslash,target=/tools/dotslash \
     /mnt/tools.sh
+
+# Set up pass
+RUN --mount=type=bind,src=./pass.sh,dst=/mnt/pass.sh /mnt/pass.sh
 # Set up Git
 RUN --mount=type=bind,src=./git.sh,dst=/mnt/git.sh /mnt/git.sh
 # Set up dda
