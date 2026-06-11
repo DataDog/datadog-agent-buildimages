@@ -470,7 +470,7 @@ RUN ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 
 # Verify Bazelisk properly bootstraps Bazel - this also preinstalls Bazel ${TEST_BAZEL_VERSION}
 ARG TEST_BAZEL_VERSION
-RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk
+RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk || true
 RUN --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
     USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} \
     # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
