@@ -316,7 +316,7 @@ target "_fake_linux-ci" {
   # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
   secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
   cache-from = [linux_cache_details_branch, linux_cache_details_main]
-  cache-to   = [linux_cache_details_branch]
+  cache-to   = [linux_cache_details_branch, linux_cache_details_main]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
   output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
   args       = {
