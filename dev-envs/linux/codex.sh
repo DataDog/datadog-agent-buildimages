@@ -16,4 +16,7 @@ url = "https://google-workspace-mcp-server-834963730936.us-central1.run.app/mcp"
 
 [mcp_servers.ddci]
 url = "https://ddci-mcp.mcp.us1.ddbuild.io/internal/mcp"
+
+[mcp_servers.datadog]
+url = "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp?toolsets=all"
 EOF
