@@ -45,8 +45,11 @@ RUN --mount=type=bind,src=./tools.sh,dst=/mnt/tools.sh \
     --mount=type=bind,src=./tools.txt,dst=/mnt/tools.txt \
     --mount=type=bind,from=dotslash,target=/tools/dotslash \
     /mnt/tools.sh
+
 # Claude DotSlash shim is installed by tools.sh; claude.sh may run `claude mcp add` etc.
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
+# Set up pass
+RUN --mount=type=bind,src=./pass.sh,dst=/mnt/pass.sh /mnt/pass.sh
 # Set up Git
 RUN --mount=type=bind,src=./git.sh,dst=/mnt/git.sh /mnt/git.sh
 # Set up dda

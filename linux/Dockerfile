@@ -281,7 +281,7 @@ FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages_builder
 # Dummy stage to download datadog-packages as it is distributed as a container image
 
-FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg_builder
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.4 AS dd_pkg_builder
 # Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
 
 FROM common_base AS final
@@ -549,11 +549,29 @@ RUN if [ -n "$(find "${DD_BUILD_DATA_ROOT}" -mindepth 1 -print -quit 2>/dev/null
         exit 1; \
     fi
 
-# Default non-root user for CI and interactive use.
-# 1000 is the default UID for the first user on Debian-based systems.
-RUN useradd -m -u 1001 -g build-shared -G sudo -s /bin/bash dd-build && \
-    cp /root/.bashrc /home/dd-build/.bashrc && \
-    chown dd-build:build-shared /home/dd-build/.bashrc
+# Remove the unused `ubuntu` user to free UID 1000 (Debian's default first-user UID)
+# for `dd` below.
+RUN userdel -r ubuntu 2>/dev/null || true
+
+# No account should occupy the human UID range (>= 1000) when `dd` claims UID 1000
+# below. Fail the build if a future base image or tool introduces one.
+RUN unexpected="$(getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 { print $1 " (uid " $3 ")" }')"; \
+    if [ -n "${unexpected}" ]; then \
+        echo "Unexpected non-system account(s) present before creating dd: ${unexpected}" >&2; \
+        exit 1; \
+    fi
+
+# This single non-root user serves both CI builds and developer environments. It joins
+# `build-shared` (shared build dirs) and `sudo`, and its primary group is its own `dd`
+# rather than `build-shared` so the dev-env entrypoint can remap its GID to the host's
+# without changing the shared group's GID. UID 1000 is Debian's first-user UID, so the
+# common Linux host needs no remap. Root's `.bashrc` is deliberately not copied into its
+# home because it sources RVM with the non-interactive early-return stripped, which
+# would load RVM in the dev environment's own non-interactive build shells (which share
+# this home) and fail on an unset $USER under `set -u`. The CI user's shell environment
+# belongs in /etc/profile.d.
+RUN groupadd -g 1000 dd && \
+    useradd -m -u 1000 -g dd -G build-shared,sudo -s /bin/bash dd
 
 # Set up environment
 ARG CTNG_ARCH
@@ -614,7 +632,7 @@ LABEL maintainer="DataDog"
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
-# USER dd-build
-# WORKDIR /home/dd-build
+# USER dd
+# WORKDIR /home/dd
 
 ENTRYPOINT ["/entrypoint.sh"]

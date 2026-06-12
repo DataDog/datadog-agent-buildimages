@@ -84,6 +84,19 @@ if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
     git config --global user.email "${GIT_AUTHOR_EMAIL}"
 fi
 
+# Configure pass
+# NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
+# homedir. This ensures we don't conflict with a forwarded gpg-agent
+export PASS_GPG_HOME=${XDG_CONFIG_HOME}/.config/password-store/gpg
+export PASSWORD_STORE_GPG_OPTS="--homedir ${PASS_GPG_HOME}"
+export PASSWORD_STORE_DIR="${XDG_CONFIG_HOME}/.config/password-store"
+mkdir -m 700 -p ${PASS_GPG_HOME}
+
+gpg --homedir ${PASS_GPG_HOME} --batch --passphrase '' --quick-generate-key --yes password-store
+pass init "password-store"
+set-ev PASSWORD_STORE_GPG_OPTS "--homedir \"${PASS_GPG_HOME}\""
+set-ev PASSWORD_STORE_DIR "\"${PASSWORD_STORE_DIR}\""
+
 # Reset saved data/cache directories from previous runs
 dda config restore
 
