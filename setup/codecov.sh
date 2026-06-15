@@ -25,7 +25,7 @@ else
 fi
 
 # Integrity checking the uploader
-curl -fsSL https://keybase.io/codecovsecops/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+curl https://keybase.io/codecovsecops/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
 curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/${CODECOV_ARCH}/codecov
 curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/${CODECOV_ARCH}/codecov.SHA256SUM
 curl -Os https://uploader.codecov.io/v${CODECOV_VERSION}/${CODECOV_ARCH}/codecov.SHA256SUM.sig
