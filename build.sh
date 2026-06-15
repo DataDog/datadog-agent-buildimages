@@ -90,6 +90,11 @@ if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
     ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION --docker-metadata-file ${METADATA_FILE}
 fi
 
+# Reject images that picked up a foreign accelerator layer.
+if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
+    ./verify-image-layers.sh registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION
+fi
+
 # Statistics
 if [[ "$CI_PIPELINE_SOURCE" != "schedule" ]]; then
     crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION | jq
