@@ -61,6 +61,7 @@ push_to_datadog_agent:
     - source /root/.bashrc
     - set -o pipefail
     - REF=$(echo "$CI_COMMIT_MESSAGE" | grep -oP '(?<=\[push_to_datadog_agent\]\[)[^\]]+' || echo 'main')
+    - echo "Targeting branch '${REF}' in datadog-agent"
     # Get the current go version from the go.env file
     - >
       for line in $(cat go.env); do
