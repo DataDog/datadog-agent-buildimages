@@ -39,4 +39,4 @@ claude mcp add datadog-google-workspace -s user --transport http https://google-
 
 claude mcp add --transport http -s user atlassian https://mcp.atlassian.com/v1/mcp
 
-claude mcp add --transport http --client-id 1601185624273.8899143856786 --callback-port 3118 slack https://mcp.slack.com/mcp
+claude mcp add --transport http -s user --client-id 1601185624273.8899143856786 --callback-port 3118 slack https://mcp.slack.com/mcp
