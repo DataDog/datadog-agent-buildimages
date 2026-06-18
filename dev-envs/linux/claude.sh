@@ -8,6 +8,25 @@ umask 0002
 export CLAUDE_CONFIG_DIR="${DD_BUILD_CONFIG_ROOT}/claude"
 mkdir -p "${CLAUDE_CONFIG_DIR}"
 
+cat <<'EOF' > "${CLAUDE_CONFIG_DIR}/settings.json"
+{
+  "apiKeyHelper": "ddtool auth token rapid-ai-platform --datacenter us1.ddbuild.io",
+  "extraKnownMarketplaces": {
+    "datadog": {
+      "source": {
+        "source": "github",
+        "repo": "DataDog/claude-marketplace"
+      }
+    }
+  },
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://ai-gateway.us1.ddbuild.io",
+    "ANTHROPIC_CUSTOM_HEADERS": "source: claude-code\norg-id: 2\nprovider: anthropic\nclaude-code: true",
+    "CLAUDE_CODE_API_KEY_HELPER_TTL_MS": 7200000
+  }
+}
+EOF
+
 # `claude` comes from tools.sh (DotSlash). Add MCP servers for the image here, for example:
 
 claude mcp add -s user --transport http "datadog" "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp?toolsets=all"
