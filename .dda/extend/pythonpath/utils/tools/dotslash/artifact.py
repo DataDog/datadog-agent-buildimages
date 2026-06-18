@@ -64,7 +64,7 @@ class DotSlashArtifact:
                 case "tar.xz":
                     uncompressed = _read_tar(fileobj=temp_file, path=self.__config.path, mode="r:xz")
                 case "tar.zst":
-                    uncompressed = _read_tar(fileobj=temp_file, path=self.__config.path, mode="r:zst")
+                    uncompressed = _read_tar_zst(fileobj=temp_file, path=self.__config.path)
                 case "zip":
                     uncompressed = _read_zip(fileobj=temp_file, path=self.__config.path)
                 case _:
@@ -72,6 +72,18 @@ class DotSlashArtifact:
                     raise ValueError(msg)
 
             return ArtifactMetadata(digest=hasher.hexdigest(), size=size, uncompressed=uncompressed)
+
+
+def _read_tar_zst(*, fileobj: BinaryIO, path: str) -> UncompressedArtifactMetadata:
+    """Decompress zstd then parse the tar (``tarfile``'s ``r:zst`` is not always available)."""
+    import io
+
+    import zstandard
+
+    fileobj.seek(0)
+    compressed = fileobj.read()
+    decompressed = zstandard.ZstdDecompressor().decompress(compressed)
+    return _read_tar(fileobj=io.BytesIO(decompressed), path=path, mode="r:")
 
 
 def _read_tar(*, fileobj: BinaryIO, path: str, mode: str) -> UncompressedArtifactMetadata:

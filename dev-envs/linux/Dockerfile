@@ -33,6 +33,7 @@ RUN --mount=type=bind,src=./nushell.sh,dst=/mnt/nushell.sh \
     --mount=type=bind,src=./scripts/set-ev.sh,dst=/mnt/scripts/set-ev.sh \
     --mount=type=bind,src=./scripts/path-append.sh,dst=/mnt/scripts/path-append.sh \
     /mnt/nushell.sh
+RUN --mount=type=bind,src=./codex.sh,dst=/mnt/codex.sh /mnt/codex.sh
 # 2. Set up scripts into ~/.scripts and update PATH accordingly, (only explicit access to ~/.scripts)
 RUN --mount=type=bind,src=./scripts.sh,dst=/mnt/scripts.sh --mount=type=bind,src=./scripts/,dst=/mnt/scripts/ /mnt/scripts.sh
 # 3. Proceed with subsequent steps relying solely on the installed scripts in PATH.
@@ -45,6 +46,8 @@ RUN --mount=type=bind,src=./tools.sh,dst=/mnt/tools.sh \
     --mount=type=bind,from=dotslash,target=/tools/dotslash \
     /mnt/tools.sh
 
+# Claude DotSlash shim is installed by tools.sh; claude.sh may run `claude mcp add` etc.
+RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
 # Set up pass
 RUN --mount=type=bind,src=./pass.sh,dst=/mnt/pass.sh /mnt/pass.sh
 # Set up Git
