@@ -32,8 +32,6 @@ variable "versions" {
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
-    # Version of Bazel to test that Bazelisk properly bootstraps Bazel, which will also be pre-installed into the final image.
-    TEST_BAZEL_VERSION  = "9.1.0"
   }
 }
 
