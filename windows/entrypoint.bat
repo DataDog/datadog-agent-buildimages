@@ -11,6 +11,12 @@
 @echo.
 @echo Agent Windows Build Docker Container
 
+:: Bazel relies on NTFS 8.3 aliases to shorten long paths (https://github.com/bazelbuild/bazel/issues/19710), but the
+:: setting does not persist from image build (https://github.com/microsoft/Windows-Containers/issues/507) and thus has
+:: to be enabled on the runtime scratch volume.
+:: TODO(agent-build): remove once https://github.com/bazelbuild/bazel/pull/29921 (or equivalent) is in effect
+fsutil 8dot3name set C: 0 >nul
+
 @echo AWS_NETWORKING is %AWS_NETWORKING%
 if defined AWS_NETWORKING (
     @echo Detected AWS container, setting up networking
