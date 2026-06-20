@@ -11,6 +11,13 @@ FROM ${BASE_IMAGE} AS common_base
 RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     ca-certificates
 
+# Install Datadog default internal certificates so tools trust internal
+# endpoints served with the Datadog internal CA.
+COPY --from=registry.ddbuild.io/images/datadog-ca-certs:standard /certs/ /usr/local/share/ca-certificates/
+# Make the staged certs non-world-writable, then register them in the system trust store.
+RUN chmod -R o-w /usr/local/share/ca-certificates \
+    && update-ca-certificates
+
 # Minimal base for stages doing simple extraction (no compilation)
 FROM common_base AS extraction_base
 # Do an apt update only once at the beginning
