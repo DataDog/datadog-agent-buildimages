@@ -8,9 +8,6 @@ $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 Set-StrictMode -Version 3.0
 
-# Without filesystem 8.3 aliases, Bazel can't shorten long paths: https://github.com/bazelbuild/bazel/issues/19710
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name NtfsDisable8dot3NameCreation -PropertyType DWord -Value 0 -Force
-
 $isInstalled, $isCurrent = Get-InstallUpgradeStatus -Component bazelisk -Keyname version -TargetValue $Version
 if ($isInstalled -and $isCurrent) {
     Write-Host -ForegroundColor Yellow "Skipping bazelisk v$Version reinstallation"
