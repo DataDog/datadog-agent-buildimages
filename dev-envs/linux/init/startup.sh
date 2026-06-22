@@ -84,12 +84,6 @@ if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
     git config --global user.email "${GIT_AUTHOR_EMAIL}"
 fi
 
-# Configure python
-for shell in bash zsh; do
-    conda init "${shell}"
-    echo "conda activate ddpy3" >> "${HOME}/.${shell}rc"
-done
-
 # Configure pass
 # NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
 # homedir. This ensures we don't conflict with a forwarded gpg-agent
