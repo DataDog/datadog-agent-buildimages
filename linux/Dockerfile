@@ -317,8 +317,10 @@ ARG OSXCROSS_PATH="${DD_BUILD_INSTALL_ROOT}/osxcross" \
     CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/conda" \
     RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
 
-# Cache directories
-ENV DOTSLASH_CACHE="${XDG_CACHE_HOME}/dotslash" \
+# Cache directories - some of these may look redundant on Linux where most tools honor $XDG_CACHE_HOME, but we make them
+# explicit here for eventual parity with the Windows build image where XDG_CACHE_HOME isn't conventional
+ENV BAZELISK_HOME="${XDG_CACHE_HOME}/bazelisk" \
+    DOTSLASH_CACHE="${XDG_CACHE_HOME}/dotslash" \
     GOPATH="${XDG_CACHE_HOME}/go" \
     GOCACHE="${XDG_CACHE_HOME}/go/build" \
     GOMODCACHE="${XDG_CACHE_HOME}/go/pkg/mod" \
@@ -480,6 +482,7 @@ RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/b
 RUN tmp_dir="$(mktemp -d)" \
     && export USE_BAZEL_VERSION=9.1.0 \
     && XDG_CACHE_HOME="$tmp_dir" \
+       BAZELISK_HOME="$tmp_dir/bazelisk" \
        # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
        BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
        bazel --version | tee /dev/stderr | grep -Fqx "bazel $USE_BAZEL_VERSION" \
