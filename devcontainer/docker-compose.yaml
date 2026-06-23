@@ -13,7 +13,9 @@ services:
       - omnibus-cache:/var/cache/omnibus
       - go-cache:/home/datadog/go
       - home-directory:/home/datadog
+      - bazel-cache:/home/datadog/.cache/bazel/_bazel_datadog
 volumes:
   omnibus-cache: {}
   go-cache: {}
   home-directory: {}
+  bazel-cache: {}
