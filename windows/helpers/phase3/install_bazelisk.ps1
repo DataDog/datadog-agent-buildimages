@@ -29,10 +29,11 @@ try {
 Add-ToPath -NewPath $targetDir -Global -Local
 Write-Host -ForegroundColor Green "Installed bazelisk v$Version"
 
-$bazeliskHome = (New-Item -ItemType Directory -Path (Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName()))).FullName
+$tmpDir = (New-Item -ItemType Directory -Path (Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName()))).FullName
 try {
     $output = & {
-        $env:BAZELISK_HOME = "$bazeliskHome"
+        $env:XDG_CACHE_HOME = "$tmpDir"
+        $env:BAZELISK_HOME = "$env:XDG_CACHE_HOME\bazelisk"
         $env:USE_BAZEL_VERSION = '8.5.1'
         # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
         $env:BAZELISK_BASE_URL = 'https://github.com/bazelbuild/bazel/releases/download'
@@ -42,7 +43,7 @@ try {
         throw "Unexpected bazel version: '$output'"
     }
 } finally {
-    Remove-Item -Recurse -Verbose "$bazeliskHome"
+    Remove-Item -Recurse -Verbose "$tmpDir"
 }
 
 Set-InstalledVersionKey -Component bazelisk -Keyname version -TargetValue $Version
