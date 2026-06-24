@@ -27,6 +27,22 @@ if [[ -d "${DD_SHARED_DIR}/shell/nu" ]]; then
     done
 fi
 
+if [[ -d "${DD_SHARED_DIR}/shell/claude" ]]; then
+    claude_config_dir="${XDG_CONFIG_HOME}/claude"
+    mkdir -p "${claude_config_dir}"
+    find "${DD_SHARED_DIR}/shell/claude" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+        ln -sf "${state_file}" "${claude_config_dir}/$(basename "${state_file}")"
+    done
+fi
+
+if [[ -d "${DD_SHARED_DIR}/shell/codex" ]]; then
+    codex_home="${XDG_CONFIG_HOME}/codex"
+    mkdir -p "${codex_home}"
+    find "${DD_SHARED_DIR}/shell/codex" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+        ln -sf "${state_file}" "${codex_home}/$(basename "${state_file}")"
+    done
+fi
+
 # Remove annoying container indicator from prompt:
 # https://github.com/starship/starship/issues/6174
 if [[ -f "${DD_SHARED_DIR}/shell/starship.toml" ]]; then
@@ -38,6 +54,8 @@ disabled = true
 EOF
 # https://github.com/starship/starship/issues/896
 set-ev STARSHIP_CONFIG "${XDG_CONFIG_HOME}/starship.toml"
+
+
 
 # Persist remote SSH servers for VS Code-based editors
 vscode_editors_root="${XDG_DATA_HOME}/editors"
@@ -65,6 +83,25 @@ fi
 if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
     git config --global user.email "${GIT_AUTHOR_EMAIL}"
 fi
+
+# Configure python
+for shell in bash zsh; do
+    conda init "${shell}"
+    echo "conda activate ddpy3" >> "${HOME}/.${shell}rc"
+done
+
+# Configure pass
+# NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
+# homedir. This ensures we don't conflict with a forwarded gpg-agent
+export PASS_GPG_HOME=${XDG_CONFIG_HOME}/.config/password-store/gpg
+export PASSWORD_STORE_GPG_OPTS="--homedir ${PASS_GPG_HOME}"
+export PASSWORD_STORE_DIR="${XDG_CONFIG_HOME}/.config/password-store"
+mkdir -m 700 -p ${PASS_GPG_HOME}
+
+gpg --homedir ${PASS_GPG_HOME} --batch --passphrase '' --quick-generate-key --yes password-store
+pass init "password-store"
+set-ev PASSWORD_STORE_GPG_OPTS "--homedir \"${PASS_GPG_HOME}\""
+set-ev PASSWORD_STORE_DIR "\"${PASSWORD_STORE_DIR}\""
 
 # Reset saved data/cache directories from previous runs
 dda config restore

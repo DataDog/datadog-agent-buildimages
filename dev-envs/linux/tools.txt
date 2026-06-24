@@ -6,6 +6,7 @@ aws-vault
 bat
 btm
 claude
+codex
 dd-gitsign
 dd-pkg
 ddtool

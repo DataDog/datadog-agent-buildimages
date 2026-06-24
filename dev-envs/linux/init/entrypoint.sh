@@ -68,11 +68,8 @@ if [[ ! -f "${startup_indicator}" ]]; then
     fi
 
     # Make the target home look like a normal user-owned home before startup creates runtime state.
-    # As this is only necessary for the initial run of the container, we first verify the correct owner
-    # to potentially improve the time it takes to restart.
-    if [[ "$(stat -c %U "${TARGET_HOME}")" != "${TARGET_USER}" ]]; then
-        chown -R "${TARGET_USER}:" "${TARGET_HOME}"
-    fi
+    # This is needed because the operation initializing tools are executed as root and can lead to root owner files in the user's home.
+    chown -R "${TARGET_USER}:" "${TARGET_HOME}"
     chmod 0755 "${TARGET_HOME}"
 
     # Persist environment for SSH sessions

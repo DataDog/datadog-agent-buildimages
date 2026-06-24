@@ -317,7 +317,8 @@ ARG OSXCROSS_PATH="${DD_BUILD_INSTALL_ROOT}/osxcross" \
     CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/conda" \
     RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
 
-# Cache directories
+# Cache directories - some of these may look redundant on Linux where most tools honor $XDG_CACHE_HOME, but we make them
+# explicit here for eventual parity with the Windows build image where XDG_CACHE_HOME isn't conventional
 ENV BAZELISK_HOME="${XDG_CACHE_HOME}/bazelisk" \
     DOTSLASH_CACHE="${XDG_CACHE_HOME}/dotslash" \
     GOPATH="${XDG_CACHE_HOME}/go" \
@@ -475,15 +476,17 @@ ADD --chmod=755 --checksum=sha256:${BAZELISK_SHA256} "https://github.com/bazelbu
 # Symlink bazelisk to bazel
 RUN ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
 
-# Verify Bazelisk properly bootstraps Bazel - this also preinstalls Bazel ${TEST_BAZEL_VERSION}
-ARG TEST_BAZEL_VERSION
+# Verify Bazelisk properly bootstraps Bazel - keeping the downloaded Bazel tarball & extracted runtime would only bloat
+# the image because their version is almost guaranteed to be out of sync with each downstream branch's `.bazelversion`
 RUN readlink -f "$(command -v bazel)" | tee /dev/stderr | grep -Fqx /usr/local/bin/bazelisk
-RUN --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
-    USE_BAZEL_VERSION=${TEST_BAZEL_VERSION} \
-    # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
-    BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
-    bazel --version | tee /dev/stderr | grep -Fqx "bazel ${TEST_BAZEL_VERSION}" && \
-    /mnt/fix-shared-perms.sh "${BAZELISK_HOME}"
+RUN tmp_dir="$(mktemp -d)" \
+    && export USE_BAZEL_VERSION=9.1.0 \
+    && XDG_CACHE_HOME="$tmp_dir" \
+       BAZELISK_HOME="$tmp_dir/bazelisk" \
+       # TODO(incident-47542): Remove this once `releases.bazel.build` is back online
+       BAZELISK_BASE_URL=https://github.com/bazelbuild/bazel/releases/download \
+       bazel --version | tee /dev/stderr | grep -Fqx "bazel $USE_BAZEL_VERSION" \
+    && rm -r "$tmp_dir"
 
 # Rust
 COPY --from=rust_builder /usr/local/cargo-bin/ /usr/local/bin/
