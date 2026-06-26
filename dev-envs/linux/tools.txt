@@ -9,7 +9,6 @@ claude
 codex
 dd-gitsign
 dd-pkg
-ddtool
 delta
 diffnav
 dlv

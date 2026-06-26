@@ -16,7 +16,7 @@ ENV LANG=C.UTF-8
 
 # Set up HOME during the image build. The entrypoint assigns it to the
 # runtime target user before startup creates user state.
-ENV HOME=/home/dd
+ARG HOME=/home/dd
 ENV PATH="${HOME}/.local/bin:${PATH}"
 RUN mkdir -p "${HOME}" && \
     chgrp build-shared "${HOME}" && \
@@ -83,21 +83,25 @@ ENV DD_TARGET_GROUP=dog
 # Set up user/group prerequisites.
 RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
     /mnt/workspaces-setup.sh
-COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
+
+RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
+    && rm -rf /usr/local/aws-cli
+# COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
 # Run workspace sessions as the pre-created Workspaces SSH user.
-ENV HOME=/home/bits
 ENV IN_WORKSPACE=1
-ENV XDG_BIN_HOME="${HOME}/.local/bin"
-ENV PATH="${XDG_BIN_HOME}:${PATH}"
+ENV XDG_DATA_HOME=
+RUN echo "$HOME"
+RUN echo "$XDG_BIN_HOME"
+RUN echo "$XDG_DATA_HOME"
 
-# Set up OpenSSH server
-# IMPORTANT: make sure this comes last so Git operations don't use SSH during building
-RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
-RUN printf '%s\n' \
-    'StreamLocalBindUnlink yes' \
-    'PasswordAuthentication no' \
-    >> /usr/local/etc/sshd_config
+# # Set up OpenSSH server
+# # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
+# RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
+# RUN printf '%s\n' \
+#     'StreamLocalBindUnlink yes' \
+#     'PasswordAuthentication no' \
+#     >> /usr/local/etc/sshd_config
 
 # Finalization must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
@@ -106,7 +110,7 @@ RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 EXPOSE 22
 
 # Run SSH server
-CMD ["/usr/local/sbin/sshd", "-D", "-e"]
+CMD ["sleep", "infinity"]
 
 # This is the standard image used by Agent dev env tooling and it
 # MUST be the last stage in the file so that it's the default target.

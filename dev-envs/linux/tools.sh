@@ -125,5 +125,5 @@ install-binary \
 
 # We need to add the binary directory to PATH because `ddtool` creates helpers that are symlinked to and live
 # alongside itself which are expected to be available to users after running the helper installation command.
-ddtool_binary_dir="$(dirname "$(dotslash -- fetch /usr/local/bin/ddtool)")"
-path-append "${ddtool_binary_dir}"
+# ddtool_binary_dir="$(dirname "$(dotslash -- fetch /usr/local/bin/ddtool)")"
+# path-append "${ddtool_binary_dir}"
