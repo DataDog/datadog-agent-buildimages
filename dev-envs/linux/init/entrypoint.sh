@@ -43,6 +43,27 @@ if [[ ! -f "${startup_indicator}" ]]; then
             usermod -u "${TARGET_UID}" "${TARGET_USER}"
         fi
     fi
+
+    # Grant the target user access to the host-mounted Docker socket. The socket's
+    # group varies across Linux, macOS, and Windows hosts, so follow the mounted
+    # socket rather than assuming the image's docker group is relevant.
+    if [[ -S /var/run/docker.sock ]]; then
+        docker_sock_gid="$(stat -c "%g" /var/run/docker.sock)"
+        docker_sock_group="$(getent group "${docker_sock_gid}" | cut -d: -f1 || true)"
+
+        if [[ -z "${docker_sock_group}" ]]; then
+            docker_sock_group="docker-host"
+            if getent group "${docker_sock_group}" >/dev/null; then
+                docker_sock_group="docker-host-${docker_sock_gid}"
+            fi
+            groupadd -g "${docker_sock_gid}" "${docker_sock_group}"
+        fi
+
+        if ! id -G "${TARGET_USER}" | tr " " "\n" | grep -Fxq "${docker_sock_gid}"; then
+            usermod -aG "${docker_sock_group}" "${TARGET_USER}"
+        fi
+    fi
+
     TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6)"
 fi
 
