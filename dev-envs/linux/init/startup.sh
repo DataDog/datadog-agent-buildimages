@@ -94,8 +94,8 @@ mkdir -m 700 -p ${PASS_GPG_HOME}
 
 gpg --homedir ${PASS_GPG_HOME} --batch --passphrase '' --quick-generate-key --yes password-store
 pass init "password-store"
-set-ev PASSWORD_STORE_GPG_OPTS "--homedir \"${PASS_GPG_HOME}\""
-set-ev PASSWORD_STORE_DIR "\"${PASSWORD_STORE_DIR}\""
+set-ev PASSWORD_STORE_GPG_OPTS "--homedir ${PASS_GPG_HOME}"
+set-ev PASSWORD_STORE_DIR "${PASSWORD_STORE_DIR}"
 
 # Reset saved data/cache directories from previous runs
 dda config restore
