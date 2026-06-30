@@ -80,22 +80,12 @@ RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-set
 
 RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
     && rm -rf /usr/local/aws-cli
-# COPY --chmod=755 variants/workspaces/adduser.sh /opt/doghome/sbin/adduser.sh
 
-# Run workspace sessions as the pre-created Workspaces SSH user.
-ENV IN_WORKSPACE=1
+
+# Remove ddtool from the image to avoid conflicts with Workspace one.
+RUN rm -f /usr/local/bin/ddtool
+# Unset XDG_DATA_HOME to avoid conflicts during the workspace provisioning.
 ENV XDG_DATA_HOME=
-RUN echo "$HOME"
-RUN echo "$XDG_BIN_HOME"
-RUN echo "$XDG_DATA_HOME"
-
-# # Set up OpenSSH server
-# # IMPORTANT: make sure this comes last so Git operations don't use SSH during building
-# RUN --mount=type=bind,src=./ssh.sh,dst=/mnt/ssh.sh /mnt/ssh.sh
-# RUN printf '%s\n' \
-#     'StreamLocalBindUnlink yes' \
-#     'PasswordAuthentication no' \
-#     >> /usr/local/etc/sshd_config
 
 # Finalization must happen last
 RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh

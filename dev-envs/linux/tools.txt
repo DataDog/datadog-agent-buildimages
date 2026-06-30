@@ -11,6 +11,7 @@ dd-pkg
 delta
 diffnav
 dlv
+ddtool
 dust
 eza
 fd
