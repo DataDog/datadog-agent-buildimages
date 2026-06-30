@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 @dynamic_command(
     short_help="Validate tool configuration",
     features=["http"],
-    dependencies=["blake3>=1.0.8"],
+    dependencies=["blake3>=1.0.8", "zstandard>=0.22.0"],
 )
 @click.option(
     "--integrity",

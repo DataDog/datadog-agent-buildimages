@@ -54,7 +54,8 @@ $SoftwareTable = @{
     "CACERTS_HASH"="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def";
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
-    "JSIGN_VERSION"="5.0";
+    "JSIGN_VERSION"="7.4";
+    "JSIGN_SHA256"="2abf2ade9ea322acc2d60c24794eadc465ff9380938fca4c932d09e0b25f1c28";
     "WINSIGN_VERSION"="0.3.5";
     "WINSIGN_SHA256"="b2ba5127a5c5141e04d42444ca115af4c95cc053a743caaa9b33c68dd6b13f68";
     "RUSTUP_VERSION"="1.26.0";
@@ -79,6 +80,6 @@ $SoftwareTable = @{
     # with a "COPY --from" instruction in the Dockerfile
     # recall to update the digest of the image in the Dockerfile
     # when updating the version
-    "WINDOWS_CODE_SIGNER_VERSION"="v0.7.0";
-    "WINDOWS_CODE_SIGNER_SHA256"="89eb7490e7bec62fea47fdbe4b202f65c8a068b84ce2d2c629a33ce924774cf7";
+    "WINDOWS_CODE_SIGNER_VERSION"="v0.8.0";
+    "WINDOWS_CODE_SIGNER_SHA256"="941dbad45eddcb9428ec1940200e40fa41eb48f1870869d444a8e437cf7e3f68";
 }

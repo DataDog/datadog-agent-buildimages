@@ -14,7 +14,7 @@ variable "versions" {
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
-    DDA_VERSION         = "v0.33.3"
+    DDA_VERSION         = "v0.34.1"
     CMAKE_VERSION       = "3.30.2"
     CTNG_VERSION        = "1.26.0"
     RUST_VERSION        = "1.91.0"
@@ -32,8 +32,6 @@ variable "versions" {
     PULUMI_VERSION         = "3.207.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
-    # Version of Bazel to test that Bazelisk properly bootstraps Bazel, which will also be pre-installed into the final image.
-    TEST_BAZEL_VERSION  = "9.1.0"
   }
 }
 
@@ -218,6 +216,12 @@ variable "CI" {
   default = ""
 }
 
+variable "PREVENT_CACHE" {
+  type = string
+  // When set in the environment, disable build-cache import so a poisoned cache can be rebuilt.
+  default = ""
+}
+
 variable CI_COMMIT_BRANCH {
   type = string
   // Will pull in the env var if it is defined, but otherwise will be empty
@@ -263,7 +267,9 @@ variable "linux_cache_details_branch" {
 target "_fake_linux-local" {
   dockerfile = "linux/Dockerfile"
   context    = "./"
-  cache-from = [linux_cache_details_main]
+  # Bake merges cache-from across inherited targets, so this base must honor
+  # PREVENT_CACHE too; otherwise the cache leaks into the -ci targets that inherit it.
+  cache-from = PREVENT_CACHE != "" ? [] : [linux_cache_details_main]
   tags       = ["${repo_name}/linux:latest"]
   # Outside CI, use GITLAB_TOKEN from env var
   secret     = ["type=env,id=gitlab-token,env=GITLAB_TOKEN"]
@@ -315,7 +321,7 @@ variable "linux-image-tag" {
 target "_fake_linux-ci" {
   # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
   secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
-  cache-from = [linux_cache_details_branch, linux_cache_details_main]
+  cache-from = PREVENT_CACHE != "" ? [] : [linux_cache_details_branch, linux_cache_details_main]
   cache-to   = [linux_cache_details_branch]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
   output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
@@ -371,7 +377,8 @@ target "_fake_docker_x64-local" {
   dockerfile = "docker-x64/Dockerfile"
   context    = "./"
   platforms  = ["linux/amd64"]
-  cache-from = [docker_x64_cache_details_main]
+  # As in _fake_linux-local, cache-from is merged across inherited targets.
+  cache-from = PREVENT_CACHE != "" ? [] : [docker_x64_cache_details_main]
   tags       = ["${repo_name}/docker_x64:latest"]
   args       = merge(versions, go_versions, checksums_amd64, go_checksums_amd64, { BUILDENV_REGISTRY = BUILDENV_REGISTRY })
 }
@@ -381,7 +388,7 @@ target "docker_x64" {
 }
 
 target "_fake_docker_x64-ci" {
-  cache-from = [docker_x64_cache_details_branch, docker_x64_cache_details_main]
+  cache-from = PREVENT_CACHE != "" ? [] : [docker_x64_cache_details_branch, docker_x64_cache_details_main]
   cache-to   = [docker_x64_cache_details_branch]
   tags       = ["${registry_name}/${repo_name}/docker_x64:${docker_x64-image-tag}"]
   output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar"]
