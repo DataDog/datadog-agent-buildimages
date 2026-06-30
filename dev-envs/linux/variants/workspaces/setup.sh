@@ -8,7 +8,9 @@ bits_home="/home/bits"
 groupadd --gid 501 dog
 useradd --gid dog --uid 501 --home-dir "${dog_home}" --shell /bin/bash --groups users,build-shared,sudo dog
     
-env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" | sed 's/^/export /' > /etc/profile.d/dd-agent-workspace-env.sh
+while IFS= read -r line; do
+    printf 'export %s=%q\n' "${line%%=*}" "${line#*=}"
+done < <(env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)") > /etc/profile.d/dd-agent-workspace-env.sh
 
 seed_home() {
     local home="$1"
