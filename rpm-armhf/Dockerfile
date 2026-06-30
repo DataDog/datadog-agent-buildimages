@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.3 AS dd_pkg
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.8.0 AS dd_pkg
 
 FROM --platform=linux/armhf ${BASE_IMAGE}
 

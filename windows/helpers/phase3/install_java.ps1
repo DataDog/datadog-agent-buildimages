@@ -47,4 +47,13 @@ if (-Not (test-path $jsignjardir)) {
 }
 (New-Object System.Net.WebClient).DownloadFile($jsignjarsrc, $jsignout)
 
+$actualHash = (Get-FileHash -Algorithm SHA256 $jsignout).Hash
+if ($actualHash.ToUpper() -ne $ENV:JSIGN_SHA256.ToUpper()) {
+    Write-Host -ForegroundColor Red "Hash mismatch for $jsignout"
+    Write-Host -ForegroundColor Red "Expected: $ENV:JSIGN_SHA256"
+    Write-Host -ForegroundColor Red "Actual:   $actualHash"
+    Remove-Item $jsignout
+    throw "Hash mismatch for $jsignout. Expected: $ENV:JSIGN_SHA256, Actual: $actualHash"
+}
+
 Add-EnvironmentVariable -Variable JARSIGN_JAR -Value $jsignout -Global
