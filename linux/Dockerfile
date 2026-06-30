@@ -288,7 +288,7 @@ FROM registry.ddbuild.io/dd-octo-sts:$DD_OCTO_STS_VERSION AS dd_octo_sts_builder
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages_builder
 # Dummy stage to download datadog-packages as it is distributed as a container image
 
-FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.7.4 AS dd_pkg_builder
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.8.0 AS dd_pkg_builder
 # Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
 
 FROM common_base AS final
