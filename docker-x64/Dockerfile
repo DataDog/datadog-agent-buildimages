@@ -13,9 +13,8 @@ RUN python3 -m pip install -r requirements.txt
 RUN apt-get update && apt-get install -y --no-install-recommends unzip \
     && curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
     && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
-    && unzip $VAULT_FILENAME \
+    && unzip -o $VAULT_FILENAME -d /usr/bin vault \
     && rm $VAULT_FILENAME \
-    && mv vault /usr/bin/vault \
     && chmod +x /usr/bin/vault
 
 # External calls configuration
