@@ -3,6 +3,9 @@ FROM ruby:2.7.5-bullseye
 ENV BUNDLER_VERSION=1.17.3
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
@@ -13,7 +16,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   g++ gawk gcc git jq \
   libc6-dev libffi-dev libssl-dev libgdbm-dev libgmp-dev libncurses5-dev \
   libreadline6-dev libsqlite3-dev libtool libyaml-dev \
-  make openssh-client pkg-config python3 python3-pip rsync sqlite3 zlib1g-dev \
+  make openssh-client pkg-config python3 python3-pip rsync sqlite3 unzip zlib1g-dev \
   && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ focal main" | \
       tee /etc/apt/sources.list.d/azure-cli.list && \
       curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
@@ -33,6 +36,14 @@ RUN gem install bundler --version ${BUNDLER_VERSION}
 COPY dd-agent-testing/Gemfile dd-agent-testing/Gemfile.lock ./
 RUN bundle install
 RUN bundle show
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent

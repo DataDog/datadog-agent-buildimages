@@ -31,6 +31,9 @@ ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa
 ARG BUNDLER_VERSION=2.4.20
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA="873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d"
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -64,7 +67,7 @@ RUN yum -y install \
   glibc-static tar libtool \
   bzip2-devel e2fsprogs-devel file-devel libacl-devel libattr-devel \
   libxml2-devel lzo-devel nss nss-devel popt-devel postgresql-devel sharutils xz-devel java \
-  texinfo wget policycoreutils-python libarchive-devel patchelf devtoolset-11 \
+  texinfo wget policycoreutils-python libarchive-devel patchelf devtoolset-11 unzip \
   && yum clean all \
   && echo 'source /opt/rh/devtoolset-11/enable' >> /root/.bashrc
 
@@ -202,6 +205,14 @@ RUN curl -sSL -o rustup-init "https://static.rust-lang.org/rustup/archive/${RUST
     && echo "${RUSTC_SHA256}  $HOME/.cargo/bin/rustc" | sha256sum --check \
     && rm ./rustup-init
 ENV PATH "~/.cargo/bin:${PATH}"
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc

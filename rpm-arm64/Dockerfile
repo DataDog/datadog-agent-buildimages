@@ -20,6 +20,9 @@ ARG DD_TARGET_ARCH=aarch64
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -32,7 +35,7 @@ RUN yum -y install @development which perl-core perl-ExtUtils-MakeMaker ncurses-
     curl-devel expat-devel gettext-devel openssl-devel systemd-devel zlib-devel bzip2 glibc-static python-devel tar pkgconfig  \
     libtool autoconf policycoreutils-python \
     bzip2-devel e2fsprogs-devel file-devel libacl-devel libarchive-devel libattr-devel \
-    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java wget \
+    libxml2-devel lzo-devel nss nss-devel popt-devel sharutils xz-devel java wget unzip \
     && yum clean all
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
@@ -83,6 +86,14 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys

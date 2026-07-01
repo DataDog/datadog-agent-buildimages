@@ -30,6 +30,9 @@ ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284
 ARG DPKG_VERSION=1.18.4
 ARG DPKG_SHA256=19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41
 ARG LIBLZMA_VERSION=5.2.11
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -42,7 +45,7 @@ RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/
 RUN apt-get update && apt-get install -y fakeroot curl git procps bzip2 \
     build-essential pkg-config tar libsystemd-dev libkrb5-dev \
     gettext libtool autopoint autoconf libtool-bin \
-    selinux-basics default-jre flex wget
+    selinux-basics default-jre flex unzip wget
 
 # Ubuntu 16.04 comes with gcc 5.4 by default, which doesn't work with the race detector starting with Go 1.22
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
@@ -86,6 +89,14 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys

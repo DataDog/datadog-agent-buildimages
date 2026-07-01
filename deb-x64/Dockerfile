@@ -34,6 +34,9 @@ ARG LIBLZMA_VERSION=5.2.11
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
 ARG PULUMI_VERSION=3.207.0
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 # Environment
 ENV GOPATH /go
@@ -62,7 +65,7 @@ RUN apt-get update && apt-get install -y fakeroot procps bzip2 \
   build-essential pkg-config libssl-dev libcurl4-openssl-dev libexpat-dev libpq-dev libz-dev \
   libsystemd-journal-dev rpm tar gettext libtool autopoint autoconf pkg-config flex \
   selinux-basics libtool software-properties-common default-jre texinfo pxz wget binutils-2.26 openssh-client \
-  xsltproc jq
+  xsltproc jq unzip
 
 # Ubuntu 14.04 comes with gcc 4.8 by default, which has a tough time compiling newer Go versions
 # NOTE: we *could* uninstall gcc 4.8, but the "rvm requirements" run later on would reinstall
@@ -213,6 +216,14 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && cd - \
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # Install Pulumi
 RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \

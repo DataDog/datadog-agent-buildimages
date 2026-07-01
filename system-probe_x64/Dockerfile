@@ -5,6 +5,9 @@ ARG GO_VERSION
 ARG GO_SHA256_LINUX_AMD64
 ARG CI_UPLOADER_VERSION=2.30.1
 ARG CI_UPLOADER_SHA=873976f0f8de1073235cf558ea12c7b922b28e1be22dc1553bf56162beebf09d
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 
 # Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update.
 # Use HTTP initially (buster image has outdated CAs that can't verify archive.debian.org HTTPS),
@@ -61,6 +64,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-pyroute2 \
         python3-dev \
         default-jre \
+        unzip \
         wget \
         xz-utils
 
@@ -93,3 +97,11 @@ ENV PATH "/opt/clang/bin:${PATH}"
 COPY requirements.txt /
 COPY /requirements /requirements
 RUN python3 -m pip install -r requirements.txt
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault

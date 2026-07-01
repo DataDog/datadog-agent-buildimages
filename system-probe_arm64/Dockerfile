@@ -3,6 +3,9 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION
 ARG GO_SHA256_LINUX_ARM64
+ARG VAULT_VERSION=1.17.2
+ARG VAULT_CHECKSUM=1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9
+ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_arm64.zip"
 
 # Debian buster is EOL; redirect all repos to the archive mirror before any apt-get update.
 # Use HTTP initially (buster image has outdated CAs that can't verify archive.debian.org HTTPS),
@@ -58,6 +61,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && ap
         python3-pyroute2 \
         python3-dev \
         default-jre \
+        unzip \
         wget \
         xz-utils
 
@@ -81,6 +85,14 @@ ENV PATH "/opt/clang/bin:${PATH}"
 COPY requirements.txt /
 COPY /requirements /requirements
 RUN python3 -m pip install -r requirements.txt
+
+# Install vault: https://github.com/hashicorp/vault/blob/main/CHANGELOG.md https://releases.hashicorp.com/vault
+RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME \
+    && echo "${VAULT_CHECKSUM}  ${VAULT_FILENAME}" | sha256sum --check \
+    && unzip $VAULT_FILENAME \
+    && rm $VAULT_FILENAME \
+    && mv vault /usr/bin/vault \
+    && chmod +x /usr/bin/vault
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
