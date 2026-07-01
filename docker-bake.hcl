@@ -22,7 +22,7 @@ variable "versions" {
     RUSTUP_VERSION      = "1.26.0"
     BUNDLER_VERSION     = "2.4.20"
     VAULT_VERSION       = "1.17.2"
-    DATADOG_CI_VERSION  = "5.12.1"
+    DATADOG_CI_VERSION  = "5.19.0"
     PROTOBUF_VERSION    = "34.0"
     AWSCLI_VERSION      = "2.27.30"
     DPKG_ARMHF_VERSION  = "1.18.4"
