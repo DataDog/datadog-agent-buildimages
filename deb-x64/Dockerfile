@@ -39,6 +39,8 @@ ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aa
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
 ARG OPENSSH_VERSION=9.9p2
 ARG OPENSSH_SHA256=91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673
+ARG OPENSSL_VERSION=1.1.1w
+ARG OPENSSL_SHA256=cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8
 
 # Environment
 ENV GOPATH /go
@@ -121,15 +123,32 @@ RUN git config --global user.email "package@datadoghq.com" && \
 # Build a modern client from source, installing over the apt-provided binaries in
 # /usr/bin. We only build the client tools (not sshd) since this image never runs an
 # SSH server.
-RUN curl -LO https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${OPENSSH_VERSION}.tar.gz \
+#
+# OpenSSH 8.0+ requires OpenSSL >= 1.1.1, but Trusty's libssl-dev is 1.0.1. Build a
+# private static OpenSSL just for this instead of replacing the system one, which
+# earlier steps (git, dpkg, ...) are already linked against. no-threads sidesteps a
+# static-linking pitfall: libcrypto.a needs -lpthread, but OpenSSH's Makefile places
+# -lcrypto after the -lpthread it adds, so the link fails with undefined pthread_*
+# references unless OpenSSL's pthread-based locking is compiled out (fine here since
+# the SSH client is single-threaded).
+RUN curl -LO https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+    && echo "${OPENSSL_SHA256}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum --check \
+    && tar xzf openssl-${OPENSSL_VERSION}.tar.gz \
+    && cd openssl-${OPENSSL_VERSION} \
+    && ./config --prefix=/opt/openssl-ssh --openssldir=/opt/openssl-ssh no-shared no-threads \
+    && make -j$(nproc) \
+    && make install_sw \
+    && cd .. \
+    && rm -rf openssl-${OPENSSL_VERSION} openssl-${OPENSSL_VERSION}.tar.gz \
+    && curl -LO https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${OPENSSH_VERSION}.tar.gz \
     && echo "${OPENSSH_SHA256}  openssh-${OPENSSH_VERSION}.tar.gz" | sha256sum --check \
     && tar xzf openssh-${OPENSSH_VERSION}.tar.gz \
     && cd openssh-${OPENSSH_VERSION} \
-    && ./configure --prefix=/usr --sysconfdir=/etc/ssh \
+    && ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-ssl-dir=/opt/openssl-ssh \
     && make -j$(nproc) ssh scp sftp ssh-keygen \
     && install -m 0755 ssh scp sftp ssh-keygen /usr/bin/ \
     && cd .. \
-    && rm -rf openssh-${OPENSSH_VERSION} openssh-${OPENSSH_VERSION}.tar.gz
+    && rm -rf openssh-${OPENSSH_VERSION} openssh-${OPENSSH_VERSION}.tar.gz /opt/openssl-ssh
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
