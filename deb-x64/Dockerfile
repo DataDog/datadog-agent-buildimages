@@ -37,6 +37,8 @@ ARG PULUMI_VERSION=3.207.0
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG OPENSSH_VERSION=9.9p2
+ARG OPENSSH_SHA256=91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673
 
 # Environment
 ENV GOPATH /go
@@ -111,6 +113,23 @@ RUN curl -OL https://www.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.
 RUN git config --global user.email "package@datadoghq.com" && \
     git config --global user.name "Bits"
 
+# The apt-get openssh-client above is 6.6p1 (Ubuntu 14.04's archive version), which
+# predates RSA/SHA-2 signature support added in OpenSSH 7.2. It can only offer the
+# deprecated SHA-1 ssh-rsa algorithm when authenticating with an RSA key, and modern
+# OpenSSH servers (8.8+) disable ssh-rsa by default, so this client gets rejected with
+# "Permission denied (publickey)" against current CI test VMs even with a valid key.
+# Build a modern client from source, installing over the apt-provided binaries in
+# /usr/bin. We only build the client tools (not sshd) since this image never runs an
+# SSH server.
+RUN curl -LO https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${OPENSSH_VERSION}.tar.gz \
+    && echo "${OPENSSH_SHA256}  openssh-${OPENSSH_VERSION}.tar.gz" | sha256sum --check \
+    && tar xzf openssh-${OPENSSH_VERSION}.tar.gz \
+    && cd openssh-${OPENSSH_VERSION} \
+    && ./configure --prefix=/usr --sysconfdir=/etc/ssh \
+    && make -j$(nproc) ssh scp sftp ssh-keygen \
+    && install -m 0755 ssh scp sftp ssh-keygen /usr/bin/ \
+    && cd .. \
+    && rm -rf openssh-${OPENSSH_VERSION} openssh-${OPENSSH_VERSION}.tar.gz
 
 # Now install a recent enough liblzma (5.2+) which supports parallel compression
 RUN git clone -b v${LIBLZMA_VERSION} https://git.tukaani.org/xz.git \
