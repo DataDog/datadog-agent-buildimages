@@ -60,6 +60,6 @@ $SoftwareTable = @{
     # This version is used to verify that the downloaded binary is correct and
     # must be updated in sync with .gitlab-ci.yml.
     # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.4";
-    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="ea05f5486ed0755177c754eaecea94de0d9a3a9ddf225fc2a2e8f4c1a3babfa0";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.7";
+    "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="c39c35f1db9daddaca6b47080e5bcb4b8ffd5cf7e7fe61b02ed56690e749928c";
 }
