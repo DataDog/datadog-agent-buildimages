@@ -349,7 +349,7 @@ build_windows_ltsc2022_x64:
     DOCKERFILE: windows/Dockerfile
     IMAGE: windows_ltsc2022_x64
     DD_TARGET_ARCH: x64
-    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.6.4 # version and digest must be updated in windows/versions.ps1 as well
+    CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION: v0.6.7 # version and digest must be updated in windows/versions.ps1 as well
 
 .release:
   stage: release
