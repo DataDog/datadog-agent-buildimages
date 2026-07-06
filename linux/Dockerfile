@@ -143,27 +143,13 @@ RUN --mount=type=bind,src=./linux/scripts/osxcross.sh,dst=/mnt/osxcross.sh cd /t
 FROM build_base AS aix_cross_builder
 # AIX cross-compiler (GCC targeting IBM AIX/PowerPC) downloaded from MASS.
 # The archive contains compiler/ (binaries + target libs) and sysroot/ (AIX headers + libs).
-# Thin wrapper scripts in bin/ call the real compiler with --sysroot so the
-# toolchain is relocatable regardless of where the sysroot was during the build.
-# Only installed on amd64: the cross-compiler itself is an x86_64 ELF binary.
 ARG TARGETARCH
 ARG AIX_CROSS_VERSION
-RUN mkdir -p /opt/aix-cross && \
-    if [ "$TARGETARCH" = "amd64" ]; then \
-    curl -fsSL "https://mass-read.us1.ddbuild.io/internal/artifact/datadog-agent/aix/cross-compiler/${AIX_CROSS_VERSION}/aix-cross-toolchain-${AIX_CROSS_VERSION}.tar.xz" | \
-    tar -xJ -C /opt/aix-cross && \
-    mkdir -p /opt/aix-cross/bin && \
-    for tool in /opt/aix-cross/compiler/bin/powerpc-ibm-aix*; do \
-        name="$(basename "$tool")"; \
-        case "$name" in \
-            *-gcc|*-gcc-*|*-g++|*-cpp) \
-                printf '#!/bin/sh\nexec "%s" --sysroot=/opt/aix-cross/sysroot "$@"\n' "$tool" \
-                    > "/opt/aix-cross/bin/$name"; \
-                chmod +x "/opt/aix-cross/bin/$name" ;; \
-            *) ln -s "$tool" "/opt/aix-cross/bin/$name" ;; \
-        esac; \
-    done; \
-  fi
+ARG AIX_CROSS_SHA256
+ADD --checksum=sha256:${AIX_CROSS_SHA256} \
+    "https://mass-read.us1.ddbuild.io/internal/artifact/datadog-agent/aix/cross-compiler/${AIX_CROSS_VERSION}/aix-cross-toolchain-${AIX_CROSS_VERSION}.tar.xz" \
+    /tmp/aix-cross/aix-cross-toolchain.tar.xz
+RUN --mount=type=bind,src=./linux/scripts/aix-cross.sh,dst=/mnt/aix-cross.sh cd /tmp/aix-cross && /mnt/aix-cross.sh && rm -rf /tmp/aix-cross
 
 FROM build_base AS python_builder
 # Python and Conda setup
