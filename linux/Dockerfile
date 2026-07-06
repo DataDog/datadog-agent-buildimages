@@ -140,6 +140,17 @@ RUN git clone https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
 
 RUN --mount=type=bind,src=./linux/scripts/osxcross.sh,dst=/mnt/osxcross.sh cd /tmp/osxcross && /mnt/osxcross.sh && rm -rf /tmp/osxcross
 
+FROM build_base AS aix_cross_builder
+# AIX cross-compiler (GCC targeting IBM AIX/PowerPC) downloaded from MASS.
+# The archive contains compiler/ (binaries + target libs) and sysroot/ (AIX headers + libs).
+ARG TARGETARCH
+ARG AIX_CROSS_VERSION
+ARG AIX_CROSS_SHA256
+ADD --checksum=sha256:${AIX_CROSS_SHA256} \
+    "https://mass-read.us1.ddbuild.io/internal/artifact/datadog-agent/aix/cross-compiler/${AIX_CROSS_VERSION}/aix-cross-toolchain-${AIX_CROSS_VERSION}.tar.xz" \
+    /tmp/aix-cross/aix-cross-toolchain.tar.xz
+RUN --mount=type=bind,src=./linux/scripts/aix-cross.sh,dst=/mnt/aix-cross.sh cd /tmp/aix-cross && /mnt/aix-cross.sh && rm -rf /tmp/aix-cross
+
 FROM build_base AS python_builder
 # Python and Conda setup
 
@@ -443,6 +454,9 @@ COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
 # Osxcross
 COPY --from=osxcross_builder /opt/osxcross ${OSXCROSS_PATH}
 
+# AIX cross-compiler
+COPY --from=aix_cross_builder /opt/aix-cross /opt/aix-cross
+
 # Protobuf
 COPY --from=protobuf_builder /usr/bin/protoc /usr/bin/protoc
 COPY --from=protobuf_builder /usr/include/google /usr/include/google
@@ -586,7 +600,7 @@ RUN groupadd -g 1000 dd && \
 # Set up environment
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:/opt/aix-cross/bin:${PATH}"
 ENV BUNDLE_GLOBAL_GEM_CACHE="true"
 
 # Set up missing environment variables
