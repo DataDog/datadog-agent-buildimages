@@ -41,6 +41,8 @@ ARG OPENSSH_VERSION=9.9p2
 ARG OPENSSH_SHA256=91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673
 ARG OPENSSL_VERSION=1.1.1w
 ARG OPENSSL_SHA256=cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8
+ARG AWSCLI_VERSION=2.24.0
+ARG AWSCLI_SHA256=4e3c39d9881cb6f893ea93219d971390864b1f7e3756197413a7de38ce059609
 
 # Environment
 ENV GOPATH /go
@@ -266,6 +268,21 @@ RUN curl -LO https://releases.hashicorp.com/vault/$VAULT_VERSION/$VAULT_FILENAME
 # Install Pulumi
 RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI_VERSION && \
     mv ~/.pulumi/bin/* /usr/local/bin
+
+# Install AWS CLI v2: https://github.com/aws/aws-cli/blob/v2/CHANGELOG.rst
+# Needed by e2e test jobs (`aws ecr get-login-password`, `aws s3 cp`, ...), which
+# previously installed it ad-hoc in .gitlab-ci.yml's before_script on every job run.
+# requirements.txt (installed into the ddpy3 conda env by setup_python.sh, above)
+# pulls in awscli v1, and /root/.bashrc activates ddpy3 by default, which prepends
+# its bin/ to PATH ahead of /usr/local/bin. That only matters for contexts that
+# source .bashrc (e.g. this image's own ENTRYPOINT) -- GitLab CI job shells don't --
+# but re-point ddpy3's aws at the v2 binary too so it's not shadowed there either.
+RUN curl -LO https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
+    && echo "${AWSCLI_SHA256}  awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" | sha256sum --check \
+    && unzip -q awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
+    && ./aws/install \
+    && rm -rf awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip aws \
+    && ln -sf /usr/local/bin/aws "${CONDA_PATH}/envs/ddpy3/bin/aws"
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
