@@ -272,11 +272,17 @@ RUN curl --retry 10 -fsSL https://get.pulumi.com/ | bash -s -- --version $PULUMI
 # Install AWS CLI v2: https://github.com/aws/aws-cli/blob/v2/CHANGELOG.rst
 # Needed by e2e test jobs (`aws ecr get-login-password`, `aws s3 cp`, ...), which
 # previously installed it ad-hoc in .gitlab-ci.yml's before_script on every job run.
+# requirements.txt (installed into the ddpy3 conda env by setup_python.sh, above)
+# pulls in awscli v1, and /root/.bashrc activates ddpy3 by default, which prepends
+# its bin/ to PATH ahead of /usr/local/bin. That only matters for contexts that
+# source .bashrc (e.g. this image's own ENTRYPOINT) -- GitLab CI job shells don't --
+# but re-point ddpy3's aws at the v2 binary too so it's not shadowed there either.
 RUN curl -LO https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
     && echo "${AWSCLI_SHA256}  awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" | sha256sum --check \
     && unzip -q awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip \
     && ./aws/install \
-    && rm -rf awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip aws
+    && rm -rf awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip aws \
+    && ln -sf /usr/local/bin/aws "${CONDA_PATH}/envs/ddpy3/bin/aws"
 
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
