@@ -104,6 +104,9 @@ get_agent_version:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   before_script:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
@@ -129,6 +132,10 @@ get_agent_version:
     # Build and push directly via buildx (no local daemon required)
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker buildx build --push --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --file $DOCKERFILE .
+    # Sign the pushed image so containerd-image-verifier accepts pulls of it (see main's .gitlab/build.yml)
+    - MANIFEST=$(crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA})
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
+    - ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}@${DIGEST}
     # Also tag as pipeline-ID-only for testing purposes
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
@@ -140,6 +147,9 @@ get_agent_version:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG == null
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
   before_script:
     - curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "awscliv2.zip"
     - unzip awscliv2.zip
@@ -160,6 +170,10 @@ get_agent_version:
     # Build
     - GO_BUILD_ARGS=$(cat go.env | sed -e 's/^/--build-arg /' | tr '\n' ' ')
     - docker buildx build --push --platform $PLATFORM --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg DD_TARGET_ARCH=$DD_TARGET_ARCH $GO_BUILD_ARGS $CUSTOM_BUILD_ARGS --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA} --label target=none --file $DOCKERFILE .
+    # Sign the pushed image so containerd-image-verifier accepts pulls of it (see main's .gitlab/build.yml)
+    - MANIFEST=$(crane manifest registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA})
+    - DIGEST=sha256:$(echo -n "$MANIFEST" | sha256sum | awk '{print $1}')
+    - ddsign sign registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}@${DIGEST}
     - if [ "$CI_PIPELINE_SOURCE" != "schedule" ]; then docker buildx imagetools create --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}; fi
   after_script:
     - if [ "${CI_JOB_STATUS}" != 'success' ]; then echo "failed build, not sending metrics"; exit 0; fi
