@@ -255,6 +255,9 @@ RUN --mount=type=secret,id=gitlab-token,env=GITLAB_TOKEN,required=true \
     --mount=type=bind,src=./linux/scripts/datadog_packages.sh,dst=/mnt/datadog_packages.sh \
     /mnt/datadog_packages.sh
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg_builder
+# Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
+
 FROM common_base AS final
 
 ARG ADDITIONAL_PACKAGE
@@ -378,6 +381,9 @@ ENV GOPATH=/go
 ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 ENV PYTHONUTF8=1
 ENV DDA_NO_DYNAMIC_DEPS=1
+
+# dd-pkg
+COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
