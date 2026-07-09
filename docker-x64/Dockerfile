@@ -1,4 +1,7 @@
 ARG BUILDENV_REGISTRY
+
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 
 ARG PYTHON_VERSION=3.12.6
@@ -108,3 +111,5 @@ RUN curl -sL -o /tmp/master.tar.gz https://github.com/mackyle/xar/archive/master
 # Install authanywhere for infra token management
 ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
 RUN --mount=type=bind,src=./setup/authanywhere.sh,dst=/mnt/authanywhere.sh /mnt/authanywhere.sh
+
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
