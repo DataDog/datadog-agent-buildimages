@@ -192,6 +192,18 @@ RUN ./setup_python.sh
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
+# Install Python lint tooling (flake8, black, isort, vulture) needed by datadog-agent's
+# lint_python CI job, which used to run on the now-unsigned, no-longer-built
+# circleci-runner image. Installed into the ddpy3 conda env (which already has pip) and
+# symlinked into /usr/local/bin, the same way setup_python.sh symlinks `inv` above: a
+# plain `python3 -m pip install` here would hit the system Python 3.4 (no pip module at
+# all), since this RUN's non-interactive shell doesn't source .bashrc and so never
+# activates ddpy3 the way setup_python.sh's own shell does.
+RUN "${CONDA_PATH}/envs/ddpy3/bin/pip" install -r requirements/circleci.txt \
+    && for tool in black flake8 isort vulture; do \
+         ln -s "${CONDA_PATH}/envs/ddpy3/bin/${tool}" /usr/local/bin; \
+       done
+
 # RVM
 COPY ./rvm/gpg-keys /gpg-keys
 RUN gpg --import /gpg-keys/*
