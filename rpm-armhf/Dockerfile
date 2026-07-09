@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM ${BASE_IMAGE}
 
 # Build Args
@@ -176,6 +178,9 @@ RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_FILEN
 
 # Force umask to 0022
 RUN echo "umask 0022" >> /root/.bashrc
+
+# Install dd-pkg
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Entrypoint - only for local usage, Kubernetes-based Gitlab runners overwrite this
 COPY entrypoint.sh /
