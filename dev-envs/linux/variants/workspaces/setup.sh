@@ -12,7 +12,7 @@ workspace_env_file="${DD_BUILD_CONFIG_ROOT}/dd-agent-workspace-env.sh"
 install -d -m 0755 "$(dirname "${workspace_env_file}")"
 while IFS= read -r line; do
     printf 'export %s=%q\n' "${line%%=*}" "${line#*=}"
-done < <(env | grep -Ev "^(CLAUDE_CONFIG_DIR=|HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)") > "${workspace_env_file}"
+done < <(env | grep -Ev "^(CODEX_HOME=|CLAUDE_CONFIG_DIR=|HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)") > "${workspace_env_file}"
 
 seed_home() {
     local home="$1"
