@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       go_version:
-        description: 'Go version'
+        description: "Go version"
         required: true
         type: string
       open_pr:
-        description: 'Whether to open a PR'
+        description: "Whether to open a PR"
         required: false
         type: boolean
         default: true
       draft:
-        description: 'Open a Draft PR'
+        description: "Open a Draft PR"
         required: false
         type: boolean
         default: false
@@ -21,7 +21,7 @@ on:
         description: 'Git branch to use (defaults to "gobot/go-update-<go_version>")'
         required: false
         type: string
-        default: ''
+        default: ""
 
 permissions: {}
 
@@ -42,12 +42,12 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Setup Python and pip
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: "3.12"  # temporary: 3.14 breaks httpcore 1.0.7, revert when dda bumps httpcore to >=1.0.8
+          python-version: "3.12" # temporary: 3.14 breaks httpcore 1.0.7, revert when dda bumps httpcore to >=1.0.8
 
       - name: Get access token via dd-octo-sts
-        uses: DataDog/dd-octo-sts-action@96a25462dbcb10ebf0bfd6e2ccc917d2ab235b9a # v1.0.4
+        uses: xopham/dd-octo-sts-action@b6619893678f2e1176e71e0b0b380b0be61b1254 # v1.0.5
         id: octo-sts
         with:
           scope: DataDog/datadog-agent-buildimages
@@ -73,6 +73,6 @@ jobs:
           sign-commits: true
           title: "Update Go version to ${{ inputs.go_version }}"
           body: |
-              ## Update docker images to Go ${{ inputs.go_version }}
-              For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved)
+            ## Update docker images to Go ${{ inputs.go_version }}
+            For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved)
           draft: ${{ inputs.draft }}
