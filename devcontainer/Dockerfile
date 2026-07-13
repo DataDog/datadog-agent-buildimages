@@ -17,7 +17,6 @@ ENV DATADOG_AGENT_EMBEDDED_PATH=/opt/datadog-agent/embedded
 ENV DDA_NO_DYNAMIC_DEPS=${DDA_NO_DYNAMIC_DEPS}
 
 RUN apt-get update && apt-get upgrade -y && \
-    # Common + Agent (Core/Trace/Process) dependencies
     apt-get install -y wget software-properties-common build-essential apt-transport-https libsystemd-dev sudo vim git curl procps ruby ruby-dev autoconf automake libtool libtool-bin gettext autopoint checkpolicy policycoreutils policycoreutils-python-utils bison flex pkg-config docker.io docker-buildx docker-compose-v2 ninja-build zstd \
     # Network feature tests
     openjdk-11-jre-headless \
@@ -30,7 +29,7 @@ RUN apt-get update && apt-get upgrade -y && \
         >/etc/apt/sources.list.d/deadsnakes-ubuntu-ppa-jammy.list && \
     apt-get update && \
     apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv &&\
-    apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists
+    apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup python3.12 as default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
@@ -79,6 +78,8 @@ RUN useradd -g 20 -u 503 -m datadog -s /bin/bash -G sudo,root && \
     pip3 install --no-cache-dir pyasn1==0.6.0 && \
     # Correct some permissions
     mkdir -p $DATADOG_AGENT_EMBEDDED_PATH && chown -R 503:20 $DATADOG_AGENT_EMBEDDED_PATH && \
+    # create bazel cache folder to mount docker volume later and fix permissions on the whole cache folder
+    mkdir -p /home/datadog/.cache/bazel/_bazel_datadog && chown -R 503:20 /home/datadog/.cache && \
     # Omnibus setup
     gem install bundler && \
     mkdir -p /var/cache/omnibus && chmod 775 /var/cache/omnibus && \
