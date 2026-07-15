@@ -1,3 +1,5 @@
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:20.10-py3
 
 ARG VAULT_VERSION=1.17.2
@@ -20,3 +22,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends unzip \
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
