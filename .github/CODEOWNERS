@@ -14,8 +14,6 @@
 go.env                              @DataDog/agent-runtimes
 dda.env                             @DataDog/agent-devx
 
-.gitlab/kernel-version-testing.yml  @DataDog/ebpf-platform @DataDog/agent-devx
-
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
 
 .dda/extend/commands/run/update/go/         @DataDog/agent-runtimes
@@ -26,7 +24,6 @@ dda.env                             @DataDog/agent-devx
 
 # eBPF / KMT images
 /btf-gen/                           @DataDog/ebpf-platform @DataDog/agent-devx
-/kernel-version-testing/            @DataDog/ebpf-platform @DataDog/agent-devx
 
 # Linux test & build images
 /rpm-arm64/                         @DataDog/agent-devx @DataDog/agent-build
