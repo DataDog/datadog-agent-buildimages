@@ -97,6 +97,9 @@ pass init "password-store"
 set-ev PASSWORD_STORE_GPG_OPTS "--homedir ${PASS_GPG_HOME}"
 set-ev PASSWORD_STORE_DIR "${PASSWORD_STORE_DIR}"
 
+# A headless container has no OS keychain, so point aws-vault at the pass store configured above.
+set-ev AWS_VAULT_BACKEND "pass"
+
 # Reset saved data/cache directories from previous runs
 dda config restore
 

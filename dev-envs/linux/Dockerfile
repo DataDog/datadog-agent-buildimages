@@ -61,6 +61,9 @@ RUN --mount=type=bind,src=./fonts.sh,dst=/mnt/fonts.sh /mnt/fonts.sh
 # Set up editor integrations
 RUN --mount=type=bind,src=./editors.sh,dst=/mnt/editors.sh /mnt/editors.sh
 
+# Set up AWS
+RUN --mount=type=bind,src=./aws.sh,dst=/mnt/aws.sh /mnt/aws.sh
+
 # This is where we store default configuration for the image
 # which is used to seed the user's configuration.
 ENV DD_DEFAULT_CONFIG_ROOT="/var/config/dd-defaults"
