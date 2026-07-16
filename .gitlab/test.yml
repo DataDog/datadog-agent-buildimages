@@ -1,21 +1,4 @@
 ---
-trigger_build_kernels:
-  stage: test
-  needs:
-    - job: build_kernel_version_testing_x64
-    - job: build_kernel_version_testing_arm64
-  rules:
-    - when: manual
-      allow_failure: true
-  # Pass variables to the child pipeline
-  variables:
-    PARENT_EXTRA_KCONFIG_VERSION: $EXTRA_KCONFIG_VERSION
-    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
-  trigger:
-    include:
-      - local: .gitlab/kernel_version_testing.yml
-    strategy: depend
-
 trigger_tests:
   stage: test
   rules:

@@ -120,13 +120,6 @@ build_btf_gen:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
 
-build_kernel_version_testing_x64:
-  extends: [.fast_build, .always, .x64]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_x64/Dockerfile
-    IMAGE: kernel-version-testing_x64
-
 build_gitlab_agent_deploy:
   extends: [.fast_build, .always, .x64]
   variables:
@@ -159,13 +152,6 @@ build_docker_arm64:
   variables:
     DOCKERFILE: docker-arm64/Dockerfile
     IMAGE: docker_arm64
-
-build_kernel_version_testing_arm64:
-  extends: [.fast_build, .always, .arm]
-  variables:
-    CUSTOM_BUILD_ARGS: --build-arg KERNEL_EXTRA_CONFIG_VERSION=$EXTRA_KCONFIG_VERSION
-    DOCKERFILE: kernel-version-testing/kernel-version-testing_arm64/Dockerfile
-    IMAGE: kernel-version-testing_arm64
 
 .build_multiarch:
   extends: [.no_schedule, .x64]
