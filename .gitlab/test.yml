@@ -1,18 +1,56 @@
 ---
 trigger_tests:
   stage: test
+  # Windows images (build_windows_ltsc2022_x64/2025_x64) are only rebuilt when
+  # windows-related files change (see .build_windows_x64 rules in build.yml) or
+  # on the default branch. Only point datadog-agent at this pipeline's windows
+  # test images when they were actually built, otherwise fall back to
+  # datadog-agent's own defaults.
   rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
+      variables:
+        CI_IMAGE_WIN_LTSC2022_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+        CI_IMAGE_WIN_LTSC2022_X64_SUFFIX: "${ECR_TEST_ONLY}"
+        CI_IMAGE_WIN_LTSC2025_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+        CI_IMAGE_WIN_LTSC2025_X64_SUFFIX: "${ECR_TEST_ONLY}"
+    - if: $CI_COMMIT_TAG == null
+      changes:
+        paths:
+          - build-container.ps1
+          - windows/**/*
+          - go.env
+          - .gitlab/build.yml
+        compare_to: $COMPARE_TO_BRANCH
+      when: manual
+      allow_failure: true
+      variables:
+        CI_IMAGE_WIN_LTSC2022_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+        CI_IMAGE_WIN_LTSC2022_X64_SUFFIX: "${ECR_TEST_ONLY}"
+        CI_IMAGE_WIN_LTSC2025_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+        CI_IMAGE_WIN_LTSC2025_X64_SUFFIX: "${ECR_TEST_ONLY}"
     - when: manual
       allow_failure: true
   variables:
     RUN_KITCHEN_TESTS: "false"
     BUCKET_BRANCH: "dev"
-    DATADOG_AGENT_BUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_BUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_WINBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    DATADOG_AGENT_ARMBUILDIMAGES_SUFFIX: "${ECR_TEST_ONLY}"
-    DATADOG_AGENT_ARMBUILDIMAGES: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_BTF_GEN: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_BTF_GEN_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_DOCKER_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DOCKER_X64_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_DOCKER_ARM64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_DOCKER_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_GITLAB_AGENT_DEPLOY: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_GITLAB_AGENT_DEPLOY_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_LINUX: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_LINUX_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_RPM_X64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_X64_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_RPM_ARM64: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_ARM64_SUFFIX: "${ECR_TEST_ONLY}"
+    CI_IMAGE_RPM_ARMHF: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    CI_IMAGE_RPM_ARMHF_SUFFIX: "${ECR_TEST_ONLY}"
   trigger:
     project: DataDog/datadog-agent
     strategy: depend
