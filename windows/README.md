@@ -1,7 +1,5 @@
 # Building on Windows
 
-<!-- touch: verify trigger_tests picks up CI_IMAGE_WIN_* when windows/** changes -->
-
 This part of the repo contains the Dockerfile of the image used to build Windows
 container which will be used to build Datadog Agent for Windows.
 
