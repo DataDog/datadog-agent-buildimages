@@ -87,12 +87,6 @@ ENV DD_TARGET_GROUP=dog
 RUN --mount=type=bind,src=./variants/workspaces/setup.sh,dst=/mnt/workspaces-setup.sh \
     /mnt/workspaces-setup.sh
 
-RUN rm -f /usr/local/bin/aws /usr/local/bin/aws_completer \
-    && rm -rf /usr/local/aws-cli
-
-
-# Remove ddtool from the image to avoid conflicts with Workspace one.
-RUN rm -f /usr/local/bin/ddtool
 # Unset XDG_DATA_HOME to avoid conflicts during the workspace provisioning.
 ENV XDG_DATA_HOME=
 
