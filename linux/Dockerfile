@@ -340,7 +340,6 @@ ENV BAZELISK_HOME="${XDG_CACHE_HOME}/bazelisk" \
     PIP_CACHE_DIR="${XDG_CACHE_HOME}/pip" \
     OMNIBUS_BASE_DIR="${XDG_CACHE_HOME}/omnibus" \
     OMNIBUS_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/cache" \
-    OMNIBUS_GIT_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/git-cache" \
     OMNIBUS_GOMODCACHE="${XDG_CACHE_HOME}/go/pkg/mod" \
     BUNDLE_PATH="${XDG_CACHE_HOME}/omnibus/bundle"
 
