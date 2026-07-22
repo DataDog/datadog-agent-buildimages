@@ -5,6 +5,10 @@ ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/ubuntu:noble
 ARG DD_OCTO_STS_VERSION=latest
 ARG DATADOG_PACKAGES_VERSION
 
+# Specify CTNG_ARCH in root scope as it is used in a stage definition (FROM instruction) to
+# pick the aarch64-only stage that also builds the armhf cross-toolchain.
+ARG CTNG_ARCH
+
 # Create different base stages for subsequent build stages
 # Common dependencies for all stages
 FROM ${BASE_IMAGE} AS common_base
@@ -107,6 +111,22 @@ COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
 COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
 COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
 COPY linux/ctng.patch /root/ctng.patch
+
+# x86_64 images don't need an armhf toolchain, so this stage is a no-op passthrough.
+FROM crosstool_ng_builder AS crosstool_ng_builder_x86_64
+
+# The armhf config only exists under linux/aarch64/ (armhf is only ever hosted on aarch64), so
+# this stage - which adds it to the build - only exists for the aarch64 image. Docker only
+# evaluates the stage picked by CTNG_ARCH below, so the x86_64 build never looks for this file.
+FROM crosstool_ng_builder AS crosstool_ng_builder_aarch64
+ARG CTNG_VERSION
+ARG CROSS_GLIBC_VERSION
+ENV CTNG_ARMHF_ARCH=armhf
+COPY linux/aarch64/config-armhf-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-armhf
+
+FROM crosstool_ng_builder_${CTNG_ARCH} AS crosstool_ng_final
+ARG CTNG_ARCH
+ARG CTNG_CROSS_ARCH
 RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
 
 FROM build_base AS dpkg_armhf_builder
@@ -449,7 +469,7 @@ COPY --from=texinfo_builder /usr/local /usr/local
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
 # Crosstool-ng
-COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+COPY --from=crosstool_ng_final /opt/toolchains /opt/toolchains
 
 # Osxcross
 COPY --from=osxcross_builder /opt/osxcross ${OSXCROSS_PATH}
@@ -600,7 +620,7 @@ RUN groupadd -g 1000 dd && \
 # Set up environment
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:/opt/aix-cross/bin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:/opt/toolchains/armhf/bin:${OSXCROSS_PATH}/bin:/opt/aix-cross/bin:${PATH}"
 ENV BUNDLE_GLOBAL_GEM_CACHE="true"
 
 # Set up missing environment variables
