@@ -78,6 +78,21 @@
 
 build_linux_amd64:
   extends: [.build_bake, .x64]
+  before_script:
+    - !reference [.build, before_script]
+    - export NATIVE_TOOLCHAIN_HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh x86_64 x86_64 2.17)
+    - export CROSS_TOOLCHAIN_HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh x86_64 aarch64 2.23)
+    - export NATIVE_TOOLCHAIN_CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh x86_64 x86_64 "${NATIVE_TOOLCHAIN_HASH}")
+    - export CROSS_TOOLCHAIN_CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh x86_64 aarch64 "${CROSS_TOOLCHAIN_HASH}")
+    - export NATIVE_TOOLCHAIN_KEY=$(./toolchains/scripts/toolchain-artifact-key.sh x86_64 x86_64 "${NATIVE_TOOLCHAIN_HASH}" "${NATIVE_TOOLCHAIN_CHANNEL}")
+    - export CROSS_TOOLCHAIN_KEY=$(./toolchains/scripts/toolchain-artifact-key.sh x86_64 aarch64 "${CROSS_TOOLCHAIN_HASH}" "${CROSS_TOOLCHAIN_CHANNEL}")
+    - export NATIVE_TOOLCHAIN_CHECKSUM=$(./toolchains/scripts/toolchain-artifact-checksum.sh x86_64 x86_64 "${NATIVE_TOOLCHAIN_HASH}" "${NATIVE_TOOLCHAIN_CHANNEL}")
+    - export CROSS_TOOLCHAIN_CHECKSUM=$(./toolchains/scripts/toolchain-artifact-checksum.sh x86_64 aarch64 "${CROSS_TOOLCHAIN_HASH}" "${CROSS_TOOLCHAIN_CHANNEL}")
+  needs:
+    - job: build_toolchain_x86_64_native
+      artifacts: false
+    - job: build_toolchain_x86_64_cross_aarch64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
@@ -132,6 +147,21 @@ build_gitlab_agent_deploy:
 
 build_linux_arm64:
   extends: [.build_bake, .arm]
+  before_script:
+    - !reference [.build, before_script]
+    - export NATIVE_TOOLCHAIN_HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh aarch64 aarch64 2.23)
+    - export CROSS_TOOLCHAIN_HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh aarch64 x86_64 2.17)
+    - export NATIVE_TOOLCHAIN_CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh aarch64 aarch64 "${NATIVE_TOOLCHAIN_HASH}")
+    - export CROSS_TOOLCHAIN_CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh aarch64 x86_64 "${CROSS_TOOLCHAIN_HASH}")
+    - export NATIVE_TOOLCHAIN_KEY=$(./toolchains/scripts/toolchain-artifact-key.sh aarch64 aarch64 "${NATIVE_TOOLCHAIN_HASH}" "${NATIVE_TOOLCHAIN_CHANNEL}")
+    - export CROSS_TOOLCHAIN_KEY=$(./toolchains/scripts/toolchain-artifact-key.sh aarch64 x86_64 "${CROSS_TOOLCHAIN_HASH}" "${CROSS_TOOLCHAIN_CHANNEL}")
+    - export NATIVE_TOOLCHAIN_CHECKSUM=$(./toolchains/scripts/toolchain-artifact-checksum.sh aarch64 aarch64 "${NATIVE_TOOLCHAIN_HASH}" "${NATIVE_TOOLCHAIN_CHANNEL}")
+    - export CROSS_TOOLCHAIN_CHECKSUM=$(./toolchains/scripts/toolchain-artifact-checksum.sh aarch64 x86_64 "${CROSS_TOOLCHAIN_HASH}" "${CROSS_TOOLCHAIN_CHANNEL}")
+  needs:
+    - job: build_toolchain_aarch64_native
+      artifacts: false
+    - job: build_toolchain_aarch64_cross_x86_64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY

@@ -83,31 +83,21 @@ FROM build_base AS texinfo_builder
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
 RUN --mount=type=bind,src=./linux/scripts/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh
 
-FROM texinfo_builder AS crosstool_ng_builder
-# CTNG depends on texinfo
-# Build cross-compilation toolchain
-
-# Install crosstool-ng specific dependencies (not included in build_base)
-RUN apt-get install -y --no-install-recommends \
-    gperf libncurses5-dev rsync ninja-build
-
-ARG CTNG_VERSION
+FROM extraction_base AS crosstool_ng_builder
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ARG GLIBC_VERSION
-ARG CROSS_GLIBC_VERSION
+ARG NATIVE_TOOLCHAIN_KEY
+ARG CROSS_TOOLCHAIN_KEY
+ARG NATIVE_TOOLCHAIN_CHECKSUM
+ARG CROSS_TOOLCHAIN_CHECKSUM
 
-# TODO: Add checksum
-# NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
-ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz \
-    https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
-    /tmp/crosstool-ng/
+ADD --checksum=${NATIVE_TOOLCHAIN_CHECKSUM} https://dd-agent-build-artifacts.s3.amazonaws.com/${NATIVE_TOOLCHAIN_KEY} /tmp/native-toolchain.tar.xz
+ADD --checksum=${CROSS_TOOLCHAIN_CHECKSUM} https://dd-agent-build-artifacts.s3.amazonaws.com/${CROSS_TOOLCHAIN_KEY} /tmp/cross-toolchain.tar.xz
 
-COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY toolchains/crosstool-ng/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
-COPY toolchains/crosstool-ng/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
-COPY toolchains/crosstool-ng/ctng.patch /root/ctng.patch
-RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
+RUN mkdir -p /opt/toolchains/${CTNG_ARCH} /opt/toolchains/${CTNG_CROSS_ARCH} \
+    && tar xf /tmp/native-toolchain.tar.xz -C /opt/toolchains/${CTNG_ARCH} \
+    && tar xf /tmp/cross-toolchain.tar.xz -C /opt/toolchains/${CTNG_CROSS_ARCH} \
+    && rm /tmp/native-toolchain.tar.xz /tmp/cross-toolchain.tar.xz
 
 FROM build_base AS dpkg_armhf_builder
 # Build dpkg-armhf

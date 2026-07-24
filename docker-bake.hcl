@@ -154,6 +154,39 @@ variable "misc_args_arm64" {
   }
 }
 
+// Resolved per-pipeline in CI (see .gitlab/build.yml) from the recipe files under
+// toolchains/, and used by crosstool_ng_builder to fetch pre-built toolchains from
+// the dd-agent-build-artifacts S3 bucket.
+variable "NATIVE_TOOLCHAIN_KEY" {
+  type = string
+  default = ""
+}
+
+variable "CROSS_TOOLCHAIN_KEY" {
+  type = string
+  default = ""
+}
+
+variable "NATIVE_TOOLCHAIN_CHECKSUM" {
+  type = string
+  default = ""
+}
+
+variable "CROSS_TOOLCHAIN_CHECKSUM" {
+  type = string
+  default = ""
+}
+
+variable "toolchain_artifact_args" {
+  type = map(string)
+  default = {
+    NATIVE_TOOLCHAIN_KEY      = NATIVE_TOOLCHAIN_KEY
+    CROSS_TOOLCHAIN_KEY       = CROSS_TOOLCHAIN_KEY
+    NATIVE_TOOLCHAIN_CHECKSUM = NATIVE_TOOLCHAIN_CHECKSUM
+    CROSS_TOOLCHAIN_CHECKSUM  = CROSS_TOOLCHAIN_CHECKSUM
+  }
+}
+
 // AMD64 architecture specific arguments
 variable "args_amd64" {
   type = map(string)
@@ -166,6 +199,7 @@ variable "args_amd64" {
     checksums_amd64,
     go_checksums_amd64, # Defined in docker-bake.override.json
     misc_args_amd64,
+    toolchain_artifact_args,
   )
 }
 
@@ -181,6 +215,7 @@ variable "args_arm64" {
     checksums_arm64,
     go_checksums_arm64, # Defined in docker-bake.override.json
     misc_args_arm64,
+    toolchain_artifact_args,
   )
 }
 
