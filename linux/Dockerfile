@@ -104,9 +104,9 @@ ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-
     /tmp/crosstool-ng/
 
 COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
-COPY linux/ctng.patch /root/ctng.patch
+COPY toolchains/crosstool-ng/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
+COPY toolchains/crosstool-ng/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
+COPY toolchains/crosstool-ng/ctng.patch /root/ctng.patch
 RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
 
 FROM build_base AS dpkg_armhf_builder
