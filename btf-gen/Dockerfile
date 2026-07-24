@@ -1,5 +1,5 @@
-ARG BASE_IMAGE_REGISTRY=docker.io
-FROM ${BASE_IMAGE_REGISTRY}/ubuntu:22.04
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12.6
@@ -9,27 +9,18 @@ ARG AWSCLI_VERSION=2.27.30
 ARG AWSCLI_CHECKSUM=2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     clang \
-    curl \
-    git \
     libcap-dev \
     libelf-dev \
     libz-dev \
     llvm \
     llvm-dev \
     lld \
-    ninja-build \
     software-properties-common \
-    make  \
     zlib1g-dev  \
     libbz2-dev  \
     libreadline-dev  \
     libsqlite3-dev  \
-    unzip \
-    wget  \
-    libncurses5-dev  \
-    xz-utils  \
     tk-dev  \
     libxml2-dev  \
     libxmlsec1-dev  \
