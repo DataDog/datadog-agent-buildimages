@@ -29,22 +29,38 @@ validate_tools:
   script:
     - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
     - |
-      for name_url in \
-        "rg=https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz" \
-        "ya=https://github.com/sxyazi/yazi/releases/download/v25.5.31/ya-x86_64-unknown-linux-musl.zip" \
-        "hyperfine=https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz"; do
-        name="${name_url%%=*}"
-        url="${name_url#*=}"
-        echo "=== $name ==="
-        curl -sSL -D "/tmp/${name}.headers" -o "/tmp/${name}.bin" -w "HTTP_CODE=%{http_code} SIZE=%{size_download}\n" "$url" || echo "curl failed for $name"
-        echo "--- headers (redacted) ---"
-        grep -viE '^(set-cookie|authorization):' "/tmp/${name}.headers" | sed -E 's/^(location:[^?]*)\?.*/\1?[REDACTED]/i'
-        echo "--- file info ---"
-        file "/tmp/${name}.bin" || true
-        echo "--- first 300 bytes ---"
-        head -c 300 "/tmp/${name}.bin" | xxd | head -20 || true
-        echo ""
-      done
+      python3 - <<'PYEOF'
+      import urllib.request
+
+      targets = {
+          "rg": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz",
+          "ya": "https://github.com/sxyazi/yazi/releases/download/v25.5.31/ya-x86_64-unknown-linux-musl.zip",
+          "hyperfine": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz",
+      }
+      REDACT_HEADERS = {"set-cookie", "authorization"}
+
+      for name, url in targets.items():
+          print(f"=== {name} ===")
+          try:
+              with urllib.request.urlopen(url) as resp:
+                  status = resp.status
+                  headers = resp.headers
+                  body = resp.read()
+          except Exception as e:
+              print(f"urlopen failed: {e!r}")
+              continue
+          print(f"HTTP_CODE={status} SIZE={len(body)}")
+          print("--- headers (redacted) ---")
+          for k, v in headers.items():
+              if k.lower() in REDACT_HEADERS:
+                  continue
+              if k.lower() == "location":
+                  v = v.split("?")[0] + "?[REDACTED]"
+              print(f"{k}: {v}")
+          print("--- first 300 bytes (hex) ---")
+          print(body[:300].hex())
+          print()
+      PYEOF
     - python -m venv .venv
     - source .venv/bin/activate
     - pip install "dda==${DDA_VERSION}"
