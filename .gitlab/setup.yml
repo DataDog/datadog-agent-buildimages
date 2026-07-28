@@ -32,14 +32,16 @@ validate_tools:
       python3 - <<'PYEOF'
       import urllib.request
 
-      targets = {
-          "rg": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz",
-          "ya": "https://github.com/sxyazi/yazi/releases/download/v25.5.31/ya-x86_64-unknown-linux-musl.zip",
-          "hyperfine": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz",
-      }
+      targets = [
+          ("rg-1", "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz"),
+          ("rg-2", "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz"),
+          ("rg-3", "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz"),
+          ("ya", "https://github.com/sxyazi/yazi/releases/download/v0.3.3/yazi-x86_64-unknown-linux-musl.zip"),
+          ("hyperfine", "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz"),
+      ]
       REDACT_HEADERS = {"set-cookie", "authorization"}
 
-      for name, url in targets.items():
+      for name, url in targets:
           print(f"=== {name} ===")
           try:
               with urllib.request.urlopen(url) as resp:
