@@ -156,7 +156,11 @@ variable "misc_args_arm64" {
 
 // Resolved per-pipeline in CI (see .gitlab/build.yml) from the recipe files under
 // toolchains/, and used by crosstool_ng_builder to fetch pre-built toolchains from
-// the dd-agent-build-artifacts S3 bucket.
+// the dd-agent-build-artifacts S3 bucket. To build linux-amd64/linux-arm64 locally,
+// eval toolchains/scripts/resolve-toolchain-build-args.sh first for each of the
+// native and cross toolchains, e.g.:
+//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 x86_64 2.17)"
+//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 aarch64 2.23)"
 variable "NATIVE_TOOLCHAIN_KEY" {
   type = string
   default = ""
