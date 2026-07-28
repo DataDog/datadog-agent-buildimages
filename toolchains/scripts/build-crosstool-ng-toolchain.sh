@@ -4,12 +4,6 @@ set -euxo pipefail
 
 source "${CI_PROJECT_DIR}/toolchains/crosstool-ng/ctng-version.env"
 
-apt-get update -qy
-apt-get install -y --no-install-recommends \
-    automake autoconf autopoint gettext help2man \
-    libtool libtool-bin gperf bison flex gawk pkg-config \
-    patch texinfo perl python3-dev gnupg dirmngr gpg-agent rsync
-
 WORKDIR=$(mktemp -d)
 echo "Building crosstool-ng in ${WORKDIR}"
 cd "${WORKDIR}"

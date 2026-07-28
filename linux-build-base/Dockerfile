@@ -16,4 +16,7 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     unzip \
     xz-utils \
     ninja-build \
-    libncurses5-dev
+    libncurses5-dev \
+    automake autoconf autopoint gettext help2man \
+    libtool libtool-bin gperf bison flex gawk pkg-config \
+    patch texinfo perl python3-dev gnupg dirmngr gpg-agent rsync
