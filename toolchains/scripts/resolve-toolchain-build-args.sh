@@ -13,6 +13,7 @@ fi
 
 HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh "${HOST_ARCH}" "${TARGET_ARCH}")
 CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh "${HOST_ARCH}" "${TARGET_ARCH}" "${HASH}")
+KEY=$(./toolchains/scripts/toolchain-artifact-key.sh "${HOST_ARCH}" "${TARGET_ARCH}" "${HASH}" "${CHANNEL}")
 
-echo "export ${PREFIX}_TOOLCHAIN_KEY=$(./toolchains/scripts/toolchain-artifact-key.sh "${HOST_ARCH}" "${TARGET_ARCH}" "${HASH}" "${CHANNEL}")"
-echo "export ${PREFIX}_TOOLCHAIN_CHECKSUM=$(./toolchains/scripts/toolchain-artifact-checksum.sh "${HOST_ARCH}" "${TARGET_ARCH}" "${HASH}" "${CHANNEL}")"
+echo "export ${PREFIX}_TOOLCHAIN_KEY=${KEY}"
+echo "export ${PREFIX}_TOOLCHAIN_CHECKSUM=$(curl -sSf "https://dd-agent-build-artifacts.s3.amazonaws.com/${KEY}.sha256")"
