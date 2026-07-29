@@ -88,9 +88,6 @@ build_linux_amd64:
     - job: build_toolchain_x86_64_cross_aarch64
       artifacts: false
   variables:
-    # resolve-toolchain-hash.sh needs full history for the recipe files to reliably
-    # find the last commit that touched them.
-    GIT_DEPTH: "0"
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
 
@@ -150,9 +147,6 @@ build_linux_arm64:
     - job: build_toolchain_aarch64_cross_x86_64
       artifacts: false
   variables:
-    # resolve-toolchain-hash.sh needs full history for the recipe files to reliably
-    # find the last commit that touched them.
-    GIT_DEPTH: "0"
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
 

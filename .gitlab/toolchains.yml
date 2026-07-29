@@ -20,9 +20,6 @@ build_linux_build_base_arm64:
   script:
     - ./toolchains/scripts/build-and-publish-toolchain.sh
   variables:
-    # resolve-toolchain-hash.sh needs full history for the recipe files to reliably
-    # find the last commit that touched them.
-    GIT_DEPTH: "0"
     KUBERNETES_CPU_REQUEST: "8"
     KUBERNETES_CPU_LIMIT: "16"
     KUBERNETES_MEMORY_REQUEST: "16Gi"
