@@ -2,6 +2,7 @@
 build_linux_build_base_x64:
   extends: [.fast_build, .always, .x64]
   stage: toolchains
+  needs: []
   variables:
     DOCKERFILE: linux-build-base/Dockerfile
     IMAGE: linux-build-base
@@ -10,6 +11,7 @@ build_linux_build_base_x64:
 build_linux_build_base_arm64:
   extends: [.fast_build, .always, .arm]
   stage: toolchains
+  needs: []
   variables:
     DOCKERFILE: linux-build-base/Dockerfile
     IMAGE: linux-build-base
