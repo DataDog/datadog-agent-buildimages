@@ -80,8 +80,8 @@ build_linux_amd64:
   extends: [.build_bake, .x64]
   before_script:
     - !reference [.build, before_script]
-    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 x86_64 2.17)"
-    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 aarch64 2.23)"
+    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 x86_64)"
+    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 aarch64)"
   needs:
     - job: build_toolchain_x86_64_native
       artifacts: false
@@ -146,8 +146,8 @@ build_linux_arm64:
   extends: [.build_bake, .arm]
   before_script:
     - !reference [.build, before_script]
-    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh aarch64 aarch64 2.23)"
-    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh aarch64 x86_64 2.17)"
+    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh aarch64 aarch64)"
+    - eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh aarch64 x86_64)"
   needs:
     - job: build_toolchain_aarch64_native
       artifacts: false

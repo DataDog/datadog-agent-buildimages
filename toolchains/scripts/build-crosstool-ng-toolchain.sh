@@ -4,6 +4,8 @@ set -euxo pipefail
 
 source "${CI_PROJECT_DIR}/toolchains/crosstool-ng/ctng-version.env"
 
+CONFIG="${CI_PROJECT_DIR}/$(cd "${CI_PROJECT_DIR}" && ./toolchains/scripts/toolchain-config-path.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}")"
+
 WORKDIR=$(mktemp -d)
 echo "Building crosstool-ng in ${WORKDIR}"
 cd "${WORKDIR}"
@@ -20,7 +22,7 @@ patch -p1 < "${CI_PROJECT_DIR}/toolchains/crosstool-ng/ctng.patch"
 ./configure --enable-local && make -j"$(nproc)"
 export CT_ALLOW_BUILD_AS_ROOT_SURE=yes
 
-cp "${CI_PROJECT_DIR}/toolchains/crosstool-ng/${TOOLCHAIN_HOST_ARCH}/config-${TOOLCHAIN_TARGET_ARCH}-unknown-gnu-linux-glibc${TOOLCHAIN_TARGET_GLIBC_VERSION}" .config
+cp "${CONFIG}" .config
 ./ct-ng upgradeconfig
 ./ct-ng build
 

@@ -159,8 +159,8 @@ variable "misc_args_arm64" {
 // the dd-agent-build-artifacts S3 bucket. To build linux-amd64/linux-arm64 locally,
 // eval toolchains/scripts/resolve-toolchain-build-args.sh first for each of the
 // native and cross toolchains, e.g.:
-//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 x86_64 2.17)"
-//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 aarch64 2.23)"
+//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 x86_64)"
+//   eval "$(./toolchains/scripts/resolve-toolchain-build-args.sh x86_64 aarch64)"
 variable "NATIVE_TOOLCHAIN_KEY" {
   type = string
   default = ""

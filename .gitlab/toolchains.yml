@@ -36,22 +36,18 @@ build_toolchain_x86_64_native:
   extends: .toolchain_build_x86_64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: x86_64
-    TOOLCHAIN_TARGET_GLIBC_VERSION: "2.17"
 
 build_toolchain_x86_64_cross_aarch64:
   extends: .toolchain_build_x86_64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: aarch64
-    TOOLCHAIN_TARGET_GLIBC_VERSION: "2.23"
 
 build_toolchain_aarch64_native:
   extends: .toolchain_build_aarch64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: aarch64
-    TOOLCHAIN_TARGET_GLIBC_VERSION: "2.23"
 
 build_toolchain_aarch64_cross_x86_64:
   extends: .toolchain_build_aarch64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: x86_64
-    TOOLCHAIN_TARGET_GLIBC_VERSION: "2.17"
