@@ -128,13 +128,9 @@ build_docker_x64:
 
 build_btf_gen:
   extends: [.fast_build, .always, .x64]
-  needs:
-    - job: build_linux_build_base_x64
-      artifacts: false
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
-    BASE_IMAGE: "registry.ddbuild.io/ci/datadog-agent-buildimages/linux-build-base${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64"
 
 build_gitlab_agent_deploy:
   extends: [.fast_build, .always, .x64]
