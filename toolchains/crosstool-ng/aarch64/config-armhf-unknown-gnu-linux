@@ -50,7 +50,7 @@ CT_MODULES=y
 # Paths
 #
 CT_LOCAL_TARBALLS_DIR="${HOME}/src"
-CT_SAVE_TARBALLS=y
+# CT_SAVE_TARBALLS is not set
 # CT_TARBALLS_BUILDROOT_LAYOUT is not set
 CT_WORK_DIR="${CT_TOP_DIR}/.build"
 CT_BUILD_TOP_DIR="${CT_WORK_DIR:-${CT_TOP_DIR}/.build}/${CT_HOST:+HOST-${CT_HOST}/}${CT_TARGET}"
@@ -59,7 +59,7 @@ CT_PREFIX_DIR="${CT_PREFIX:-${HOME}/x-tools}/${CT_HOST:+HOST-${CT_HOST}/}${CT_TA
 CT_RM_RF_PREFIX_DIR=y
 CT_REMOVE_DOCS=y
 CT_INSTALL_LICENSES=y
-CT_PREFIX_DIR_RO=y
+# CT_PREFIX_DIR_RO is not set
 CT_STRIP_HOST_TOOLCHAIN_EXECUTABLES=y
 # CT_STRIP_TARGET_TOOLCHAIN_EXECUTABLES is not set
 
@@ -74,7 +74,9 @@ CT_DOWNLOAD_AGENT_WGET=y
 CT_CONNECT_TIMEOUT=10
 CT_DOWNLOAD_WGET_OPTIONS="--passive-ftp --tries=3 -nc --progress=dot:binary"
 # CT_ONLY_DOWNLOAD is not set
-# CT_USE_MIRROR is not set
+CT_USE_MIRROR=y
+# CT_FORCE_MIRROR is not set
+CT_MIRROR_BASE_URL="https://crosstool-ng.org/mirrors/"
 CT_VERIFY_DOWNLOAD_DIGEST=y
 CT_VERIFY_DOWNLOAD_DIGEST_SHA512=y
 # CT_VERIFY_DOWNLOAD_DIGEST_SHA256 is not set
@@ -121,7 +123,7 @@ CT_LOG_EXTRA=y
 # CT_LOG_DEBUG is not set
 CT_LOG_LEVEL_MAX="EXTRA"
 # CT_LOG_SEE_TOOLS_WARN is not set
-CT_LOG_PROGRESS_BAR=y
+# CT_LOG_PROGRESS_BAR is not set
 CT_LOG_TO_FILE=y
 CT_LOG_FILE_COMPRESS=y
 # end of Paths and misc options
@@ -222,7 +224,7 @@ CT_SYSROOT_DIR_PREFIX=""
 CT_WANTS_STATIC_LINK=y
 CT_WANTS_STATIC_LINK_CXX=y
 # CT_STATIC_TOOLCHAIN is not set
-CT_SHOW_CT_VERSION=y
+# CT_SHOW_CT_VERSION is not set
 CT_TOOLCHAIN_PKGVERSION=""
 CT_TOOLCHAIN_BUGURL=""
 
@@ -526,43 +528,7 @@ CT_GLIBC_ENABLE_OBSOLETE_RPC=y
 # CT_GLIBC_DISABLE_VERSIONING is not set
 CT_GLIBC_OLDEST_ABI=""
 CT_GLIBC_FORCE_UNWIND=y
-CT_GLIBC_LOCALES=y
-
-#
-# WARNING!                                                      
-#
-
-#
-# |  The built locales will be usable if and only if the build  
-#
-
-#
-# |  machine and the target:                                    
-#
-
-#
-# |   - have the same endianness,                               
-#
-
-#
-# |   - and have the same alignment requirements for uint32_t.  
-#
-
-#
-# |  You will have to check by yourself (for now).              
-#
-
-#
-# WARNING!                                                      
-#
-
-#
-# |  Building GLIBC locales requires that GLIBC supports        
-#
-
-#
-# |  the build machine as the target.                           
-#
+# CT_GLIBC_LOCALES is not set
 # CT_GLIBC_KERNEL_VERSION_NONE is not set
 CT_GLIBC_KERNEL_VERSION_AS_HEADERS=y
 # CT_GLIBC_KERNEL_VERSION_CHOSEN is not set
@@ -683,11 +649,11 @@ CT_CC_GCC_TM_CLONE_REGISTRY=m
 CT_CC_GCC_SJLJ_EXCEPTIONS=m
 CT_CC_GCC_LDBL_128=m
 # CT_CC_GCC_BUILD_ID is not set
-CT_CC_GCC_LNK_HASH_STYLE_DEFAULT=y
+# CT_CC_GCC_LNK_HASH_STYLE_DEFAULT is not set
 # CT_CC_GCC_LNK_HASH_STYLE_SYSV is not set
 # CT_CC_GCC_LNK_HASH_STYLE_GNU is not set
-# CT_CC_GCC_LNK_HASH_STYLE_BOTH is not set
-CT_CC_GCC_LNK_HASH_STYLE=""
+CT_CC_GCC_LNK_HASH_STYLE_BOTH=y
+CT_CC_GCC_LNK_HASH_STYLE="both"
 CT_CC_GCC_DEC_FLOATS_AUTO=y
 # CT_CC_GCC_DEC_FLOATS_BID is not set
 # CT_CC_GCC_DEC_FLOATS_DPD is not set
@@ -717,7 +683,20 @@ CT_ALL_DEBUG_CHOICES="DUMA GDB LTRACE STRACE"
 #
 # CT_COMPLIBS_CHECK is not set
 # CT_COMP_LIBS_CLOOG is not set
-# CT_COMP_LIBS_EXPAT is not set
+CT_COMP_LIBS_EXPAT=y
+CT_COMP_LIBS_EXPAT_PKG_KSYM="EXPAT"
+CT_EXPAT_DIR_NAME="expat"
+CT_EXPAT_PKG_NAME="expat"
+CT_EXPAT_SRC_RELEASE=y
+# CT_EXPAT_SRC_DEVEL is not set
+CT_EXPAT_PATCH_ORDER="global"
+CT_EXPAT_V_2_5=y
+CT_EXPAT_VERSION="2.5.0"
+CT_EXPAT_MIRRORS="http://downloads.sourceforge.net/project/expat/expat/${CT_EXPAT_VERSION} https://github.com/libexpat/libexpat/releases/download/R_${CT_EXPAT_VERSION//./_}"
+CT_EXPAT_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
+CT_EXPAT_ARCHIVE_DIRNAME="@{pkg_name}-@{version}"
+CT_EXPAT_ARCHIVE_FORMATS=".tar.xz .tar.lz .tar.bz2 .tar.gz"
+CT_EXPAT_SIGNATURE_FORMAT=""
 CT_COMP_LIBS_GETTEXT=y
 CT_COMP_LIBS_GETTEXT_PKG_KSYM="GETTEXT"
 CT_GETTEXT_DIR_NAME="gettext"
