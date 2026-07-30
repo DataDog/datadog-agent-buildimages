@@ -39,3 +39,5 @@ upload() {
 
 upload "${KEY}" "${ARCHIVE}"
 upload "${KEY}.sha256" "${ARCHIVE}.sha256"
+
+echo "Toolchain published: https://dd-agent-build-artifacts.s3.amazonaws.com/${KEY}"
