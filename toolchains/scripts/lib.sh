@@ -16,14 +16,14 @@ toolchain_config_path() {
 }
 
 # crosstool-ng names the target triplet after the target's ABI. Every arch we build uses
-# the "<arch>-unknown-linux-gnu" triplet, except armhf, whose EABIHF ABI produces
-# "arm-unknown-linux-gnueabihf" instead.
+# the "<arch>-linux-gnu" triplet, except armhf, whose EABIHF ABI produces
+# "arm-linux-gnueabihf" instead.
 toolchain_triplet() {
     local target_arch="$1"
 
     case "${target_arch}" in
-        armhf) echo "arm-unknown-linux-gnueabihf" ;;
-        *)     echo "${target_arch}-unknown-linux-gnu" ;;
+        armhf) echo "arm-linux-gnueabihf" ;;
+        *)     echo "${target_arch}-linux-gnu" ;;
     esac
 }
 
