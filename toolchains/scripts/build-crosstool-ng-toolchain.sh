@@ -26,4 +26,12 @@ cp "${CONFIG}" .config
 ./ct-ng upgradeconfig
 ./ct-ng build
 
-tar cJf "${CI_PROJECT_DIR}/${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu-gcc.tar.xz" -C "/root/x-tools/${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu" .
+# crosstool-ng names its x-tools output directory after the target triplet. Every arch we
+# build uses the "<arch>-unknown-linux-gnu" triplet, except armhf, whose EABIHF ABI produces
+# "arm-unknown-linux-gnueabihf" instead.
+case "${TOOLCHAIN_TARGET_ARCH}" in
+    armhf) XTOOLS_DIR=arm-unknown-linux-gnueabihf ;;
+    *)     XTOOLS_DIR=${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu ;;
+esac
+
+tar cJf "${CI_PROJECT_DIR}/${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu-gcc.tar.xz" -C "/root/x-tools/${XTOOLS_DIR}" .

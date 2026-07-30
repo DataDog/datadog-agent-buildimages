@@ -66,3 +66,8 @@ build_toolchain_aarch64_cross_x86_64:
   extends: .toolchain_build_aarch64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: x86_64
+
+build_toolchain_aarch64_cross_armhf:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: armhf
