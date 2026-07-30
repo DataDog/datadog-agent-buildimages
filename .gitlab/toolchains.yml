@@ -26,6 +26,11 @@ build_linux_build_base_arm64:
     KUBERNETES_CPU_LIMIT: "16"
     KUBERNETES_MEMORY_REQUEST: "16Gi"
     KUBERNETES_MEMORY_LIMIT: "32Gi"
+  artifacts:
+    when: on_failure
+    paths:
+      - build.log
+    expire_in: "1 week"
 
 .toolchain_build_x86_64_host:
   extends: .toolchain_build
