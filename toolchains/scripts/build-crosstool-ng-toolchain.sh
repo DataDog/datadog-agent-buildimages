@@ -22,7 +22,11 @@ patch -p1 < "${CI_PROJECT_DIR}/toolchains/crosstool-ng/ctng.patch"
 ./configure --enable-local && make -j"$(nproc)"
 export CT_ALLOW_BUILD_AS_ROOT_SURE=yes
 
-trap 'cp -f build.log "${CI_PROJECT_DIR}/build.log" 2>/dev/null || true' EXIT
+trap '
+    cp -f build.log "${CI_PROJECT_DIR}/build.log" 2>/dev/null
+    find .build -name config.log -print0 2>/dev/null | tar cJf "${CI_PROJECT_DIR}/config-logs.tar.xz" --null -T - 2>/dev/null
+    true
+' EXIT
 
 cp "${CONFIG}" .config
 ./ct-ng upgradeconfig

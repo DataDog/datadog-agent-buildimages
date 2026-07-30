@@ -30,6 +30,7 @@ build_linux_build_base_arm64:
     when: on_failure
     paths:
       - build.log
+      - config-logs.tar.xz
     expire_in: "1 week"
 
 .toolchain_build_x86_64_host:
