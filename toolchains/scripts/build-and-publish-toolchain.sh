@@ -2,11 +2,13 @@
 
 set -euo pipefail
 
-TOOLCHAIN_HASH=$(./toolchains/scripts/resolve-toolchain-hash.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}")
+source ./toolchains/scripts/lib.sh
+
+TOOLCHAIN_HASH=$(resolve_toolchain_hash "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}")
 echo "Resolved toolchain hash: ${TOOLCHAIN_HASH}"
 
-if CHANNEL=$(./toolchains/scripts/resolve-toolchain-channel.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}"); then
-    KEY=$(./toolchains/scripts/toolchain-artifact-key.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}" "${CHANNEL}")
+if CHANNEL=$(resolve_toolchain_channel "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}"); then
+    KEY=$(toolchain_artifact_key "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}" "${CHANNEL}")
     echo "Toolchain already published for this recipe under ${CHANNEL}/, nothing to do"
     echo "Toolchain: https://dd-agent-build-artifacts.s3.amazonaws.com/${KEY}"
     exit 0

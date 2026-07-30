@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-set -euxo pipefail
+set -euo pipefail
 
+source "${CI_PROJECT_DIR}/toolchains/scripts/lib.sh"
 source "${CI_PROJECT_DIR}/toolchains/crosstool-ng/ctng-version.env"
 
-CONFIG="${CI_PROJECT_DIR}/$(cd "${CI_PROJECT_DIR}" && ./toolchains/scripts/toolchain-config-path.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}")"
+CONFIG="${CI_PROJECT_DIR}/$(toolchain_config_path "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}")"
+TRIPLET=$(toolchain_triplet "${TOOLCHAIN_TARGET_ARCH}")
 
 WORKDIR=$(mktemp -d)
 echo "Building crosstool-ng in ${WORKDIR}"
@@ -32,12 +34,5 @@ cp "${CONFIG}" .config
 ./ct-ng upgradeconfig
 ./ct-ng build
 
-# crosstool-ng names its x-tools output directory after the target triplet. Every arch we
-# build uses the "<arch>-unknown-linux-gnu" triplet, except armhf, whose EABIHF ABI produces
-# "armv7-unknown-linux-gnueabihf" instead.
-case "${TOOLCHAIN_TARGET_ARCH}" in
-    armhf) XTOOLS_DIR=armv7-unknown-linux-gnueabihf ;;
-    *)     XTOOLS_DIR=${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu ;;
-esac
-
-tar cJf "${CI_PROJECT_DIR}/${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu-gcc.tar.xz" -C "/root/x-tools/${XTOOLS_DIR}" .
+# crosstool-ng names its x-tools output directory after the target triplet.
+tar cJf "${CI_PROJECT_DIR}/${TRIPLET}-gcc.tar.xz" -C "/root/x-tools/${TRIPLET}" .

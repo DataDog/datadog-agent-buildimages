@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -euxo pipefail
+set -euo pipefail
+
+source ./toolchains/scripts/lib.sh
 
 curl -sSf "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o awscliv2.zip
 unzip -q awscliv2.zip
@@ -14,8 +16,9 @@ if [[ "${CI_COMMIT_BRANCH:-}" == "${CI_DEFAULT_BRANCH:-}" ]]; then
 else
     CHANNEL="branches"
 fi
-KEY=$(./toolchains/scripts/toolchain-artifact-key.sh "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}" "${CHANNEL}")
-ARCHIVE="${CI_PROJECT_DIR}/${TOOLCHAIN_TARGET_ARCH}-unknown-linux-gnu-gcc.tar.xz"
+KEY=$(toolchain_artifact_key "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}" "${TOOLCHAIN_HASH}" "${CHANNEL}")
+TRIPLET=$(toolchain_triplet "${TOOLCHAIN_TARGET_ARCH}")
+ARCHIVE="${CI_PROJECT_DIR}/${TRIPLET}-gcc.tar.xz"
 
 sha256sum "${ARCHIVE}" | awk '{print "sha256:" $1}' > "${ARCHIVE}.sha256"
 
