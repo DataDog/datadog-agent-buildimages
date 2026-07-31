@@ -54,6 +54,8 @@ RUN --mount=type=bind,src=./pass.sh,dst=/mnt/pass.sh /mnt/pass.sh
 RUN --mount=type=bind,src=./git.sh,dst=/mnt/git.sh /mnt/git.sh
 # Set up dda
 RUN --mount=type=bind,src=./dda.sh,dst=/mnt/dda.sh DDA_VERSION=${DDA_VERSION} /mnt/dda.sh
+# Set up ddgl
+RUN --mount=type=bind,src=./ddgl.sh,dst=/mnt/ddgl.sh DDGL_VERSION=${DDGL_VERSION} /mnt/ddgl.sh
 # Set up Docker
 RUN --mount=type=bind,src=./docker.sh,dst=/mnt/docker.sh /mnt/docker.sh
 # Set up fonts
