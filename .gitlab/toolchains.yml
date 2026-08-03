@@ -1,20 +1,20 @@
 ---
-build_linux_build_base_x64:
+build_toolchain_build_image_x64:
   extends: [.fast_build, .x64]
   stage: toolchains
   needs: []
   variables:
-    DOCKERFILE: linux-build-base/Dockerfile
-    IMAGE: linux-build-base
+    DOCKERFILE: toolchain-builder/Dockerfile
+    IMAGE: toolchain-builder
     IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-amd64"
 
-build_linux_build_base_arm64:
+build_toolchain_build_image_arm64:
   extends: [.fast_build, .arm]
   stage: toolchains
   needs: []
   variables:
-    DOCKERFILE: linux-build-base/Dockerfile
-    IMAGE: linux-build-base
+    DOCKERFILE: toolchain-builder/Dockerfile
+    IMAGE: toolchain-builder
     IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-arm64"
 
 .toolchain_build:
@@ -36,9 +36,9 @@ build_linux_build_base_arm64:
 .toolchain_build_x86_64_host:
   extends: .toolchain_build
   tags: ["arch:amd64"]
-  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/linux-build-base${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64"
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/toolchain-builder${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64"
   needs:
-    - job: build_linux_build_base_x64
+    - job: build_toolchain_build_image_x64
       artifacts: false
   variables:
     TOOLCHAIN_HOST_ARCH: x86_64
@@ -46,9 +46,9 @@ build_linux_build_base_arm64:
 .toolchain_build_aarch64_host:
   extends: .toolchain_build
   tags: ["arch:arm64"]
-  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/linux-build-base${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64"
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/toolchain-builder${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64"
   needs:
-    - job: build_linux_build_base_arm64
+    - job: build_toolchain_build_image_arm64
       artifacts: false
   variables:
     TOOLCHAIN_HOST_ARCH: aarch64
