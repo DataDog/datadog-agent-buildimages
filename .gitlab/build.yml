@@ -17,9 +17,7 @@
 
 .no_schedule:
   rules:
-    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
+    - if: $CI_PIPELINE_SOURCE != "schedule"
 
 .build:
   stage: build
@@ -239,8 +237,7 @@ build_dev_env_workspace_arm64:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: on_success
-    - if: $CI_COMMIT_TAG == null
-      changes:
+    - changes:
         paths:
           - build-container.ps1
           - windows/**/*
