@@ -3,6 +3,9 @@
   tags: ["arch:arm64"]
   image: registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.3
   variables:
+    # This repo only publishes dev-tier build images; a job needing another
+    # registry set can override IMG_REGISTRIES.
+    IMG_REGISTRIES: dev
     IMG_SIGNING: "false"
     PUBLIC_IMAGES_PUBLISH_TIMEOUT: "1800"
   script:
@@ -24,9 +27,6 @@ release:
   rules:
     - !reference [.on_default_branch_push]
   extends: .docker_publish_job_definition
-  variables:
-    IMG_REGISTRIES: dev
-    IMG_SIGNING: "false"
   # We cannot use the $IMAGE_VERSION variable directly because there is only one step of variable substitution.
   # See https://forum.gitlab.com/t/inconsistent-variable-behavior-in-multi-project-pipeline/77916.
   # We must use v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA} instead.
@@ -47,8 +47,6 @@ release_windows:
     - !reference [.on_default_branch_push]
   extends: .docker_publish_job_definition
   variables:
-    IMG_REGISTRIES: dev
-    IMG_SIGNING: "false"
     IMG_SOURCES: registry.ddbuild.io/ci/datadog-agent-buildimages/windows_ltsc2022_x64:v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA}
     IMG_DESTINATIONS: agent-buildimages-windows_x64:ltsc2022-v$CI_PIPELINE_ID-${CI_COMMIT_SHORT_SHA},agent-buildimages-windows_x64:ltsc2022
 
