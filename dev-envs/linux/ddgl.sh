@@ -4,8 +4,8 @@ set -euxo pipefail
 
 # Set up an isolated installation so the XDG_DATA_HOME directory can be used
 # exclusively for user-installed tools and persisted as a named volume
-export UV_PYTHON_INSTALL_DIR="${DD_BUILD_INSTALL_ROOT}/dda/base"
-export UV_TOOL_DIR="${DD_BUILD_INSTALL_ROOT}/dda/venv"
+export UV_PYTHON_INSTALL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/base"
+export UV_TOOL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/venv"
 export UV_TOOL_BIN_DIR="/usr/local/bin"
 
 DDGL_VERSION=v0.2.0
