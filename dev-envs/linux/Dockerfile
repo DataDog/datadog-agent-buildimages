@@ -64,6 +64,11 @@ RUN --mount=type=bind,src=./editors.sh,dst=/mnt/editors.sh /mnt/editors.sh
 # Set up AWS
 RUN --mount=type=bind,src=./aws.sh,dst=/mnt/aws.sh /mnt/aws.sh
 
+# The build image intentionally leaves the Omnibus git cache location unset since CI no
+# longer uses it, but dev envs persist the cache root as a Docker volume so every build
+# output directory must resolve to a known path under it to survive across containers.
+ENV OMNIBUS_GIT_CACHE_DIR="${XDG_CACHE_HOME}/omnibus/git-cache"
+
 # This is where we store default configuration for the image
 # which is used to seed the user's configuration.
 ENV DD_DEFAULT_CONFIG_ROOT="/var/config/dd-defaults"
