@@ -71,16 +71,13 @@ resolve_toolchain_channel() {
     main_key=$(toolchain_artifact_key "${host_arch}" "${target_arch}" "${hash}" main)
     if s3_artifact_exists "${main_key}"; then
         echo "main"
-        return 0
+        return
     fi
 
     if [[ "${CI_COMMIT_BRANCH:-}" != "${CI_DEFAULT_BRANCH:-}" ]]; then
         branch_key=$(toolchain_artifact_key "${host_arch}" "${target_arch}" "${hash}" branches)
         if s3_artifact_exists "${branch_key}"; then
             echo "branches"
-            return 0
         fi
     fi
-
-    return 1
 }
