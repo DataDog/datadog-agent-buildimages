@@ -19,6 +19,8 @@ build_toolchain_build_image_arm64:
 
 .toolchain_build:
   stage: toolchains
+  rules:
+    - !reference [.on_push]
   script:
     - ./toolchains/scripts/build-and-publish-toolchain.sh
   variables:
