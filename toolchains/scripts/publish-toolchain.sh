@@ -4,10 +4,6 @@ set -euo pipefail
 
 source ./toolchains/scripts/lib.sh
 
-curl -sSf "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o awscliv2.zip
-unzip -q awscliv2.zip
-./aws/install
-
 # Publishing under main/ marks an artifact as canonical/trusted; publishing under
 # branches/ keeps PR/feature-branch builds separate so they can never be picked up
 # as if they were built from main.

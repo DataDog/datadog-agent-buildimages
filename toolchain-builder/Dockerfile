@@ -20,3 +20,9 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     automake autoconf autopoint gettext help2man \
     libtool libtool-bin gperf bison flex gawk pkg-config \
     patch texinfo perl python3-dev gnupg dirmngr gpg-agent rsync
+
+ARG AWSCLI_VERSION=2.27.30
+RUN curl --retry 10 -fsSLo awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m)-${AWSCLI_VERSION}.zip" && \
+    unzip -q awscliv2.zip && \
+    ./aws/install && \
+    rm -rf aws awscliv2.zip
