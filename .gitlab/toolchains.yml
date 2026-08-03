@@ -1,0 +1,79 @@
+---
+build_linux_build_base_x64:
+  extends: [.fast_build, .x64]
+  stage: toolchains
+  needs: []
+  variables:
+    DOCKERFILE: linux-build-base/Dockerfile
+    IMAGE: linux-build-base
+    IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-amd64"
+
+build_linux_build_base_arm64:
+  extends: [.fast_build, .arm]
+  stage: toolchains
+  needs: []
+  variables:
+    DOCKERFILE: linux-build-base/Dockerfile
+    IMAGE: linux-build-base
+    IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-arm64"
+
+.toolchain_build:
+  stage: toolchains
+  script:
+    - ./toolchains/scripts/build-and-publish-toolchain.sh
+  variables:
+    KUBERNETES_CPU_REQUEST: "8"
+    KUBERNETES_CPU_LIMIT: "16"
+    KUBERNETES_MEMORY_REQUEST: "16Gi"
+    KUBERNETES_MEMORY_LIMIT: "32Gi"
+  artifacts:
+    when: on_failure
+    paths:
+      - build.log
+      - config-logs.tar.xz
+    expire_in: "1 week"
+
+.toolchain_build_x86_64_host:
+  extends: .toolchain_build
+  tags: ["arch:amd64"]
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/linux-build-base${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64"
+  needs:
+    - job: build_linux_build_base_x64
+      artifacts: false
+  variables:
+    TOOLCHAIN_HOST_ARCH: x86_64
+
+.toolchain_build_aarch64_host:
+  extends: .toolchain_build
+  tags: ["arch:arm64"]
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/linux-build-base${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64"
+  needs:
+    - job: build_linux_build_base_arm64
+      artifacts: false
+  variables:
+    TOOLCHAIN_HOST_ARCH: aarch64
+
+build_toolchain_x86_64_native:
+  extends: .toolchain_build_x86_64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: x86_64
+
+build_toolchain_x86_64_cross_aarch64:
+  extends: .toolchain_build_x86_64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: aarch64
+
+build_toolchain_aarch64_native:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: aarch64
+
+build_toolchain_aarch64_cross_x86_64:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: x86_64
+
+build_toolchain_aarch64_cross_armhf:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: armhf
