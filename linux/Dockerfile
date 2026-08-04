@@ -1,3 +1,5 @@
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg_builder
+
 FROM ubuntu:24.04
 
 # Common build arguments
@@ -256,6 +258,9 @@ RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
 # Install datadog-packages
 RUN --mount=type=secret,id=ci-job-token,env=CI_JOB_TOKEN --mount=type=bind,dst=/mnt /mnt/setup/datadog_packages.sh
+
+# Install dd-pkg
+COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
