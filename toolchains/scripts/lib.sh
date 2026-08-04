@@ -54,7 +54,7 @@ resolve_toolchain_hash() {
 
 s3_artifact_exists() {
     local status
-    status=$(curl -s -o /dev/null -w "%{http_code}" --head "https://dd-agent-build-artifacts.s3.amazonaws.com/$1")
+    status=$(curl --retry 10 -s -o /dev/null -w "%{http_code}" --head "https://dd-agent-build-artifacts.s3.amazonaws.com/$1")
     [[ "${status}" == "200" ]]
 }
 

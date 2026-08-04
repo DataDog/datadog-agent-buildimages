@@ -13,8 +13,8 @@ echo "Building crosstool-ng in ${WORKDIR}"
 cd "${WORKDIR}"
 
 gpg --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 1F30EF2E
-curl -LO "https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz"
-curl -LO "https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig"
+curl --retry 10 -LO "https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz"
+curl --retry 10 -LO "https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig"
 gpg --verify "crosstool-ng-${CTNG_VERSION}.tar.xz.sig"
 
 tar xf "crosstool-ng-${CTNG_VERSION}.tar.xz"
