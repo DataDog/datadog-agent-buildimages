@@ -1,3 +1,5 @@
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg_builder
+
 FROM ubuntu:24.04
 
 # Common build arguments
@@ -205,6 +207,9 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
 # Install authanywhere for infra token management
 RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 
+
+# Install dd-pkg
+COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Common environment setup
 RUN echo "umask 0022" >> /root/.bashrc && \
