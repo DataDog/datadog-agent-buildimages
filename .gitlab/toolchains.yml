@@ -1,0 +1,86 @@
+---
+# These 2 jobs are building the build image used by the toolchains
+# build jobs. They are internal to the toolchain stage and aren't 
+# used when building the final build images
+build_toolchain_build_image_x64:
+  extends: [.fast_build, .x64]
+  stage: toolchains
+  needs: []
+  variables:
+    DOCKERFILE: toolchain-builder/Dockerfile
+    IMAGE: toolchain-builder
+    IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-amd64"
+    AWSCLI_SHA256: 2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
+
+build_toolchain_build_image_arm64:
+  extends: [.fast_build, .arm]
+  stage: toolchains
+  needs: []
+  variables:
+    DOCKERFILE: toolchain-builder/Dockerfile
+    IMAGE: toolchain-builder
+    IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-arm64"
+    AWSCLI_SHA256: cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
+
+.toolchain_build:
+  stage: toolchains
+  rules:
+    - !reference [.on_push]
+  script:
+    - ./toolchains/scripts/build-and-publish-toolchain.sh
+  variables:
+    KUBERNETES_CPU_REQUEST: "8"
+    KUBERNETES_CPU_LIMIT: "16"
+    KUBERNETES_MEMORY_REQUEST: "16Gi"
+    KUBERNETES_MEMORY_LIMIT: "32Gi"
+  artifacts:
+    when: on_failure
+    paths:
+      - build.log
+      - config-logs.tar.xz
+    expire_in: "1 week"
+
+.toolchain_build_x86_64_host:
+  extends: .toolchain_build
+  tags: ["arch:amd64"]
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/toolchain-builder${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-amd64"
+  needs:
+    - job: build_toolchain_build_image_x64
+      artifacts: false
+  variables:
+    TOOLCHAIN_HOST_ARCH: x86_64
+
+.toolchain_build_aarch64_host:
+  extends: .toolchain_build
+  tags: ["arch:arm64"]
+  image: "registry.ddbuild.io/ci/datadog-agent-buildimages/toolchain-builder${ECR_TEST_ONLY}:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-arm64"
+  needs:
+    - job: build_toolchain_build_image_arm64
+      artifacts: false
+  variables:
+    TOOLCHAIN_HOST_ARCH: aarch64
+
+build_toolchain_x86_64_native:
+  extends: .toolchain_build_x86_64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: x86_64
+
+build_toolchain_x86_64_cross_aarch64:
+  extends: .toolchain_build_x86_64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: aarch64
+
+build_toolchain_aarch64_native:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: aarch64
+
+build_toolchain_aarch64_cross_x86_64:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: x86_64
+
+build_toolchain_aarch64_cross_armhf:
+  extends: .toolchain_build_aarch64_host
+  variables:
+    TOOLCHAIN_TARGET_ARCH: armhf
