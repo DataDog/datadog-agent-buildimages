@@ -14,6 +14,8 @@ ARG BASE_IMAGE_REGISTRY=registry.ddbuild.io/images/mirror
 ARG DATADOG_PACKAGES_VERSION=cda6d1e48653a8ee83dcc4a85697a40f5e6a9a34
 FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION} AS datadog_packages
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
@@ -212,6 +214,9 @@ RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
 
 # Install datadog-package
 COPY --from=datadog_packages /datadog-package /go/bin/datadog-package
+
+# Install dd-pkg
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
