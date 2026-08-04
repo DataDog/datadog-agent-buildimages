@@ -12,7 +12,6 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     git \
-    wget \
     unzip \
     xz-utils \
     ninja-build \
