@@ -7,6 +7,8 @@
 # When updating the gitlab-agent-deploy image, don't forget to update these three repos
 # and test that promotion jobs work as expected with the new image.
 
+FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM registry.ddbuild.io/images/mirror/ubuntu:18.04
 
 ARG RUBY_VERSION_ARG=2.7.8
@@ -195,6 +197,9 @@ RUN chmod +x /deploy_scripts/check_apt_pool.sh
 RUN chmod +x /deploy_scripts/fail_deb_is_pkg_already_exists.sh
 RUN /bin/bash -l -c "cd /deploy_scripts/cloudfront-invalidation && \
     bundle install"
+
+# Install dd-pkg
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh

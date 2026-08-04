@@ -1,4 +1,7 @@
 ARG BUILDENV_REGISTRY
+
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 
 ARG PYTHON_VERSION=3.12.6
@@ -84,3 +87,5 @@ RUN --mount=type=bind,dst=/mnt /mnt/setup/authanywhere.sh
 RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-arm64 --output "/usr/local/bin/datadog-ci" && \
   echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check && \
   chmod +x /usr/local/bin/datadog-ci
+
+COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
