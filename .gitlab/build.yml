@@ -72,6 +72,11 @@
 
 build_linux_amd64:
   extends: [.build_bake, .x64]
+  needs:
+    - job: build_toolchain_x86_64_native
+      artifacts: false
+    - job: build_toolchain_x86_64_cross_aarch64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
@@ -122,6 +127,11 @@ build_gitlab_agent_deploy:
 
 build_linux_arm64:
   extends: [.build_bake, .arm]
+  needs:
+    - job: build_toolchain_aarch64_native
+      artifacts: false
+    - job: build_toolchain_aarch64_cross_x86_64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
