@@ -30,7 +30,7 @@ variable "versions" {
     MACOSX_SDK_VERSION       = "14.0"
     OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
     AIX_CROSS_VERSION        = "gcc13.4.0-aix7.3-2"
-    PULUMI_VERSION         = "3.207.0"
+    PULUMI_VERSION         = "3.253.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
   }
