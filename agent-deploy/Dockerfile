@@ -221,6 +221,12 @@ COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c820ea4ef600ab4375c5b696a24151c7f0dd931ffee6 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
+# Install Datadog private CA certificates
+# (to be able to use services via Fabric)
+COPY --from=registry.ddbuild.io/images/datadog-ca-certs:standard /certs/ /usr/local/share/ca-certificates/
+RUN chmod -R o-w /usr/local/share/ca-certificates \
+    && update-ca-certificates
+
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
