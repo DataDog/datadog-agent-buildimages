@@ -53,6 +53,62 @@ jobs:
           scope: DataDog/datadog-agent-buildimages
           policy: self.go-update.create-pr
 
+      - name: Get access token for DataDog/images
+        uses: DataDog/dd-octo-sts-action@96a25462dbcb10ebf0bfd6e2ccc917d2ab235b9a # v1.0.4
+        id: octo-sts-images
+        with:
+          scope: DataDog/images
+          policy: datadog-agent-buildimages.go-update.update-mirror
+
+      - name: Check golang image is mirrored and open PR if not
+        env:
+          IMAGES_TOKEN: ${{ steps.octo-sts-images.outputs.token }}
+          GO_VERSION: ${{ inputs.go_version }}
+        run: |
+          if GH_TOKEN=$IMAGES_TOKEN gh api repos/DataDog/images/contents/mirror.yaml \
+              --jq '.content' | base64 -d | grep -q "golang:${GO_VERSION}@sha256:"; then
+            echo "golang:${GO_VERSION} is already in mirror.yaml"
+          else
+            DIGEST=$(docker buildx imagetools inspect "docker.io/library/golang:${GO_VERSION}" \
+              --format '{{json .Manifest}}' 2>/dev/null | jq -r '.digest')
+            if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+              echo "golang:${GO_VERSION} is not on Docker Hub yet."
+              exit 1
+            fi
+            EXISTING_PR=$(GH_TOKEN=$IMAGES_TOKEN gh pr list \
+              --repo DataDog/images \
+              --head "mirror/golang-${GO_VERSION}" \
+              --json url --jq '.[0].url' 2>/dev/null || true)
+            if [ -n "$EXISTING_PR" ]; then
+              echo "Images PR already exists: ${EXISTING_PR}. Wait for it to merge before re-running."
+              exit 1
+            fi
+            git clone "https://x-access-token:${IMAGES_TOKEN}@github.com/DataDog/images.git" /tmp/images
+            cd /tmp/images
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git checkout -b "mirror/golang-${GO_VERSION}"
+            GO_VERSION="$GO_VERSION" DIGEST="$DIGEST" python3 "$GITHUB_WORKSPACE/.github/scripts/update_mirror.py"
+            git add mirror.yaml mirror.lock.yaml
+            git commit -m "Mirror library/golang ${GO_VERSION}"
+            git push origin "mirror/golang-${GO_VERSION}"
+            PR_URL=$(GH_TOKEN=$IMAGES_TOKEN gh pr create \
+              --repo DataDog/images \
+              --title "Mirror library/golang ${GO_VERSION}" \
+              --body "## What does this PR do?
+          Adds \`library/golang:${GO_VERSION}\` to the mirror list.
+
+          ## Motivation
+          Needed for the Go ${GO_VERSION} update of the Datadog Agent.
+
+          ## Describe how you validated your changes
+          Digest obtained via \`docker buildx imagetools inspect\`." \
+              --base main \
+              --head "mirror/golang-${GO_VERSION}")
+            echo "Images PR opened: ${PR_URL}. Wait for it to merge before re-running."
+            exit 1
+          fi
+
       - name: Install dependencies
         run: |
           DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
