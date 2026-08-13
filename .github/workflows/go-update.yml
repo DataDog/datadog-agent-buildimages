@@ -1,5 +1,8 @@
 name: Open Go Update PR
 
+# TODO: append "on ${{ inputs.target_branches }}" once target_branches input is added
+run-name: "Open Go ${{ inputs.go_version }} Update PR"
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,6 +10,11 @@ on:
         description: 'Go version'
         required: true
         type: string
+      # TODO: uncomment when multi-branch support is implemented
+      # target_branches:
+      #   description: 'Branches to update, e.g. "main, 7.83.x, 7.82.x"'
+      #   required: true
+      #   type: string
       open_pr:
         description: 'Whether to open a PR'
         required: false
