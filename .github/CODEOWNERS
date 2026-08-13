@@ -15,6 +15,7 @@ go.env                              @DataDog/agent-runtimes
 dda.env                             @DataDog/agent-devx
 
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
+.github/scripts/update_mirror.py    @DataDog/agent-runtimes
 
 .dda/extend/commands/run/update/go/         @DataDog/agent-runtimes
 
