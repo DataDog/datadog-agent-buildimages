@@ -44,6 +44,10 @@ def _update_mirror_yaml(version: str, digest: str) -> None:
     if not matches:
         sys.exit("Could not find any golang entries in mirror.yaml")
 
+    if any(m.group(1) == version for m in matches):
+        print(f"golang:{version} already in mirror.yaml, skipping")
+        return
+
     new_ver = _parse_version(version)
 
     # Insert after the last entry with version < new_ver
@@ -77,6 +81,10 @@ def _update_mirror_lock_yaml(version: str, digest: str) -> None:
     matches = list(re.finditer(pattern, content))
     if not matches:
         sys.exit("Could not find any golang versioned entries in mirror.lock.yaml")
+
+    if any(m.group(1) == version for m in matches):
+        print(f"golang:{version} already in mirror.lock.yaml, skipping")
+        return
 
     new_ver = _parse_version(version)
 
