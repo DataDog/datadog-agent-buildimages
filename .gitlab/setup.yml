@@ -3,7 +3,7 @@ lint_dockerfiles:
   tags: ["arch:amd64"]
   stage: setup
   needs: []
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:v26997867-ebc48a76
+  image: registry.ddbuild.io/ci/images:v129830789-4ab6358-1.2.10
   script:
     - hadolint dev-envs/linux/Dockerfile
 
