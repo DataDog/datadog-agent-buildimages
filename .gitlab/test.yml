@@ -90,6 +90,8 @@ push_to_datadog_agent_post_merge:
   after_script:
     - dd-octo-sts revoke -t $(cat token.txt)
 
+# Creates a draft PR in datadog-agent with test-only image tags before buildimages merges.
+# Particularly useful for minor Go updates which take longer to merge.
 update_datadog_agent_pr_with_test_images:
   stage: test
   rules:
