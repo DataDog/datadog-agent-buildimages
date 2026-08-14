@@ -44,6 +44,14 @@ jobs:
       id-token: write # needed for dd-octo-sts token exchange
 
     steps:
+      - name: Check MsGo has published the release
+        run: |
+          RESPONSE=$(curl -sL "https://aka.ms/golang/release/latest/go${{ inputs.go_version }}-1.linux-amd64.tar.gz.sha256")
+          if ! echo "$RESPONSE" | grep -qE '^[0-9a-f]{64}'; then
+            echo "MsGo has not published go${{ inputs.go_version }} yet. Check: https://github.com/microsoft/go/releases"
+            exit 1
+          fi
+
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
