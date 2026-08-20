@@ -22,7 +22,8 @@ RUN chmod -R o-w /usr/local/share/ca-certificates \
 FROM common_base AS extraction_base
 # Do an apt update only once at the beginning
 RUN apt-get update -qy && apt-get install -y --no-install-recommends \
-    tar unzip xz-utils bzip2
+    tar unzip xz-utils bzip2 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Base for compilation stages - includes all other packages needed for building tools
 # TODO: Investigate which ones are used in which stages and only install them there
@@ -83,31 +84,14 @@ FROM build_base AS texinfo_builder
 ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
 RUN --mount=type=bind,src=./linux/scripts/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh
 
-FROM texinfo_builder AS crosstool_ng_builder
-# CTNG depends on texinfo
-# Build cross-compilation toolchain
-
-# Install crosstool-ng specific dependencies (not included in build_base)
-RUN apt-get install -y --no-install-recommends \
-    gperf libncurses5-dev rsync ninja-build
-
-ARG CTNG_VERSION
+FROM extraction_base AS crosstool_ng_builder
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ARG GLIBC_VERSION
-ARG CROSS_GLIBC_VERSION
-
-# TODO: Add checksum
-# NOTE: tar archives from remote URLs are not automatically extracted (https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives)
-ADD https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz \
-    https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-${CTNG_VERSION}/crosstool-ng-${CTNG_VERSION}.tar.xz.sig \
-    /tmp/crosstool-ng/
-
-COPY linux/${CTNG_ARCH}/cargo-config.toml /root/.cargo/config.toml
-COPY linux/${CTNG_ARCH}/config-${CTNG_ARCH}-unknown-gnu-linux-glibc${GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config
-COPY linux/${CTNG_ARCH}/config-${CTNG_CROSS_ARCH}-unknown-gnu-linux-glibc${CROSS_GLIBC_VERSION} /tmp/crosstool-ng/crosstool-ng-${CTNG_VERSION}/.config-${CTNG_CROSS_ARCH}
-COPY linux/ctng.patch /root/ctng.patch
-RUN --mount=type=bind,src=./linux/scripts/ctng.sh,dst=/mnt/ctng.sh cd /tmp/crosstool-ng && /mnt/ctng.sh && rm -rf /tmp/crosstool-ng
+RUN apt-get update -qy && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=bind,src=./toolchains,dst=/toolchains \
+    /toolchains/scripts/fetch-toolchain.sh "${CTNG_ARCH}" "${CTNG_ARCH}" /opt/toolchains/${CTNG_ARCH} \
+    && /toolchains/scripts/fetch-toolchain.sh "${CTNG_ARCH}" "${CTNG_CROSS_ARCH}" /opt/toolchains/${CTNG_CROSS_ARCH}
 
 FROM build_base AS dpkg_armhf_builder
 # Build dpkg-armhf

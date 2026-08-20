@@ -116,7 +116,6 @@ variable "architecture_defs_amd64" {
     PROTOBUF_ARCH        = "x86_64"
     MOLD_ARCH            = "x86_64"
     GLIBC_VERSION        = "2.17"
-    CROSS_GLIBC_VERSION  = "2.23"
   }
 }
 
@@ -137,7 +136,6 @@ variable "architecture_defs_arm64" {
     PROTOBUF_ARCH        = "aarch_64"
     MOLD_ARCH            = "aarch64"
     GLIBC_VERSION        = "2.23"
-    CROSS_GLIBC_VERSION  = "2.17"
   }
 }
 
