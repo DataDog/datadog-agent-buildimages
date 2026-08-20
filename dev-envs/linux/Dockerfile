@@ -110,6 +110,7 @@ RUN --mount=type=bind,src=./finalize.sh,dst=/mnt/finalize.sh /mnt/finalize.sh
 EXPOSE 22
 
 # Run SSH server
+ENTRYPOINT []
 CMD ["sleep", "infinity"]
 
 # This is the standard image used by Agent dev env tooling and it
