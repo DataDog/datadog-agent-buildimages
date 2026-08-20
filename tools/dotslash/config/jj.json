@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 25571976
+        "uncompressed_size": 27534096
       },
       "linux-x86_64": {
-        "uncompressed_size": 28053456
+        "uncompressed_size": 30046560
       }
     }
   },
   "name": "jj",
   "platforms": {
     "linux-aarch64": {
-      "digest": "3c9cf55393962cba01a03545e1e71d4859a410b64b379b2441565fa21c81c967",
+      "digest": "de127313278d2f4c6f212a7e350543ce66a4ba536534082a56b16fb64ac0f604",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "jj",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jj-vcs/jj/releases/download/v0.41.0/jj-v0.41.0-aarch64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/jj-vcs/jj/releases/download/v0.44.0/jj-v0.44.0-aarch64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 10041274
+      "size": 10071013
     },
     "linux-x86_64": {
-      "digest": "a3a2d5720879943387752afaf7243c604d1b9b6da76c228067a4597a8ab556c6",
+      "digest": "fc3fb82ab7373b157c33b1c9986fc90faf6ac8d8d2c8389abdf9fedaa7d62b63",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "jj",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jj-vcs/jj/releases/download/v0.41.0/jj-v0.41.0-x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/jj-vcs/jj/releases/download/v0.44.0/jj-v0.44.0-x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 10700500
+      "size": 10696461
     }
   }
 }
