@@ -54,10 +54,12 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
-push_to_datadog_agent:
+update_datadog_agent_pr_with_test_images:
   stage: test
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /^\[push_to_datadog_agent\]/
+    - if: $CI_COMMIT_AUTHOR !~ /^dd-octo-sts\[bot\]/
+      when: never
+    - if: $CI_COMMIT_TITLE !~ /^Update Go version to [0-9]+\.[0-9]+\.[0-9]+$/
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
