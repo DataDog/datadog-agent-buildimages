@@ -88,8 +88,13 @@ if [[ ! -f "${startup_indicator}" ]]; then
         exit 1
     fi
 
-    # Make the target home match the runtime user before the first startup creates runtime state.
-    chown -R "${TARGET_USER}:" "${TARGET_HOME}"
+    # Make the target home match the runtime user before the first startup creates runtime
+    # state. Stay on the home's own filesystem (-xdev): bind-mounted dotfiles (e.g. ~/.ssh)
+    # live on another device, and chowning nodes there can fail for backend-specific reasons
+    # (a unix socket over virtiofs errors with ENOENT, aborting this entrypoint under
+    # `set -e`) and would needlessly rewrite host-side ownership. `-h` chowns symlinks
+    # themselves rather than dereferencing to their targets.
+    find "${TARGET_HOME}" -xdev -exec chown -h "${TARGET_USER}:" {} +
     chmod 0755 "${TARGET_HOME}"
 
     # Persist environment for SSH sessions
