@@ -54,7 +54,7 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
-push_to_datadog_agent_go_update_post_merge:
+update_datadog_agent_pr_with_final_images:
   stage: test
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
