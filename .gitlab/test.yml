@@ -89,7 +89,14 @@ update_datadog_agent_pr_with_final_images:
     - dda -v self dep sync -f legacy-build
     - export GITHUB_TOKEN=$(cat token.txt)
     # Look up the buildimages PR that produced this merge commit and read its source branch.
-    - HEAD_REF=$(curl -sfH "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/${CI_COMMIT_SHA}/pulls" | jq -r --arg sha "$CI_COMMIT_SHA" '.[] | select(.merge_commit_sha == $sha) | .head.ref' | head -1) || { echo "GitHub API lookup failed while resolving merged PR for commit $CI_COMMIT_SHA" >&2; exit 1; }
+    - >-
+      HEAD_REF=$(curl
+      -sfH "Authorization: Bearer $GITHUB_TOKEN"
+      -H "Accept: application/vnd.github+json"
+      "https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/${CI_COMMIT_SHA}/pulls"
+      | jq -r --arg sha "$CI_COMMIT_SHA" '.[] | select(.merge_commit_sha == $sha) | .head.ref'
+      | head -1) ||
+      { echo "GitHub API lookup failed while resolving merged PR for commit $CI_COMMIT_SHA" >&2; exit 1; }
     - if [[ -z "$HEAD_REF" ]]; then echo "No merged PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
     # The datadog-agent branch mirrors the buildimages branch with a "buildimages/" prefix.
     - BRANCH="buildimages/${HEAD_REF}"
