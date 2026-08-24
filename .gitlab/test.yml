@@ -61,7 +61,7 @@ push_to_datadog_agent_go_update_post_merge:
       when: never
     - if: $CI_COMMIT_AUTHOR !~ /^dd-octo-sts\[bot\]/
       when: never
-    - if: $CI_COMMIT_TITLE !~ /^Update Go version to [0-9]+\.[0-9]+\.[0-9]+$/
+    - if: $CI_COMMIT_TITLE !~ /^Update Go version to [0-9]+\.[0-9]+\.[0-9]+( \(#[0-9]+\))?$/
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: always
