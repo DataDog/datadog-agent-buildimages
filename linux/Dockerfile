@@ -79,11 +79,6 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     ${ADDITIONAL_PACKAGE}
 
 
-FROM build_base AS texinfo_builder
-# Build texinfo to get a bugfix version
-ADD https://gnu.googlesource.com/texinfo.git#60d3edc4b74b4e1e5ef55e53de394d3b65506c47 /tmp/texinfo
-RUN --mount=type=bind,src=./linux/scripts/texinfo.sh,dst=/mnt/texinfo.sh cd /tmp/texinfo && /mnt/texinfo.sh
-
 FROM extraction_base AS crosstool_ng_builder
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
@@ -424,9 +419,6 @@ RUN chgrp build-shared /usr/bin && \
 
 # Copy built tools
 # NOTE: We try to copy the least-often-changed tools first to reduce the likelihood of cache misses
-
-# Texinfo
-COPY --from=texinfo_builder /usr/local /usr/local
 
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
