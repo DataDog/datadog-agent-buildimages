@@ -79,7 +79,7 @@ RUN apt-get update -qy && apt-get install -y --no-install-recommends \
     ${ADDITIONAL_PACKAGE}
 
 
-FROM extraction_base AS crosstool_ng_builder
+FROM extraction_base AS toolchain_fetcher
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
 RUN apt-get update -qy && apt-get install -y --no-install-recommends curl \
@@ -423,8 +423,8 @@ RUN chgrp build-shared /usr/bin && \
 # Dpkg-armhf
 COPY --from=dpkg_armhf_builder /opt/dpkg-armhf /opt/dpkg-armhf
 
-# Crosstool-ng
-COPY --from=crosstool_ng_builder /opt/toolchains /opt/toolchains
+# Toolchains
+COPY --from=toolchain_fetcher /opt/toolchains /opt/toolchains
 
 # Osxcross
 COPY --from=osxcross_builder /opt/osxcross ${OSXCROSS_PATH}
