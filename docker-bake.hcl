@@ -16,7 +16,6 @@ variable "versions" {
     CODECOV_VERSION     = "0.6.1"
     DDA_VERSION         = "v0.38.0"
     CMAKE_VERSION       = "3.30.2"
-    CTNG_VERSION        = "1.26.0"
     RUST_VERSION        = "1.91.0"
     RVM_VERSION         = "1.29.12"
     RUSTUP_VERSION      = "1.26.0"
