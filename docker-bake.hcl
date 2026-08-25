@@ -16,7 +16,6 @@ variable "versions" {
     CODECOV_VERSION     = "0.6.1"
     DDA_VERSION         = "v0.38.0"
     CMAKE_VERSION       = "3.30.2"
-    CTNG_VERSION        = "1.26.0"
     RUST_VERSION        = "1.91.0"
     RVM_VERSION         = "1.29.12"
     RUSTUP_VERSION      = "1.26.0"
@@ -116,7 +115,6 @@ variable "architecture_defs_amd64" {
     PROTOBUF_ARCH        = "x86_64"
     MOLD_ARCH            = "x86_64"
     GLIBC_VERSION        = "2.17"
-    CROSS_GLIBC_VERSION  = "2.23"
   }
 }
 
@@ -137,7 +135,6 @@ variable "architecture_defs_arm64" {
     PROTOBUF_ARCH        = "aarch_64"
     MOLD_ARCH            = "aarch64"
     GLIBC_VERSION        = "2.23"
-    CROSS_GLIBC_VERSION  = "2.17"
   }
 }
 

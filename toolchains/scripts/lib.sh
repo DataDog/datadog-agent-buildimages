@@ -60,8 +60,9 @@ s3_artifact_exists() {
 
 # main/ is always trusted, even off the default branch: a PR that doesn't touch the
 # recipe should reuse the canonical artifact instead of rebuilding it. branches/ is
-# only trusted for the branch that published it in the first place, since it's never
-# checked while on the default branch.
+# trusted for local builds (never pushed anywhere) and for CI builds on the branch
+# that published it, but skipped for CI builds on the default branch, since that's
+# the channel that produces the shared, published images.
 resolve_toolchain_channel() {
     local host_arch="$1"
     local target_arch="$2"
@@ -74,7 +75,7 @@ resolve_toolchain_channel() {
         return
     fi
 
-    if [[ "${CI_COMMIT_BRANCH:-}" != "${CI_DEFAULT_BRANCH:-}" ]]; then
+    if [[ "${CI:-}" != "true" ]] || [[ "${CI_COMMIT_BRANCH:-}" != "${CI_DEFAULT_BRANCH:-}" ]]; then
         branch_key=$(toolchain_artifact_key "${host_arch}" "${target_arch}" "${hash}" branches)
         if s3_artifact_exists "${branch_key}"; then
             echo "branches"
