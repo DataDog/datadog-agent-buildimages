@@ -70,7 +70,19 @@ update_datadog_agent_pr_with_final_images:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: []
-  needs: [build_multiarch_linux]
+  needs: # wait for all the images to be built before pushing their IDs to datadog-agent
+    - job: build_btf_gen
+    - job: build_docker_x64
+    - job: build_docker_arm64
+    - job: build_gitlab_agent_deploy
+    - job: build_multiarch_linux
+    - job: build_rpm_x64
+    - job: build_rpm_arm64
+    - job: build_rpm_armhf
+    - job: build_windows_ltsc2022_x64
+      optional: true
+    - job: build_windows_ltsc2025_x64
+      optional: true
   id_tokens:
     DDOCTOSTS_ID_TOKEN:
       aud: dd-octo-sts
@@ -120,7 +132,19 @@ update_datadog_agent_pr_with_test_images:
   # TODO: This is not great, we probably should not rely on _test_only images but as we don't push a `latest` tag for validated images we don't really have a choice.
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: [] # do not download artifacts from other jobs
-  needs: [build_multiarch_linux] # wait for the multiarch image to be built as it is used for this job's execution environment
+  needs: # wait for all the images to be built before pushing their IDs to datadog-agent
+    - job: build_btf_gen
+    - job: build_docker_x64
+    - job: build_docker_arm64
+    - job: build_gitlab_agent_deploy
+    - job: build_multiarch_linux
+    - job: build_rpm_x64
+    - job: build_rpm_arm64
+    - job: build_rpm_armhf
+    - job: build_windows_ltsc2022_x64
+      optional: true
+    - job: build_windows_ltsc2025_x64
+      optional: true
   variables:
     REF: main
     BRANCH: buildimages/$CI_COMMIT_BRANCH
