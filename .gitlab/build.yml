@@ -15,15 +15,9 @@
     DD_TARGET_ARCH: aarch64
     PLATFORM: linux/arm64
 
-.always:
-  rules:
-    - if: $CI_COMMIT_TAG == null
-
 .no_schedule:
   rules:
-    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
+    - if: $CI_PIPELINE_SOURCE != "schedule"
 
 .build:
   stage: build
@@ -78,25 +72,30 @@
 
 build_linux_amd64:
   extends: [.build_bake, .x64]
+  needs:
+    - job: build_toolchain_x86_64_native
+      artifacts: false
+    - job: build_toolchain_x86_64_cross_aarch64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
 
 build_rpm_x64:
-  extends: [.medium_build, .always, .x64]
+  extends: [.medium_build, .x64]
   variables:
     DOCKERFILE: rpm-x64/Dockerfile
     IMAGE: rpm_x64
     BASE_IMAGE: centos:7
 
 build_dd_agent_testing:
-  extends: [.fast_build, .always, .x64]
+  extends: [.fast_build, .x64]
   variables:
     DOCKERFILE: dd-agent-testing/Dockerfile
     IMAGE: dd-agent-testing
 
 build_docker_x64:
-  extends: [.build_bake, .always, .x64]
+  extends: [.build_bake, .x64]
   timeout: 30m
   id_tokens:
     DDSIGN_ID_TOKEN:
@@ -115,32 +114,37 @@ build_docker_x64:
       fi
 
 build_btf_gen:
-  extends: [.fast_build, .always, .x64]
+  extends: [.fast_build, .x64]
   variables:
     DOCKERFILE: btf-gen/Dockerfile
     IMAGE: btf-gen
 
 build_gitlab_agent_deploy:
-  extends: [.fast_build, .always, .x64]
+  extends: [.fast_build, .x64]
   variables:
     DOCKERFILE: agent-deploy/Dockerfile
     IMAGE: gitlab_agent_deploy
 
 build_linux_arm64:
   extends: [.build_bake, .arm]
+  needs:
+    - job: build_toolchain_aarch64_native
+      artifacts: false
+    - job: build_toolchain_aarch64_cross_x86_64
+      artifacts: false
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
 
 build_rpm_arm64:
-  extends: [.medium_build, .always, .arm]
+  extends: [.medium_build, .arm]
   variables:
     DOCKERFILE: rpm-arm64/Dockerfile
     IMAGE: rpm_arm64
     BASE_IMAGE: amazonlinux:2.0.20181114
 
 build_rpm_armhf:
-  extends: [.medium_build, .always, .arm]
+  extends: [.medium_build, .arm]
   variables:
     DOCKERFILE: rpm-armhf/Dockerfile
     IMAGE: rpm_armhf
@@ -148,7 +152,7 @@ build_rpm_armhf:
     DD_TARGET_ARCH: armhf
 
 build_docker_arm64:
-  extends: [.fast_build, .always, .arm]
+  extends: [.fast_build, .arm]
   variables:
     DOCKERFILE: docker-arm64/Dockerfile
     IMAGE: docker_arm64
@@ -243,8 +247,7 @@ build_dev_env_workspace_arm64:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: on_success
-    - if: $CI_COMMIT_TAG == null
-      changes:
+    - changes:
         paths:
           - build-container.ps1
           - windows/**/*

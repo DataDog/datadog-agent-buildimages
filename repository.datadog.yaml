@@ -2,9 +2,3 @@
 schema-version: v1
 kind: mergequeue
 enable: false
----
-schema-version: v1
-kind: mergegate
-rules:
-  - require: bewaire
-    strict_on_error: false

@@ -31,6 +31,10 @@ dda.env                             @DataDog/agent-devx
 /rpm-x64/                           @DataDog/agent-devx @DataDog/agent-build
 /linux/                             @DataDog/agent-devx @DataDog/agent-build
 
+# Cross-toolchains
+/toolchains/                        @DataDog/agent-build
+/.gitlab/toolchains.yml             @DataDog/agent-build
+
 # Windows test & build images
 /windows/                           @DataDog/windows-products @DataDog/agent-devx
 
@@ -38,7 +42,6 @@ dda.env                             @DataDog/agent-devx
 /docker-arm64/                      @DataDog/agent-build @DataDog/agent-devx
 /docker-x64/                        @DataDog/agent-build @DataDog/agent-devx
 /dev-envs/                          @DataDog/agent-devx
-/devcontainer/                      @DataDog/agent-devx @DataDog/container-platform
 
 # Tools
 /tools/                             @DataDog/agent-devx

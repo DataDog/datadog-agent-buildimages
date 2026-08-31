@@ -2,13 +2,13 @@ ARG BASE_IMAGE_REGISTRY=docker.io
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/centos:7
 
 FROM ${BASE_IMAGE_REGISTRY}/ubuntu:22.04 as UBUNTU_ARM64
-ENV CACERT_BUNDLE_VERSION=2025-11-04
-ENV CACERT_BUNDLE_SHA256="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def"
+ENV CACERT_BUNDLE_VERSION=2026-08-13
+ENV CACERT_BUNDLE_SHA256="f66dff1bdf8f96060b8177976f8b7d9254bc89bc4db933d769f7384d28480bc9"
 RUN apt-get update && apt-get install -y wget
 RUN wget https://curl.se/ca/cacert-${CACERT_BUNDLE_VERSION}.pem -O /cacert.pem
 RUN echo "${CACERT_BUNDLE_SHA256}  /cacert.pem" | sha256sum --check
 
-FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.0 AS dd_pkg
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.4 AS dd_pkg
 
 FROM --platform=linux/armhf ${BASE_IMAGE}
 

@@ -14,9 +14,8 @@ variable "versions" {
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
-    DDA_VERSION         = "v0.36.1"
+    DDA_VERSION         = "v0.38.0"
     CMAKE_VERSION       = "3.30.2"
-    CTNG_VERSION        = "1.26.0"
     RUST_VERSION        = "1.91.0"
     RVM_VERSION         = "1.29.12"
     RUSTUP_VERSION      = "1.26.0"
@@ -29,8 +28,8 @@ variable "versions" {
     DATADOG_PACKAGES_VERSION = "42796a26609b975947ddaafe1672dd04f47418ea"
     MACOSX_SDK_VERSION       = "14.0"
     OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
-    AIX_CROSS_VERSION        = "gcc13.4.0-aix7.3"
-    PULUMI_VERSION         = "3.207.0"
+    AIX_CROSS_VERSION        = "gcc13.4.0-aix7.3-2"
+    PULUMI_VERSION         = "3.255.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
   }
@@ -61,7 +60,7 @@ variable "checksums_common" {
     MACOSX_SDK_SHA256  = "5e4d3be6b445f0eacc0333ff2117e93e4433d8c4fe44053a14f735033a98aaa9"
     RVM_SHA256         = "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e"
     PULUMI_SHA256      = "319ffe2866c9976a72d924b14771e25c47ab474f9d612182df932369f5fe4f5b"
-    AIX_CROSS_SHA256   = "4d691a5eaab7fd7541e3adb784dc043704d85d0cd057da1080280657637fb95c"
+    AIX_CROSS_SHA256   = "90c071fc382ab81a9587e67a4a486954e86211ddfe1391d514aa4a313dec4664"
   }
 }
 
@@ -116,7 +115,6 @@ variable "architecture_defs_amd64" {
     PROTOBUF_ARCH        = "x86_64"
     MOLD_ARCH            = "x86_64"
     GLIBC_VERSION        = "2.17"
-    CROSS_GLIBC_VERSION  = "2.23"
   }
 }
 
@@ -137,7 +135,6 @@ variable "architecture_defs_arm64" {
     PROTOBUF_ARCH        = "aarch_64"
     MOLD_ARCH            = "aarch64"
     GLIBC_VERSION        = "2.23"
-    CROSS_GLIBC_VERSION  = "2.17"
   }
 }
 

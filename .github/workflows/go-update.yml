@@ -1,12 +1,20 @@
 name: Open Go Update PR
 
+# TODO: append "on ${{ inputs.target_branches }}" once target_branches input is added
+run-name: "Open Go ${{ inputs.go_version }} Update PR"
+
 on:
   workflow_dispatch:
     inputs:
       go_version:
-        description: 'Go version'
+        description: 'Go version (format X.Y.Z, e.g. 1.27.0)'
         required: true
         type: string
+      # TODO: uncomment when multi-branch support is implemented
+      # target_branches:
+      #   description: 'Branches to update, e.g. "main, 7.83.x, 7.82.x"'
+      #   required: true
+      #   type: string
       open_pr:
         description: 'Whether to open a PR'
         required: false
@@ -18,7 +26,7 @@ on:
         type: boolean
         default: false
       branch:
-        description: 'Git branch to use (defaults to "gobot/go-update-<go_version>")'
+        description: 'Git branch to use (defaults to "automation/go-update-<go_version>-<target_branch>")'
         required: false
         type: string
         default: ''
@@ -26,7 +34,7 @@ on:
 permissions: {}
 
 env:
-  BRANCH_NAME: ${{ inputs.branch || format('gobot/go-update-{0}', inputs.go_version) }}
+  BRANCH_NAME: ${{ inputs.branch || format('automation/go-update-{0}-{1}', inputs.go_version, github.ref_name) }}
 
 jobs:
   open-go-update-pr:
@@ -36,15 +44,30 @@ jobs:
       id-token: write # needed for dd-octo-sts token exchange
 
     steps:
+      - name: Validate go_version
+        run: |
+          if [[ ! "${{ inputs.go_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::go_version must be X.Y.Z (e.g. 1.27.0). Got: '${{ inputs.go_version }}'"
+            exit 1
+          fi
+
+      - name: Check MsGo has published the release
+        run: |
+          RESPONSE=$(curl -sL "https://aka.ms/golang/release/latest/go${{ inputs.go_version }}-1.linux-amd64.tar.gz.sha256")
+          if ! echo "$RESPONSE" | grep -qE '^[0-9a-f]{64}'; then
+            echo "MsGo has not published go${{ inputs.go_version }} yet. Check: https://github.com/microsoft/go/releases"
+            exit 1
+          fi
+
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
 
       - name: Setup Python and pip
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
-          python-version: "3.12"  # temporary: 3.14 breaks httpcore 1.0.7, revert when dda bumps httpcore to >=1.0.8
+          python-version: "3.14"
 
       - name: Get access token via dd-octo-sts
         uses: DataDog/dd-octo-sts-action@96a25462dbcb10ebf0bfd6e2ccc917d2ab235b9a # v1.0.4
@@ -68,7 +91,7 @@ jobs:
         if: ${{ inputs.open_pr }}
         with:
           token: ${{ steps.octo-sts.outputs.token }}
-          commit-message: "[push_to_datadog_agent] Update go version to ${{ inputs.go_version }}"
+          commit-message: "Update Go version to ${{ inputs.go_version }}"
           branch: ${{ env.BRANCH_NAME }}
           sign-commits: true
           title: "Update Go version to ${{ inputs.go_version }}"

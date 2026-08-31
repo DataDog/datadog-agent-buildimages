@@ -50,8 +50,8 @@ $SoftwareTable = @{
     "NINJA_SHA256"="d0ee3da143211aa447e750085876c9b9d7bcdd637ab5b2c5b41349c617f22f3b";
     "GCLOUD_SDK_VERSION"="315.0.0";
     "GCLOUD_SDK_SHA256"="c9b283c9db4ed472111ccf32e6689fd467daf18ce3a77b8e601f9c646a83d86b";
-    "CACERTS_VERSION"="2025-11-04";
-    "CACERTS_HASH"="8ac40bdd3d3e151a6b4078d2b2029796e8f843e3f86fbf2adbc4dd9f05e79def";
+    "CACERTS_VERSION"="2026-08-13";
+    "CACERTS_HASH"="f66dff1bdf8f96060b8177976f8b7d9254bc89bc4db933d769f7384d28480bc9";
     "JAVA_VERSION"="17.0.8";
     "JAVA_SHA256"="db6e7e7506296b8a2338f6047fdc94bf4bbc147b7a3574d9a035c3271ae1a92b";
     "JSIGN_VERSION"="5.0";
@@ -79,6 +79,6 @@ $SoftwareTable = @{
     # with a "COPY --from" instruction in the Dockerfile
     # recall to update the digest of the image in the Dockerfile
     # when updating the version
-    "WINDOWS_CODE_SIGNER_VERSION"="v0.7.0";
-    "WINDOWS_CODE_SIGNER_SHA256"="89eb7490e7bec62fea47fdbe4b202f65c8a068b84ce2d2c629a33ce924774cf7";
+    "WINDOWS_CODE_SIGNER_VERSION"="v0.8.0";
+    "WINDOWS_CODE_SIGNER_SHA256"="941dbad45eddcb9428ec1940200e40fa41eb48f1870869d444a8e437cf7e3f68";
 }
