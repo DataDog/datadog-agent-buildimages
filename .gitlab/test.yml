@@ -146,7 +146,6 @@ update_datadog_agent_pr_with_test_images:
     - job: build_windows_ltsc2025_x64
       optional: true
   variables:
-    REF: main
     BRANCH: buildimages/$CI_COMMIT_BRANCH
     IMAGES_ID: v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   id_tokens:
@@ -168,6 +167,15 @@ update_datadog_agent_pr_with_test_images:
     - pip install "dda==${DDA_VERSION}"
     - dda -v self dep sync -f legacy-build
     - export GITHUB_TOKEN=$(cat token.txt)
+    # Look up the open buildimages PR for this commit and read its base branch.
+    - >-
+      REF=$(curl
+      -sfH "Authorization: Bearer $GITHUB_TOKEN"
+      -H "Accept: application/vnd.github+json"
+      "https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/${CI_COMMIT_SHA}/pulls"
+      | jq -r '.[0].base.ref // empty') ||
+      { echo "GitHub API lookup failed while resolving PR for commit $CI_COMMIT_SHA" >&2; exit 1; }
+    - if [[ -z "$REF" ]]; then echo "No open PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
     - dda run update agent-build-images "$IMAGES_ID" "$BRANCH" --ref "$REF" --test-version
   after_script:
     # Revoke the token after usage

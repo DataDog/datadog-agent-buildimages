@@ -92,6 +92,7 @@ jobs:
         with:
           token: ${{ steps.octo-sts.outputs.token }}
           commit-message: "Update Go version to ${{ inputs.go_version }}"
+          base: ${{ github.ref_name }}
           branch: ${{ env.BRANCH_NAME }}
           sign-commits: true
           title: ${{ github.ref_name == 'main' && format('Update Go version to {0}', inputs.go_version) || format('[Backport {0}] Update Go version to {1}', github.ref_name, inputs.go_version) }}
