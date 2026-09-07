@@ -21,5 +21,5 @@ mkdir -p "${ddgl_config_dir}"
 cat <<'EOF' > "${ddgl_config_dir}/config.toml"
 gitlab_url="https://gitlab.ddbuild.io"
 github_fallback = true
-token_command = ["ddtool", "auth", "token", "gitlab", "--datacenter", "us1.ddbuild.io"]
+token_command = ["ddtool", "auth", "gitlab", "token"]
 EOF
