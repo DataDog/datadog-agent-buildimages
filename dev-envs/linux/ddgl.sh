@@ -8,7 +8,7 @@ export UV_PYTHON_INSTALL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/base"
 export UV_TOOL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/venv"
 export UV_TOOL_BIN_DIR="/usr/local/bin"
 
-DDGL_VERSION=v0.2.0
+DDGL_VERSION=v0.3.0
 
 (
     umask 0002
