@@ -8,7 +8,7 @@ export UV_PYTHON_INSTALL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/base"
 export UV_TOOL_DIR="${DD_BUILD_INSTALL_ROOT}/uv/venv"
 export UV_TOOL_BIN_DIR="/usr/local/bin"
 
-DDGL_VERSION=v0.2.0
+DDGL_VERSION=v0.3.0
 
 (
     umask 0002
@@ -21,5 +21,5 @@ mkdir -p "${ddgl_config_dir}"
 cat <<'EOF' > "${ddgl_config_dir}/config.toml"
 gitlab_url="https://gitlab.ddbuild.io"
 github_fallback = true
-token_command = ["ddtool", "auth", "token", "gitlab", "--datacenter", "us1.ddbuild.io"]
+token_command = ["ddtool", "auth", "gitlab", "token"]
 EOF
