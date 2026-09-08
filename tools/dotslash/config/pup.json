@@ -1,0 +1,41 @@
+{
+  "__extra_metadata": {
+    "platforms": {
+      "linux-aarch64": {
+        "uncompressed_size": 0
+      },
+      "linux-x86_64": {
+        "uncompressed_size": 0
+      }
+    }
+  },
+  "name": "pup",
+  "platforms": {
+    "linux-aarch64": {
+      "digest": "06a866960e5efd49bdce2720bbb0198c414fd72ce91bf561a3e078b46885cfc9",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "pup",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/DataDog/pup/releases/download/v1.18.1/pup_1.18.1_Linux_arm64.tar.gz"
+        }
+      ],
+      "size": 28243727
+    },
+    "linux-x86_64": {
+      "digest": "6558c70b0910c4463b3ad2ff90d58d9964349ba6160b495822e91f3d7ce7d824",
+      "format": "tar.gz",
+      "hash": "blake3",
+      "path": "pup",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://github.com/DataDog/pup/releases/download/v1.18.1/pup_1.18.1_Linux_x86_64.tar.gz"
+        }
+      ],
+      "size": 29352559
+    }
+  }
+}
