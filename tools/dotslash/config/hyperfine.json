@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 1231141
+        "uncompressed_size": 1274989
       },
       "linux-x86_64": {
-        "uncompressed_size": 1525709
+        "uncompressed_size": 1565581
       }
     }
   },
   "name": "hyperfine",
   "platforms": {
     "linux-aarch64": {
-      "digest": "eb6ba23e2507203bd11449491bdd7d522507675d126607e146d79efebe45bcc0",
+      "digest": "fb6456c5696b03e1d029be26ab1b336ce57e915686841150a097eda65829b024",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "hyperfine-v1.18.0-aarch64-unknown-linux-gnu/hyperfine",
+      "path": "hyperfine-v1.20.0-aarch64-unknown-linux-gnu/hyperfine",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-aarch64-unknown-linux-gnu.tar.gz"
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz"
         }
       ],
-      "size": 598999
+      "size": 607895
     },
     "linux-x86_64": {
-      "digest": "6bc74e270bbe27d04866cfb76f8c035454411842a681ec9e4243394e343337cf",
+      "digest": "680c2ffa41d3620fbc2a25be84c21afb96bf24014368fb9765096f6cf238d6f7",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "hyperfine-v1.18.0-x86_64-unknown-linux-musl/hyperfine",
+      "path": "hyperfine-v1.20.0-x86_64-unknown-linux-musl/hyperfine",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine-v1.18.0-x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 694152
+      "size": 710161
     }
   }
 }

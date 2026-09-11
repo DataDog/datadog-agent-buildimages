@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 8725489
+        "uncompressed_size": 9060608
       },
       "linux-x86_64": {
-        "uncompressed_size": 9028593
+        "uncompressed_size": 9507072
       }
     }
   },
   "name": "diffnav",
   "platforms": {
     "linux-aarch64": {
-      "digest": "b65961bb36b006fa355a9f95569a7e33c0af2420af51b1628259eb885c643407",
+      "digest": "f2ef87204d39264b05fac32f62a672f38e7f672bd0deb705b7a484c364b6429e",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "diffnav",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/dlvhdr/diffnav/releases/download/v0.11.0/diffnav_Linux_arm64.tar.gz"
+          "url": "https://github.com/dlvhdr/diffnav/releases/download/v0.12.0/diffnav_Linux_arm64.tar.gz"
         }
       ],
-      "size": 2901560
+      "size": 3021001
     },
     "linux-x86_64": {
-      "digest": "7c10718e8073aa299bcae39108a21f1933cfd4c301080c28c6412617b881b27c",
+      "digest": "8fdd3a6bbe0b1ec4d972d65e1c60d533cbf1b1c467e4df5744e1d2ac5b9fa2f5",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "diffnav",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/dlvhdr/diffnav/releases/download/v0.11.0/diffnav_Linux_x86_64.tar.gz"
+          "url": "https://github.com/dlvhdr/diffnav/releases/download/v0.12.0/diffnav_Linux_x86_64.tar.gz"
         }
       ],
-      "size": 3181392
+      "size": 3325933
     }
   }
 }

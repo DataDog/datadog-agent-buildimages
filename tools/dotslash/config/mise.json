@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 79740500
+        "uncompressed_size": 91850257
       },
       "linux-x86_64": {
-        "uncompressed_size": 89569110
+        "uncompressed_size": 95289540
       }
     }
   },
   "name": "mise",
   "platforms": {
     "linux-aarch64": {
-      "digest": "34cd8e4dde34fbb1e63675210327048760d60955fdc39413939fc0a6f0a461b3",
+      "digest": "865af5460fc693277d5f02741df12981148cf3f6832d53ee7dbd73a04a8fa9f7",
       "format": "tar.xz",
       "hash": "blake3",
       "path": "mise/bin/mise",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jdx/mise/releases/download/v2026.5.15/mise-v2026.5.15-linux-arm64-musl.tar.xz"
+          "url": "https://github.com/jdx/mise/releases/download/v2026.8.2/mise-v2026.8.2-linux-arm64-musl.tar.xz"
         }
       ],
-      "size": 17872456
+      "size": 20764264
     },
     "linux-x86_64": {
-      "digest": "73ea730e1a97f36f47b31a3ba8011818d7b35e9315bfe192ec95caedf86fe530",
+      "digest": "e71244483dcc1fecceed47f7443973c8546fc0769d98abf47b4c7602e06b9ae4",
       "format": "tar.xz",
       "hash": "blake3",
       "path": "mise/bin/mise",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jdx/mise/releases/download/v2026.5.15/mise-v2026.5.15-linux-x64-musl.tar.xz"
+          "url": "https://github.com/jdx/mise/releases/download/v2026.8.2/mise-v2026.8.2-linux-x64-musl.tar.xz"
         }
       ],
-      "size": 20011732
+      "size": 20426324
     }
   }
 }
