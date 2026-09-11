@@ -105,6 +105,9 @@ dda config restore
 
 # Configure telemetry if enabled
 if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
+    # Avoid exposing the API key in startup logs while persisting it for later sessions.
+    set +x
     set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"
+    set -x
     dda self telemetry enable
 fi
