@@ -14,7 +14,7 @@ variable "versions" {
     CONDA_VERSION       = "4.9.2-7"
     BAZELISK_VERSION    = "1.28.1"
     CODECOV_VERSION     = "0.6.1"
-    DDA_VERSION         = "v0.38.0"
+    DDA_VERSION         = "v0.38.1"
     CMAKE_VERSION       = "3.30.2"
     RUST_VERSION        = "1.91.0"
     RVM_VERSION         = "1.29.12"
