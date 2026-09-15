@@ -13,7 +13,7 @@ end
 
 group :test do
   gem "tailor", '~> 1.4.1' # Ruby style
-  gem "foodcritic", '~> 15.1.0' # Lint testing
+  gem "foodcritic", '~> 16.3.0' # Lint testing
 end
 
 group :azure do
