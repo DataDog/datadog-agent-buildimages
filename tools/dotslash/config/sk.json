@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 4696562
+        "uncompressed_size": 7040108
       },
       "linux-x86_64": {
-        "uncompressed_size": 5692490
+        "uncompressed_size": 9608900
       }
     }
   },
   "name": "sk",
   "platforms": {
     "linux-aarch64": {
-      "digest": "d04ef2c935d28e5375949d385e788ed976d3758eee027b6f0192942594206cae",
+      "digest": "d8a9e902bc57bf272a23886529230459a135b2382e93a3e4ae564c482ff73653",
       "format": "tar.xz",
       "hash": "blake3",
       "path": "skim-aarch64-unknown-linux-musl/sk",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/skim-rs/skim/releases/download/v4.7.0/skim-aarch64-unknown-linux-musl.tar.xz"
+          "url": "https://github.com/skim-rs/skim/releases/download/v5.6.2/skim-aarch64-unknown-linux-musl.tar.xz"
         }
       ],
-      "size": 1454288
+      "size": 2013632
     },
     "linux-x86_64": {
-      "digest": "9957ef0436bf18d85591f5f7998a253f2688279cf5f323a48914194b618775b1",
+      "digest": "c52c6ca83dc9deb135e0bc465ba8b369e7f32547d550ae0ca840fb67d70e1741",
       "format": "tar.xz",
       "hash": "blake3",
       "path": "skim-x86_64-unknown-linux-musl/sk",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/skim-rs/skim/releases/download/v4.7.0/skim-x86_64-unknown-linux-musl.tar.xz"
+          "url": "https://github.com/skim-rs/skim/releases/download/v5.6.2/skim-x86_64-unknown-linux-musl.tar.xz"
         }
       ],
-      "size": 1733232
+      "size": 2636720
     }
   }
 }
