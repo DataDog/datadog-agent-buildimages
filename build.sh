@@ -70,11 +70,10 @@ add_build_args_from_file "dda.env"
 # Add build args from custom build args file
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
-# Campaigner uses these labels to select the newest release image built on main.
-IMAGE_LABEL_ARGS=()
+# Supply the CI metadata used by the release image's Campaigner labels.
 if [[ "$IMAGE" == "gitlab_agent_deploy" ]]; then
-    IMAGE_LABEL_ARGS+=("--label" "git.branch=${BRANCH_NAME}")
-    IMAGE_LABEL_ARGS+=("--label" "ci.build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+    BUILD_ARG_LIST+=("--build-arg" "CI_COMMIT_BRANCH=${BRANCH_NAME}")
+    BUILD_ARG_LIST+=("--build-arg" "CI_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)")
 fi
 
 METADATA_FILE=$(mktemp)
@@ -86,7 +85,6 @@ docker buildx build \
 $CACHE_PUSH_ARGS \
 $CACHE_PULL_ARGS \
 "${BUILD_ARG_LIST[@]}" \
-${IMAGE_LABEL_ARGS[@]+"${IMAGE_LABEL_ARGS[@]}"} \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 ${IMAGE_VARIANT:+--target $IMAGE_VARIANT} \
