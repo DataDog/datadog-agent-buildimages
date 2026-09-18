@@ -232,9 +232,3 @@ COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-
-# Campaigner uses these labels to select recent images built on main.
-ARG CI_COMMIT_BRANCH=unknown
-ARG CI_BUILD_TIME
-LABEL git.branch="${CI_COMMIT_BRANCH}" \
-      ci.build_time="${CI_BUILD_TIME}"
