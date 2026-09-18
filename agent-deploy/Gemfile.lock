@@ -14,7 +14,7 @@ GEM
     deb-s3 (0.9.1)
       aws-sdk (~> 2)
       thor (~> 0.19.0)
-    jmespath (1.4.0)
+    jmespath (1.6.1)
     thor (0.19.4)
 
 PLATFORMS
