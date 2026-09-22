@@ -24,6 +24,9 @@
   id_tokens:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
+    # Used by send-metrics.sh to mint a short-lived Datadog API key via dd-sts
+    DD_STS_OIDC_TOKEN:
+      aud: dd-sts
   before_script:
     # Install the vault CLI, pinned to the same version and checksums as docker-bake.hcl.
     # NOTE: keep the version in sync with VAULT_VERSION in docker-bake.hcl.
@@ -34,6 +37,15 @@
     - echo "${VAULT_SHA256} ${VAULT_FILENAME}" | sha256sum --check
     - unzip -o "${VAULT_FILENAME}" -d /usr/bin vault
     - rm "${VAULT_FILENAME}"
+    # Install the dd-sts CLI, pinned. Used by send-metrics.sh to exchange the
+    # job's OIDC ID token for a short-lived Datadog API key.
+    # See the dd-sts user guide:
+    # https://datadoghq.atlassian.net/wiki/spaces/SECENG/pages/5769659435/User+guide+dd-sts
+    - curl --retry 10 -fsSL -o /tmp/dd-sts-tar.tar.gz "https://binaries.ddbuild.io/dd-source/dd-sts/v0.1.6/dd-sts-tar.tar.gz"
+    - echo "0992b5a8eefb13a9b382a6b328953c33aa999e5b009ecb1bbc591af11a003cfb  /tmp/dd-sts-tar.tar.gz" | sha256sum --check
+    - tar -xzf /tmp/dd-sts-tar.tar.gz -C /tmp
+    - install -m 0755 "/tmp/dd-sts-linux-${VAULT_ARCH}" /usr/local/bin/dd-sts
+    - rm -rf /tmp/dd-sts-tar.tar.gz /tmp/dd-sts-darwin-* /tmp/dd-sts-linux-*
     # Docker Hub login to reduce risk of rate limiting.
     # Credentials are read from Vault; the runner provides Vault
     # authentication and POD_NAMESPACE.
