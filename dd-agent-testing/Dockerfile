@@ -10,10 +10,22 @@ ARG PYTHON_VERSION=3.12.6
 ARG VAULT_VERSION=1.17.2
 ARG VAULT_CHECKSUM=a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8
 ARG VAULT_FILENAME="vault_${VAULT_VERSION}_linux_amd64.zip"
+ARG DEBIAN_SNAPSHOT=20260901T000000Z
 
 # External calls configuration
 COPY .awsconfig /root/.aws/config
 COPY .curlrc .wgetrc /root/
+
+# Debian 11 is EOL, so deb.debian.org 404s on packages its indexes still list.
+# The snapshot's bullseye-security InRelease is also past Valid-Until, hence the
+# override. The near-EOL snapshot date, not the base image's 2023 default, keeps
+# the pinned versions at what the live archive last served.
+RUN sed -i \
+      -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
+      -e "s|^# deb http://snapshot\(.*\)/[0-9]\{8\}T[0-9]\{6\}Z |deb http://snapshot\1/${DEBIAN_SNAPSHOT} |" \
+      /etc/apt/sources.list \
+  && grep -q '^deb http://snapshot' /etc/apt/sources.list \
+  && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   apt-transport-https autoconf automake bison curl \

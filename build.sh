@@ -79,6 +79,8 @@ docker buildx build \
 $CACHE_PUSH_ARGS \
 $CACHE_PULL_ARGS \
 "${BUILD_ARG_LIST[@]}" \
+--label "git.branch=${BRANCH_NAME}" \
+--label "ci.build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 --tag registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE${ECR_TEST_ONLY}:$IMAGE_VERSION \
 ${BUILD_CONTEXT_ARGS:-} \
 ${IMAGE_VARIANT:+--target $IMAGE_VARIANT} \
