@@ -52,8 +52,6 @@
     - DOCKER_REGISTRY_LOGIN=$(vault kv get -field=login kv/k8s/${POD_NAMESPACE}/datadog-agent-buildimages/dockerhub)
     - vault kv get -field=password kv/k8s/${POD_NAMESPACE}/datadog-agent-buildimages/dockerhub | docker login --username "$DOCKER_REGISTRY_LOGIN" --password-stdin docker.io
   script:
-    - dd-sts debug
-    - dd-sts exchange --policy datadog-agent-buildimages-metrics.yml -- bash -c 'ls'
     - ./build.sh
   retry: 1 # Add a retry to prevent flakyness on build stage.
 

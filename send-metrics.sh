@@ -54,7 +54,7 @@ command -v dd-sts >/dev/null 2>&1 || {
     echo "dd-sts CLI not found; it is installed by the CI job (see .gitlab/build.yml)" >&2
     exit 1
 }
-dd-sts exchange --policy datadog-agent-buildimages-metrics -- bash -c '
+dd-sts exchange --policy datadog-agent-buildimages-metrics.yml -- bash -c '
     curl -X POST "https://api.datadoghq.com/api/v2/series" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
