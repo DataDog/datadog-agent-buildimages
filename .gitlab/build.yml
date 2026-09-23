@@ -67,6 +67,9 @@
   timeout: 45m
 
 .build_bake:
+  id_tokens:
+    DD_STS_OIDC_TOKEN:
+      aud: dd-sts
   stage: build
   timeout: 2h
   before_script:
