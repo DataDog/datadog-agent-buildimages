@@ -84,3 +84,14 @@ build_toolchain_aarch64_cross_armhf:
   extends: .toolchain_build_aarch64_host
   variables:
     TOOLCHAIN_TARGET_ARCH: armhf
+
+.aix_toolchain_build:
+  variables:
+    TOOLCHAIN_TARGET_ARCH: aix
+    AIX_SYSROOT_URL: "https://mass-read.us1.ddbuild.io/internal/artifact/datadog-agent/aix/sysroot/7.3.0.0/aix-sysroot.tar.gz"
+
+build_toolchain_x86_64_cross_aix:
+  extends: [.toolchain_build_x86_64_host, .aix_toolchain_build]
+
+build_toolchain_aarch64_cross_aix:
+  extends: [.toolchain_build_aarch64_host, .aix_toolchain_build]
