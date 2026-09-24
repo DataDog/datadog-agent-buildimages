@@ -1,0 +1,24 @@
+--- a/libatomic/config/t-aix
++++ b/libatomic/config/t-aix
+@@ -1,14 +1,11 @@
++# PATCHED for single-arch (64-bit-only) static cross build with GNU binutils.
++# The original all-local repackages the shared .so into a fat (32+64) AIX
++# archive, which binutils ar cannot build and which references ../ppc<bits>/
++# and ../pthread/ multilib dirs absent under --disable-multilib. With a
++# single-arch static build, libatomic.a is built normally, so all-local is a
++# no-op. (Hardware atomics are inline in the compiler; this lib only provides
++# the out-of-line fallback for oversized/misaligned atomics.)
+ ifeq ($(MULTIBUILDTOP),)
+-BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
+-    echo '64'; else echo '32'; fi)
+-#MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
+-MAJOR=1
+-ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
+ all-local:
+-	-rm -f .libs/$(PACKAGE).a ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a
+-	$(AR) rc .libs/$(PACKAGE).a .libs/$(PACKAGE).so.$(MAJOR)
+-	$(AR) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+-	$(ARX) -X$(BITS) rc .libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+-	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+ endif
+ 

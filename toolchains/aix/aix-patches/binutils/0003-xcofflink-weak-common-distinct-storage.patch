@@ -1,0 +1,43 @@
+Subject: [PATCH] xcofflink: give XCOFF weak commons distinct .bss storage
+
+GCC emits C++ template static data members (notably each locale facet's
+std::locale::id) as weak commons (C_AIX_WEAKEXT + XTY_CM).  The generic
+linker _bfd_generic_link_add_one_symbol tests BSF_WEAK before the
+common-section test, so a weak common is mis-classified as a weak
+*definition* (DEFW_ROW) instead of a common (COMMON_ROW).  It then never
+gets common allocation, is left at its zero-size csect, and every such
+symbol is aliased on top of one another at the start of .bss.  Result on
+AIX: all facet locale::id objects share one storage -> one _M_index ->
+use_facet returns the wrong facet -> any C++ iostream/locale formatting
+crashes.
+
+Route XCOFF weak commons through COMMON_ROW (which still yields to a real
+strong definition via CREF) by clearing BSF_WEAK for them before the
+add-one-symbol call.  Only weak commons are affected; local (C_HIDEXT)
+commons and plain external (C_EXT) commons are untouched.
+
+--- a/bfd/xcofflink.c	2026-06-11 09:51:58.215627033 +0200
++++ b/bfd/xcofflink.c	2026-06-11 08:51:36.193002047 +0200
+@@ -2184,6 +2184,22 @@
+ 	  BFD_ASSERT (last_real->next == first_csect);
+ 	  last_real->next = NULL;
+ 	  flags = (sym.n_sclass == C_EXT ? BSF_GLOBAL : BSF_WEAK);
++	  /* A weak common (C_AIX_WEAKEXT + XTY_CM) must be classified as a
++	     common so _bfd_generic_link_add_one_symbol allocates it distinct
++	     storage and coalesces it across object files.  That routine tests
++	     BSF_WEAK before the common-section test, so a weak common passed
++	     with BSF_WEAK would be mis-handled as a weak *definition*: left at
++	     its zero-size csect and then aliased on top of every other such
++	     symbol at the start of .bss.  GCC emits C++ template static data
++	     members (e.g. each facet's std::locale::id) as weak commons, so
++	     this collapse makes every facet share one locale::id -> use_facet
++	     returns the wrong facet.  Clearing BSF_WEAK here routes the symbol
++	     through COMMON_ROW (which still yields to a genuine strong
++	     definition via CREF), giving each its own .bss slot.  Only weak
++	     commons are affected; local (C_HIDEXT) commons and plain external
++	     (C_EXT, already BSF_GLOBAL) commons are untouched.  */
++	  if (smtyp == XTY_CM && sym.n_sclass == C_AIX_WEAKEXT)
++	    flags = BSF_GLOBAL;
+ 	  ok = (_bfd_generic_link_add_one_symbol
+ 		(info, abfd, name, flags, section, value, NULL, copy, true,
+ 		 (struct bfd_link_hash_entry **) sym_hash));

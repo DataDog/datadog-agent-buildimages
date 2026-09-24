@@ -1,0 +1,92 @@
+--- a/bfd/coff-rs6000.c	2026-02-08 01:00:00.000000000 +0100
++++ b/bfd/coff-rs6000.c	2026-06-09 16:12:47.732684417 +0200
+@@ -3149,16 +3149,16 @@
+ }
+ 
+ bool
+-xcoff_reloc_type_ba (bfd *input_bfd ATTRIBUTE_UNUSED,
+-		     asection *input_section ATTRIBUTE_UNUSED,
++xcoff_reloc_type_ba (bfd *input_bfd,
++		     asection *input_section,
+ 		     bfd *output_bfd ATTRIBUTE_UNUSED,
+-		     struct internal_reloc *rel ATTRIBUTE_UNUSED,
++		     struct internal_reloc *rel,
+ 		     struct internal_syment *sym ATTRIBUTE_UNUSED,
+ 		     struct reloc_howto_struct *howto,
+ 		     bfd_vma val,
+ 		     bfd_vma addend,
+ 		     bfd_vma *relocation,
+-		     bfd_byte *contents ATTRIBUTE_UNUSED,
++		     bfd_byte *contents,
+ 		     struct bfd_link_info *info ATTRIBUTE_UNUSED)
+ {
+   howto->src_mask &= ~3;
+@@ -3166,6 +3166,34 @@
+ 
+   *relocation = val + addend;
+ 
++  /* On XCOFF64, text is loaded at 0x100000000+, so an absolute branch
++     (ba/bla, R_RBA) can never reach it: the 26-bit absolute target field
++     cannot hold such an address and the relocation overflows.  When the
++     target is out of the absolute 26-bit range but is reachable with a
++     pc-relative branch (e.g. an imported symbol resolved via a nearby
++     glink stub), rewrite the instruction to a relative branch by clearing
++     the AA bit (ba->b, bla->bl) and emit a pc-relative displacement.  */
++  if (bfd_xcoff_is_xcoff64 (input_bfd))
++    {
++      bfd_vma target = val + addend;
++      bfd_vma location = (input_section->output_section->vma
++			  + input_section->output_offset
++			  + rel->r_vaddr - input_section->vma);
++      bfd_signed_vma rel_off = (bfd_signed_vma) (target - location);
++
++      if (target + 0x2000000 >= 0x4000000
++	  && rel_off >= -(bfd_signed_vma) 0x2000000
++	  && rel_off < (bfd_signed_vma) 0x2000000)
++	{
++	  bfd_vma off = rel->r_vaddr - input_section->vma;
++	  unsigned long insn = bfd_get_32 (input_bfd, contents + off);
++
++	  insn &= ~(unsigned long) 2;	/* clear AA: absolute -> relative */
++	  bfd_put_32 (input_bfd, insn, contents + off);
++	  *relocation = (bfd_vma) rel_off;
++	}
++    }
++
+   return true;
+ }
+ 
+@@ -4449,9 +4477,32 @@
+   { SSUBTYP_DWMAC,   ".dwmac",   ".debug_macro",    true }
+ };
+ 
++/* Free cached info for an XCOFF bfd.  This behaves like the generic COFF
++   routine (freeing the symbol tables), but preserves the tdata pointer.
++
++   When writing an archive that contains a shared (DYNAMIC) object member,
++   _bfd_compute_and_write_armap slurps each member's symbols and then calls
++   bfd_free_cached_info before the target write_armap routine runs.  The
++   generic _bfd_free_cached_info nulls abfd->tdata.any, but
++   xcoff_write_armap_big -> member_layout_init still dereferences
++   xcoff_data (member)->text_align_power to lay out DYNAMIC members, and it
++   must produce the SAME offsets the contents pass already wrote.  The tdata
++   memory lives on the bfd objalloc and is not actually released until
++   bfd_close, so restoring the pointer is safe and keeps both passes
++   consistent.  */
++
++static bool
++_bfd_xcoff_free_cached_info (bfd *abfd)
++{
++  void *saved_tdata = abfd->tdata.any;
++  bool ret = _bfd_coff_free_cached_info (abfd);
++  abfd->tdata.any = saved_tdata;
++  return ret;
++}
++
+ /* For generic entry points.  */
+ #define _bfd_xcoff_close_and_cleanup coff_close_and_cleanup
+-#define _bfd_xcoff_bfd_free_cached_info coff_bfd_free_cached_info
++#define _bfd_xcoff_bfd_free_cached_info _bfd_xcoff_free_cached_info
+ #define _bfd_xcoff_new_section_hook coff_new_section_hook
+ #define _bfd_xcoff_get_section_contents _bfd_generic_get_section_contents
+ 
