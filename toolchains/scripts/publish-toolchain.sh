@@ -16,6 +16,22 @@ KEY=$(toolchain_artifact_key "${TOOLCHAIN_HOST_ARCH}" "${TOOLCHAIN_TARGET_ARCH}"
 TRIPLET=$(toolchain_triplet "${TOOLCHAIN_TARGET_ARCH}")
 ARCHIVE="${CI_PROJECT_DIR}/${TRIPLET}-gcc.tar.xz"
 
+# The archive embeds the licensed AIX sysroot, so it goes to MASS (internal-only)
+# instead of the public bucket below.
+if [[ "${TOOLCHAIN_TARGET_ARCH}" == "aix" ]]; then
+    MASS_PATH="${KEY%/*}/"
+    if OUTPUT=$(adms mass upload "${ARCHIVE}" --path "${MASS_PATH}" 2>&1); then
+        echo "${OUTPUT}"
+    elif echo "${OUTPUT}" | grep -q "code = AlreadyExists"; then
+        echo "Already published concurrently by another pipeline, nothing to do: ${KEY}"
+    else
+        echo "${OUTPUT}" >&2
+        exit 1
+    fi
+    echo "Toolchain published: https://mass-read.us1.ddbuild.io/internal/artifact/${KEY}"
+    exit 0
+fi
+
 sha256sum "${ARCHIVE}" | awk '{print "sha256:" $1}' > "${ARCHIVE}.sha256"
 
 # The bucket requires if-none-match on writes so artifacts can never be overwritten.

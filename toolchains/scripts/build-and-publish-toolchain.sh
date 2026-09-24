@@ -16,7 +16,11 @@ if [[ -n "${CHANNEL}" ]]; then
 fi
 
 echo "No existing artifact for this recipe, building"
-./toolchains/scripts/build-crosstool-ng-toolchain.sh
+if [[ "${TOOLCHAIN_TARGET_ARCH}" == "aix" ]]; then
+    ./toolchains/scripts/build-aix-toolchain.sh
+else
+    ./toolchains/scripts/build-crosstool-ng-toolchain.sh
+fi
 
 export TOOLCHAIN_HASH
 ./toolchains/scripts/publish-toolchain.sh
