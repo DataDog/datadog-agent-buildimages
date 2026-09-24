@@ -15,7 +15,6 @@ BRANCH=$3
 set -e
 set +x
 
-# Build the metric payload first; no credentials are needed for this part.
 NOW="$(date '+%s')"
 export PAYLOAD=$(cat <<EOF
 {
@@ -45,11 +44,6 @@ export PAYLOAD=$(cat <<EOF
 EOF
 )
 
-# Mint a short-lived Datadog API key via dd-sts (exchanging the job's OIDC ID
-# token, aud: dd-sts, declared in .gitlab/build.yml) and POST the metric with
-# the key injected as DD_API_KEY in the wrapped command's environment.
-# See the dd-sts user guide:
-# https://datadoghq.atlassian.net/wiki/spaces/SECENG/pages/5769659435/User+guide+dd-sts
 command -v dd-sts >/dev/null 2>&1 || {
     echo "dd-sts CLI not found; it is installed by the CI job (see .gitlab/build.yml)" >&2
     exit 1
