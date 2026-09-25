@@ -1,0 +1,47 @@
+--- a/bfd/coff64-rs6000.c	2026-02-08 01:00:00.000000000 +0100
++++ b/bfd/coff64-rs6000.c	2026-06-09 16:24:20.894220384 +0200
+@@ -2551,6 +2551,26 @@
+     24,				/* _xcoff_stub_shared_call_size */
+   };
+ 
++/* Free cached info for an XCOFF64 bfd, but preserve the tdata pointer.
++
++   When writing an archive containing a shared (DYNAMIC) object member,
++   _bfd_compute_and_write_armap slurps each member's symbols and then calls
++   bfd_free_cached_info before write_armap runs.  The generic
++   _bfd_free_cached_info nulls abfd->tdata.any, but xcoff_write_armap_big ->
++   member_layout_init still needs xcoff_data (member)->text_align_power to lay
++   out DYNAMIC members, and must produce offsets matching the contents pass.
++   The tdata memory lives on the bfd objalloc until bfd_close, so restoring
++   the pointer is safe and keeps both layout passes consistent.  */
++
++static bool
++_bfd_xcoff64_free_cached_info (bfd *abfd)
++{
++  void *saved_tdata = abfd->tdata.any;
++  bool ret = _bfd_coff_free_cached_info (abfd);
++  abfd->tdata.any = saved_tdata;
++  return ret;
++}
++
+ /* The transfer vector that leads the outside world to all of the above.  */
+ const bfd_target rs6000_xcoff64_vec =
+   {
+@@ -2615,7 +2635,7 @@
+ 
+     /* Generic */
+     coff_close_and_cleanup,
+-    coff_bfd_free_cached_info,
++    _bfd_xcoff64_free_cached_info,
+     coff_new_section_hook,
+     _bfd_generic_get_section_contents,
+ 
+@@ -2885,7 +2905,7 @@
+ 
+     /* Generic */
+     coff_close_and_cleanup,
+-    coff_bfd_free_cached_info,
++    _bfd_xcoff64_free_cached_info,
+     coff_new_section_hook,
+     _bfd_generic_get_section_contents,
+ 

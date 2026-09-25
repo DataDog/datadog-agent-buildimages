@@ -1,0 +1,26 @@
+--- a/libstdc++-v3/config/os/aix/t-aix
++++ b/libstdc++-v3/config/os/aix/t-aix
+@@ -1,17 +1,9 @@
++# PATCHED for single-arch (64-bit-only) cross build with GNU binutils.
++# The original all-local combines 32- and 64-bit objects into AIX "fat"
++# archives, which binutils ar cannot represent, and references ../ppc<bits>/
++# and ../pthread/ multilib dirs that do not exist under --disable-multilib.
++# With a single-arch static build the normal libstdc++.a / libsupc++.a are
++# already correct, so all-local is a no-op.
+ ifeq ($(MULTIBUILDTOP),)
+-BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
+-    echo '64'; else echo '32'; fi)
+-MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
+-ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
+-SUPOBJS=$(shell $(ARX) -X$(BITS) t ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a)
+-FSOBJS=$(shell $(ARX) -X$(BITS) t ../ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/.libs/libstdc++fs.a 2>/dev/null)
+ all-local:
+-	$(ARX) -X$(BITS) rc src/.libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
+-	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/src/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
+-	$(ARX) -X$(BITS) rc libsupc++/.libs/libsupc++.a ${addprefix ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(SUPOBJS)}
+-	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a ${addprefix ../pthread/ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(SUPOBJS)}
+-	if test -n "$(FSOBJS)"; then \
+-		$(ARX) -X$(BITS) rc src/filesystem/.libs/libstdc++fs.a ${addprefix ../ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/,$(FSOBJS)}; \
+-		$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/src/filesystem/.libs/libstdc++fs.a ${addprefix ../pthread/ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/,$(FSOBJS)}; \
+-	fi
+ endif

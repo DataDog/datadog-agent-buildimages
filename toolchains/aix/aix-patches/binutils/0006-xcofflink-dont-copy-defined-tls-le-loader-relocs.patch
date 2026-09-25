@@ -1,0 +1,33 @@
+Subject: [PATCH] xcofflink: do not copy defined TLS LE relocs to loader
+
+R_TLS_LE is the local-exec TLS model.  When the target is already defined
+locally, the static relocation pass can resolve it and no .loader relocation
+is needed.  Copying such relocations into .loader is also invalid for text
+relocations: xcoff_create_ldrel rejects loader relocations in read-only .text.
+
+Keep imported/unresolved TLS LE cases on the existing loader path, but skip
+defined, defweak, common, and local-section TLS LE relocations.
+
+--- a/bfd/xcofflink.c	2026-06-30 16:31:09.883071852 +0000
++++ b/bfd/xcofflink.c	2026-07-14 17:46:28.309028491 +0000
+@@ -2881,12 +2881,19 @@
+       return true;
+ 
+     case R_TLS:
+-    case R_TLS_LE:
+     case R_TLS_IE:
+     case R_TLS_LD:
+     case R_TLSM:
+     case R_TLSML:
+       return true;
++
++    case R_TLS_LE:
++      if (h == NULL
++	  || h->root.type == bfd_link_hash_defined
++	  || h->root.type == bfd_link_hash_defweak
++	  || h->root.type == bfd_link_hash_common)
++	return false;
++      return true;
+     }
+ }
+ 

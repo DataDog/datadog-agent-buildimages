@@ -1,0 +1,46 @@
+--- a/libgcc/config/rs6000/t-slibgcc-aix
++++ b/libgcc/config/rs6000/t-slibgcc-aix
+@@ -89,35 +89,16 @@
+ AR_FLAGS_FOR_TARGET = -X32_64
+ 
+ # Build and install AIX-style FAT libraries
++# PATCHED for single-arch (64-bit-only) cross build with GNU binutils.
++# binutils ar cannot build AIX "fat" (dual-arch) archives: adding a 32-bit
++# and a 64-bit member of the same name keeps only one, so the original
++# 32/64 combine below corrupts the default-arch libgcc and breaks linking
++# ("undefined .__cxa_finalize"). With --disable-multilib the normal all:
++# prerequisites (libgcc.a, libgcc_eh.a, libgcc_s) already build correct
++# single-arch libraries; we simply install them, with no fat combine and no
++# ../ppc<bits>/ or ../pthread/ references (those dirs do not exist).
+ ifeq ($(MULTIBUILDTOP),)
+-BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
+-    echo '64'; else echo '32'; fi)
+-ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
+ all: all-multi
+-ifeq ($(enable_shared),yes)
+-	$(ARX) -X$(BITS) x ../ppc$(BITS)/libgcc/libgcc_s.a shr.o
+-	$(ARX) -X$(BITS) rc ./libgcc_s.a shr.o
+-	rm -f shr.o
+-	$(ARX) -X$(BITS) x ../pthread/ppc$(BITS)/libgcc/libgcc_s.a shr.o
+-	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc_s.a shr.o
+-	rm -f shr.o
+-endif
+-	$(ARX) -X$(BITS) rc libgcc.a \
+-	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-objects))
+-	$(ARX) -X$(BITS) rc libgcc_eh.a \
+-	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
+-	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc.a \
+-	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-objects))
+-	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc_eh.a \
+-	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
+-ifeq ($(enable_gcov),yes)
+-	$(ARX) -X$(BITS) rc libgcov.a \
+-	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcov-objects))
+-	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcov.a \
+-	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcov-objects))
+-endif
+ 	$(MAKE) install-leaf DESTDIR=$(gcc_objdir) \
+ 	    slibdir= libsubdir= MULTIOSDIR=$(MULTIDIR)
+-	cp ../pthread/libgcc/libgcc_s.a ../../gcc/pthread/
+-	cp ../pthread/libgcc/libgcc_eh.a ../../gcc/pthread/
+ endif
