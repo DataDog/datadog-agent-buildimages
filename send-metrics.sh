@@ -15,14 +15,8 @@ BRANCH=$3
 set -e
 set +x
 
-API_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.datadog-agent.datadog_api_key_org2 --with-decryption  --query Parameter.Value --out text)
 NOW="$(date '+%s')"
-curl -X POST "https://api.datadoghq.com/api/v2/series" \
-    -H "Accept: application/json" \
-    -H "Content-Type: application/json" \
-    -H "DD-API-KEY: ${API_KEY}" \
-    --silent -S \
-    -d @- << EOF
+export PAYLOAD=$(cat <<EOF
 {
   "series": [
     {
@@ -48,3 +42,17 @@ curl -X POST "https://api.datadoghq.com/api/v2/series" \
   ]
 }
 EOF
+)
+
+command -v dd-sts >/dev/null 2>&1 || {
+    echo "dd-sts CLI not found; it is installed by the CI job (see .gitlab/build.yml)" >&2
+    exit 1
+}
+dd-sts exchange --policy datadog-agent-buildimages-metrics -- bash -c '
+    curl -X POST "https://api.datadoghq.com/api/v2/series" \
+        -H "Accept: application/json" \
+        -H "Content-Type: application/json" \
+        -H "DD-API-KEY: ${DD_API_KEY}" \
+        --silent -S \
+        -d "${PAYLOAD}"
+'
