@@ -54,13 +54,12 @@ resolve_toolchain_hash() {
     local target_arch="$2"
 
     if [[ "${target_arch}" == "aix" ]]; then
-        { cat \
+        cat \
             toolchains/aix/build-aix-cross.sh \
             toolchains/aix/aix-patches/*/*.patch \
             toolchains/aix/aix-version.env \
-            toolchains/scripts/build-aix-toolchain.sh; \
-          echo "${AIX_SYSROOT_URL}"; \
-        } | sha256sum | cut -d' ' -f1
+            toolchains/scripts/build-aix-toolchain.sh \
+            | sha256sum | cut -d' ' -f1
         return
     fi
 

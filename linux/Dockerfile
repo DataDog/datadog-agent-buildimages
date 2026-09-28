@@ -119,16 +119,20 @@ RUN git clone https://github.com/tpoechtrager/osxcross.git /tmp/osxcross && \
 
 RUN --mount=type=bind,src=./linux/scripts/osxcross.sh,dst=/mnt/osxcross.sh cd /tmp/osxcross && /mnt/osxcross.sh && rm -rf /tmp/osxcross
 
-FROM build_base AS aix_cross_builder
-# AIX cross-compiler (GCC targeting IBM AIX/PowerPC) downloaded from MASS.
+FROM extraction_base AS aix_cross_builder
+# AIX cross-compiler (GCC targeting IBM AIX/PowerPC) fetched from MASS.
 # The archive contains compiler/ (binaries + target libs) and sysroot/ (AIX headers + libs).
 ARG TARGETARCH
-ARG AIX_CROSS_VERSION
-ARG AIX_CROSS_SHA256
-ADD --checksum=sha256:${AIX_CROSS_SHA256} \
-    "https://mass-read.us1.ddbuild.io/internal/artifact/datadog-agent/aix/cross-compiler/${AIX_CROSS_VERSION}/aix-cross-toolchain-${AIX_CROSS_VERSION}.tar.xz" \
-    /tmp/aix-cross/aix-cross-toolchain.tar.xz
-RUN --mount=type=bind,src=./linux/scripts/aix-cross.sh,dst=/mnt/aix-cross.sh cd /tmp/aix-cross && /mnt/aix-cross.sh && rm -rf /tmp/aix-cross
+ARG CTNG_ARCH
+RUN apt-get update -qy && apt-get install -y --no-install-recommends curl openssl \
+    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=bind,src=./toolchains,dst=/toolchains \
+    mkdir -p /opt/aix-cross && \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
+        /toolchains/scripts/fetch-toolchain.sh "${CTNG_ARCH}" aix /opt/aix-cross \
+            || echo "WARNING: could not fetch the AIX cross-compiler from MASS (outside of DD internal network?); continuing without it" >&2; \
+    fi
+RUN --mount=type=bind,src=./linux/scripts/aix-cross.sh,dst=/mnt/aix-cross.sh /mnt/aix-cross.sh
 
 FROM build_base AS python_builder
 # Python and Conda setup
