@@ -1,0 +1,35 @@
+Subject: [PATCH] ld/aix: accept -bnoobjreorder as a no-op
+
+Go's cmd/link unconditionally passes -Wl,-bnoobjreorder for every AIX
+external link (it asks the native AIX linker not to reorder .text csects,
+so that moduledata's first/last function addresses stay stable). This
+emulation's AIX option table never accepted the flag at all, so it was
+parsed as a bare "-b" target-format specifier instead (GNU ld's generic
+-b TARGET meaning), and the link failed immediately with "target
+noobjreorder not found" -- before even attempting to combine any object
+files.
+
+This is intentionally a parse-only no-op, not an implementation of the
+behavior the flag describes: GNU ld's XCOFF backend does not reorder
+.text csects across input objects by default, so there is nothing to
+prevent. Accepting (and discarding) the flag, the same way -bbigtoc and
+several other AIX-ld options already are in this table, is sufficient.
+
+--- a/ld/emultempl/aix.em	2026-06-30 16:31:10.475076599 +0000
++++ b/ld/emultempl/aix.em	2026-07-14 18:50:31.146594158 +0000
+@@ -220,6 +220,7 @@
+     {"bnoexpfull", no_argument, NULL, OPTION_NOEXPFULL},
+     {"bnodelcsect", no_argument, NULL, OPTION_IGNORE},
+     {"bnoentry", no_argument, NULL, OPTION_IGNORE},
++    {"bnoobjreorder", no_argument, NULL, OPTION_IGNORE},
+     {"bnogc", no_argument, &gc, 0},
+     {"bnso", no_argument, NULL, OPTION_NOAUTOIMP},
+     {"bnostrcmpct", no_argument, NULL, OPTION_NOSTRCMPCT},
+@@ -249,7 +250,7 @@
+      -bcror15, -bdebugopt, -bdbg, -bdelcsect, -bex?, -bfilelist, -bfl,
+      -bgcbypass, -bglink, -binsert, -bi, -bloadmap, -bl, -bmap, -bnl,
+      -bnobind, -bnocomprld, -bnocrld, -bnoerrmsg, -bnoglink,
+-     -bnoloadmap, -bnl, -bnoobjreorder, -bnoquiet, -bnoreorder,
++     -bnoloadmap, -bnl, -bnoquiet, -bnoreorder,
+      -bnotypchk, -bnox, -bquiet, -bR, -brename, -breorder, -btypchk,
+      -bx, -bX, -bxref.  */

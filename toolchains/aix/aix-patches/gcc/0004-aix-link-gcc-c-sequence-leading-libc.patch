@@ -1,0 +1,16 @@
+--- a/gcc/config/rs6000/aix.h
++++ b/gcc/config/rs6000/aix.h
+@@ -282,3 +282,13 @@
+ #define SUBTARGET_DRIVER_SELF_SPECS	\
+ "%{m64:-maix64} %<m64",			\
+ "%{m32:-maix32} %<m32"
++
++/* PATCHED for GNU-binutils AIX cross toolchain.
++   GNU ld is single-pass over XCOFF archives. libgcc/libstdc++ members pulled
++   late reference libc symbols (calloc from cxa_atexit.o, ___strcmp64, ...);
++   with the default "%G %{!nolibc:%L %G}" sequence libc is only scanned AFTER
++   the first libgcc, so those go unresolved. Prepending one libc pass (so the
++   defining libc members are already in) fixes it. Verified minimal: a trailing
++   extra -lc does NOT help, but a leading one does. Net order: L libgcc L libgcc. */
++#undef LINK_GCC_C_SEQUENCE_SPEC
++#define LINK_GCC_C_SEQUENCE_SPEC "%{!nolibc:%L} %G %{!nolibc:%L %G}"

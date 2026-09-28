@@ -1,0 +1,34 @@
+Subject: [PATCH] coff64-rs6000: allow 16-bit signed TLS LE relocs
+
+Go's AIX/ppc64 external linker rewrites the local-exec TLS addis/addi
+sequence into a single addi against R13 and emits an XCOFF R_TLS_LE
+relocation with r_size 0x0f for the 16-bit immediate field.  The XCOFF64
+relocation pass already has machinery to honor the r_size-encoded width
+for relocation types whose field size can vary, but only R_POS and R_NEG
+use it.
+
+Allow R_TLS_LE to use the same size adjustment so 16-bit TLS LE relocations
+can be applied to the rewritten instruction field instead of being rejected
+as a wrong r_rsize.  The rewritten addi uses a signed 16-bit displacement,
+so treat the 16-bit TLS LE form as signed for overflow checking even when
+the input r_size omits the signed bit.
+
+--- a/bfd/coff64-rs6000.c	2026-06-30 16:31:09.869071740 +0000
++++ b/bfd/coff64-rs6000.c	2026-07-14 17:46:17.914060630 +0000
+@@ -1586,6 +1586,7 @@
+ 	    {
+ 	    case R_POS:
+ 	    case R_NEG:
++	    case R_TLS_LE:
+ 	      howto.bitsize = (rel->r_size & 0x3f) + 1;
+ 	      howto.size = HOWTO_RSIZE (howto.bitsize <= 16
+ 					? 2 : howto.bitsize <= 32
+@@ -1605,6 +1606,8 @@
+       howto.complain_on_overflow = (rel->r_size & 0x80
+ 				    ? complain_overflow_signed
+ 				    : complain_overflow_bitfield);
++      if (rel->r_type == R_TLS_LE && howto.bitsize == 16)
++	howto.complain_on_overflow = complain_overflow_signed;
+ 
+       /* symbol */
+       val = 0;

@@ -1,0 +1,84 @@
+Subject: [PATCH] libgcc/aix: private memcpy/memmove/bcopy for shared shr.o
+
+The XCOFF shared libgcc is linked "@shlib_objs@ -lc".  If libgcc's objects
+reference memcpy/memmove/bcopy and @shlib_objs@ does not provide them, the
+link pulls IBM libc's moveeq_64.o, whose memmove is a bare "ba ___memmove64"
+(branch-absolute to a fixed *ABS* address, no function descriptor).  GNU ld
+synthesises a descriptor glink for that ABS target -> run-time bctr through
+garbage -> SIGILL; it also makes shr.o depend on libc's private _shr_64.o
+member, which AIX refuses to co-load with the public shr_64.o.
+
+Add private byte-loop implementations via LIB2ADD so they land in @shlib_objs@
+ahead of -lc and moveeq_64.o is never pulled.  They are not in libgcc's export
+map, so they stay internal to shr.o (zero blast radius).
+--- a/libgcc/config/rs6000/aix-memfns.c	2026-06-09 08:20:23.000000860 +0200
++++ b/libgcc/config/rs6000/aix-memfns.c	2026-06-11 09:58:29.848890212 +0200
+@@ -0,0 +1,53 @@
++/* Private memcpy/memmove/bcopy for the AIX shared libgcc (shr.o).
++
++   The XCOFF shared libgcc is linked as "@shlib_objs@ -lc".  If libgcc's own
++   objects reference memcpy/memmove/bcopy and nothing in @shlib_objs@ provides
++   them, the link pulls IBM libc's moveeq_64.o, whose memmove is a single
++   "ba ___memmove64" (branch-absolute to a fixed *ABS* address with no function
++   descriptor).  GNU ld then synthesises a descriptor glink stub for that ABS
++   target, so at run time the call lands on a bctr through garbage -> SIGILL,
++   and shr.o also acquires a dependency on libc's private _shr_64.o member
++   (which AIX refuses to co-load with the public shr_64.o).
++
++   Providing libgcc's own definitions here means moveeq_64.o is never pulled:
++   these objects are part of @shlib_objs@ and precede -lc.  They are NOT listed
++   in libgcc's export map (libgcc-aix-cxa.ver), so they stay internal to shr.o
++   and never shadow libc's optimized routines for ordinary code -- zero blast
++   radius.  Simple byte loops are sufficient; they are only used to satisfy
++   libgcc's internal references.  */
++
++#include <stddef.h>
++
++void *
++memcpy (void *dest, const void *src, size_t n)
++{
++  unsigned char *d = (unsigned char *) dest;
++  const unsigned char *s = (const unsigned char *) src;
++  while (n--)
++    *d++ = *s++;
++  return dest;
++}
++
++void *
++memmove (void *dest, const void *src, size_t n)
++{
++  unsigned char *d = (unsigned char *) dest;
++  const unsigned char *s = (const unsigned char *) src;
++  if (d < s)
++    while (n--)
++      *d++ = *s++;
++  else
++    {
++      d += n;
++      s += n;
++      while (n--)
++	*--d = *--s;
++    }
++  return dest;
++}
++
++void
++bcopy (const void *src, void *dest, size_t n)
++{
++  memmove (dest, src, n);
++}
+--- a/libgcc/config/rs6000/t-aix-cxa	2026-06-11 10:05:08.034592126 +0200
++++ b/libgcc/config/rs6000/t-aix-cxa	2026-06-11 10:00:23.609249354 +0200
+@@ -5,6 +5,12 @@
+ 
+ LIB2ADD_ST += $(srcdir)/config/rs6000/aixinitfini.c
+ 
++# Private memcpy/memmove/bcopy so the shared libgcc (shr.o) does not pull IBM
++# libc's moveeq_64.o (whose memmove is "ba ___memmove64" -> glink -> SIGILL,
++# and drags in the private _shr_64.o member).  LIB2ADD puts these in
++# @shlib_objs@ ahead of -lc; they are not exported, so zero blast radius.
++LIB2ADD += $(srcdir)/config/rs6000/aix-memfns.c
++
+ SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-aix-cxa.ver
+ 
+ crtdbase.o: $(srcdir)/config/rs6000/crtdbase.S

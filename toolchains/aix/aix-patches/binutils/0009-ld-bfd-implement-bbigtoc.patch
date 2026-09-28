@@ -1,0 +1,299 @@
+Subject: [PATCH] ld/bfd: implement -bbigtoc for real
+
+-bbigtoc was accepted but silently discarded (OPTION_IGNORE), so
+xcoff_find_tc0 always applied its default, conservative rule: every
+TOC-referencing csect in the whole link must fit within a single 64KB
+window of one anchor, or the link fails with "TOC overflow: ... try
+-mminimal-toc when compiling". Real AIX/ppc64 programs built with cgo
+(e.g. any Go binary -- Go's linker unconditionally passes
+-mcmodel=large and -bbigtoc for every AIX external link) have a
+combined TOC far larger than 64KB and hit this unconditionally.
+
+That 64KB rule is only actually required by the single-instruction
+R_TOC form ("l r,disp(r2)"), which non-large-model code emits (notably
+AIX's own crt0/crtcxa/crtdbase startup objects, present in every link).
+The two-instruction R_TOCU/R_TOCL "addis+load" form used by
+-mcmodel=large code reconstructs a full 32-bit signed offset from its
+high/low halves and has no such limit -- xcoff_reloc_type_toc applies
+it with no separate range check, and this was verified directly: a
+TOC entry a Go binary placed ~228KB from the anchor resolved correctly
+through that path with no complaint.
+
+So a TOC many times larger than 64KB is fine as long as the entries
+that are only ever reached via R_TOC stay close to the anchor; entries
+only reached via R_TOCU/R_TOCL can be anywhere. This is what -bbigtoc
+is documented to mean, and this change makes it actually do that:
+
+- bfd/xcofflink.h, ld/ldlex.h, ld/emultempl/aix.em: thread a real
+  `bigtoc` flag from the -bbigtoc command-line option through
+  `struct bfd_xcoff_link_params` (the existing "pass info from ld to
+  bfd" channel) instead of discarding it.
+
+- bfd/xcofflink.c, xcoff_find_tc0: when bigtoc is set, compute a
+  tighter [narrow_start, narrow_end) bound covering only the input
+  bfds that contain at least one R_TOC-type relocation anywhere
+  (granularity is per bfd, not per csect/symbol -- coarser than
+  strictly necessary, but cheap and safe: the objects that actually
+  use the narrow form are small, so the extra conservatism costs
+  nothing in practice). The anchor search then only has to keep that
+  narrow range within the traditional 64KB window; far csects that are
+  only ever reached via the wide form don't constrain it at all.
+
+  The ".tc0" TOC-anchor marker csect is explicitly excluded from the
+  narrow bound. It doesn't hold a real, independently-required
+  address -- it's the symbol that becomes the anchor's own address
+  once this function chooses one -- but AIX crt startup code (which
+  sets up r2 at process entry) references it via a real R_TOC
+  relocation, so without the exclusion it gets swept into the narrow
+  set. Since ".tc0" is conventionally laid out at the lowest address
+  in the whole program, that pulled the narrow bound all the way out
+  to toc_start, silently defeating the whole point of narrowing it
+  whenever some far, wide-only csect (e.g. any of a Go binary's own
+  data) happened to be laid out first.
+
+Validated end-to-end against two real, large AIX/ppc64 cgo binaries
+built with this cross toolchain from a Linux host (github.com/DataDog/
+datadog-agent's trace-agent and agent, ~350KB and ~950KB combined TOC
+respectively, both previously hitting "TOC overflow" unconditionally):
+both now link to a valid XCOFF64 executable.
+
+--- a/bfd/xcofflink.h
++++ b/bfd/xcofflink.h
+@@ -27,6 +27,17 @@
+   /* Linker call-backs.  */
+   asection * (*add_stub_section) (const char *, asection *);
+   void (*layout_sections_again) (void);
++
++  /* True if -bbigtoc was given.  The single-instruction R_TOC form
++     (used e.g. by non-large-model C) is genuinely limited to a 16-bit
++     TOC-relative displacement, but the two-instruction R_TOCU/R_TOCL
++     addis+load form (used by -mcmodel=large code, e.g. every AIX/ppc64
++     Go binary) reconstructs a full 32-bit signed offset from its
++     high/low halves and has no such limit. xcoff_find_tc0's default TOC
++     anchor search is conservative and assumes the narrow form, capping
++     the combined TOC at a single 64KB window. When bigtoc is set, that
++     cap is relaxed to the form's real ~2GB reach.  */
++  bool bigtoc;
+ };
+ 
+ extern bool bfd_xcoff_split_import_path
+--- a/ld/ldlex.h
++++ b/ld/ldlex.h
+@@ -223,6 +223,7 @@
+   OPTION_NO_APPLY_DYNAMIC_RELOCS,
+   /* Used by emultempl/aix.em.  */
+   OPTION_AUTOIMP,
++  OPTION_BIGTOC,
+   OPTION_ERNOTOK,
+   OPTION_EROK,
+   OPTION_EXPALL,
+--- a/ld/emultempl/aix.em
++++ b/ld/emultempl/aix.em
+@@ -70,7 +70,8 @@
+ static struct bfd_xcoff_link_params params = {
+   NULL,
+   &xcoff_add_stub_section,
+-  &xcoff_layout_sections_again
++  &xcoff_layout_sections_again,
++  false
+ };
+ 
+ 
+@@ -201,7 +202,7 @@
+     {"bexpall", no_argument, NULL, OPTION_EXPALL},
+     {"bexpfull", no_argument, NULL, OPTION_EXPFULL},
+     {"bexport", required_argument, NULL, OPTION_EXPORT},
+-    {"bbigtoc", no_argument, NULL, OPTION_IGNORE},
++    {"bbigtoc", no_argument, NULL, OPTION_BIGTOC},
+     {"bf", no_argument, NULL, OPTION_ERNOTOK},
+     {"bgc", no_argument, &gc, 1},
+     {"bh", required_argument, NULL, OPTION_IGNORE},
+@@ -457,6 +458,10 @@
+       link_info.static_link = false;
+       break;
+ 
++    case OPTION_BIGTOC:
++      params.bigtoc = true;
++      break;
++
+     case OPTION_ERNOTOK:
+       link_info.unresolved_syms_in_objects = RM_DIAGNOSE;
+       link_info.unresolved_syms_in_shared_libs = RM_DIAGNOSE;
+--- a/bfd/xcofflink.c
++++ b/bfd/xcofflink.c
+@@ -6175,6 +6175,23 @@
+   return false;
+ }
+ 
++/* Return true if section SEC is specifically the ".tc0" TOC-anchor
++   marker csect (as opposed to an ordinary ".tc"/".td" TOC-data csect).
++   ".tc0" doesn't hold a real, independently-required address: it's the
++   symbol that becomes the anchor's own address once xcoff_find_tc0
++   below chooses one, and its layout position before that choice is
++   made is just an artifact of section ordering, not a requirement any
++   R_TOC reference to it needs to be near.  */
++
++static inline bool
++xcoff_toc0_section_p (asection *sec)
++{
++  const char *name = sec->name;
++
++  return (name[0] == '.' && name[1] == 't' && name[2] == 'c'
++	  && name[3] == '0' && name[4] == 0);
++}
++
+ /* See if the link requires a TOC (it usually does!).  If so, find a
+    good place to put the TOC anchor csect, and write out the associated
+    symbol.  */
+@@ -6182,7 +6199,9 @@
+ static bool
+ xcoff_find_tc0 (bfd *output_bfd, struct xcoff_final_link_info *flinfo)
+ {
+-  bfd_vma toc_start, toc_end, start, end, best_address;
++  bfd_vma toc_start, toc_end, start, end, best_address, window;
++  bfd_vma narrow_start, narrow_end;
++  bool bigtoc, have_narrow;
+   asection *sec;
+   bfd *input_bfd;
+   int section_index;
+@@ -6191,6 +6210,8 @@
+   file_ptr pos;
+   size_t size;
+ 
++  bigtoc = xcoff_hash_table (flinfo->info)->params->bigtoc;
++
+   /* Set [TOC_START, TOC_END) to the range of the TOC.  Record the
+      index of a csect at the beginning of the TOC.  */
+   toc_start = ~(bfd_vma) 0;
+@@ -6221,13 +6242,98 @@
+       return true;
+     }
+ 
+-  if (toc_end - toc_start < 0x8000)
+-    /* Every TOC csect can be accessed from TOC_START.  */
+-    best_address = toc_start;
++  /* The single-instruction R_TOC form ("l r,disp(r2)", emitted for
++     non-large-model code -- notably AIX's own crt0/crtcxa/crtdbase
++     startup objects, which every link includes) has a genuinely
++     16-bit-only TOC-relative displacement. The two-instruction
++     R_TOCU/R_TOCL "addis+load" form (used by -mcmodel=large code, i.e.
++     every AIX/ppc64 Go binary) instead reconstructs a full 32-bit
++     signed offset from its high/low halves and has no such limit (see
++     xcoff_reloc_type_toc, which applies R_TOCU/R_TOCL with no separate
++     range check). By default we conservatively require every TOC csect
++     to fit within a single 64KB window, which is only actually needed
++     for the narrow R_TOC form. With -bbigtoc, narrow the requirement to
++     just the csects an R_TOC relocation can actually reach, since wide
++     accesses don't constrain the anchor's position at all.  */
++  narrow_start = toc_start;
++  narrow_end = toc_end;
++
++  if (bigtoc)
++    {
++      /* Recompute [narrow_start, narrow_end) over only the input bfds
++	 that contain at least one R_TOC-type relocation somewhere.
++	 Granularity is per bfd, not per csect or per symbol: coarser
++	 than strictly necessary, but cheap, safe, and sufficient in
++	 practice -- the objects that use the narrow form (crt0 and
++	 friends) are small, so the extra conservatism costs nothing.  */
++      have_narrow = false;
++      narrow_start = ~(bfd_vma) 0;
++      narrow_end = 0;
++
++      for (input_bfd = flinfo->info->input_bfds;
++	   input_bfd != NULL;
++	   input_bfd = input_bfd->link.next)
++	{
++	  bool narrow_ref = false;
++
++	  for (sec = input_bfd->sections; sec != NULL && !narrow_ref; sec = sec->next)
++	    {
++	      struct internal_reloc *relocs, *rel, *relend;
++
++	      if (sec->reloc_count == 0)
++		continue;
++	      relocs = xcoff_read_internal_relocs (input_bfd, sec, true, NULL,
++						    false, NULL);
++	      if (relocs == NULL)
++		continue;
++	      relend = relocs + sec->reloc_count;
++	      for (rel = relocs; rel < relend; rel++)
++		if (rel->r_type == R_TOC)
++		  {
++		    narrow_ref = true;
++		    break;
++		  }
++	    }
++
++	  if (!narrow_ref)
++	    continue;
++
++	  for (sec = input_bfd->sections; sec != NULL; sec = sec->next)
++	    if (sec->gc_mark != 0 && xcoff_toc_section_p (sec)
++		&& !xcoff_toc0_section_p (sec))
++	      {
++		have_narrow = true;
++		start = sec->output_section->vma + sec->output_offset;
++		end = start + sec->size;
++		if (narrow_start > start)
++		  narrow_start = start;
++		if (narrow_end < end)
++		  narrow_end = end;
++	      }
++	}
++
++      if (!have_narrow)
++	{
++	  /* No R_TOC references anywhere: every access is the wide form,
++	     so any anchor works. Collapse to the trivial case below.  */
++	  narrow_start = toc_start;
++	  narrow_end = toc_start;
++	}
++    }
++
++  window = 0x8000;
++
++  if (narrow_end - narrow_start < window)
++    /* Every narrow-required TOC csect can be accessed from NARROW_START.  */
++    best_address = narrow_start;
+   else
+     {
+-      /* Find the lowest TOC csect that is still within range of TOC_END.  */
+-      best_address = toc_end;
++      /* Find the lowest TOC csect that is still within range of
++	 NARROW_END. The candidate pool is every TOC csect (as without
++	 -bbigtoc), but the range requirement is against the narrow
++	 bound, so a far wide-only csect can still be chosen as long as
++	 it also covers the near, narrow-required ones.  */
++      best_address = narrow_end;
+       for (input_bfd = flinfo->info->input_bfds;
+ 	   input_bfd != NULL;
+ 	   input_bfd = input_bfd->link.next)
+@@ -6236,20 +6342,22 @@
+ 	    {
+ 	      start = sec->output_section->vma + sec->output_offset;
+ 	      if (start < best_address
+-		  && start + 0x8000 >= toc_end)
++		  && start + window >= narrow_end)
+ 		{
+ 		  best_address = start;
+ 		  section_index = sec->output_section->target_index;
+ 		}
+ 	    }
+ 
+-      /* Make sure that the start of the TOC is also within range.  */
+-      if (best_address > toc_start + 0x8000)
++      /* Make sure that the start of the narrow-required range is also
++	 within range.  */
++      if (best_address > narrow_start + window)
+ 	{
+ 	  _bfd_error_handler
+ 	    (_("TOC overflow: %#" PRIx64 " > 0x10000; try -mminimal-toc "
+-	       "when compiling"),
+-	     (uint64_t) (toc_end - toc_start));
++	       "when compiling%s"),
++	     (uint64_t) (narrow_end - narrow_start),
++	     bigtoc ? "" : _(", or -bbigtoc if you are not already using it"));
+ 	  bfd_set_error (bfd_error_file_too_big);
+ 	  return false;
+ 	}

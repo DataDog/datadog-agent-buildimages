@@ -1,0 +1,27 @@
+--- a/gcc/config/rs6000/rs6000.cc	2025-06-05 18:02:58.000000000 +0200
++++ b/gcc/config/rs6000/rs6000.cc	2026-06-10 15:55:37.730205863 +0200
+@@ -21459,10 +21459,20 @@
+   else if ((flags & SECTION_CODE) != 0)
+     align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT), 32);
+   else
+-    /* Increase alignment of large objects if not already stricter.  */
+-    align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT),
+-		 int_size_in_bytes (TREE_TYPE (decl)) > MIN_UNITS_PER_WORD
+-		 ? UNITS_PER_FP_WORD : MIN_UNITS_PER_WORD);
++    {
++      /* Increase alignment of large objects if not already stricter.  */
++      align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT),
++		   int_size_in_bytes (TREE_TYPE (decl)) > MIN_UNITS_PER_WORD
++		   ? UNITS_PER_FP_WORD : MIN_UNITS_PER_WORD);
++      /* The object is emitted with the optimized DATA_ALIGNMENT applied
++	 (e.g. character arrays are word-aligned).  The enclosing csect must
++	 be at least that aligned, otherwise the csect symbol is placed at
++	 the csect's (weaker) alignment while the data is emitted at the
++	 stronger one, leaving the symbol pointing before its own data.  */
++      align = MAX (align,
++		   DATA_ALIGNMENT (TREE_TYPE (decl), DECL_ALIGN (decl))
++		   / BITS_PER_UNIT);
++    }
+ 
+   return flags | (exact_log2 (align) & SECTION_ENTSIZE);
+ }

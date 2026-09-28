@@ -1,0 +1,36 @@
+Subject: [PATCH] coff-rs6000: self-register standalone XMC_TC TOC entries
+
+Some XCOFF producers, notably Go's linker, emit standalone XMC_TC csects
+for TOC entries without using the classic assembler idiom where a hidden
+TOC csect has a same-name R_POS relocation to the target symbol.  The
+symbol-table scan in _bfd_xcoff_link_add_symbols only records toc_section
+for that classic form, so these defined XMC_TC csects can reach
+xcoff_reloc_type_toc with h->toc_section still unset and fail with
+"TOC reloc ... with no TOC entry".
+
+If the relocation target is itself a defined XMC_TC csect, use that csect's
+own section as the TOC entry section.  Undefined/imported symbols and
+compiler-created TOC entries keep the existing behavior.
+
+--- a/bfd/coff-rs6000.c	2026-06-30 16:31:09.852071605 +0000
++++ b/bfd/coff-rs6000.c	2026-07-14 17:33:59.958031379 +0000
+@@ -3120,6 +3120,19 @@
+ 
+   if (h != NULL && h->smclas != XMC_TD)
+     {
++      if (h->toc_section == NULL
++	  && h->smclas == XMC_TC
++	  && h->root.type == bfd_link_hash_defined)
++	{
++	  /* Some XCOFF producers, such as Go's linker, emit a standalone
++	     XMC_TC csect for a TOC entry without following the classic
++	     same-name R_POS idiom that the symbol-table scan in
++	     xcofflink.c uses to register h->toc_section.  If this symbol
++	     is itself a defined XMC_TC csect, its own section is the TOC
++	     entry section.  */
++	  h->toc_section = h->root.u.def.section;
++	}
++
+       if (h->toc_section == NULL)
+ 	{
+ 	  _bfd_error_handler
