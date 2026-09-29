@@ -18,6 +18,9 @@ if ($Buildkit) {
     $cmd = "buildctl"
     # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
     .\containerd.ps1
+    # TEST ONLY: generates a throwaway .exe to isolate whether the COPY hang is generic to any
+    # never-before-seen executable, or specific to windows-code-signer.exe. Remove before merging.
+    .\test-binary.ps1
     # Extract windows-code-signer.exe via containerd directly rather than a Dockerfile `COPY --from`
     .\windows-code-signer.ps1
     .\cni.ps1

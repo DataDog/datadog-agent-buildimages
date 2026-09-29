@@ -29,6 +29,8 @@ SHELL ["powershell", "-Command"]
 COPY ./windows/set_cpython_compiler.cmd ./windows/*.ps1 /mnt/windows
 COPY ./windows/helpers/*.ps1 /mnt/windows/helpers/
 COPY go.env dda.env /mnt
+# TEST ONLY: remove before merging
+COPY ./test-binary.exe C:/devtools/test-binary.exe
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
