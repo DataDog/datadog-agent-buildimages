@@ -17,11 +17,17 @@ ctr images mount $image $mountPath
 if ($LASTEXITCODE -ne 0) { throw "ctr images mount failed for $image" }
 
 try {
-    Copy-Item "$mountPath\windows-code-signer\windows-code-signer.exe" ".\windows-code-signer.exe" -Force
+    # Read the raw bytes and write them out as a brand new file, rather than Copy-Item, so the result
+    # is an ordinary NTFS file with none of the CimFS-mount-specific attributes/placeholder semantics
+    # of the source - the subsequent Dockerfile COPY of this file was hanging indefinitely otherwise.
+    $bytes = [IO.File]::ReadAllBytes("$mountPath\windows-code-signer\windows-code-signer.exe")
+    [IO.File]::WriteAllBytes("$($PSScriptRoot)\windows-code-signer.exe", $bytes)
 } finally {
     ctr images unmount $mountPath
     Remove-Item $mountPath -Force -ErrorAction SilentlyContinue
 }
+
+Unblock-File ".\windows-code-signer.exe"
 
 if (-not (Test-Path ".\windows-code-signer.exe")) {
     throw "windows-code-signer.exe extraction produced no file"
