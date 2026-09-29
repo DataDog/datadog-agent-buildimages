@@ -18,6 +18,8 @@ if ($Buildkit) {
     $cmd = "buildctl"
     # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
     .\containerd.ps1
+    # Extract windows-code-signer.exe via containerd directly rather than a Dockerfile `COPY --from`
+    .\windows-code-signer.ps1
     .\cni.ps1
     .\buildkit.ps1
     # Start buildkitd and wait for it to be ready
