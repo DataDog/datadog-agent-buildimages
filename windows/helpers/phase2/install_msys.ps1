@@ -78,9 +78,23 @@ if ( $mshell -ne "0") {
 # fails with autoconf errors
 # ridk install 3
 ridk enable
+
+# The package database bundled with the base archive goes stale as mirrors drop superseded packages, so sync and
+# upgrade before installing anything. The first pass may update only core packages such as pacman and the MSYS2
+# runtime, and the second pass upgrades everything else. Leftover MSYS2 processes such as gpg-agent are killed after
+# each pass so that they do not lock the runtime DLL.
+foreach ($pass in 1..2) {
+    pacman -Syuu --noconfirm
+    $pacmanExitCode = $lastExitCode
+    taskkill /F /FI "MODULES eq msys-2.0.dll" | Out-Null
+    If ($pacmanExitCode -ne "0") {
+        throw "pacman -Syuu (pass $pass) returned $pacmanExitCode"
+    }
+}
+
 pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc mingw-w64-x86_64-tools-git
-If ($lastExitCode -ne "0") { 
-    throw "ridk install 3 returned $lastExitCode" 
+If ($lastExitCode -ne "0") {
+    throw "pacman -S returned $lastExitCode"
 }
 
 Remove-Item c:\*.zst
