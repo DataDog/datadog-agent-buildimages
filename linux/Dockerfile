@@ -203,7 +203,8 @@ ARG DOTSLASH_SHA256
 ARG DOTSLASH_ARCH
 
 ADD --checksum=sha256:${DOTSLASH_SHA256} "https://github.com/facebook/dotslash/releases/download/v${DOTSLASH_VERSION}/dotslash-linux-musl.${DOTSLASH_ARCH}.tar.gz" /tmp/dotslash.tar.gz
-RUN tar -C /usr/local/bin --no-same-owner -xzf /tmp/dotslash.tar.gz dotslash \
+RUN mkdir -p /tmp/dotslash-install \
+    && tar -C /tmp/dotslash-install --no-same-owner -xzf /tmp/dotslash.tar.gz dotslash \
     && rm /tmp/dotslash.tar.gz
 
 FROM extraction_base AS protobuf_builder
@@ -522,7 +523,7 @@ COPY --from=mold_builder /tmp/mold-install/bin/ld.mold /usr/local/bin/ld.mold
 COPY --from=mold_builder /tmp/mold-install/lib/mold /usr/local/lib/mold
 
 # DotSlash
-COPY --from=dotslash_builder /usr/local/bin/dotslash /usr/local/bin/dotslash
+COPY --from=dotslash_builder /tmp/dotslash-install/dotslash /usr/local/bin/dotslash
 
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
