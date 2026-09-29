@@ -32,6 +32,7 @@ variable "versions" {
     PULUMI_VERSION         = "3.255.0"
     DD_OCTO_STS_VERSION    = "v1.9.3"
     MOLD_VERSION           = "2.40.4"
+    DOTSLASH_VERSION       = "0.5.9"
   }
 }
 
@@ -78,6 +79,7 @@ variable "checksums_amd64" {
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
     AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
     MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
+    DOTSLASH_SHA256          = "5cefa0f258e0a58ae53c7a9a5be3890574ddd33d57c66bc9c143cb411012d72a"
   }
 }
 
@@ -95,6 +97,7 @@ variable "checksums_arm64" {
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
     AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
     MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
+    DOTSLASH_SHA256          = "11323ef72fac5885d7c54bff70d666486bd800a8d908d0acd3bd838fd8a9b0db"
   }
 }
 
@@ -114,6 +117,7 @@ variable "architecture_defs_amd64" {
     VAULT_ARCH           = "amd64"
     PROTOBUF_ARCH        = "x86_64"
     MOLD_ARCH            = "x86_64"
+    DOTSLASH_ARCH        = "x86_64"
     GLIBC_VERSION        = "2.17"
   }
 }
@@ -134,6 +138,7 @@ variable "architecture_defs_arm64" {
     VAULT_ARCH           = "arm64"
     PROTOBUF_ARCH        = "aarch_64"
     MOLD_ARCH            = "aarch64"
+    DOTSLASH_ARCH        = "aarch64"
     GLIBC_VERSION        = "2.23"
   }
 }

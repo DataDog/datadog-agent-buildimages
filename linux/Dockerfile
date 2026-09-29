@@ -196,6 +196,16 @@ RUN mkdir -p /tmp/mold-install \
     && tar -C /tmp/mold-install --strip-components=1 -xzf /tmp/mold.tar.gz \
     && rm /tmp/mold.tar.gz
 
+FROM extraction_base AS dotslash_builder
+# DotSlash
+ARG DOTSLASH_VERSION
+ARG DOTSLASH_SHA256
+ARG DOTSLASH_ARCH
+
+ADD --checksum=sha256:${DOTSLASH_SHA256} "https://github.com/facebook/dotslash/releases/download/v${DOTSLASH_VERSION}/dotslash-linux-musl.${DOTSLASH_ARCH}.tar.gz" /tmp/dotslash.tar.gz
+RUN tar -C /usr/local/bin --no-same-owner -xzf /tmp/dotslash.tar.gz dotslash \
+    && rm /tmp/dotslash.tar.gz
+
 FROM extraction_base AS protobuf_builder
 # Protobuf
 ARG PROTOBUF_VERSION
@@ -511,6 +521,9 @@ COPY --from=mold_builder /tmp/mold-install/bin/mold /usr/local/bin/mold
 COPY --from=mold_builder /tmp/mold-install/bin/ld.mold /usr/local/bin/ld.mold
 COPY --from=mold_builder /tmp/mold-install/lib/mold /usr/local/lib/mold
 
+# DotSlash
+COPY --from=dotslash_builder /usr/local/bin/dotslash /usr/local/bin/dotslash
+
 # Authanywhere
 COPY --from=authanywhere_builder /usr/local/bin/authanywhere /usr/local/bin/authanywhere
 
@@ -603,6 +616,7 @@ ARG DATADOG_PACKAGES_VERSION
 ARG MACOSX_SDK_VERSION
 ARG OSXCROSS_COMMIT
 ARG MOLD_VERSION
+ARG DOTSLASH_VERSION
 ARG PULUMI_VERSION
 ARG DD_OCTO_STS_VERSION
 
@@ -620,6 +634,7 @@ LABEL go_version="${GO_VERSION}"
 LABEL dda_version="${DDA_VERSION}"
 LABEL datadog_packages_version="${DATADOG_PACKAGES_VERSION}"
 LABEL mold_version="${MOLD_VERSION}"
+LABEL dotslash_version="${DOTSLASH_VERSION}"
 LABEL pulumi_version="${PULUMI_VERSION}"
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 LABEL macosx_sdk_version="${MACOSX_SDK_VERSION}"
