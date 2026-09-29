@@ -1,9 +1,21 @@
 # Source: https://github.com/containerd/containerd/blob/main/docs/getting-started.md#installing-containerd-on-windows
 . .\windows\helpers.ps1
 # If containerd previously installed run:
+# A job killed by the GitLab runner (timeout or cancellation) only has its own process tree torn down via
+# `TerminateJobObject` - not containers, since those belong to the `containerd` service's process tree
+# instead. A container left over from such a job can then leave `containerd` unable to stop, hanging
+# `Stop-Service` indefinitely on the next job landing on this same host. Bound the wait and force it down
+# if that happens, instead of blocking forever.
 $service = Get-Service -Name containerd -ErrorAction SilentlyContinue
 if ($service) {
-    Stop-Service containerd
+    Get-Process -Name buildkitd, buildctl -ErrorAction SilentlyContinue | Stop-Process -Force
+    try {
+        $service.Stop()
+        $service.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30))
+    } catch [System.ServiceProcess.TimeoutException] {
+        Write-Warning "containerd did not stop within 30s - forcing it down"
+        Get-Process -Name containerd, containerd-shim-runhcs-v1 -ErrorAction SilentlyContinue | Stop-Process -Force
+    }
 }
 
 # Download and extract desired containerd Windows binaries

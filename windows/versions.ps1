@@ -75,9 +75,9 @@ $SoftwareTable = @{
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.4";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="ea05f5486ed0755177c754eaecea94de0d9a3a9ddf225fc2a2e8f4c1a3babfa0";
     # Similarly for windows-code-signer.exe,
-    # except that it's downloaded during the "docker build"
-    # with a "COPY --from" instruction in the Dockerfile
-    # recall to update the digest of the image in the Dockerfile
+    # except that it's extracted from its container image by windows-code-signer.ps1
+    # (via `ctr images mount`, not a Dockerfile "COPY --from")
+    # recall to update the digest of the image in windows-code-signer.ps1
     # when updating the version
     "WINDOWS_CODE_SIGNER_VERSION"="v0.8.0";
     "WINDOWS_CODE_SIGNER_SHA256"="941dbad45eddcb9428ec1940200e40fa41eb48f1870869d444a8e437cf7e3f68";

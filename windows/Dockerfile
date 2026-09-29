@@ -7,9 +7,6 @@ ARG BASE_IMAGE_REGISTRY=mcr.microsoft.com
 ARG BASE_IMAGE_TAG=4.8-windowsservercore-ltsc2022
 ARG BASE_IMAGE=${BASE_IMAGE_REGISTRY}/dotnet/framework/runtime:${BASE_IMAGE_TAG}
 
-# required for the COPY --from instruction later
-FROM registry.ddbuild.io/windows-code-signer/go:v0.8.0@sha256:bb1715e19445abff13e9487ba68c33d1879ca258991d85a84c6ff7b63f26549a AS windows-code-signer
-
 FROM ${BASE_IMAGE}
 
 
@@ -32,12 +29,14 @@ SHELL ["powershell", "-Command"]
 COPY ./windows/set_cpython_compiler.cmd ./windows/*.ps1 /mnt/windows
 COPY ./windows/helpers/*.ps1 /mnt/windows/helpers/
 COPY go.env dda.env /mnt
+# TEST ONLY: remove before merging
+COPY ./test-binary.exe C:/devtools/test-binary.exe
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
     --mount=type=bind,source=/python-packages-versions.txt,dst=/mnt/python-packages-versions.txt `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
-COPY --from=windows-code-signer C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
+COPY ./windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
     --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 3
