@@ -16,8 +16,6 @@ $CACHE_IMAGE = "${Image}:cache"
 
 if ($Buildkit) {
     $cmd = "buildctl"
-    # TEST ONLY: remove before merging
-    .\disable-defender.ps1
     # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
     .\containerd.ps1
     # TEST ONLY: generates a throwaway .exe to isolate whether the COPY hang is generic to any

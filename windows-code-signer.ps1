@@ -6,7 +6,10 @@
 # it never starts a container, so it never exercises that code path.
 . .\windows\helpers.ps1
 
-$image = "registry.ddbuild.io/windows-code-signer/go:v0.8.0@sha256:bb1715e19445abff13e9487ba68c33d1879ca258991d85a84c6ff7b63f26549a"
+# TEST ONLY: temporarily pointed at a one-off self-signed build from SDLC Security (SINT-5805) to check
+# whether the hang is caused by windows-code-signer.exe being unsigned. Revert to the real pinned
+# v0.8.0 release once resolved.
+$image = "registry.ddbuild.io/windows-code-signer/go@sha256:3a2cf6a743b8082630bb0d48c3c37766130285804b52fd77f0338ebf9857e50a"
 $mountPath = "$($PSScriptRoot)\.windows-code-signer-mnt"
 
 ctr images pull $image
