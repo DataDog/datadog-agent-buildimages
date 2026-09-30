@@ -31,14 +31,20 @@ COPY ./windows/helpers/*.ps1 /mnt/windows/helpers/
 COPY go.env dda.env /mnt
 # TEST ONLY: remove before merging
 COPY ./test-binary.exe C:/devtools/test-binary-early.exe
+RUN Write-Host '----- state snapshot: early -----'; "Disk used (bytes): $((Get-PSDrive C).Used)"; "Process count: $((Get-Process).Count)"
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
+# TEST ONLY: bisection point between Phase 1 and Phase 2, to narrow down which phase's
+# accumulated state is responsible for the hang. Remove before merging.
+COPY ./test-binary.exe C:/devtools/test-binary-mid.exe
+RUN Write-Host '----- state snapshot: after phase1 -----'; "Disk used (bytes): $((Get-PSDrive C).Used)"; "Process count: $((Get-Process).Count)"
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
     --mount=type=bind,source=/python-packages-versions.txt,dst=/mnt/python-packages-versions.txt `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
 # TEST ONLY: same trivial exe, copied at the same position as windows-code-signer.exe below,
 # to check whether build position/accumulated layers matter rather than the file itself.
 COPY ./test-binary.exe C:/devtools/test-binary-late.exe
+RUN Write-Host '----- state snapshot: after phase2 -----'; "Disk used (bytes): $((Get-PSDrive C).Used)"; "Process count: $((Get-Process).Count)"
 COPY ./windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
     --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `
