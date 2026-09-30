@@ -292,6 +292,9 @@ FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION
 FROM registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.6 AS dd_pkg_builder
 # Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
 
+FROM registry.ddbuild.io/images/ci-identities:0.6.0 AS ci_identities_builder
+# Dummy stage to copy ci-identities as it is distributed as a container image
+
 FROM common_base AS final
 
 # Shared root directories
@@ -539,6 +542,9 @@ COPY --from=dd_pkg_builder /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
 
 # Datadog CI
 COPY --from=datadog_ci_builder /usr/local/bin/datadog-ci /usr/local/bin/datadog-ci
+
+# CI Identities client
+COPY --from=ci_identities_builder /usr/local/bin/ci-identities-gitlab-job-client /usr/local/bin/ci-identities-gitlab-job-client
 
 # Merge conda initialization with main bashrc
 RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
