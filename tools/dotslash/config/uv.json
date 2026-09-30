@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 47645584
+        "uncompressed_size": 47705360
       },
       "linux-x86_64": {
-        "uncompressed_size": 55166304
+        "uncompressed_size": 56483776
       }
     }
   },
   "name": "uv",
   "platforms": {
     "linux-aarch64": {
-      "digest": "43527cd462e0358c335fbddc93373432cad33a336095cf72089b3ae16f0b68e3",
+      "digest": "761f72553d6c2dd15ac103231919bf724ec1f97477cd929490c09cb8fffa29f4",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "uv-aarch64-unknown-linux-gnu/uv",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/astral-sh/uv/releases/download/0.9.28/uv-aarch64-unknown-linux-gnu.tar.gz"
+          "url": "https://github.com/astral-sh/uv/releases/download/0.12.2/uv-aarch64-unknown-linux-gnu.tar.gz"
         }
       ],
-      "size": 20863191
+      "size": 20441968
     },
     "linux-x86_64": {
-      "digest": "00fc71b55282f8135706976975f356fec2f1306d9cecd7c6fe6fde33cc45a727",
+      "digest": "49b4174b742f8c1dc2c1901bf12989c6a8e9755207d6f2e503ad960e386c4ac2",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "uv-x86_64-unknown-linux-musl/uv",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/astral-sh/uv/releases/download/0.9.28/uv-x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/astral-sh/uv/releases/download/0.12.2/uv-x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 22361559
+      "size": 21883005
     }
   }
 }
