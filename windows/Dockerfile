@@ -32,6 +32,12 @@ COPY go.env dda.env /mnt
 # TEST ONLY: remove before merging
 COPY ./test-binary.exe C:/devtools/test-binary-early.exe
 RUN Write-Host '----- state snapshot: early -----'; Write-Host ('Disk used: ' + (Get-PSDrive C).Used); Write-Host ('Process count: ' + (Get-Process).Count)
+# TEST ONLY: isolate whether wcifs slowdown is driven purely by accumulated file count/layer
+# size, independent of what created those files. Creates 150k tiny files in a single layer
+# (no installers, no downloads) then times a COPY right after, same as the installer probes.
+RUN $dir = 'C:\devtools\wcifs-test'; New-Item -ItemType Directory -Path $dir -Force | Out-Null; $bytes = [byte[]](1); $sw = [System.Diagnostics.Stopwatch]::StartNew(); for ($i = 0; $i -lt 150000; $i++) { [System.IO.File]::WriteAllBytes($dir + '\f' + $i + '.bin', $bytes) }; $sw.Stop(); Write-Host ('File creation took: ' + $sw.Elapsed)
+COPY ./test-binary.exe C:/devtools/test-binary-after-filecreate.exe
+RUN Write-Host '----- state snapshot: after filecreate -----'; Write-Host ('Disk used: ' + (Get-PSDrive C).Used); Write-Host ('Process count: ' + (Get-Process).Count)
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 1a1
 # TEST ONLY: bisection point within Phase 1a, right before Visual Studio Build Tools, to check
