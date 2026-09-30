@@ -33,7 +33,13 @@ COPY go.env dda.env /mnt
 COPY ./test-binary.exe C:/devtools/test-binary-early.exe
 RUN Write-Host '----- state snapshot: early -----'; Write-Host ('Disk used: ' + (Get-PSDrive C).Used); Write-Host ('Process count: ' + (Get-Process).Count)
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
-    /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
+    /mnt/windows/install-all.ps1 -TargetContainer -Phase 1a
+# TEST ONLY: bisection point within Phase 1, right after the heaviest single item (Visual
+# Studio Build Tools), to check whether it alone accounts for most of the slowdown.
+COPY ./test-binary.exe C:/devtools/test-binary-after-1a.exe
+RUN Write-Host '----- state snapshot: after phase1a -----'; Write-Host ('Disk used: ' + (Get-PSDrive C).Used); Write-Host ('Process count: ' + (Get-Process).Count)
+RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
+    /mnt/windows/install-all.ps1 -TargetContainer -Phase 1b
 # TEST ONLY: bisection point between Phase 1 and Phase 2, to narrow down which phase's
 # accumulated state is responsible for the hang. Remove before merging.
 COPY ./test-binary.exe C:/devtools/test-binary-mid.exe
