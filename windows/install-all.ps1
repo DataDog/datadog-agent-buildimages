@@ -97,6 +97,7 @@ try {
         .\helpers\phase3\install_datadog_ci.ps1 -Version $ENV:DATADOG_CI_VERSION -Sha256 $ENV:DATADOG_CI_SHA256
         .\helpers\phase3\install_awscli.ps1 -Version $ENV:AWSCLI_VERSION -Sha256 $ENV:AWSCLI_SHA256
         .\helpers\phase3\install_bazelisk.ps1 -Version $ENV:BAZELISK_VERSION -Sha256 $ENV:BAZELISK_SHA256
+        .\helpers\phase3\install_dotslash.ps1 -Version $ENV:DOTSLASH_VERSION -Sha256 $ENV:DOTSLASH_SHA256
         .\helpers\phase3\install_ci_identities_gitlab_job_client.ps1 -Version $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION -Sha256 $ENV:CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256 # requires the AWS CLI
         .\helpers\phase3\install_windows_code_signer.ps1 -Version $ENV:WINDOWS_CODE_SIGNER_VERSION -Sha256 $ENV:WINDOWS_CODE_SIGNER_SHA256
 

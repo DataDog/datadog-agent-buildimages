@@ -9,15 +9,6 @@ else
   short_arch="amd64"
 fi
 
-# Install DotSlash
-install-binary \
-    --version "0.5.8" \
-    --digest "cfdba94857f06e6b2d16aaebbfe24d73751d26fbd2173adef29a2df9078e2770" \
-    --digest "35ac3bac979d56f6e6faefd1907de2373d35287321aeb48e82e34edfe1501cd8" \
-    --url "https://github.com/facebook/dotslash/releases/download/v{{version}}/dotslash-linux-musl.${arch}.tar.gz" \
-    --name "dotslash" \
-    --top-level
-
 # Generate DotSlash files
 python3 /tools/dotslash/generate.py \
     --config-dir /tools/dotslash/config \
