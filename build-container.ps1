@@ -16,6 +16,10 @@ $CACHE_IMAGE = "${Image}:cache"
 
 if ($Buildkit) {
     $cmd = "buildctl"
+    # TEST ONLY: list loaded filesystem filter drivers (EDR/AV/DLP, etc.) - Defender's real-time
+    # monitoring alone wasn't the cause, so check what else might be hooking new executable files.
+    Write-Host "----- fltmc filters -----"
+    fltmc filters
     # Install containerd, buildkit and CNI plugins, see https://github.com/moby/buildkit/blob/master/docs/windows.md
     .\containerd.ps1
     # TEST ONLY: generates a throwaway .exe to isolate whether the COPY hang is generic to any

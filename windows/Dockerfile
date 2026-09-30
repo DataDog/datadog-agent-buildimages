@@ -30,12 +30,15 @@ COPY ./windows/set_cpython_compiler.cmd ./windows/*.ps1 /mnt/windows
 COPY ./windows/helpers/*.ps1 /mnt/windows/helpers/
 COPY go.env dda.env /mnt
 # TEST ONLY: remove before merging
-COPY ./test-binary.exe C:/devtools/test-binary.exe
+COPY ./test-binary.exe C:/devtools/test-binary-early.exe
 RUN --mount=type=bind,source=/windows/helpers/phase1,dst=/mnt/windows/helpers/phase1 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 1
 RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/phase2 `
     --mount=type=bind,source=/python-packages-versions.txt,dst=/mnt/python-packages-versions.txt `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
+# TEST ONLY: same trivial exe, copied at the same position as windows-code-signer.exe below,
+# to check whether build position/accumulated layers matter rather than the file itself.
+COPY ./test-binary.exe C:/devtools/test-binary-late.exe
 COPY ./windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
     --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `

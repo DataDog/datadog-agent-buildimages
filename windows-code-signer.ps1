@@ -12,8 +12,11 @@
 $image = "registry.ddbuild.io/windows-code-signer/go@sha256:3a2cf6a743b8082630bb0d48c3c37766130285804b52fd77f0338ebf9857e50a"
 $mountPath = "$($PSScriptRoot)\.windows-code-signer-mnt"
 
-ctr images pull $image
+# TEST ONLY: explicitly timed to check whether the pull itself (rather than the later Dockerfile
+# COPY) is what's actually slow/stuck.
+$pullTime = Measure-Command { ctr images pull $image }
 if ($LASTEXITCODE -ne 0) { throw "ctr images pull failed for $image" }
+Write-Host "ctr images pull took $($pullTime.TotalSeconds) seconds"
 
 $null = New-Item $mountPath -ItemType Directory -Force
 ctr images mount $image $mountPath
