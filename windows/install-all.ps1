@@ -59,13 +59,16 @@ try {
     #
     # Phase 4 is empty by default. Before starting work on updating an item move the script to Phase 4.
     #
-    # TEST ONLY: split into 1a/1b to bisect which sub-install's accumulated state causes the
+    # TEST ONLY: split into 1a1/1a2/1b to bisect which sub-install's accumulated state causes the
     # later COPY slowdown. Remove this split (merge back into a single -eq 1 check) once resolved.
-    if ($Phase -eq 0 -or $Phase -eq 1 -or $Phase -eq "1a") {
+    if ($Phase -eq 0 -or $Phase -eq 1 -or $Phase -eq "1a" -or $Phase -eq "1a1") {
         .\helpers\phase1\install_net35.ps1
         .\helpers\phase1\install_7zip.ps1 -Version $ENV:SEVENZIP_VERSION -Sha256 $ENV:SEVENZIP_SHA256
         .\helpers\phase1\install_7zip_standalone.ps1 -Version $ENV:SEVENZIP_STANDALONE_VERSION -Sha256 $ENV:SEVENZIP_STANDALONE_SHA256
         .\helpers\phase1\install_mingit.ps1 -Version $ENV:GIT_VERSION -Sha256 $ENV:GIT_SHA256
+    }
+
+    if ($Phase -eq 0 -or $Phase -eq 1 -or $Phase -eq "1a" -or $Phase -eq "1a2") {
         .\helpers\phase1\install_vstudio.ps1
     }
 
