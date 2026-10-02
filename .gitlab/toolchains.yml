@@ -10,7 +10,7 @@ build_toolchain_build_image_x64:
     DOCKERFILE: toolchain-builder/Dockerfile
     IMAGE: toolchain-builder
     IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-amd64"
-    AWSCLI_SHA256: 2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94
+    AWSCLI_SHA256: 6b51b62d232217350e72d8f2493f47d3461239d011d1d5eef960dfcd8cb07069
 
 build_toolchain_build_image_arm64:
   extends: [.fast_build, .arm]
@@ -20,7 +20,7 @@ build_toolchain_build_image_arm64:
     DOCKERFILE: toolchain-builder/Dockerfile
     IMAGE: toolchain-builder
     IMAGE_VERSION: "v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA-arm64"
-    AWSCLI_SHA256: cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c
+    AWSCLI_SHA256: 2dec26fdaff2f5e34961ea98f456297104f73d8409fc3599c8f2909c6e27a07e
 
 .toolchain_build:
   stage: toolchains
