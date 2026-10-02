@@ -23,7 +23,7 @@ variable "versions" {
     VAULT_VERSION       = "1.17.2"
     DATADOG_CI_VERSION  = "5.19.0"
     PROTOBUF_VERSION    = "34.0"
-    AWSCLI_VERSION      = "2.37.8"
+    AWSCLI_VERSION      = "2.36.49"
     DPKG_ARMHF_VERSION  = "1.18.4"
     DATADOG_PACKAGES_VERSION = "42796a26609b975947ddaafe1672dd04f47418ea"
     MACOSX_SDK_VERSION       = "14.0"
@@ -77,7 +77,7 @@ variable "checksums_amd64" {
     VAULT_SHA256             = "a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8"
     DATADOG_CI_SHA256        = "aa1a3b535f41ca58096c5c843b19f13bbad9018fdb6c86b92457ecdff7d5b364"
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
-    AWSCLI_SHA256            = "6a2f98fee0901ff623ff9abb5c80f4d67c40e5c0ac5e2ad7afa2ba756a7d5088"
+    AWSCLI_SHA256            = "6b51b62d232217350e72d8f2493f47d3461239d011d1d5eef960dfcd8cb07069"
     MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
     DOTSLASH_SHA256          = "5cefa0f258e0a58ae53c7a9a5be3890574ddd33d57c66bc9c143cb411012d72a"
   }
@@ -95,7 +95,7 @@ variable "checksums_arm64" {
     VAULT_SHA256             = "1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9"
     DATADOG_CI_SHA256        = "ad68d62945044bdedc183e8e21b3d4b2d9b0f301ac9c01f8ab074fff7a4629d1"
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
-    AWSCLI_SHA256            = "00c4bac1cac8624b728d991f821428d5de1e0cb56e3803045b85bff63bedee8b"
+    AWSCLI_SHA256            = "2dec26fdaff2f5e34961ea98f456297104f73d8409fc3599c8f2909c6e27a07e"
     MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
     DOTSLASH_SHA256          = "11323ef72fac5885d7c54bff70d666486bd800a8d908d0acd3bd838fd8a9b0db"
   }

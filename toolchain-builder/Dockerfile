@@ -21,7 +21,7 @@ COPY --from=registry.ddbuild.io/images/datadog-ca-certs:standard /certs/ /usr/lo
 RUN chmod -R o-w /usr/local/share/ca-certificates && update-ca-certificates
 
 ARG ARCH
-ARG AWSCLI_VERSION=2.37.8
+ARG AWSCLI_VERSION=2.36.49
 ARG AWSCLI_SHA256
 ADD --checksum=sha256:${AWSCLI_SHA256} https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWSCLI_VERSION}.zip awscliv2.zip
 RUN unzip -q awscliv2.zip && \
