@@ -110,7 +110,10 @@ dda config restore
 
 # Configure telemetry if enabled
 set +x
-if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
+if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" == "exec" ]]; then
+    # Bits owns telemetry for its managed session; avoid CLI submissions/prompts.
+    dda self telemetry disable
+elif [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
     # Avoid exposing the API key in startup logs while persisting it for later sessions.
     set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"
     dda self telemetry enable

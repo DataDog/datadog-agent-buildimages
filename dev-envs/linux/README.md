@@ -58,7 +58,8 @@ SSH environment persistence, editor watchers, imported shell/agent histories,
 and the local pass/GPG/aws-vault credential bootstrap. It adds no capabilities. Exec startup refreshes system certificate trust so
 caller-mounted public CA certificates under `/usr/local/share/ca-certificates`
 also work for tools that sanitize their subprocess environment. TLS verification
-remains enabled.
+remains enabled. Exec mode disables container-local DDA telemetry; Bits session
+telemetry is unaffected.
 The mode marker selects startup behavior; it does not authorize SCM or cloud access.
 
 Mount the patched entrypoint and startup script to test against the published
