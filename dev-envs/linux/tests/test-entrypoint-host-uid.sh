@@ -26,6 +26,7 @@ for host_uid in 0 12345; do
     docker run -d --init --name "$container" -p "127.0.0.1:$ssh_port:22" \
         -e HOST_UID="$host_uid" -e HOST_GID="$host_uid" -e DD_SHELL=bash \
         --mount "type=bind,src=$entrypoint,dst=/init/entrypoint.sh,readonly" \
+        --mount "type=bind,src=$script_dir/../init/startup.sh,dst=/init/startup.sh,readonly" \
         --mount "type=bind,src=$case_dir/repo,dst=/repos/entrypoint-test" \
         "$image"
     ready=0

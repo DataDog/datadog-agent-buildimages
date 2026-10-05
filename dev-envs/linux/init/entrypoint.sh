@@ -78,9 +78,11 @@ fi
 /init/ensure-shared-roots.sh
 
 if [[ ! -f "${startup_indicator}" ]]; then
-    # Allow passwordless SSH login for the target user
-    passwd -d "${TARGET_USER}"
-    usermod -U "${TARGET_USER}"
+    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+        # Allow passwordless SSH login for the target user.
+        passwd -d "${TARGET_USER}"
+        usermod -U "${TARGET_USER}"
+    fi
 
     # Choose login shell for the target user
     shell="${DD_SHELL:-zsh}"
@@ -100,7 +102,15 @@ if [[ ! -f "${startup_indicator}" ]]; then
     chmod 0755 "${TARGET_HOME}"
 
     # Persist environment for SSH sessions
-    env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
+    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+        env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
+    fi
+
+    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" == "exec" ]]; then
+        # Include caller-mounted public CAs for tools that sanitize their environment
+        # (for example Bazel Go repository downloads). TLS verification stays enabled.
+        update-ca-certificates
+    fi
 
     # Run the startup logic as the target user
     HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" /init/startup.sh
@@ -111,7 +121,9 @@ fi
 
 # Start background services immune to SIGHUP so they survive the exec below.
 # Child processes inherit the SIG_IGN disposition set by nohup.
-HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" nohup /init/run-services.sh &
+if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+    HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" nohup /init/run-services.sh &
+fi
 
 # Run the CMD defined by the target stage as PID 1
 exec "$@"

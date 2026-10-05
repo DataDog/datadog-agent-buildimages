@@ -47,3 +47,28 @@ is separate from the passing entrypoint and ownership checks. The unchanged imag
 with UID/GID 12345 failed SSH at the same chroot operation, confirming that this
 restriction also exists without the root-caller patch. No image rebuild
 or publication was required for these tests.
+
+### Managed container exec
+
+The opt-in `DD_DEV_ENV_TRANSPORT=exec` startup mode supports DDA's container-exec
+transport. Its launcher supplies native init and a foreground `sleep infinity`
+command instead of SSH. UID/GID alignment, `/home/dd`, toolchains, and persisted
+build directories remain available. Startup skips passwordless SSH setup,
+SSH environment persistence, editor watchers, imported shell/agent histories,
+and the local pass/GPG/aws-vault credential bootstrap. It adds no capabilities. Exec startup refreshes system certificate trust so
+caller-mounted public CA certificates under `/usr/local/share/ca-certificates`
+also work for tools that sanitize their subprocess environment. TLS verification
+remains enabled.
+The mode marker selects startup behavior; it does not authorize SCM or cloud access.
+
+Mount the patched entrypoint and startup script to test against the published
+image without rebuilding:
+
+```bash
+bash dev-envs/linux/tests/test-exec-transport.sh
+```
+
+The test covers root and regular UID callers, real DDA startup, mounted file
+ownership, service/credential-bootstrap absence, and stop/start persistence.
+SCM operations should use the caller's broker outside this container. The DDA
+exec launcher intentionally omits socket/credential forwarding and SSH ports.
