@@ -24,12 +24,19 @@ if [[ ! -f "${startup_indicator}" ]]; then
     TARGET_UID="${HOST_UID:-}"
     TARGET_GID="${HOST_GID:-${TARGET_UID}}"
 
+    # Root callers need UID 0 too, but DDA still connects over SSH as dd.
+    # Keep the target login/home and permit the existing root UID only in this case.
+    uid_options=()
+    if [[ "${TARGET_UID}" == "0" ]]; then
+        uid_options=(-o)
+    fi
+
     if ! id "${TARGET_USER}" >/dev/null 2>&1; then
         # Create the user when the image did not pre-create it.
         TARGET_UID="${TARGET_UID:-1000}"
         TARGET_GID="${TARGET_GID:-${TARGET_UID}}"
         getent group "${TARGET_GID}" >/dev/null || groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
-        useradd -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
+        useradd "${uid_options[@]}" -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
     elif [[ -n "${TARGET_UID}" ]]; then
         # Realign the pre-created user's GID and then its UID to the host's.
         if [[ "$(id -g "${TARGET_USER}")" != "${TARGET_GID}" ]]; then
@@ -40,7 +47,7 @@ if [[ ! -f "${startup_indicator}" ]]; then
             fi
         fi
         if [[ "$(id -u "${TARGET_USER}")" != "${TARGET_UID}" ]]; then
-            usermod -u "${TARGET_UID}" "${TARGET_USER}"
+            usermod "${uid_options[@]}" -u "${TARGET_UID}" "${TARGET_USER}"
         fi
     fi
 
