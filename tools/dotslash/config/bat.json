@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 5299556
+        "uncompressed_size": 6343084
       },
       "linux-x86_64": {
-        "uncompressed_size": 5893844
+        "uncompressed_size": 7068620
       }
     }
   },
   "name": "bat",
   "platforms": {
     "linux-aarch64": {
-      "digest": "dc1fef74981d8d42be3e64baa617d080cea2cfecf8dd8e662c967a371d315cda",
+      "digest": "7676a63bc601fa39d7911534c920331a983fea16f2cd2e4681f435be77ceded2",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "bat-v0.24.0-aarch64-unknown-linux-gnu/bat",
+      "path": "bat-v0.26.1-aarch64-unknown-linux-gnu/bat",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-aarch64-unknown-linux-gnu.tar.gz"
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-aarch64-unknown-linux-gnu.tar.gz"
         }
       ],
-      "size": 2856747
+      "size": 3345545
     },
     "linux-x86_64": {
-      "digest": "e8432f56e16b23ec0ae54eb4c968c95869d8084fad9c940814dfbae5ac7ca243",
+      "digest": "70c338f12c0492e8867b54c76b091639c0defcd8348c9496978cc04ca0d758c8",
       "format": "tar.gz",
       "hash": "blake3",
-      "path": "bat-v0.24.0-x86_64-unknown-linux-musl/bat",
+      "path": "bat-v0.26.1-x86_64-unknown-linux-musl/bat",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 3038788
+      "size": 3584928
     }
   }
 }

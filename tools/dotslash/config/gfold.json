@@ -2,38 +2,38 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 1793592
+        "uncompressed_size": 1824680
       },
       "linux-x86_64": {
-        "uncompressed_size": 2081184
+        "uncompressed_size": 2079520
       }
     }
   },
   "name": "gfold",
   "platforms": {
     "linux-aarch64": {
-      "digest": "7ea8903b98d122e47078f95d9dba8687b2f021e142c182b720fdae8ba56f8e75",
+      "digest": "ce9e3b6dad90b2ab8d9fa2b13bfccf68e4a45e2da79a0f6c6f020573f5531314",
       "hash": "blake3",
       "path": "gfold-linux-musl-aarch64",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/nickgerace/gfold/releases/download/2025.2.1-ofek-1/gfold-linux-musl-aarch64"
+          "url": "https://github.com/nickgerace/gfold/releases/download/2026.3.0/gfold-linux-musl-aarch64"
         }
       ],
-      "size": 1793592
+      "size": 1824680
     },
     "linux-x86_64": {
-      "digest": "8058afcb64b9d41af2707c9bb55b945529468e6619b9759bf61e170f330bc3ca",
+      "digest": "587f6c4f69260bd04dc3e4fabd36bd129d63e377aec3352eed3625678df63566",
       "hash": "blake3",
       "path": "gfold-linux-musl-x86-64",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/nickgerace/gfold/releases/download/2025.2.1-ofek-1/gfold-linux-musl-x86-64"
+          "url": "https://github.com/nickgerace/gfold/releases/download/2026.3.0/gfold-linux-musl-x86-64"
         }
       ],
-      "size": 2081184
+      "size": 2079520
     }
   }
 }

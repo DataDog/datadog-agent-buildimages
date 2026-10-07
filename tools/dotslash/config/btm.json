@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 3935199
+        "uncompressed_size": 4312156
       },
       "linux-x86_64": {
-        "uncompressed_size": 4931143
+        "uncompressed_size": 5258948
       }
     }
   },
   "name": "btm",
   "platforms": {
     "linux-aarch64": {
-      "digest": "5b4dca7279956329b322592ca1d96f5cc58fce728f0dc06ce376fc9bf7b68d1f",
+      "digest": "c3e16ccab62b6431d07daf633dd2f5940e0e1e6a386e689cd5a13383397f7680",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "btm",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/ClementTsang/bottom/releases/download/0.10.2/bottom_aarch64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.7/bottom_aarch64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 1808205
+      "size": 1911156
     },
     "linux-x86_64": {
-      "digest": "402b50ec077c8c9bf3092a221e862e8e3211d1e7a9017cf63dfbd22317f6a8b5",
+      "digest": "639db2b3fa2b73610d517889d32060889d6be40c265d6dca8a830f1de25b838a",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "btm",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/ClementTsang/bottom/releases/download/0.10.2/bottom_x86_64-unknown-linux-musl.tar.gz"
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.7/bottom_x86_64-unknown-linux-musl.tar.gz"
         }
       ],
-      "size": 2018204
+      "size": 2119000
     }
   }
 }

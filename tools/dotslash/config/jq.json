@@ -2,38 +2,38 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 1709616
+        "uncompressed_size": 1797688
       },
       "linux-x86_64": {
-        "uncompressed_size": 2319424
+        "uncompressed_size": 2267912
       }
     }
   },
   "name": "jq",
   "platforms": {
     "linux-aarch64": {
-      "digest": "c195594f549766bfdf75127a7956980c1baa3fa9984ba6f5b5910ed946601d16",
+      "digest": "428869e0c7c8b86cc2422a2b1e034cb026776795fb5df707bca3f889c6256626",
       "hash": "blake3",
       "path": "jq-linux-arm64",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-arm64"
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-arm64"
         }
       ],
-      "size": 1709616
+      "size": 1797688
     },
     "linux-x86_64": {
-      "digest": "f4f456f3a1a9a0dbcd9b0c2a77e29d14bc1f8bb036db4f6ff06d8c76a99e5ef2",
+      "digest": "4311c64431be63fb82189e7e0950b060b39046e865ebb796ec3fa974309c4986",
       "hash": "blake3",
       "path": "jq-linux-amd64",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64"
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-amd64"
         }
       ],
-      "size": 2319424
+      "size": 2267912
     }
   }
 }
