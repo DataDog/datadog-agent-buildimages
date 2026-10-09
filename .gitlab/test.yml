@@ -112,7 +112,27 @@ update_datadog_agent_pr_with_final_images:
     - if [[ -z "$HEAD_REF" ]]; then echo "No merged PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
     # The datadog-agent branch mirrors the buildimages branch with a "buildimages/" prefix.
     - BRANCH="buildimages/${HEAD_REF}"
-    - dda run update agent-build-images "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}" "$BRANCH" --ref "$CI_COMMIT_BRANCH"
+    # TEMPORARY: comment on the datadog-agent PR with the final tag instead of
+    # dispatching buildimages-update.yml. That workflow uses peter-evans, which
+    # force-resets the PR branch and overwrites the title on update.
+    # FOLLOW-UP: replace the comment with a proper additive PR update. The pip
+    # install dda and dda sync steps above are kept for that follow-up.
+    - FINAL_TAG="v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+    - >-
+      PR_NUMBER=$(curl
+      -sfH "Authorization: Bearer $GITHUB_TOKEN"
+      -H "Accept: application/vnd.github+json"
+      "https://api.github.com/repos/DataDog/datadog-agent/pulls?head=DataDog:${BRANCH}&state=open"
+      | jq -r '.[0].number // empty') ||
+      { echo "GitHub API lookup failed while resolving datadog-agent PR for branch $BRANCH" >&2; exit 1; }
+    - if [[ -z "$PR_NUMBER" ]]; then echo "No open datadog-agent PR found on branch $BRANCH" >&2; exit 1; fi
+    - echo "Commenting on datadog-agent PR ${PR_NUMBER}"
+    - >-
+      curl -sfX POST
+      -H "Authorization: Bearer $GITHUB_TOKEN"
+      -H "Accept: application/vnd.github+json"
+      "https://api.github.com/repos/DataDog/datadog-agent/issues/${PR_NUMBER}/comments"
+      -d "$(jq -nc --arg tag "$FINAL_TAG" '{body: ("Buildimages merged with final tag `" + $tag + "`. Check if this PR still points at the test tag.")}')"
   after_script:
     - dd-octo-sts revoke -t $(cat token.txt)
 
