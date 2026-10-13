@@ -18,7 +18,7 @@ cleanup() {
 trap cleanup EXIT
 mkdir -p "$work_dir/trust"
 # Public artifacts from OpenSSL and Bazel’s embedded JDK, with no host credentials.
-docker run --rm --entrypoint bash --mount "type=bind,src=$work_dir/trust,dst=/trust" "$image" -lc '
+docker run --rm --entrypoint bash --mount "type=bind,src=$work_dir/trust,dst=/trust" "$image" -lc 'set -euo pipefail
     openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/test.key -out /trust/sandbox-proxy-ca.crt -days 1 -subj /CN=bits-test
     cat /etc/ssl/certs/ca-certificates.crt /trust/sandbox-proxy-ca.crt > /trust/ca-certificates.crt
     USE_BAZEL_VERSION=9.3.0 bazel --batch version
@@ -39,7 +39,7 @@ for host_uid in 0 12345; do
         --mount "type=bind,src=$init_dir/bits-code-trust.sh,dst=/init/bits-code-trust.sh,readonly" \
         --mount "type=bind,src=$work_dir/trust,dst=/run/codegen-trust,readonly" \
         --mount "type=bind,src=$case_dir/repo,dst=/repos/entrypoint-test" \
-        "$image" -lc '. /home/dd/.profile; grep -Fxq "# preserve test config" /etc/bazel.bazelrc 2>/dev/null || echo "# preserve test config" >> /etc/bazel.bazelrc; exec /init/entrypoint.sh /bin/sleep infinity'
+        "$image" -lc 'set -euo pipefail; . /home/dd/.profile; grep -Fxq "# preserve test config" /etc/bazel.bazelrc 2>/dev/null || echo "# preserve test config" >> /etc/bazel.bazelrc; exec /init/entrypoint.sh /bin/sleep infinity'
     ready=0
     for ((attempt=0; attempt<180; attempt++)); do
         if docker exec "$container" test -f /.started; then
@@ -53,9 +53,9 @@ for host_uid in 0 12345; do
     [[ $(docker exec "$container" id -u dd) == "$host_uid" ]]
     [[ $(docker exec "$container" getent passwd dd | cut -d: -f6) == /home/dd ]]
     docker exec --user dd --env HOME=/home/dd "$container" bash -lc \
-        'test ! -S /var/run/docker.sock; test ! -d /var/config/dd/.config/password-store; test ! -e /home/dd/.vscode-server; printf "exec write\n" > /repos/entrypoint-test/result; dda --version'
+        'set -euo pipefail; test ! -S /var/run/docker.sock; test ! -d /var/config/dd/.config/password-store; test ! -e /home/dd/.vscode-server; printf "exec write\n" > /repos/entrypoint-test/result; dda --version'
     [[ $(docker exec "$container" stat -c %u /repos/entrypoint-test/result) == "$host_uid" ]]
-    docker exec --user dd --env HOME=/home/dd "$container" bash -lc '
+    docker exec --user dd --env HOME=/home/dd "$container" bash -lc 'set -euo pipefail
         test "$SSL_CERT_FILE" = /run/codegen-trust/ca-certificates.crt
         test "$REQUESTS_CA_BUNDLE" = "$SSL_CERT_FILE"
         test "$CURL_CA_BUNDLE" = "$SSL_CERT_FILE"
@@ -71,7 +71,7 @@ for host_uid in 0 12345; do
     fi
     docker stop "$container" >/dev/null
     docker start "$container" >/dev/null
-    docker exec --user dd "$container" bash -lc 'test -f /.started; test -s /repos/entrypoint-test/result; dda --version'
+    docker exec --user dd "$container" bash -lc 'set -euo pipefail; test -f /.started; test -s /repos/entrypoint-test/result; dda --version'
     docker logs "$container" > "$case_dir/startup.log" 2>&1
     docker rm -fv "$container" >/dev/null
     container=

@@ -44,7 +44,7 @@ for host_uid in 0 12345; do
     [[ $(docker exec "$container" id -u root) == 0 ]]
     [[ $(docker exec "$container" getent passwd dd | cut -d: -f6) == /home/dd ]]
     docker exec --user dd "$container" bash -lc \
-        'printf "written by target user\n" > /repos/entrypoint-test/result; dda --version'
+        'set -euo pipefail; printf "written by target user\n" > /repos/entrypoint-test/result; dda --version'
     [[ $(stat -c %u "$case_dir/repo/result") == "$host_uid" ]]
     [[ $(stat -c %g "$case_dir/repo/result") == "$host_uid" ]]
     if [[ ${AGENT_DEV_TEST_SSH:-0} == 1 ]]; then
@@ -64,7 +64,7 @@ for host_uid in 0 12345; do
     fi
     docker restart "$container" >/dev/null
     docker exec --user dd "$container" bash -lc \
-        'test -f /.started; test -s /repos/entrypoint-test/result; dda --version'
+        'set -euo pipefail; test -f /.started; test -s /repos/entrypoint-test/result; dda --version'
     docker logs "$container" > "$case_dir/startup.log" 2>&1
     docker rm -fv "$container" >/dev/null
     container=
