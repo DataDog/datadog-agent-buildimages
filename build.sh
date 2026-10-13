@@ -35,7 +35,7 @@ fi
 
 # Cache push logic: only push to branch cache
 # Since on main CACHE_DETAILS_BRANCH == CACHE_DETAILS_MAIN, this works as expected.
-CACHE_PUSH_ARGS="--cache-to ${CACHE_DETAILS_BRANCH}"
+CACHE_PUSH_ARGS="--cache-to ${CACHE_DETAILS_BRANCH},compression=gzip,force-compression=true"
 
 # == Image push logic == #
 PUSH=""
@@ -86,6 +86,7 @@ ${BUILD_CONTEXT_ARGS:-} \
 ${IMAGE_VARIANT:+--target $IMAGE_VARIANT} \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
+--output type=image,compression=gzip,force-compression=true \
 --metadata-file ${METADATA_FILE}
 
 # Sign the image after push

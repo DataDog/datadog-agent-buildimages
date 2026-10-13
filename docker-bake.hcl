@@ -266,6 +266,12 @@ variable "linux_cache_details_branch" {
   default = "type=registry,ref=${registry_name}/${repo_name}/linux:${cache_key_branch}"
 }
 
+variable "layer_compression_options" {
+  type = string
+  // Recompress every layer when exporting the image and the cache, so BuildKit cannot reuse a non-tar variant (e.g. Nydus) it holds locally.
+  default = "compression=gzip,force-compression=true"
+}
+
 # ====== Local build targets ====== #
 # Fake target containing settings common for local build targets
 target "_fake_linux-local" {
@@ -326,9 +332,9 @@ target "_fake_linux-ci" {
   # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
   secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
   cache-from = PREVENT_CACHE != "" ? [] : [linux_cache_details_branch, linux_cache_details_main]
-  cache-to   = [linux_cache_details_branch]
+  cache-to   = ["${linux_cache_details_branch},${layer_compression_options}"]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
-  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
   args       = {
     BASE_IMAGE_REGISTRY = "registry.ddbuild.io/images/mirror"
   }
@@ -341,7 +347,7 @@ target "linux-amd64-ci" {
 target "linux-amd64-ci_test_only" {
   inherits = ["linux-amd64-ci"]
   tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
-  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
 
 target "linux-arm64-ci" {
@@ -352,7 +358,7 @@ target "linux-arm64-ci_test_only" {
   inherits = ["linux-arm64-ci"]
     # Override the tags and output from the linux-ci target to change the image name
   tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
-  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
 
 // Default group - automatically builds the target for the current architecture
@@ -393,9 +399,9 @@ target "docker_x64" {
 
 target "_fake_docker_x64-ci" {
   cache-from = PREVENT_CACHE != "" ? [] : [docker_x64_cache_details_branch, docker_x64_cache_details_main]
-  cache-to   = [docker_x64_cache_details_branch]
+  cache-to   = ["${docker_x64_cache_details_branch},${layer_compression_options}"]
   tags       = ["${registry_name}/${repo_name}/docker_x64:${docker_x64-image-tag}"]
-  output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar"]
+  output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar", "type=image,${layer_compression_options}"]
   args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }
 }
 
@@ -406,5 +412,5 @@ target "docker_x64-ci" {
 target "docker_x64-ci_test_only" {
   inherits = ["docker_x64-ci"]
   tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${docker_x64-image-tag}"]
-  output   = ["type=docker,dest=./docker_x64_test_only-${docker_x64-image-tag}.tar"]
+  output   = ["type=docker,dest=./docker_x64_test_only-${docker_x64-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
