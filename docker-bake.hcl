@@ -266,6 +266,12 @@ variable "linux_cache_details_branch" {
   default = "type=registry,ref=${registry_name}/${repo_name}/linux:${cache_key_branch}"
 }
 
+variable "cache_export_options" {
+  type = string
+  // Recompress every layer on export, so BuildKit cannot reuse a non-tar variant (e.g. Nydus) it holds locally and poison the cache.
+  default = "compression=gzip,force-compression=true"
+}
+
 # ====== Local build targets ====== #
 # Fake target containing settings common for local build targets
 target "_fake_linux-local" {
@@ -326,7 +332,7 @@ target "_fake_linux-ci" {
   # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
   secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
   cache-from = PREVENT_CACHE != "" ? [] : [linux_cache_details_branch, linux_cache_details_main]
-  cache-to   = [linux_cache_details_branch]
+  cache-to   = ["${linux_cache_details_branch},${cache_export_options}"]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
   output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
   args       = {
@@ -393,7 +399,7 @@ target "docker_x64" {
 
 target "_fake_docker_x64-ci" {
   cache-from = PREVENT_CACHE != "" ? [] : [docker_x64_cache_details_branch, docker_x64_cache_details_main]
-  cache-to   = [docker_x64_cache_details_branch]
+  cache-to   = ["${docker_x64_cache_details_branch},${cache_export_options}"]
   tags       = ["${registry_name}/${repo_name}/docker_x64:${docker_x64-image-tag}"]
   output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar"]
   args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }

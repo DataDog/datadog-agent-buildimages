@@ -35,7 +35,7 @@ fi
 
 # Cache push logic: only push to branch cache
 # Since on main CACHE_DETAILS_BRANCH == CACHE_DETAILS_MAIN, this works as expected.
-CACHE_PUSH_ARGS="--cache-to ${CACHE_DETAILS_BRANCH}"
+CACHE_PUSH_ARGS="--cache-to ${CACHE_DETAILS_BRANCH},compression=gzip,force-compression=true"
 
 # == Image push logic == #
 PUSH=""
