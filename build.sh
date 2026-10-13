@@ -86,6 +86,7 @@ ${BUILD_CONTEXT_ARGS:-} \
 ${IMAGE_VARIANT:+--target $IMAGE_VARIANT} \
 --file $DOCKERFILE $WORKDIR \
 --output type=docker,dest=./$IMAGE-$IMAGE_VERSION.tar \
+--output type=image,compression=gzip,force-compression=true \
 --metadata-file ${METADATA_FILE}
 
 # Sign the image after push
