@@ -89,8 +89,10 @@ build_linux_amd64:
   needs:
     - job: build_toolchain_x86_64_native
       artifacts: false
+      optional: true
     - job: build_toolchain_x86_64_cross_aarch64
       artifacts: false
+      optional: true
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
@@ -144,8 +146,10 @@ build_linux_arm64:
   needs:
     - job: build_toolchain_aarch64_native
       artifacts: false
+      optional: true
     - job: build_toolchain_aarch64_cross_x86_64
       artifacts: false
+      optional: true
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
