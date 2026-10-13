@@ -86,8 +86,8 @@ if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
     git config --global user.email "${GIT_AUTHOR_EMAIL}"
 fi
 
-# Credentials stay with the caller's broker in exec-based sandboxes.
-if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+# Bits Code uses its external credential broker; exec alone does not select it.
+if [[ "${DD_BITS_CODE:-0}" != "1" ]]; then
     # Configure pass
     # NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
     # homedir. This ensures we don't conflict with a forwarded gpg-agent
@@ -105,12 +105,20 @@ if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
     set-ev AWS_VAULT_BACKEND "pass"
 fi
 
-# Reset saved data/cache directories from previous runs
-dda config restore
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    for variable in SSL_CERT_FILE REQUESTS_CA_BUNDLE CURL_CA_BUNDLE GIT_SSL_CAINFO; do
+        set-ev "${variable}" /run/codegen-trust/ca-certificates.crt
+    done
+fi
+
+# Preserve workstation ordering; Bits Code disables telemetry before any DDA work.
+if [[ "${DD_BITS_CODE:-0}" != "1" ]]; then
+    dda config restore
+fi
 
 # Configure telemetry if enabled
 set +x
-if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" == "exec" ]]; then
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
     # Bits owns telemetry for its managed session; avoid CLI submissions/prompts.
     dda self telemetry disable
 elif [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
@@ -119,3 +127,8 @@ elif [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
     dda self telemetry enable
 fi
 set -x
+
+# Restore persisted settings only after disabling Bits Code telemetry.
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    dda config restore
+fi

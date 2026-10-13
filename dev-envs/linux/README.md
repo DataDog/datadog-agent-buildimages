@@ -48,28 +48,40 @@ with UID/GID 12345 failed SSH at the same chroot operation, confirming that this
 restriction also exists without the root-caller patch. No image rebuild
 or publication was required for these tests.
 
-### Managed container exec
+### Container exec and Bits Code
 
-The opt-in `DD_DEV_ENV_TRANSPORT=exec` startup mode supports DDA's container-exec
-transport. Its launcher supplies native init and a foreground `sleep infinity`
-command instead of SSH. UID/GID alignment, `/home/dd`, toolchains, and persisted
-build directories remain available. Startup skips passwordless SSH setup,
-SSH environment persistence, editor watchers, imported shell/agent histories,
-and the local pass/GPG/aws-vault credential bootstrap. It adds no capabilities. Exec startup refreshes system certificate trust so
-caller-mounted public CA certificates under `/usr/local/share/ca-certificates`
-also work for tools that sanitize their subprocess environment. TLS verification
-remains enabled. Exec mode disables container-local DDA telemetry; Bits session
-telemetry is unaffected.
-The mode marker selects startup behavior; it does not authorize SCM or cloud access.
+`DD_DEV_ENV_TRANSPORT=exec` selects container-exec startup: the launcher supplies
+init and a foreground command, and startup skips SSH/password setup, SSH environment
+persistence, editor watchers and imported shell histories. Default SSH startup is
+unchanged. This transport selection alone does not change trust or credentials.
 
-Mount the patched entrypoint and startup script to test against the published
-image without rebuilding:
+The separate, explicit `DD_BITS_CODE=1` hint selects Bits Code initialization. It
+grants no authorization. Bits Code skips local pass/GPG/aws-vault bootstrap and
+disables container-local DDA telemetry. Fully silent initialization also requires
+a DDA release that skips telemetry discovery when `DD_BITS_CODE=1`; the pinned
+test image carries DDA 0.39.1 and may emit a telemetry warning during disable. SCM and cloud authorization remain with
+the caller's broker; no host credentials, sockets, capabilities or listeners are
+added by this mode.
 
-```bash
-bash dev-envs/linux/tests/test-exec-transport.sh
-```
+Before startup, the caller must mount these public files read-only under
+`/run/codegen-trust`:
 
-The test covers root and regular UID callers, real DDA startup, mounted file
-ownership, service/credential-bootstrap absence, and stop/start persistence.
-SCM operations should use the caller's broker outside this container. The DDA
-exec launcher intentionally omits socket/credential forwarding and SSH ports.
+- `ca-certificates.crt`: PEM CA bundle for standard TLS clients.
+- `sandbox-proxy-ca.crt`: PEM proxy CA installed into system trust as root.
+- `java-cacerts`: Java truststore for the Bazel JVM.
+
+Missing, empty, unreadable or writable trust files, and malformed PEM certificates,
+stop startup with a clear error, including on restart. Java validates the Java
+truststore format when Bazel starts. TLS verification remains enabled. The image persists
+`SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE` and `GIT_SSL_CAINFO` through
+its normal shell configuration mechanism. It appends an idempotent Bazel startup
+JVM truststore option to `/etc/bazel.bazelrc`, preserving existing system settings
+and leaving repository files untouched. Launchers should also pass the standard
+CA variables for direct non-shell exec commands, which do not read shell profiles.
+
+Run `bash dev-envs/linux/tests/test-exec-transport.sh` against the published image
+without rebuilding. It covers root and regular UID startup, file ownership,
+system and shell trust, service/credential-bootstrap absence, restart, and
+negative trust-file cases. Override `AGENT_DEV_TEST_IMAGE` when needed.
+
+For Docker VMs, set `AGENT_DEV_TEST_TMPDIR` to a host directory shared with the VM.

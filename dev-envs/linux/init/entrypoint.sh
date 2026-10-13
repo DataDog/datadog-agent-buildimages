@@ -15,6 +15,16 @@ fi
 
 startup_indicator="/.started"
 
+# Trust is a Bits Code image contract, independent of the transport selection.
+# Revalidate on every start, including restarts of initialized containers.
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    /init/bits-code-trust.sh
+    export SSL_CERT_FILE=/run/codegen-trust/ca-certificates.crt
+    export REQUESTS_CA_BUNDLE="${SSL_CERT_FILE}"
+    export CURL_CA_BUNDLE="${SSL_CERT_FILE}"
+    export GIT_SSL_CAINFO="${SSL_CERT_FILE}"
+fi
+
 # On first start, realign the image-provided user to the host's UID/GID before anything
 # else runs. This must happen up front because the startup below writes host-owned
 # files, and because editors and CLIs exec in as this user as soon as the container
@@ -104,12 +114,6 @@ if [[ ! -f "${startup_indicator}" ]]; then
     # Persist environment for SSH sessions
     if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
         env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
-    fi
-
-    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" == "exec" ]]; then
-        # Include caller-mounted public CAs for tools that sanitize their environment
-        # (for example Bazel Go repository downloads). TLS verification stays enabled.
-        update-ca-certificates
     fi
 
     # Run the startup logic as the target user
