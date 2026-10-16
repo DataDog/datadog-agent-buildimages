@@ -90,16 +90,7 @@ update_datadog_agent_pr_with_final_images:
     - dd-octo-sts version
     - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
   script:
-    - source /root/.bashrc
-    - set -o pipefail
-    - >
-      for line in $(cat go.env); do
-        export $line
-      done
-    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
-    - pip install "dda==${DDA_VERSION}"
-    - dda -v self dep sync -f legacy-build
-    - export GITHUB_TOKEN=$(cat token.txt)
+    - source .gitlab/scripts/setup-go-update-env.sh
     # Look up the buildimages PR that produced this merge commit and read its source branch.
     - >-
       HEAD_REF=$(curl
@@ -176,17 +167,7 @@ update_datadog_agent_pr_with_test_images:
     - dd-octo-sts version
     - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
   script:
-    - source /root/.bashrc
-    - set -o pipefail
-    # Get the current go version from the go.env file
-    - >
-      for line in $(cat go.env); do
-        export $line
-      done
-    - export DDA_VERSION=$(grep DDA_VERSION dda.env | awk -F= '/^DDA_VERSION=/ {print $2}')
-    - pip install "dda==${DDA_VERSION}"
-    - dda -v self dep sync -f legacy-build
-    - export GITHUB_TOKEN=$(cat token.txt)
+    - source .gitlab/scripts/setup-go-update-env.sh
     # Look up the open buildimages PR for this commit and read its base branch.
     - >-
       REF=$(curl
