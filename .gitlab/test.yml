@@ -101,39 +101,11 @@ update_datadog_agent_pr_with_final_images:
   before_script: *octo_sts_token_acquire
   script:
     - source .gitlab/scripts/setup-go-update-env.sh
-    # Look up the buildimages PR that produced this merge commit and read its source branch.
-    - >-
-      HEAD_REF=$(curl
-      -sfH "Authorization: Bearer $GITHUB_TOKEN"
-      -H "Accept: application/vnd.github+json"
-      "https://api.github.com/repos/DataDog/datadog-agent-buildimages/commits/${CI_COMMIT_SHA}/pulls"
-      | jq -r --arg sha "$CI_COMMIT_SHA" '.[] | select(.merge_commit_sha == $sha) | .head.ref'
-      | head -1) ||
-      { echo "GitHub API lookup failed while resolving merged PR for commit $CI_COMMIT_SHA" >&2; exit 1; }
-    - if [[ -z "$HEAD_REF" ]]; then echo "No merged PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
-    # The datadog-agent branch mirrors the buildimages branch with a "buildimages/" prefix.
-    - BRANCH="buildimages/${HEAD_REF}"
-    # TEMPORARY: comment on the datadog-agent PR with the final tag instead of
-    # dispatching buildimages-update.yml. That workflow uses peter-evans, which
-    # force-resets the PR branch and overwrites the title on update.
-    # FOLLOW-UP: replace the comment with a proper additive PR update. The pip
-    # install dda and dda sync steps above are kept for that follow-up.
-    - FINAL_TAG="v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
-    - >-
-      PR_NUMBER=$(curl
-      -sfH "Authorization: Bearer $GITHUB_TOKEN"
-      -H "Accept: application/vnd.github+json"
-      "https://api.github.com/repos/DataDog/datadog-agent/pulls?head=DataDog:${BRANCH}&state=open"
-      | jq -r '.[0].number // empty') ||
-      { echo "GitHub API lookup failed while resolving datadog-agent PR for branch $BRANCH" >&2; exit 1; }
-    - if [[ -z "$PR_NUMBER" ]]; then echo "No open datadog-agent PR found on branch $BRANCH" >&2; exit 1; fi
-    - echo "Commenting on datadog-agent PR ${PR_NUMBER}"
-    - >-
-      curl -sfX POST
-      -H "Authorization: Bearer $GITHUB_TOKEN"
-      -H "Accept: application/vnd.github+json"
-      "https://api.github.com/repos/DataDog/datadog-agent/issues/${PR_NUMBER}/comments"
-      -d "$(jq -nc --arg tag "$FINAL_TAG" '{body: ("Buildimages merged with final tag `" + $tag + "`. Check if this PR still points at the test tag.")}')"
+    # Branch is resolved inside dda from $CI_COMMIT_SHA (--merge-sha). Appends a signed
+    # commit to the open buildimages/<ref> datadog-agent PR via createCommitOnBranch,
+    # updates the PR body, posts a bot comment.
+    # --ref is only used by --test-version; ignored here.
+    - dda run update agent-build-images "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}" --ref "$CI_COMMIT_BRANCH"
   after_script: *octo_sts_token_revoke
 
 # Creates a draft PR in datadog-agent with test-only image tags before buildimages merges.
@@ -173,3 +145,23 @@ update_datadog_agent_pr_with_test_images:
     - if [[ -z "$REF" ]]; then echo "No open PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
     - dda run update agent-build-images "$IMAGES_ID" "$BRANCH" --ref "$REF" --test-version
   after_script: *octo_sts_token_revoke
+
+# Test update_datadog_agent_pr_with_final_images job on a Test PR. To remove after testing.
+test_update_datadog_agent_pr_with_final_images:
+  extends: update_datadog_agent_pr_with_final_images
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
+  needs: []
+  variables:
+    TEST_BRANCH: ""
+  script:
+    - source .gitlab/scripts/setup-go-update-env.sh
+    - |
+      if [ -z "$TEST_BRANCH" ]; then
+        echo "ERROR: TEST_BRANCH must be set to a scratch PR branch." >&2
+        exit 1
+      fi
+    # --ref is only used by --test-version; ignored here.
+    - dda run update agent-build-images "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}" "$TEST_BRANCH" --ref "$CI_COMMIT_BRANCH"
