@@ -258,18 +258,21 @@ def _update_pr_with_final_image_tags(
         ).stdout.strip()
         app.display_info(f"Branch head OID: {head_oid[:8]}")
 
-    if additions:
-        app.display_info(f"Appending commit to {branch}...")
-        commit_url = _create_commit_on_branch(
-            token=token,
-            branch=branch,
-            expected_head_oid=head_oid,
-            message=f"Update buildimages ID to {images_id}",
-            additions=additions,
+    if not additions:
+        app.abort(
+            "Branch is already at the final tag. If this is a retry after a partial "
+            "failure, reconcile the PR body and comment manually."
         )
-        app.display_info(f"Commit appended: {commit_url}")
-    else:
-        app.display_info("dda produced no changes; branch already at final tag. Reconciling PR body/comment.")
+
+    app.display_info(f"Appending commit to {branch}...")
+    commit_url = _create_commit_on_branch(
+        token=token,
+        branch=branch,
+        expected_head_oid=head_oid,
+        message=f"Update buildimages ID to {images_id}",
+        additions=additions,
+    )
+    app.display_info(f"Commit appended: {commit_url}")
 
     app.display_info(f"Resolving open PR for {branch}...")
     pr_number = _resolve_pr_number(token=token, branch=branch)
