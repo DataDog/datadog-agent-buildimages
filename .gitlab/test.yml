@@ -19,6 +19,12 @@
   - dd-octo-sts version
   - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
 
+# Same as above but with the restricted policy that grants contents/pull_requests/issues
+# write (used by the final-images job to append the signed commit + edit the PR).
+.octo_sts_token_acquire_pr_update: &octo_sts_token_acquire_pr_update
+  - dd-octo-sts version
+  - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.update-datadog-agent-pr > token.txt
+
 # Revoke the token after usage
 .octo_sts_token_revoke: &octo_sts_token_revoke
   - dd-octo-sts revoke -t $(cat token.txt)
@@ -98,7 +104,7 @@ update_datadog_agent_pr_with_final_images:
   id_tokens:
     DDOCTOSTS_ID_TOKEN:
       aud: dd-octo-sts
-  before_script: *octo_sts_token_acquire
+  before_script: *octo_sts_token_acquire_pr_update
   script:
     - source .gitlab/scripts/setup-go-update-env.sh
     # Branch is resolved inside dda from $CI_COMMIT_SHA (--merge-sha). Appends a signed
