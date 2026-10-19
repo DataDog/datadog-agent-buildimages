@@ -1,4 +1,28 @@
 ---
+# wait for all the images to be built before pushing their IDs to datadog-agent
+.wait_for_ci_images: &wait_for_ci_images
+  - job: build_btf_gen
+  - job: build_docker_x64
+  - job: build_docker_arm64
+  - job: build_gitlab_agent_deploy
+  - job: build_multiarch_linux
+  - job: build_rpm_x64
+  - job: build_rpm_arm64
+  - job: build_rpm_armhf
+  - job: build_windows_ltsc2022_x64
+    optional: true
+  - job: build_windows_ltsc2025_x64
+    optional: true
+
+# Get a restricted-permissions token for datadog-agent repository
+.octo_sts_token_acquire: &octo_sts_token_acquire
+  - dd-octo-sts version
+  - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
+
+# Revoke the token after usage
+.octo_sts_token_revoke: &octo_sts_token_revoke
+  - dd-octo-sts revoke -t $(cat token.txt)
+
 trigger_tests:
   stage: test
   # Windows images (build_windows_ltsc2022_x64/2025_x64) are only rebuilt when
@@ -70,25 +94,11 @@ update_datadog_agent_pr_with_final_images:
   tags: ["arch:amd64"]
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: []
-  needs: # wait for all the images to be built before pushing their IDs to datadog-agent
-    - job: build_btf_gen
-    - job: build_docker_x64
-    - job: build_docker_arm64
-    - job: build_gitlab_agent_deploy
-    - job: build_multiarch_linux
-    - job: build_rpm_x64
-    - job: build_rpm_arm64
-    - job: build_rpm_armhf
-    - job: build_windows_ltsc2022_x64
-      optional: true
-    - job: build_windows_ltsc2025_x64
-      optional: true
+  needs: *wait_for_ci_images
   id_tokens:
     DDOCTOSTS_ID_TOKEN:
       aud: dd-octo-sts
-  before_script:
-    - dd-octo-sts version
-    - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
+  before_script: *octo_sts_token_acquire
   script:
     - source .gitlab/scripts/setup-go-update-env.sh
     # Look up the buildimages PR that produced this merge commit and read its source branch.
@@ -124,8 +134,7 @@ update_datadog_agent_pr_with_final_images:
       -H "Accept: application/vnd.github+json"
       "https://api.github.com/repos/DataDog/datadog-agent/issues/${PR_NUMBER}/comments"
       -d "$(jq -nc --arg tag "$FINAL_TAG" '{body: ("Buildimages merged with final tag `" + $tag + "`. Check if this PR still points at the test tag.")}')"
-  after_script:
-    - dd-octo-sts revoke -t $(cat token.txt)
+  after_script: *octo_sts_token_revoke
 
 # Creates a draft PR in datadog-agent with test-only image tags before buildimages merges.
 # Particularly useful for minor Go updates which take longer to merge.
@@ -143,29 +152,14 @@ update_datadog_agent_pr_with_test_images:
   # TODO: This is not great, we probably should not rely on _test_only images but as we don't push a `latest` tag for validated images we don't really have a choice.
   image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux$ECR_TEST_ONLY:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   dependencies: [] # do not download artifacts from other jobs
-  needs: # wait for all the images to be built before pushing their IDs to datadog-agent
-    - job: build_btf_gen
-    - job: build_docker_x64
-    - job: build_docker_arm64
-    - job: build_gitlab_agent_deploy
-    - job: build_multiarch_linux
-    - job: build_rpm_x64
-    - job: build_rpm_arm64
-    - job: build_rpm_armhf
-    - job: build_windows_ltsc2022_x64
-      optional: true
-    - job: build_windows_ltsc2025_x64
-      optional: true
+  needs: *wait_for_ci_images
   variables:
     BRANCH: buildimages/$CI_COMMIT_BRANCH
     IMAGES_ID: v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}
   id_tokens:
     DDOCTOSTS_ID_TOKEN:
       aud: dd-octo-sts
-  before_script:
-    # Get a restricted-permissions token for datadog-agent repository
-    - dd-octo-sts version
-    - dd-octo-sts token --scope DataDog/datadog-agent --policy self.buildimages-ci.push-to-datadog-agent > token.txt
+  before_script: *octo_sts_token_acquire
   script:
     - source .gitlab/scripts/setup-go-update-env.sh
     # Look up the open buildimages PR for this commit and read its base branch.
@@ -178,6 +172,4 @@ update_datadog_agent_pr_with_test_images:
       { echo "GitHub API lookup failed while resolving PR for commit $CI_COMMIT_SHA" >&2; exit 1; }
     - if [[ -z "$REF" ]]; then echo "No open PR found for commit $CI_COMMIT_SHA" >&2; exit 1; fi
     - dda run update agent-build-images "$IMAGES_ID" "$BRANCH" --ref "$REF" --test-version
-  after_script:
-    # Revoke the token after usage
-    - dd-octo-sts revoke -t $(cat token.txt)
+  after_script: *octo_sts_token_revoke
