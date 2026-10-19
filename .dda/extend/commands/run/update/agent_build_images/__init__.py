@@ -231,9 +231,11 @@ def _update_pr_with_final_image_tags(
         app.display_info(f"Current tag: {old_tag}")
 
         app.display_info(f"Rewriting via dda to final tag: {images_id}")
+        # --windows mirrors the first-dispatch (update-go hardcodes windows=True),
+        # so Windows image tags get promoted alongside Linux.
         subprocess.run(
             ["dda", "inv", "--", "-e", "buildimages.update",
-             "--tag", images_id, "--no-test"],
+             "--tag", images_id, "--no-test", "--windows"],
             cwd=repo_dir, check=True,
         )
 
@@ -241,34 +243,33 @@ def _update_pr_with_final_image_tags(
             ["git", "-C", str(repo_dir), "diff", "--name-only", "--diff-filter=AM"],
             check=True, capture_output=True, text=True,
         ).stdout.splitlines()
-        if not modified:
-            app.display_info("dda produced no changes; nothing to append.")
-            return
-        app.display_info(f"Modified files: {', '.join(modified)}")
-
-        additions = [
-            {"path": p, "contents": base64.b64encode((repo_dir / p).read_bytes()).decode()}
-            for p in modified
-        ]
+        additions: list[dict[str, str]] = []
+        if modified:
+            app.display_info(f"Modified files: {', '.join(modified)}")
+            additions = [
+                {"path": p, "contents": base64.b64encode((repo_dir / p).read_bytes()).decode()}
+                for p in modified
+            ]
+        # Use the cloned HEAD so any concurrent push to the branch triggers an
+        # expectedHeadOid mismatch instead of silently overwriting.
         head_oid = subprocess.run(
-            [
-                "git", "-C", str(repo_dir),
-                "-c", f"http.extraHeader=Authorization: Bearer {token}",
-                "ls-remote", "origin", f"refs/heads/{branch}",
-            ],
+            ["git", "-C", str(repo_dir), "rev-parse", "HEAD"],
             check=True, capture_output=True, text=True,
-        ).stdout.split()[0]
+        ).stdout.strip()
         app.display_info(f"Branch head OID: {head_oid[:8]}")
 
-    app.display_info(f"Appending commit to {branch}...")
-    commit_url = _create_commit_on_branch(
-        token=token,
-        branch=branch,
-        expected_head_oid=head_oid,
-        message=f"Update buildimages ID to {images_id}",
-        additions=additions,
-    )
-    app.display_info(f"Commit appended: {commit_url}")
+    if additions:
+        app.display_info(f"Appending commit to {branch}...")
+        commit_url = _create_commit_on_branch(
+            token=token,
+            branch=branch,
+            expected_head_oid=head_oid,
+            message=f"Update buildimages ID to {images_id}",
+            additions=additions,
+        )
+        app.display_info(f"Commit appended: {commit_url}")
+    else:
+        app.display_info("dda produced no changes; branch already at final tag. Reconciling PR body/comment.")
 
     app.display_info(f"Resolving open PR for {branch}...")
     pr_number = _resolve_pr_number(token=token, branch=branch)
