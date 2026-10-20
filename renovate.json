@@ -29,6 +29,16 @@
     },
     {
       "customType": "regex",
+      "description": "Node.js release keys used to verify the checksums of Node.js bumps",
+      "managerFilePatterns": ["/(^|/)\\.github/workflows/update-node-checksums\\.yml$/"],
+      "matchStrings": ["NODE_RELEASE_KEYS_COMMIT:\\s*(?<currentDigest>[a-f0-9]{40})"],
+      "currentValueTemplate": "main",
+      "depNameTemplate": "nodejs-release-keys",
+      "packageNameTemplate": "https://github.com/nodejs/release-keys",
+      "datasourceTemplate": "git-refs"
+    },
+    {
+      "customType": "regex",
       "fileMatch": ["docker-bake\\.hcl"],
       "matchStrings": ["DATADOG_CI_VERSION\\s*=\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""],
       "depNameTemplate": "DataDog/datadog-ci",

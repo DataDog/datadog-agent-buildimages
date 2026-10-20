@@ -23,12 +23,19 @@ jobs:
 
       - name: Update checksums
         id: update
+        env:
+          # Keyring of the active Node.js releasers, see https://github.com/nodejs/release-keys
+          NODE_RELEASE_KEYS_COMMIT: 481637f813e912c4aa3622d7964ab426c97b8e8d
         run: |
           # Version already updated by Renovate
           VERSION=$(awk -F= '/^NODE_VERSION=/ {print $2}' node.env)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
           curl -fsSL "https://nodejs.org/dist/v${VERSION}/SHASUMS256.txt" -o /tmp/SHASUMS256.txt
+          curl -fsSL "https://nodejs.org/dist/v${VERSION}/SHASUMS256.txt.sig" -o /tmp/SHASUMS256.txt.sig
+          curl -fsSL "https://raw.githubusercontent.com/nodejs/release-keys/${NODE_RELEASE_KEYS_COMMIT}/gpg-only-active-keys/pubring.kbx" -o /tmp/node-release-keys.kbx
+          gpgv --keyring /tmp/node-release-keys.kbx /tmp/SHASUMS256.txt.sig /tmp/SHASUMS256.txt
+
           SHA_LINUX_X64=$(awk -v f="node-v${VERSION}-linux-x64.tar.xz" '$2 == f {print $1}' /tmp/SHASUMS256.txt)
           SHA_LINUX_ARM64=$(awk -v f="node-v${VERSION}-linux-arm64.tar.xz" '$2 == f {print $1}' /tmp/SHASUMS256.txt)
           [[ ${#SHA_LINUX_X64} -eq 64 && ${#SHA_LINUX_ARM64} -eq 64 ]] || { echo "Missing checksums for v${VERSION}"; exit 1; }
