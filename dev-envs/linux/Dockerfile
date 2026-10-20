@@ -46,7 +46,14 @@ RUN --mount=type=bind,src=./tools.sh,dst=/mnt/tools.sh \
     --mount=type=bind,from=dotslash,target=/tools/dotslash \
     /mnt/tools.sh
 # Set up Node.js
-RUN --mount=type=bind,src=./node.sh,dst=/mnt/node.sh /mnt/node.sh
+ARG NODE_VERSION
+ARG NODE_SHA256_LINUX_X64
+ARG NODE_SHA256_LINUX_ARM64
+RUN --mount=type=bind,src=./node.sh,dst=/mnt/node.sh \
+    NODE_VERSION=${NODE_VERSION} \
+    NODE_SHA256_LINUX_X64=${NODE_SHA256_LINUX_X64} \
+    NODE_SHA256_LINUX_ARM64=${NODE_SHA256_LINUX_ARM64} \
+    /mnt/node.sh
 
 # Claude DotSlash shim is installed by tools.sh; claude.sh may run `claude mcp add` etc.
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh

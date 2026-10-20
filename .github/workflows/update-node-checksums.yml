@@ -1,0 +1,49 @@
+name: Update Node.js checksums
+
+on:
+  push:
+    branches:
+      - 'renovate/**'
+    paths:
+      - 'node.env'
+
+permissions: {}
+
+jobs:
+  update-checksums:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Update checksums
+        id: update
+        run: |
+          # Version already updated by Renovate
+          VERSION=$(awk -F= '/^NODE_VERSION=/ {print $2}' node.env)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          curl -fsSL "https://nodejs.org/dist/v${VERSION}/SHASUMS256.txt" -o /tmp/SHASUMS256.txt
+          SHA_LINUX_X64=$(awk -v f="node-v${VERSION}-linux-x64.tar.xz" '$2 == f {print $1}' /tmp/SHASUMS256.txt)
+          SHA_LINUX_ARM64=$(awk -v f="node-v${VERSION}-linux-arm64.tar.xz" '$2 == f {print $1}' /tmp/SHASUMS256.txt)
+          [[ ${#SHA_LINUX_X64} -eq 64 && ${#SHA_LINUX_ARM64} -eq 64 ]] || { echo "Missing checksums for v${VERSION}"; exit 1; }
+
+          sed -i "s/^NODE_SHA256_LINUX_X64=.*/NODE_SHA256_LINUX_X64=${SHA_LINUX_X64}/" node.env
+          sed -i "s/^NODE_SHA256_LINUX_ARM64=.*/NODE_SHA256_LINUX_ARM64=${SHA_LINUX_ARM64}/" node.env
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add node.env
+          git commit -m "Update Node.js checksums for v${{ steps.update.outputs.version }}"
+          git push

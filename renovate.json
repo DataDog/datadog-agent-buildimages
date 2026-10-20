@@ -20,6 +20,15 @@
     },
     {
       "customType": "regex",
+      "description": "Node.js for the dev env, checksums are updated by the update-node-checksums workflow",
+      "managerFilePatterns": ["/(^|/)node\\.env$/"],
+      "matchStrings": ["NODE_VERSION=(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version",
+      "versioningTemplate": "node"
+    },
+    {
+      "customType": "regex",
       "fileMatch": ["docker-bake\\.hcl"],
       "matchStrings": ["DATADOG_CI_VERSION\\s*=\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""],
       "depNameTemplate": "DataDog/datadog-ci",

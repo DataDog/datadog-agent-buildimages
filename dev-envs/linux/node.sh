@@ -4,15 +4,16 @@ set -euxo pipefail
 
 # Node.js (with npm/npx) is required by `dda review`, which runs the `find-guidelines`
 # script from DataDog/code-review-action via `npm exec`.
-NODE_VERSION=24.22.0
+# The version and digests come from node.env, see the Renovate config.
+: "${NODE_VERSION:?}" "${NODE_SHA256_LINUX_X64:?}" "${NODE_SHA256_LINUX_ARM64:?}"
 
 arch=$(uname -m)
 if [[ "$arch" == "aarch64" ]]; then
   node_arch="arm64"
-  node_digest="fef00bb4d36e1c50104a9775a10359beee98f162b4104dd12472c75065c6a143"
+  node_digest="${NODE_SHA256_LINUX_ARM64}"
 else
   node_arch="x64"
-  node_digest="cc2f601cee82d9a5a233302fe307abc600727035fd7d2c3a3571755989e95008"
+  node_digest="${NODE_SHA256_LINUX_X64}"
 fi
 
 archive="node-v${NODE_VERSION}-linux-${node_arch}.tar.xz"
