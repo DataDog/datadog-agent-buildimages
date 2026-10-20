@@ -113,9 +113,7 @@ def _get_go_upstream_sha256(version) -> OrderedDict[Platform, str]:
 
 
 def _get_msgo_sha256(version, msgo_patch) -> OrderedDict[Platform, str]:
-    return _get_expected_sha256(
-        f"{version}-{msgo_patch}", f"https://github.com/DataDog/msgo/releases/download/v{version}-{msgo_patch}"
-    )
+    return _get_expected_sha256(f"{version}-{msgo_patch}", "https://aka.ms/golang/release/latest")
 
 
 def _check_archive(app: Application, version: str, shas: OrderedDict[Platform, str], base_url: str):
@@ -214,9 +212,7 @@ def cmd(app: Application, *, version: str, msgo_patch: str, check_archive: bool)
     if check_archive:
         try:
             _check_archive(app, version, shas, "https://go.dev/dl")
-            _check_archive(
-                app, f"{version}-{msgo_patch}", msgo_shas, f"https://github.com/DataDog/msgo/releases/download/v{version}-{msgo_patch}"
-            )
+            _check_archive(app, version, msgo_shas, "https://aka.ms/golang/release/latest")
         except Exception as e:
             app.abort(str(e))
 

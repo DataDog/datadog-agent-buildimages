@@ -9,13 +9,13 @@
     "go_checksums_amd64": {
       "default": {
         "GO_SHA256": "ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5",
-        "MSGO_SHA256": "ecfe840c813fda868ac1e603f2da73c9360ff2dd387b2f8aa697c8eb76f95871"
+        "MSGO_SHA256": "595acf8ccb6506a43cb3b1d93f97d5222fd7f6ecd928eba77a751b7e1f6a6f05"
       }
     },
     "go_checksums_arm64": {
       "default": {
         "GO_SHA256": "3f4227ce7b206a513e794f1393adb473a07b46e94d18bd15d1c684bbb7319797",
-        "MSGO_SHA256": "bec40ea523e0c15cdc5bd3e9f301655e52525ce90ae0aa10216adff1a8951a0a"
+        "MSGO_SHA256": "fbb8c3db00dbd9f2d41a1bb29afc86311ae55dbe9ba9f38510cb119ec9e2f7b3"
       }
     }
   }

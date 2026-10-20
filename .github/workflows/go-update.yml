@@ -53,9 +53,9 @@ jobs:
 
       - name: Check MsGo has published the release
         run: |
-          RESPONSE=$(curl -sL "https://github.com/DataDog/msgo/releases/download/v${{ inputs.go_version }}-1.linux-amd64.tar.gz.sha256")
+          RESPONSE=$(curl -sL "https://aka.ms/golang/release/latest/go${{ inputs.go_version }}-1.linux-amd64.tar.gz.sha256")
           if ! echo "$RESPONSE" | grep -qE '^[0-9a-f]{64}'; then
-            echo "MsGo has not published go${{ inputs.go_version }}-1 yet. Check: https://github.com/DataDog/msgo/releases"
+            echo "MsGo has not published go${{ inputs.go_version }} yet. Check: https://github.com/microsoft/go/releases"
             exit 1
           fi
 
