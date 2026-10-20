@@ -45,6 +45,8 @@ RUN --mount=type=bind,src=./tools.sh,dst=/mnt/tools.sh \
     --mount=type=bind,src=./tools.txt,dst=/mnt/tools.txt \
     --mount=type=bind,from=dotslash,target=/tools/dotslash \
     /mnt/tools.sh
+# Set up Node.js
+RUN --mount=type=bind,src=./node.sh,dst=/mnt/node.sh /mnt/node.sh
 
 # Claude DotSlash shim is installed by tools.sh; claude.sh may run `claude mcp add` etc.
 RUN --mount=type=bind,src=./claude.sh,dst=/mnt/claude.sh /mnt/claude.sh
