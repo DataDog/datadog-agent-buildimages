@@ -2,20 +2,20 @@
   "variable": {
     "go_versions": {
       "default": {
-        "GO_VERSION": "1.26.9",
+        "GO_VERSION": "1.26.10",
         "MSGO_PATCH": "1"
       }
     },
     "go_checksums_amd64": {
       "default": {
-        "GO_SHA256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
-        "MSGO_SHA256": "4bec2b6e49d6b51a16010db3e8099155af3157545a7725d073e328e15173a6fa"
+        "GO_SHA256": "ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5",
+        "MSGO_SHA256": "ecfe840c813fda868ac1e603f2da73c9360ff2dd387b2f8aa697c8eb76f95871"
       }
     },
     "go_checksums_arm64": {
       "default": {
-        "GO_SHA256": "4a97373d49fcacdcf3694fea368a500b00ee3e963974f3e7514132717632f052",
-        "MSGO_SHA256": "9af7a777e26da9a1f032fd8efaff838d8971085c47900c3bea3ecd4d83cceb9a"
+        "GO_SHA256": "3f4227ce7b206a513e794f1393adb473a07b46e94d18bd15d1c684bbb7319797",
+        "MSGO_SHA256": "bec40ea523e0c15cdc5bd3e9f301655e52525ce90ae0aa10216adff1a8951a0a"
       }
     }
   }
