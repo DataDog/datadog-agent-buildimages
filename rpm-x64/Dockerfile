@@ -27,6 +27,7 @@ ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
 ARG BINUTILS_VERSION="2.39"
 ARG BINUTILS_SHA256="d12ea6f239f1ffe3533ea11ad6e224ffcb89eb5d01bbea589e9158780fa11f10"
+ARG RUBY_VERSION=2.6.6
 ARG BUNDLER_VERSION=2.4.20
 ARG DATADOG_CI_VERSION=5.19.0
 ARG DATADOG_CI_SHA="aa1a3b535f41ca58096c5c843b19f13bbad9018fdb6c86b92457ecdff7d5b364"
@@ -75,7 +76,7 @@ RUN yum -y install \
 
 COPY --from=CERT_GETTER /cacert.pem /etc/pki/tls/certs/ca-bundle.crt
 
-# We install our own ruby, let's remove the system one. It made rvm fail to build ruby for some reason
+# We install our own ruby, let's remove the system one so it cannot be picked up by mistake
 RUN yum remove -y ruby
 
 
@@ -134,19 +135,18 @@ RUN --mount=type=bind,src=./setup/python.sh,dst=/mnt/python.sh \
 ENV PATH "${CONDA_PATH}/condabin:${PATH}"
 ENV PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}:${CONDA_PATH}/lib/pkgconfig"
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
-    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version 1.29.12 \
-    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.6 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+# Ruby
+# Ruby's build dependencies
+RUN yum -y install libyaml-devel libffi-devel readline-devel gdbm-devel ncurses-devel \
+    && yum clean all
+# Build OpenSSL inside the Ruby prefix: PKG_CONFIG_LIBDIR points at Conda only, so ruby-build
+# would otherwise pick up Conda's OpenSSL and link it without an rpath, leaving a Ruby that
+# cannot load its own openssl extension.
+# Run through a login shell so that the build uses devtoolset-11, like the rest of the image
+RUN --mount=type=bind,src=./setup/ruby.sh,dst=/mnt/ruby.sh \
+    RUBY_VERSION=$RUBY_VERSION BUNDLER_VERSION=$BUNDLER_VERSION RUBY_BUILD_VENDOR_OPENSSL=1 \
+    /bin/bash -l -c /mnt/ruby.sh
+ENV PATH "/usr/local/ruby/bin:${PATH}"
 
 # Upgrade binutils
 RUN curl -sL -O "https://mirrors.ibiblio.org/pub/mirrors/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz" \
