@@ -22,6 +22,7 @@ ARG RUSTUP_VERSION=1.26.0
 ARG RUSTUP_SHA256="f21c44b01678c645d8fbba1e55e4180a01ac5af2d38bcbd14aa665e0d96ed69a"
 ARG RUSTUP_ARCH="armv7-unknown-linux-gnueabihf"
 ARG DD_TARGET_ARCH=armhf
+ARG RUBY_VERSION=2.7.2
 ARG BUNDLER_VERSION=2.4.20
 ARG GIT_VERSION=2.33.8
 ARG GIT_SHA256="eafd10da9fdf86be0a79beb67c3537eead114f91836c685d5b9c969c961516ae"
@@ -121,19 +122,14 @@ RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
         rm -rf ./fakearmv7l ; \
         export LD_PRELOAD="/usr/local/lib/libfakearmv7l.so"
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
-    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version 1.29.12 \
-    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install --with-arch='armv7-a' -C '--build' -C 'arm-linux-gnueabihf' 2.7 && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+# Ruby
+# Ruby's build dependencies
+RUN yum -y install libyaml-devel libffi-devel readline-devel gdbm-devel ncurses-devel \
+    && yum clean all
+RUN --mount=type=bind,src=./setup/ruby.sh,dst=/mnt/ruby.sh \
+    RUBY_VERSION=$RUBY_VERSION \
+    RUBY_CONFIGURE_OPTS="--with-arch=armv7-a --build=arm-linux-gnueabihf" /mnt/ruby.sh
+ENV PATH "/usr/local/ruby/bin:${PATH}"
 
 # Rust is needed to compile the SDS library
 RUN curl -sSL -o rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}/rustup-init \
