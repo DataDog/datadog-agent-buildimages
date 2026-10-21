@@ -38,9 +38,11 @@ This is the tools that are available in every image (excluding those installed b
 
 Each of the following subcommands are available via `git <subcommand> ...` in every image:
 
-- `dd-clone` - Performs a shallow clone [^1] of a Datadog repository to the proper managed location. The first argument is the repository name and a second optional argument is the branch name. Example invocations:
+- `dd-clone` - Performs a shallow clone [^1] of a Datadog repository to the proper managed location. The first argument is the repository name, optionally qualified by its GitHub owner, and a second optional argument is the branch name. Example invocations:
     - `git dd-clone datadog-agent`
     - `git dd-clone datadog-agent user/feature`
+    - `git dd-clone ddoghq/repository`
+    - `git dd-clone ddoghq-sandbox/experiment`
 - `dd-switch` - Emulates the behavior of `git switch` but smart enough to handle shallow clones. The branch name is the only argument.
 
 [Delta](https://github.com/dandavison/delta) is the default pager which provides, as an example, syntax highlighting for `git diff` and `git log` commands.
@@ -48,6 +50,12 @@ Each of the following subcommands are available via `git <subcommand> ...` in ev
 ## Repositories
 
 Every image assumes repositories will be cloned to `~/repos`. The `dd-clone` Git extension will clone repositories to this location and `gfold` is pre-configured to look for repositories in this location.
+
+Mounted repositories owned by `ddoghq` or any `ddoghq-*` organization must store their `origin` as a canonical `https://github.com/<owner>/<repository>` URL. Git keeps that URL for identity selection while the developer environment transparently uses SSH for network operations.
+
+Developer environments launched by `dda` select forwarded SSH-agent keys through conventional public files on the host: `~/.ssh/dd.pub` for personal GitHub access and `~/.ssh/ddoghq.pub` for `ddoghq` and every `ddoghq-*` organization. All enterprise organizations share the enterprise authentication key and Git signing profile. Organization-specific selector files such as `~/.ssh/ddoghq-sandbox.pub` have no effect. The files contain public keys only; private keys remain in the forwarded host agent.
+
+SSH identity configuration is generated when an environment is created. Recreate the environment after changing its selected identities or enabling enterprise access.
 
 ## Shells
 

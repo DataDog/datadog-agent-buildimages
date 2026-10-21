@@ -12,6 +12,14 @@ PS4='+[$(date +%T.%3N)] '
 # New files should be writable by later build-shared users on persisted volumes.
 cp -r --update=none --no-preserve=mode,ownership "${DD_DEFAULT_CONFIG_ROOT}/." "${XDG_CONFIG_HOME}/"
 
+# Seed the generated SSH selection once because bind mounts do not satisfy OpenSSH permission checks.
+shared_ssh_config="${DD_SHARED_DIR}/git-ssh/ssh_config"
+if [[ -f "${shared_ssh_config}" ]]; then
+    mkdir -p "${HOME}/.ssh"
+    cp --update=none --no-preserve=mode,ownership "${shared_ssh_config}" "${HOME}/.ssh/dda_config"
+    chmod 0600 "${HOME}/.ssh/dda_config"
+fi
+
 # Persist history files
 for shell in sh bash zsh; do
     history_file="${DD_SHARED_DIR}/shell/${shell}/.${shell}_history"
@@ -75,14 +83,6 @@ fi
 
 # Configure gfold
 gfold -d classic "${DD_REPO_ROOT}" --dry-run > "${XDG_CONFIG_HOME}/gfold.toml"
-
-# Configure Git to use the user's name and email
-if [[ -n "${GIT_AUTHOR_NAME:-}" ]]; then
-    git config --global user.name "${GIT_AUTHOR_NAME}"
-fi
-if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
-    git config --global user.email "${GIT_AUTHOR_EMAIL}"
-fi
 
 # Configure pass
 # NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
