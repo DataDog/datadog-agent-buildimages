@@ -299,6 +299,15 @@ RUN curl -LO https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSI
 # Install dd-octo-sts
 COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3 /usr/local/bin/dd-octo-sts /usr/local/bin/dd-octo-sts
 
+# Install authanywhere for infra token management (used by `inv auth.gitlab` to mint
+# short-lived GitLab API tokens, replacing the expired static scheduler token in SSM)
+ADD --checksum=sha256:05d14b25e4607cc9e14867f2a0f38774869ae609eec890168e57de9a1b428e37 "https://binaries.ddbuild.io/dd-source/authanywhere/v0.0.2/authanywhere-tar.tar.gz" /tmp/authanywhere/authanywhere-tar.tar.gz
+RUN cd /tmp/authanywhere \
+    && tar -xf authanywhere-tar.tar.gz authanywhere-linux-amd64 \
+    && mv authanywhere-linux-amd64 /usr/local/bin/authanywhere \
+    && chmod +x /usr/local/bin/authanywhere \
+    && rm -rf /tmp/authanywhere
+
 # create the agent build folder within $GOPATH
 RUN mkdir -p /go/src/github.com/DataDog/datadog-agent
 
