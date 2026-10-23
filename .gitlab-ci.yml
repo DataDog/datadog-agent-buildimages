@@ -6,7 +6,6 @@ include:
   - .gitlab/test.yml
   - .gitlab/release.yml
   - .gitlab/notify.yml
-  - .gitlab/check_emudhra.yml
 
 stages:
   - setup
