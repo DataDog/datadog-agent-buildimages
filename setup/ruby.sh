@@ -9,7 +9,16 @@ sha256=9e683b1d8efe337ae27c31f995641e22761af603bb0f783d22c5d2f99252758c
 RUBY_PATH="${RUBY_PATH:-/usr/local/ruby}"
 
 tmp_dir=$(mktemp -d)
-trap 'rm -rf -- "$tmp_dir"' EXIT
+# On failure ruby-build only prints the path of its log file, which disappears along with
+# the build step, so show the end of it before exiting.
+cleanup() {
+    local status=$?
+    if [[ ${status} -ne 0 ]]; then
+        tail -n 50 /tmp/ruby-build.*.log 2>/dev/null || true
+    fi
+    rm -rf -- "${tmp_dir}"
+}
+trap cleanup EXIT
 
 echo "Installing ruby-build $version..."
 curl -fsSL -o "$tmp_dir/ruby-build.tar.gz" "https://github.com/rbenv/ruby-build/archive/refs/tags/v$version.tar.gz"
