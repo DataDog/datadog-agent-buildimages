@@ -126,9 +126,16 @@ RUN git clone --depth 1 https://github.com/DataDog/fakearmv7l ; \
 # Ruby's build dependencies
 RUN yum -y install libyaml-devel libffi-devel readline-devel gdbm-devel ncurses-devel \
     && yum clean all
+# The architecture goes in the compile flags, like `rvm install --with-arch` did: Ruby only
+# understands a --with-arch configure option for Apple multi-architecture binaries and errors
+# out with "unknown target architecture" for anything else. It has to go in Ruby's own cflags
+# and cxxflags variables rather than in CFLAGS and CXXFLAGS, which would replace the default
+# optimization, debug and warning flags. Ruby's LDFLAGS already expands CFLAGS, so the flag
+# reaches link lines as well.
 RUN --mount=type=bind,src=./setup/ruby.sh,dst=/mnt/ruby.sh \
     RUBY_VERSION=$RUBY_VERSION \
-    RUBY_CONFIGURE_OPTS="--with-arch=armv7-a --build=arm-linux-gnueabihf" /mnt/ruby.sh
+    RUBY_CONFIGURE_OPTS="--build=arm-linux-gnueabihf cflags=-march=armv7-a cxxflags=-march=armv7-a" \
+    /mnt/ruby.sh
 ENV PATH "/usr/local/ruby/bin:${PATH}"
 
 # Rust is needed to compile the SDS library

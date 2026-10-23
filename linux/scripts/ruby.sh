@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+# On failure ruby-build only prints the path of its log file, which disappears along with
+# the build step, so show the end of it before exiting.
+trap 'status=$?; [[ ${status} -eq 0 ]] || tail -n 50 /tmp/ruby-build.*.log 2>/dev/null || true' EXIT
+
 mkdir ruby-build
 tar -C ruby-build --strip-components=1 -xzf ruby-build.tar.gz
 PREFIX=/usr/local ./ruby-build/install.sh
