@@ -46,6 +46,9 @@ RUN --mount=type=bind,source=/windows/helpers/phase4,dst=/mnt/windows/helpers/ph
 COPY ./windows/entrypoint.bat /entrypoint.bat
 COPY ./windows/helpers/aws_networking.ps1 /aws_networking.ps1
 RUN /mnt/windows/helpers/update_root_certs.ps1
+# Windows Update still ships roots that chain to the compromised eMudhra intermediates.
+RUN --mount=type=bind,source=/windows/helpers/distrusted_certs,dst=/mnt/windows/helpers/distrusted_certs `
+    /mnt/windows/helpers/distrust_certs.ps1 -CertsDir /mnt/windows/helpers/distrusted_certs
 WORKDIR c:/
 RUN Remove-Item -Recurse -Verbose c:/mnt
 ENTRYPOINT ["/entrypoint.bat"]
