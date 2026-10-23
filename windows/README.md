@@ -8,6 +8,7 @@ container which will be used to build Datadog Agent for Windows.
 [install-all.ps1](install-all.ps1) is the script the [Dockerfile](Dockerfile) runs to
 build the container.
 
-Run from this directory without `-TargetContainer`, it installs the same tools on the
-local machine, along with the `DDDeveloper` PowerShell module whose `Use-BuildEnv`
-command enables them in the current shell.
+Run from this directory in an elevated Windows PowerShell 5.1 session without
+`-TargetContainer`, it installs the same tools on the local machine, along with the
+`DDDeveloper` PowerShell module whose `Use-BuildEnv` command enables them in the current
+shell.
