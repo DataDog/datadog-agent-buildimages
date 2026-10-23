@@ -49,6 +49,7 @@ RUN /mnt/windows/helpers/update_root_certs.ps1
 # Windows Update still ships roots that chain to the compromised eMudhra intermediates.
 RUN --mount=type=bind,source=/windows/helpers/distrusted_certs,dst=/mnt/windows/helpers/distrusted_certs `
     /mnt/windows/helpers/distrust_certs.ps1 -CertsDir /mnt/windows/helpers/distrusted_certs
+RUN /mnt/windows/helpers/remove_roots.ps1
 WORKDIR c:/
 RUN Remove-Item -Recurse -Verbose c:/mnt
 ENTRYPOINT ["/entrypoint.bat"]
