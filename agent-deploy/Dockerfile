@@ -54,8 +54,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     gnupg1 \
     libffi-dev \
+    libgdbm-dev \
     libgmp-dev \
     libssl-dev \
+    libyaml-dev \
     procps \
     python-boto \
     python-deltarpm \
@@ -154,19 +156,13 @@ RUN git clone https://github.com/chocolatey/choco.git \
 
 ENV ChocolateyInstall=/opt/chocolatey
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
+# Ruby
 COPY ./agent-deploy/Gemfile ./agent-deploy/Gemfile.lock ./
 
-RUN gpg --import --no-tty /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL https://get.rvm.io | bash -s stable --version latest-1.29
-RUN /bin/bash -l -c "rvm install ${RUBY_VERSION}"
-RUN /bin/bash -l -c "rvm --default use ${RUBY_VERSION} && \
-    gem install bundler --version 1.17.3 && \
-    bundle install"
-RUN /bin/bash -l -c "rvm alias create default ${RUBY_VERSION}"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+# BUNDLER_VERSION is overridden here because Gemfile.lock was bundled with 1.17.3
+RUN --mount=type=bind,src=./setup/ruby.sh,dst=/mnt/ruby.sh BUNDLER_VERSION=1.17.3 /mnt/ruby.sh
+ENV PATH="/usr/local/ruby/bin:${PATH}"
+RUN bundle install
 
 # s3cmd
 RUN cd opt && curl -sSL https://downloads.sourceforge.net/project/s3tools/s3cmd/1.5.2/s3cmd-1.5.2.tar.gz > s3cmd-1.5.2.tar.gz && \
