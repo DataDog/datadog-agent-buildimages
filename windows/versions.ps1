@@ -66,8 +66,8 @@ $SoftwareTable = @{
     "CODECOV_SHA256"="6b95584fbb252b721b73ddfe970d715628879543d119f1d2ed08b073155f7d06";
     "AWSCLI_VERSION"="2.36.49";
     "AWSCLI_SHA256"="7dc1fa5b9a436dc721210511eb49ae5bed29b500af6c7f75b23a03a24ba52f29";
-    "BAZELISK_VERSION"="1.28.1";
-    "BAZELISK_SHA256"="b9d65a1f7c2d7af885a96a4fd5aa36b40fb41816d30944390569eef908bdc954";
+    "BAZELISK_VERSION"="1.30.0";
+    "BAZELISK_SHA256"="5d14a31e9d8a363c48ba1900dbd56764d730835232eb0d113cce255856ffe3ef";
     "DOTSLASH_VERSION"="0.5.9";
     "DOTSLASH_SHA256"="6e3db0f3d51dc74b2bfc8493375eb229f0efbcd83542bed7330fc79a52333a80";
     # the CI ID client is actually downloaded in the CI job before running the "docker build" command
