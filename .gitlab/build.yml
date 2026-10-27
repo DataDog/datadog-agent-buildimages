@@ -58,6 +58,7 @@
   timeout: 45m
 
 .build_bake:
+  retry: 1 # BuildKit EOF and registry failures have recovered on rerun.
   id_tokens:
     DD_STS_OIDC_TOKEN:
       aud: dd-sts
@@ -176,6 +177,7 @@ build_docker_arm64:
     IMAGE: docker_arm64
 
 .build_multiarch:
+  retry: 1 # Retry transient manifest and registry failures once.
   extends: [.no_schedule, .x64]
   stage: build
   id_tokens:

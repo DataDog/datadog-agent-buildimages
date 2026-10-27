@@ -78,3 +78,47 @@ inv -e pipeline.update-buildimages -i <new image ID> --branch-name <your working
 
 ## Building on Windows
 See Building on Windows [README.md](windows/README.md)
+
+## Pull request automation
+
+[Code review](.github/workflows/code-review.yml) uses Codex through
+[DataDog/code-review-action](https://github.com/DataDog/code-review-action).
+It reviews same-repository, non-bot PRs when opened, reopened, or marked ready
+for review, targeting `main` or a release branch. A draft PR labeled
+`no-draft-review` skips automatic review. Collaborators with write access can
+also comment `/dd-review` on a PR. Reviews are comments only. Optional
+`**/codereview_guideline.md` files are read from the default branch.
+Telemetry is disabled; enabling it requires a buildimages-specific dd-sts policy.
+
+Codex is the default provider. Use `/dd-review claude` or `/dd-review gemini`
+to select another provider for a review; configure the corresponding API key below.
+
+[Slapr](.github/workflows/slapr.yml) adds review and merge/close reactions to
+existing Slack messages containing the PR URL for same-repository PRs targeting
+`main`. It uses the owner-team review channels in
+[the review map](.github/github_slack_map.yaml), copied from `datadog-agent`,
+and falls back to the default channel. Keep that map aligned when owners or
+review channels change.
+
+Configure these in this repository's **Settings → Secrets and variables → Actions**:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Secret | `OPENAI_API_KEY` | API key for the Codex review provider. |
+| Secret | `ANTHROPIC_API_KEY` | API key for the optional Claude review provider. |
+| Secret | `GEMINI_API_KEY` | API key for the optional Gemini review provider. |
+| Secret | `SLACK_SLAPR_BOT_TOKEN` | Slack bot OAuth token for slapr. |
+| Variable | `DEFAULT_CHANNEL_ID` | Fallback review channel ID (`C06P2KX149M` for `#agent-devx-reviews`). |
+| Variable | `SLAPR_BOT_ID` | Slack user ID of the bot associated with the Slack token. |
+
+The Slack app needs `channels:history`, `channels:read`, `reactions:read`, and
+`reactions:write`; invite the bot to the mapped review channels and the fallback
+channel. The map uses public channels. The existing Agent slapr bot can be reused
+if its app owners grant access and it has joined these channels.
+
+GitHub access uses the checked-in
+[Octo STS policy](.github/chainguard/self.slapr.read-members.sts.yaml), so no GitHub
+PAT is needed. The policy must be on the default branch and the Octo STS GitHub
+App must have access to this repository before slapr can run. The `/dd-review`
+comment trigger also becomes available after its workflow reaches the default
+branch.
