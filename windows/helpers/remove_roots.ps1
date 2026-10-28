@@ -28,3 +28,36 @@ foreach ($store in 'Root', 'AuthRoot') {
         }
     }
 }
+
+# The JDK verifies TLS against its own truststore, not the Windows certificate stores.
+if (-not $Env:JAVA_HOME) {
+    Write-Host "[Error]: JAVA_HOME is not set, cannot clean the JDK truststore"
+    exit 1
+}
+$keytool = Join-Path $Env:JAVA_HOME 'bin\keytool.exe'
+$keystore = @('-cacerts', '-storepass', 'changeit')
+
+function Get-DistrustedJavaAliases {
+    $aliases = @()
+    $alias = $null
+    foreach ($line in (& $keytool -list -v @keystore)) {
+        if ($line -match '^Alias name: (.+)$') {
+            $alias = $Matches[1]
+        } elseif ($line -match '^\s*SHA1: ([0-9A-F:]+)$' -and $roots.Contains(($Matches[1] -replace ':', ''))) {
+            $aliases += $alias
+        }
+    }
+    if ($LASTEXITCODE -ne 0) { throw "keytool -list returned $LASTEXITCODE" }
+    return $aliases
+}
+
+foreach ($alias in (Get-DistrustedJavaAliases)) {
+    & $keytool -delete -noprompt -alias $alias @keystore
+    if ($LASTEXITCODE -ne 0) { throw "keytool -delete returned $LASTEXITCODE" }
+    Write-Host "Removed $alias from the JDK truststore"
+}
+$remaining = Get-DistrustedJavaAliases
+if ($remaining) {
+    Write-Host "[Error]: $($remaining -join ', ') still in the JDK truststore"
+    exit 1
+}
