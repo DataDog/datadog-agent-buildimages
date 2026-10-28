@@ -92,9 +92,15 @@ foreach ($pass in 1..2) {
     }
 }
 
-pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc mingw-w64-x86_64-tools-git
+pacman -S --noconfirm autoconf autogen automake diffutils file gawk grep libtool m4 make patch pkg-config sed texinfo texinfo-tex wget mingw-w64-x86_64-gcc
 If ($lastExitCode -ne "0") {
     throw "pacman -S returned $lastExitCode"
+}
+
+# MSYS2 no longer builds mingw-w64-tools (which provides gendef) for MINGW64, so install its last MINGW64 build directly.
+pacman -U --noconfirm "https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-tools-$($Env:MSYS_MINGW64_TOOLS_VERSION)-any.pkg.tar.zst"
+If ($lastExitCode -ne "0") {
+    throw "pacman -U returned $lastExitCode"
 }
 
 Remove-Item c:\*.zst
