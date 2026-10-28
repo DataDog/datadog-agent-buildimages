@@ -37,8 +37,8 @@ Get-Content $packages_file | Where-Object { $_.Trim() -ne '' } | Where-Object { 
 }
 
 # Python 3
-$py3getpip = "https://raw.githubusercontent.com/pypa/get-pip/66d8a0f637083e2c3ddffc0cb1e65ce126afb856/public/get-pip.py"
-$py3getpipsha256 = "6fb7b781206356f45ad79efbb19322caa6c2a5ad39092d0d44d0fec94117e118"
+$py3getpip = "https://raw.githubusercontent.com/pypa/get-pip/fa4e90301bf000c36309f3ad79c3ac720b55d6df/public/get-pip.py"
+$py3getpipsha256 = "f4448a01e3ab2914c65f4ca59d4cacba6b2dbde19a483fbac46587f8bbaff424"
 $out = Join-Path ([IO.Path]::GetTempPath()) 'get-pip.py'
 Get-RemoteFile -LocalFile $out -RemoteFile $py3getpip -VerifyHash $py3getpipsha256
 & "$py3Target\python" "$out" pip==${Env:DD_PIP_VERSION_PY3}
