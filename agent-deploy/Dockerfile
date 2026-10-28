@@ -229,6 +229,8 @@ RUN chmod -R o-w /usr/local/share/ca-certificates \
     && sed -i -E 's#^(mozilla/(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.crt)$#!\1#' /etc/ca-certificates.conf \
     && update-ca-certificates --fresh \
     && ! ls /etc/ssl/certs | grep -qE '^(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.pem$'
+# botocore otherwise verifies against certifi or its own vendored bundle, which still trust those roots (Python 2 boto3 can't be updated).
+ENV AWS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh
