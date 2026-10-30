@@ -224,8 +224,13 @@ COPY --from=registry.ddbuild.io/dd-octo-sts:v1.9.3@sha256:f8412df42db2e1879182c8
 # Install Datadog private CA certificates
 # (to be able to use services via Fabric)
 COPY --from=registry.ddbuild.io/images/datadog-ca-certs:standard /certs/ /usr/local/share/ca-certificates/
+# Ubuntu 18.04's ca-certificates still ships untrusted emSign/eMudhra roots and won't be updated - manually blacklist (#incident-62343).
 RUN chmod -R o-w /usr/local/share/ca-certificates \
-    && update-ca-certificates
+    && sed -i -E 's#^(mozilla/(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.crt)$#!\1#' /etc/ca-certificates.conf \
+    && update-ca-certificates --fresh \
+    && ! ls /etc/ssl/certs | grep -qE '^(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.pem$'
+# botocore otherwise verifies against certifi or its own vendored bundle, which still trust those roots (Python 2 boto3 can't be updated).
+ENV AWS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 # Entrypoint
 COPY ./agent-deploy/entrypoint.sh /entrypoint.sh

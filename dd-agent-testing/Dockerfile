@@ -42,6 +42,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   && echo "${DATADOG_CI_SHA} /usr/local/bin/datadog-ci" | sha256sum --check \
   && chmod +x /usr/local/bin/datadog-ci
 
+# Debian 11's ca-certificates still ships untrusted emSign/eMudhra roots and won't be updated - manually blacklist (#incident-62343).
+RUN sed -i -E 's#^(mozilla/(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.crt)$#!\1#' /etc/ca-certificates.conf \
+  && update-ca-certificates --fresh \
+  && ! ls /etc/ssl/certs | grep -qE '^(emSign_(ECC_Root_CA_-_G3|ECC_Root_CA_-_C3|Root_CA_-_C1)|Comodo_AAA_Services_root)\.pem$'
+
 # Python install
 ENV PYTHONUTF8 1
 ENV PYENV_ROOT="/.pyenv"
