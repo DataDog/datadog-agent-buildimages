@@ -2,8 +2,8 @@ ARG BASE_IMAGE_REGISTRY=docker.io
 FROM ${BASE_IMAGE_REGISTRY}/ruby:2.7.8
 
 ENV BUNDLER_VERSION=1.17.3
-ARG DATADOG_CI_VERSION=5.19.0
-ARG DATADOG_CI_SHA=aa1a3b535f41ca58096c5c843b19f13bbad9018fdb6c86b92457ecdff7d5b364
+ARG DATADOG_CI_VERSION=5.26.1
+ARG DATADOG_CI_SHA=6bfead2585e062a4db0fb6f58cc8c34c26f3333e02e68931e18aeaacf141efdb
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
 ARG PYTHON_VERSION=3.12.6
@@ -53,7 +53,10 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv global ${PYTHON_VERSION}
 
 # Python
-RUN pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
+RUN --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    . /mnt/python-packages-versions.txt \
+ && pip3 install pip==${DD_PIP_VERSION_PY3} \
+ && pip3 install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
  && dda -v self dep sync -f legacy-build \
  && pyenv rehash
 

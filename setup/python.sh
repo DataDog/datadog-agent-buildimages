@@ -60,6 +60,7 @@ case $DD_TARGET_ARCH in
     rm -rf Python-$PY3_VERSION Python-$PY3_VERSION.tgz
 
     export OPENSSL_DIR=/opt/openssl
+    python3 -m pip install pip==${DD_PIP_VERSION_PY3}
     # setuptools no longer packaged by default so we need to install it manually.
     python3 -m pip install setuptools==$DD_SETUPTOOLS_VERSION_PY3
 
