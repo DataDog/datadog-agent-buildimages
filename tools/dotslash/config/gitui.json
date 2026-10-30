@@ -2,40 +2,40 @@
   "__extra_metadata": {
     "platforms": {
       "linux-aarch64": {
-        "uncompressed_size": 10560424
+        "uncompressed_size": 13272192
       },
       "linux-x86_64": {
-        "uncompressed_size": 11927552
+        "uncompressed_size": 14899808
       }
     }
   },
   "name": "gitui",
   "platforms": {
     "linux-aarch64": {
-      "digest": "73ca74dd68ea6e4a4dc328c287c68e5e5b97883b68d3722ea042d06607385636",
+      "digest": "e38feb6ee2cd56cd8b64fbf956473857be74ea3e4e6bb15cfe7e12cba1f3b73c",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "gitui",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/extrawurst/gitui/releases/download/v0.26.3/gitui-linux-aarch64.tar.gz"
+          "url": "https://github.com/extrawurst/gitui/releases/download/v0.28.1/gitui-linux-aarch64.tar.gz"
         }
       ],
-      "size": 5474533
+      "size": 6987794
     },
     "linux-x86_64": {
-      "digest": "c20eb7681418c8133382793f183cfc67f23fabad3741f284af0c774039cc2704",
+      "digest": "a89df61fe80adfedd9e3f683249648ca6b76d7b45070b4be69ae4cc9fd83e518",
       "format": "tar.gz",
       "hash": "blake3",
       "path": "gitui",
       "providers": [
         {
           "type": "http",
-          "url": "https://github.com/extrawurst/gitui/releases/download/v0.26.3/gitui-linux-x86_64.tar.gz"
+          "url": "https://github.com/extrawurst/gitui/releases/download/v0.28.1/gitui-linux-x86_64.tar.gz"
         }
       ],
-      "size": 5312821
+      "size": 6840775
     }
   }
 }
