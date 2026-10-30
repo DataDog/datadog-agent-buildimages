@@ -165,25 +165,22 @@ ARG DDA_NO_DYNAMIC_DEPS=1
 ADD https://github.com/DataDog/datadog-agent-dev.git#${DDA_VERSION} /tmp/dda
 RUN --mount=type=bind,src=./linux/scripts/dda.sh,dst=/mnt/dda.sh cd /tmp/dda && /mnt/dda.sh && rm -rf /tmp/dda
 
-FROM python_builder AS rvm_builder
-# Somehow building RVM needs some OpenSSL stuff from the python_builder stage
+FROM build_base AS ruby_builder
+# Ruby, built from source by ruby-build into its own prefix
 
-ARG RVM_VERSION
+ARG RUBY_BUILD_VERSION
+ARG RUBY_BUILD_SHA256
+ARG RUBY_VERSION
 ARG BUNDLER_VERSION
-ARG RVM_SHA256
 ARG DD_BUILD_INSTALL_ROOT
-ARG DD_BUILD_CACHE_ROOT
-ENV RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
-ENV RUBY_GEM_CACHE_DIR="${DD_BUILD_CACHE_ROOT}/ruby/gems"
+ENV RUBY_PATH="${DD_BUILD_INSTALL_ROOT}/ruby"
+ENV RUBY_VERSION=$RUBY_VERSION
 ENV BUNDLER_VERSION=$BUNDLER_VERSION
 
-ADD --checksum=sha256:${RVM_SHA256} \
-    "https://raw.githubusercontent.com/rvm/rvm/${RVM_VERSION}/binscripts/rvm-installer" \
-    /tmp/rvm/get-rvm.sh
-COPY ./rvm/gpg-keys /gpg-keys
-# TODO: Maybe deprecate the get-rvm.sh script and manually download and extract a tar.
-# The script we download does a lot of extra checking that we don't need in a Docker build.
-RUN --mount=type=bind,src=./linux/scripts/rvm.sh,dst=/mnt/rvm.sh cd /tmp/rvm && /mnt/rvm.sh && rm -rf /tmp/rvm
+ADD --checksum=sha256:${RUBY_BUILD_SHA256} \
+    "https://github.com/rbenv/ruby-build/archive/refs/tags/v${RUBY_BUILD_VERSION}.tar.gz" \
+    /tmp/ruby/ruby-build.tar.gz
+RUN --mount=type=bind,src=./linux/scripts/ruby.sh,dst=/mnt/ruby.sh cd /tmp/ruby && /mnt/ruby.sh && rm -rf /tmp/ruby
 
 FROM extraction_base AS mold_builder
 # Mold linker
@@ -319,7 +316,7 @@ ENV RUSTUP_HOME="${DD_BUILD_INSTALL_ROOT}/rustup"
 # ^ but these are not used directly at runtime
 ARG OSXCROSS_PATH="${DD_BUILD_INSTALL_ROOT}/osxcross" \
     CONDA_PATH="${DD_BUILD_INSTALL_ROOT}/conda" \
-    RVM_PATH="${DD_BUILD_INSTALL_ROOT}/rvm"
+    RUBY_PATH="${DD_BUILD_INSTALL_ROOT}/ruby"
 
 # Cache directories - some of these may look redundant on Linux where most tools honor $XDG_CACHE_HOME, but we make them
 # explicit here for eventual parity with the Windows build image where XDG_CACHE_HOME isn't conventional
@@ -507,13 +504,14 @@ RUN --mount=type=bind,from=python_builder,source=${CONDA_PATH},target=/mnt/conda
     cp -a /mnt/conda "${CONDA_PATH}" && \
     /mnt/fix-shared-perms.sh "${CONDA_PATH}"
 
-# TODO: Decouple RVM from the Python stage, it currently depends on OpenSSL from Conda
-# RVM
-COPY --from=rvm_builder /etc/rvmrc /etc/rvmrc
-RUN --mount=type=bind,from=rvm_builder,source=${RVM_PATH},target=/mnt/rvm \
+# Ruby
+RUN --mount=type=bind,from=ruby_builder,source=${RUBY_PATH},target=/mnt/ruby \
     --mount=type=bind,src=./linux/scripts/fix-shared-perms.sh,dst=/mnt/fix-shared-perms.sh \
-    cp -a /mnt/rvm "${RVM_PATH}" && \
-    /mnt/fix-shared-perms.sh "${RVM_PATH}"
+    cp -a /mnt/ruby "${RUBY_PATH}" && \
+    /mnt/fix-shared-perms.sh "${RUBY_PATH}"
+# Check that Ruby and its extensions still find their shared libraries in this image
+RUN "${RUBY_PATH}/bin/ruby" -ropenssl -ryaml -e 'puts RUBY_DESCRIPTION, OpenSSL::OPENSSL_LIBRARY_VERSION' && \
+    "${RUBY_PATH}/bin/bundle" --version
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
@@ -553,8 +551,6 @@ RUN cat /root/.bashrc.conda >> /root/.bashrc && rm /root/.bashrc.conda
 # This is needed for `conda init bash` to work properly
 RUN grep -v return /root/.bashrc >> /root/newbashrc && cp /root/newbashrc /root/.bashrc
 
-RUN echo "source ${RVM_PATH}/scripts/rvm" >> /root/.bashrc
-
 # Common environment setup
 # Keep setgid build-shared directories writable by subsequent non-root writers.
 RUN echo "umask 0002" >> /root/.bashrc
@@ -585,17 +581,16 @@ RUN unexpected="$(getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 { print $1 "
 # rather than `build-shared` so the dev-env entrypoint can remap its GID to the host's
 # without changing the shared group's GID. UID 1000 is Debian's first-user UID, so the
 # common Linux host needs no remap. Root's `.bashrc` is deliberately not copied into its
-# home because it sources RVM with the non-interactive early-return stripped, which
-# would load RVM in the dev environment's own non-interactive build shells (which share
-# this home) and fail on an unset $USER under `set -u`. The CI user's shell environment
-# belongs in /etc/profile.d.
+# home: it has the non-interactive early-return stripped, so it would also run in the dev
+# environment's own non-interactive build shells (which share this home). The CI user's
+# shell environment belongs in /etc/profile.d.
 RUN groupadd -g 1000 dd && \
     useradd -m -u 1000 -g dd -G build-shared,sudo -s /bin/bash dd
 
 # Set up environment
 ARG CTNG_ARCH
 ARG CTNG_CROSS_ARCH
-ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:/opt/aix-cross/bin:${PATH}"
+ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/go/bin:${RUBY_PATH}/bin:${UV_TOOL_BIN_DIR}:/opt/toolchains/${CTNG_ARCH}/bin:/opt/toolchains/${CTNG_CROSS_ARCH}/bin:${OSXCROSS_PATH}/bin:/opt/aix-cross/bin:${PATH}"
 ENV BUNDLE_GLOBAL_GEM_CACHE="true"
 
 # Set up missing environment variables
@@ -610,7 +605,8 @@ ENV PKG_CONFIG_LIBDIR=""
 ARG PROTOBUF_VERSION
 ARG VAULT_VERSION
 ARG AWSCLI_VERSION
-ARG RVM_VERSION
+ARG RUBY_VERSION
+ARG RUBY_BUILD_VERSION
 ARG BUNDLER_VERSION
 ARG RUST_VERSION
 ARG RUSTUP_VERSION
@@ -630,7 +626,8 @@ ARG DD_OCTO_STS_VERSION
 LABEL protobuf_version="${PROTOBUF_VERSION}"
 LABEL vault_version="${VAULT_VERSION}"
 LABEL awscli_version="${AWSCLI_VERSION}"
-LABEL rvm_version="${RVM_VERSION}"
+LABEL ruby_version="${RUBY_VERSION}"
+LABEL ruby_build_version="${RUBY_BUILD_VERSION}"
 LABEL bundler_version="${BUNDLER_VERSION}"
 LABEL rust_version="${RUST_VERSION}"
 LABEL rustup_version="${RUSTUP_VERSION}"

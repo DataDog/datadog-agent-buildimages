@@ -26,6 +26,7 @@ ARG CMAKE_SHA256="8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459f
 ARG CLANG_VERSION=8.0.0
 ARG CLANG_SHA256="a77eb8fde0a475c25d46dccdeb851a83cbeeeb11779fa2218ae19db9cd0e51f9"
 ARG DD_TARGET_ARCH=aarch64
+ARG RUBY_VERSION=2.7.2
 ARG BUNDLER_VERSION=2.4.20
 ARG PATCHELF_VERSION=0.13.1
 ARG PATCHELF_SHA256="f6d5ecdb51ad78e963233cfde15020f9eebc9d9c7c747aaed54ce39c284ad019"
@@ -118,19 +119,17 @@ RUN curl -L -o patchelf-${PATCHELF_VERSION}.tar.gz https://github.com/NixOS/patc
     && rm -rf patchelf-${PATCHELF_VERSION} \
     && rm patchelf-${PATCHELF_VERSION}.tar.gz
 
-# RVM
-COPY ./rvm/gpg-keys /gpg-keys
-RUN gpg --import /gpg-keys/*
-RUN rm -rf /gpg-keys
-RUN curl -sSL -o get-rvm.sh https://raw.githubusercontent.com/rvm/rvm/1.29.12/binscripts/rvm-installer \
-    && echo "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e  get-rvm.sh" | sha256sum --check \
-    && bash get-rvm.sh stable --version 1.29.12 \
-    && echo "d2de0b610ee321489e5c673fe749e13be8fb34c0aa08a74446d87f95a17de730  /usr/local/rvm/bin/rvm" | sha256sum --check \
-    && rm get-rvm.sh
-RUN /bin/bash -l -c "rvm requirements"
-RUN /bin/bash -l -c "rvm install 2.7 --with-openssl-dir=${CONDA_PATH} && rvm cleanup all"
-RUN /bin/bash -l -c "gem install bundler --version $BUNDLER_VERSION --no-document"
-RUN echo 'source /usr/local/rvm/scripts/rvm' >> /root/.bashrc
+# Ruby
+# Ruby's build dependencies
+RUN yum -y install libyaml-devel libffi-devel readline-devel gdbm-devel ncurses-devel \
+    && yum clean all
+# Build OpenSSL inside the Ruby prefix: PKG_CONFIG_LIBDIR points at Conda only, so ruby-build
+# would otherwise pick up Conda's OpenSSL and link it without an rpath, leaving a Ruby that
+# cannot load its own openssl extension.
+RUN --mount=type=bind,src=./setup/ruby.sh,dst=/mnt/ruby.sh \
+    RUBY_VERSION=$RUBY_VERSION BUNDLER_VERSION=$BUNDLER_VERSION RUBY_BUILD_VENDOR_OPENSSL=1 \
+    /mnt/ruby.sh
+ENV PATH "/usr/local/ruby/bin:${PATH}"
 
 # Override updated linker system-wide
 RUN ln -sf /usr/local/binutils/bin/ld /usr/bin/ld

@@ -12,6 +12,15 @@ PS4='+[$(date +%T.%3N)] '
 # New files should be writable by later build-shared users on persisted volumes.
 cp -r --update=none --no-preserve=mode,ownership "${DD_DEFAULT_CONFIG_ROOT}/." "${XDG_CONFIG_HOME}/"
 
+# The seeding above leaves an already-persisted Nushell config untouched, so the entries it
+# generated for RVM would keep pointing GEM_HOME, GEM_PATH and PATH at /opt/dd/rvm, which the
+# build image no longer has. Each of those entries is a single line mentioning that path.
+# TODO: Remove once dev-env config volumes created before Ruby moved to /opt/dd/ruby are gone.
+nu_config="${XDG_CONFIG_HOME}/nushell/config.nu"
+if [[ -f "${nu_config}" ]]; then
+    sed -i '\|/opt/dd/rvm|d' "${nu_config}"
+fi
+
 # Persist history files
 for shell in sh bash zsh; do
     history_file="${DD_SHARED_DIR}/shell/${shell}/.${shell}_history"
