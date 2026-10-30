@@ -50,9 +50,12 @@ ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+RUN --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+     git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
+     . /mnt/python-packages-versions.txt && \
+     pip install pip==${DD_PIP_VERSION_PY3} && \
      pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
      dda -v self dep sync -f legacy-build && \
      pyenv rehash

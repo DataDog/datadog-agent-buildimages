@@ -49,7 +49,10 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION}
 
-RUN pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
+RUN --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+    . /mnt/python-packages-versions.txt \
+ && pip install pip==${DD_PIP_VERSION_PY3} \
+ && pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" \
  && dda -v self dep sync -f legacy-build \
  && pyenv rehash
 
