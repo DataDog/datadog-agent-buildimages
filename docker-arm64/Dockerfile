@@ -1,6 +1,6 @@
 ARG BUILDENV_REGISTRY
 
-FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg:v0.9.6 AS dd_pkg
+FROM --platform=linux/arm64 registry.ddbuild.io/agent-delivery/dd-pkg@sha256:8822416fd5d94532c6c93ef9f58bea0236489f1431fd228f39a23d24af1a7894 AS dd_pkg
 
 FROM ${BUILDENV_REGISTRY}/images/docker:27.3.1
 
