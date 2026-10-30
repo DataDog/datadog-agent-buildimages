@@ -1,0 +1,14 @@
+---
+issuer: https://token.actions.githubusercontent.com
+
+subject: repo:DataDog/datadog-agent-buildimages:pull_request
+
+claim_pattern:
+  event_name: (pull_request|pull_request_review)
+  ref: refs/(pull/\d+/merge|heads/main)
+  job_workflow_ref: DataDog/datadog-agent-buildimages/\.github/workflows/slapr\.yml@refs/(pull/\d+/merge|heads/main)
+
+permissions:
+  contents: read
+  pull_requests: read
+  members: read

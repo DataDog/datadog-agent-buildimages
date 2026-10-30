@@ -1,0 +1,21 @@
+# Review channels from datadog-agent/tasks/libs/pipeline/github_slack_map.yaml.
+'@datadog/agent-build':
+  review:
+    name: '#agent-build-reviews'
+    id: 'C08SK57TL1M'
+'@datadog/agent-devx':
+  review:
+    name: '#agent-devx-reviews'
+    id: 'C06P2KX149M'
+'@datadog/agent-runtimes':
+  review:
+    name: '#agent-runtimes-reviews'
+    id: 'C0ABM4KFQ6Q'
+'@datadog/ebpf-platform':
+  review:
+    name: '#ebpf-platform'
+    id: 'C0424HA1SJK'
+'@datadog/windows-products':
+  review:
+    name: '#windows-products-reviews'
+    id: 'C0983QTJJJ0'
