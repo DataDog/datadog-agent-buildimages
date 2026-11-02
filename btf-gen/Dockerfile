@@ -5,8 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12.6
 ARG DDA_VERSION
 ARG DDA_NO_DYNAMIC_DEPS
-ARG AWSCLI_VERSION=2.36.49
-ARG AWSCLI_CHECKSUM=6b51b62d232217350e72d8f2493f47d3461239d011d1d5eef960dfcd8cb07069
+ARG AWSCLI_VERSION=2.39.0
+ARG AWSCLI_CHECKSUM=6c89ce7ed7bc0a2520e2bc3eeedfea4e2eb2e7da2836860c9471871408404036
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -50,9 +50,12 @@ ENV PYENV_ROOT="/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 ENV DDA_NO_DYNAMIC_DEPS=$DDA_NO_DYNAMIC_DEPS
 
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+RUN --mount=type=bind,src=./python-packages-versions.txt,dst=/mnt/python-packages-versions.txt \
+     git clone --depth=1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
      pyenv install ${PYTHON_VERSION} && \
      pyenv global ${PYTHON_VERSION} && \
+     . /mnt/python-packages-versions.txt && \
+     pip install pip==${DD_PIP_VERSION_PY3} && \
      pip install "git+https://github.com/DataDog/datadog-agent-dev.git@${DDA_VERSION}" && \
      dda -v self dep sync -f legacy-build && \
      pyenv rehash
