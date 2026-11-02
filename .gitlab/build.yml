@@ -271,7 +271,6 @@ build_dev_env_workspace_arm64:
           - windows/**/*
           - go.env
           - .gitlab/build.yml
-        compare_to: $COMPARE_TO_BRANCH
   timeout: 2h 30m
   id_tokens:
     CI_IDENTITIES_GITLAB_ID_TOKEN:
