@@ -78,3 +78,15 @@ inv -e pipeline.update-buildimages -i <new image ID> --branch-name <your working
 
 ## Building on Windows
 See Building on Windows [README.md](windows/README.md)
+
+## Pull request automation
+
+[Code review](.github/workflows/code-review.yml) supports `/dd-review` with Codex
+(default), `/dd-review claude`, and `/dd-review gemini`. See
+[code-review-action](https://github.com/DataDog/code-review-action#required-secrets)
+for provider secrets and configuration.
+
+[Slapr](.github/workflows/slapr.yml) updates PR reactions in Slack using the
+[review map](.github/github_slack_map.yaml) and [Octo STS policy](.github/chainguard/self.slapr.read-members.sts.yaml).
+See [slapr](https://github.com/DataDog/slapr#requirements) for Slack permissions;
+the workflow defines the required repository secret and variables.
