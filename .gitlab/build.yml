@@ -58,6 +58,7 @@
   timeout: 45m
 
 .build_bake:
+  retry: 1 # BuildKit EOF and registry failures have recovered on rerun.
   id_tokens:
     DD_STS_OIDC_TOKEN:
       aud: dd-sts
@@ -89,8 +90,10 @@ build_linux_amd64:
   needs:
     - job: build_toolchain_x86_64_native
       artifacts: false
+      optional: true
     - job: build_toolchain_x86_64_cross_aarch64
       artifacts: false
+      optional: true
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-amd64
     BAKE_TARGET: linux-amd64-ci$ECR_TEST_ONLY
@@ -144,8 +147,10 @@ build_linux_arm64:
   needs:
     - job: build_toolchain_aarch64_native
       artifacts: false
+      optional: true
     - job: build_toolchain_aarch64_cross_x86_64
       artifacts: false
+      optional: true
   variables:
     IMAGE_VERSION: $IMAGE_VERSION_ROOT-arm64
     BAKE_TARGET: linux-arm64-ci$ECR_TEST_ONLY
@@ -172,6 +177,7 @@ build_docker_arm64:
     IMAGE: docker_arm64
 
 .build_multiarch:
+  retry: 1 # Retry transient manifest and registry failures once.
   extends: [.no_schedule, .x64]
   stage: build
   id_tokens:

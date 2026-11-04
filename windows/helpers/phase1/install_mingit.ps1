@@ -24,6 +24,8 @@ function InstallMinGit() {
     Add-ToPath -NewPath "c:\devtools\git\cmd;c:\devtools\git\usr\bin" -Local -Global
     & 'git.exe' config --global user.name "Croissant Builder"
     & 'git.exe' config --global user.email "croissant@datadoghq.com"
+    # MinGit ignores SSL_CERT_FILE and ships an outdated CA bundle; use the one from install_cert.ps1 instead.
+    & 'git.exe' config --system http.sslCAInfo "C:/cacert.pem"
 
     Write-Host -ForegroundColor Green Done with Git
     return $true

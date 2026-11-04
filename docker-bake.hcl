@@ -12,18 +12,18 @@ variable "versions" {
   default = {
     PY3_VERSION         = "3.12.6"
     CONDA_VERSION       = "4.9.2-7"
-    BAZELISK_VERSION    = "1.28.1"
+    BAZELISK_VERSION    = "1.30.0"
     CODECOV_VERSION     = "0.6.1"
-    DDA_VERSION         = "v0.39.1"
+    DDA_VERSION         = "v0.40.0"
     CMAKE_VERSION       = "3.30.2"
     RUST_VERSION        = "1.91.0"
     RVM_VERSION         = "1.29.12"
     RUSTUP_VERSION      = "1.26.0"
     BUNDLER_VERSION     = "2.4.20"
     VAULT_VERSION       = "1.17.2"
-    DATADOG_CI_VERSION  = "5.19.0"
+    DATADOG_CI_VERSION  = "5.26.1"
     PROTOBUF_VERSION    = "34.0"
-    AWSCLI_VERSION      = "2.27.30"
+    AWSCLI_VERSION      = "2.39.0"
     DPKG_ARMHF_VERSION  = "1.18.4"
     DATADOG_PACKAGES_VERSION = "42796a26609b975947ddaafe1672dd04f47418ea"
     MACOSX_SDK_VERSION       = "14.0"
@@ -69,15 +69,15 @@ variable "checksums_amd64" {
   type = map(string)
   default = {
     CONDA_SHA256             = "91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
-    BAZELISK_SHA256          = "22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8"
+    BAZELISK_SHA256          = "a248ae2b2b62b5baebb748f6fba7203bff1a27e5d01b55399a8406744cb539e8"
     CODECOV_SHA256           = "0c9b79119b0d8dbe7aaf460dc3bd7c3094ceda06e5ae32b0d11a8ff56e2cc5c5"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db"
     VAULT_SHA256             = "a0c0449e640c8be5dcf7b7b093d5884f6a85406dbb86bbad0ea06becad5aaab8"
-    DATADOG_CI_SHA256        = "aa1a3b535f41ca58096c5c843b19f13bbad9018fdb6c86b92457ecdff7d5b364"
+    DATADOG_CI_SHA256        = "6bfead2585e062a4db0fb6f58cc8c34c26f3333e02e68931e18aeaacf141efdb"
     PROTOBUF_SHA256          = "e9a91b6fcfe4177ec2cd35fc8f15c1e811fa0ecdef9372755cd6d3513d5faaab"
-    AWSCLI_SHA256            = "2bda389190cf1509584e1bcfb6c9ffe4343ffb1804cf8a9cd96ed874870f7f94"
+    AWSCLI_SHA256            = "6c89ce7ed7bc0a2520e2bc3eeedfea4e2eb2e7da2836860c9471871408404036"
     MOLD_SHA256              = "4c999e19ffa31afa5aa429c679b665d5e2ca5a6b6832ad4b79668e8dcf3d8ec1"
     DOTSLASH_SHA256          = "5cefa0f258e0a58ae53c7a9a5be3890574ddd33d57c66bc9c143cb411012d72a"
   }
@@ -87,15 +87,15 @@ variable "checksums_arm64" {
   type = map(string)
   default = {
     CONDA_SHA256             = "ea7d631e558f687e0574857def38d2c8855776a92b0cf56cf5285bede54715d9"
-    BAZELISK_SHA256          = "8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2"
+    BAZELISK_SHA256          = "b2bcc040c213b44586b121bda6d983c35df121b917c3a7a66fb16f2fa0df1a4f"
     CODECOV_SHA256           = "75c2e69a2da905283ca8d01ff0c135be1a41097d4935dc5e0899aa4c1c80d066"
     CMAKE_SHA256_AMD64       = "33f5a7680578481ce0403dc5a814afae613f2f6f88d632a3bda0f7ff5f4dedfc"
     CMAKE_SHA256_ARM64       = "8a6636e72a6ddfe50e0087472bff688f337df48b00a7728b12d7b70b5b459fc5"
     RUSTUP_SHA256            = "673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800"
     VAULT_SHA256             = "1cdfd33e218ef145dbc3d71ac4164b89e453ff81b780ed178274bc1ba070e6e9"
-    DATADOG_CI_SHA256        = "ad68d62945044bdedc183e8e21b3d4b2d9b0f301ac9c01f8ab074fff7a4629d1"
+    DATADOG_CI_SHA256        = "97fce10f9e21a0b749cfc813b983391a2e5fd48f52ef911615f9c033d8443801"
     PROTOBUF_SHA256          = "f0b8aad28be5ea6150c082f96ac57e028154afb9ee29f4ce092b5a39df8ae6c8"
-    AWSCLI_SHA256            = "cdb480c2f6e1ff2bb0ac234da4ee121c7864d58b2aeddec0e5449a66dc1efc2c"
+    AWSCLI_SHA256            = "05da9395b4d148c42e959192650bf4a7cbb59ea275fa334d0936c593c27b946f"
     MOLD_SHA256              = "c799b9ccae8728793da2186718fbe53b76400a9da396184fac0c64aa3298ec37"
     DOTSLASH_SHA256          = "11323ef72fac5885d7c54bff70d666486bd800a8d908d0acd3bd838fd8a9b0db"
   }
@@ -266,6 +266,12 @@ variable "linux_cache_details_branch" {
   default = "type=registry,ref=${registry_name}/${repo_name}/linux:${cache_key_branch}"
 }
 
+variable "layer_compression_options" {
+  type = string
+  // Recompress every layer when exporting the image and the cache, so BuildKit cannot reuse a non-tar variant (e.g. Nydus) it holds locally.
+  default = "compression=gzip,force-compression=true"
+}
+
 # ====== Local build targets ====== #
 # Fake target containing settings common for local build targets
 target "_fake_linux-local" {
@@ -326,9 +332,9 @@ target "_fake_linux-ci" {
   # In CI, use CI_JOB_TOKEN as GITLAB_TOKEN
   secret     = ["type=env,id=gitlab-token,env=CI_JOB_TOKEN"]
   cache-from = PREVENT_CACHE != "" ? [] : [linux_cache_details_branch, linux_cache_details_main]
-  cache-to   = [linux_cache_details_branch]
+  cache-to   = ["${linux_cache_details_branch},${layer_compression_options}"]
   tags       = ["${registry_name}/${repo_name}/linux:${linux-image-tag}"]
-  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar"]
+  output     = ["type=docker,dest=./linux-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
   args       = {
     BASE_IMAGE_REGISTRY = "registry.ddbuild.io/images/mirror"
   }
@@ -341,7 +347,7 @@ target "linux-amd64-ci" {
 target "linux-amd64-ci_test_only" {
   inherits = ["linux-amd64-ci"]
   tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
-  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
 
 target "linux-arm64-ci" {
@@ -352,7 +358,7 @@ target "linux-arm64-ci_test_only" {
   inherits = ["linux-arm64-ci"]
     # Override the tags and output from the linux-ci target to change the image name
   tags     = ["${registry_name}/${repo_name}/linux_test_only:${linux-image-tag}"]
-  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar"]
+  output   = ["type=docker,dest=./linux_test_only-${linux-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
 
 // Default group - automatically builds the target for the current architecture
@@ -393,9 +399,9 @@ target "docker_x64" {
 
 target "_fake_docker_x64-ci" {
   cache-from = PREVENT_CACHE != "" ? [] : [docker_x64_cache_details_branch, docker_x64_cache_details_main]
-  cache-to   = [docker_x64_cache_details_branch]
+  cache-to   = ["${docker_x64_cache_details_branch},${layer_compression_options}"]
   tags       = ["${registry_name}/${repo_name}/docker_x64:${docker_x64-image-tag}"]
-  output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar"]
+  output     = ["type=docker,dest=./docker_x64-${docker_x64-image-tag}.tar", "type=image,${layer_compression_options}"]
   args       = { BUILDENV_REGISTRY = "registry.ddbuild.io" }
 }
 
@@ -406,5 +412,5 @@ target "docker_x64-ci" {
 target "docker_x64-ci_test_only" {
   inherits = ["docker_x64-ci"]
   tags     = ["${registry_name}/${repo_name}/docker_x64_test_only:${docker_x64-image-tag}"]
-  output   = ["type=docker,dest=./docker_x64_test_only-${docker_x64-image-tag}.tar"]
+  output   = ["type=docker,dest=./docker_x64_test_only-${docker_x64-image-tag}.tar", "type=image,${layer_compression_options}"]
 }
