@@ -9,6 +9,9 @@ git config --global commit.gpgsign true
 git config --global gpg.format ssh
 git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
 
+# Load host-derived identities when the environment manager provides them.
+git config --global include.path "/.shared/git-ssh/gitconfig"
+
 # Set up easier tracking:
 # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pushdefault
 # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pushautoSetupRemote
