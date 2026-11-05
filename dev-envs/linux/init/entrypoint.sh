@@ -15,6 +15,16 @@ fi
 
 startup_indicator="/.started"
 
+# Trust is a Bits Code image contract, independent of the transport selection.
+# Revalidate on every start, including restarts of initialized containers.
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    /init/bits-code-trust.sh
+    export SSL_CERT_FILE=/run/codegen-trust/ca-certificates.crt
+    export REQUESTS_CA_BUNDLE="${SSL_CERT_FILE}"
+    export CURL_CA_BUNDLE="${SSL_CERT_FILE}"
+    export GIT_SSL_CAINFO="${SSL_CERT_FILE}"
+fi
+
 # On first start, realign the image-provided user to the host's UID/GID before anything
 # else runs. This must happen up front because the startup below writes host-owned
 # files, and because editors and CLIs exec in as this user as soon as the container
@@ -24,12 +34,19 @@ if [[ ! -f "${startup_indicator}" ]]; then
     TARGET_UID="${HOST_UID:-}"
     TARGET_GID="${HOST_GID:-${TARGET_UID}}"
 
+    # Root callers need UID 0 too, but DDA still connects over SSH as dd.
+    # Keep the target login/home and permit the existing root UID only in this case.
+    uid_options=()
+    if [[ "${TARGET_UID}" == "0" ]]; then
+        uid_options=(-o)
+    fi
+
     if ! id "${TARGET_USER}" >/dev/null 2>&1; then
         # Create the user when the image did not pre-create it.
         TARGET_UID="${TARGET_UID:-1000}"
         TARGET_GID="${TARGET_GID:-${TARGET_UID}}"
         getent group "${TARGET_GID}" >/dev/null || groupadd -g "${TARGET_GID}" "${TARGET_GROUP}"
-        useradd -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
+        useradd "${uid_options[@]}" -u "${TARGET_UID}" -g "${TARGET_GID}" -G build-shared,sudo "${TARGET_USER}"
     elif [[ -n "${TARGET_UID}" ]]; then
         # Realign the pre-created user's GID and then its UID to the host's.
         if [[ "$(id -g "${TARGET_USER}")" != "${TARGET_GID}" ]]; then
@@ -40,7 +57,7 @@ if [[ ! -f "${startup_indicator}" ]]; then
             fi
         fi
         if [[ "$(id -u "${TARGET_USER}")" != "${TARGET_UID}" ]]; then
-            usermod -u "${TARGET_UID}" "${TARGET_USER}"
+            usermod "${uid_options[@]}" -u "${TARGET_UID}" "${TARGET_USER}"
         fi
     fi
 
@@ -71,9 +88,11 @@ fi
 /init/ensure-shared-roots.sh
 
 if [[ ! -f "${startup_indicator}" ]]; then
-    # Allow passwordless SSH login for the target user
-    passwd -d "${TARGET_USER}"
-    usermod -U "${TARGET_USER}"
+    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+        # Allow passwordless SSH login for the target user.
+        passwd -d "${TARGET_USER}"
+        usermod -U "${TARGET_USER}"
+    fi
 
     # Choose login shell for the target user
     shell="${DD_SHELL:-zsh}"
@@ -93,7 +112,9 @@ if [[ ! -f "${startup_indicator}" ]]; then
     chmod 0755 "${TARGET_HOME}"
 
     # Persist environment for SSH sessions
-    env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
+    if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+        env | grep -Ev "^(HOME=|USER=|MAIL=|LS_COLORS=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
+    fi
 
     # Run the startup logic as the target user
     HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" /init/startup.sh
@@ -104,7 +125,9 @@ fi
 
 # Start background services immune to SIGHUP so they survive the exec below.
 # Child processes inherit the SIG_IGN disposition set by nohup.
-HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" nohup /init/run-services.sh &
+if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+    HOME="${TARGET_HOME}" USER="${TARGET_USER}" gosu "${TARGET_USER}" nohup /init/run-services.sh &
+fi
 
 # Run the CMD defined by the target stage as PID 1
 exec "$@"

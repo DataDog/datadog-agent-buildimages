@@ -12,65 +12,67 @@ PS4='+[$(date +%T.%3N)] '
 # New files should be writable by later build-shared users on persisted volumes.
 cp -r --update=none --no-preserve=mode,ownership "${DD_DEFAULT_CONFIG_ROOT}/." "${XDG_CONFIG_HOME}/"
 
-# Persist history files
-for shell in sh bash zsh; do
-    history_file="${DD_SHARED_DIR}/shell/${shell}/.${shell}_history"
-    if [[ -f "${history_file}" ]]; then
-        ln -s "${history_file}" "${HOME}/.${shell}_history"
+# Exec-based sandboxes do not import host histories or install editor services.
+if [[ "${DD_DEV_ENV_TRANSPORT:-ssh}" != "exec" ]]; then
+    # Persist history files
+    for shell in sh bash zsh; do
+        history_file="${DD_SHARED_DIR}/shell/${shell}/.${shell}_history"
+        if [[ -f "${history_file}" ]]; then
+            ln -s "${history_file}" "${HOME}/.${shell}_history"
+        fi
+    done
+
+    if [[ -d "${DD_SHARED_DIR}/shell/nu" ]]; then
+        nu_history_dir="${XDG_CONFIG_HOME}/nushell"
+        find "${DD_SHARED_DIR}/shell/nu" -name "history.sqlite3*" -type f -print0 | while IFS= read -r -d '' history_file; do
+            ln -s "${history_file}" "${nu_history_dir}/$(basename "${history_file}")"
+        done
     fi
-done
 
-if [[ -d "${DD_SHARED_DIR}/shell/nu" ]]; then
-    nu_history_dir="${XDG_CONFIG_HOME}/nushell"
-    find "${DD_SHARED_DIR}/shell/nu" -name "history.sqlite3*" -type f -print0 | while IFS= read -r -d '' history_file; do
-        ln -s "${history_file}" "${nu_history_dir}/$(basename "${history_file}")"
-    done
-fi
+    if [[ -d "${DD_SHARED_DIR}/shell/claude" ]]; then
+        claude_config_dir="${XDG_CONFIG_HOME}/claude"
+        mkdir -p "${claude_config_dir}"
+        find "${DD_SHARED_DIR}/shell/claude" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+            ln -sf "${state_file}" "${claude_config_dir}/$(basename "${state_file}")"
+        done
+    fi
 
-if [[ -d "${DD_SHARED_DIR}/shell/claude" ]]; then
-    claude_config_dir="${XDG_CONFIG_HOME}/claude"
-    mkdir -p "${claude_config_dir}"
-    find "${DD_SHARED_DIR}/shell/claude" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
-        ln -sf "${state_file}" "${claude_config_dir}/$(basename "${state_file}")"
-    done
-fi
+    if [[ -d "${DD_SHARED_DIR}/shell/codex" ]]; then
+        codex_home="${XDG_CONFIG_HOME}/codex"
+        mkdir -p "${codex_home}"
+        find "${DD_SHARED_DIR}/shell/codex" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
+            ln -sf "${state_file}" "${codex_home}/$(basename "${state_file}")"
+        done
+    fi
 
-if [[ -d "${DD_SHARED_DIR}/shell/codex" ]]; then
-    codex_home="${XDG_CONFIG_HOME}/codex"
-    mkdir -p "${codex_home}"
-    find "${DD_SHARED_DIR}/shell/codex" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' state_file; do
-        ln -sf "${state_file}" "${codex_home}/$(basename "${state_file}")"
-    done
-fi
-
-# Remove annoying container indicator from prompt:
-# https://github.com/starship/starship/issues/6174
-if [[ -f "${DD_SHARED_DIR}/shell/starship.toml" ]]; then
-    cp "${DD_SHARED_DIR}/shell/starship.toml" "${XDG_CONFIG_HOME}/starship.toml"
-fi
-cat <<'EOF' >> "${XDG_CONFIG_HOME}/starship.toml"
+    # Remove annoying container indicator from prompt:
+    # https://github.com/starship/starship/issues/6174
+    if [[ -f "${DD_SHARED_DIR}/shell/starship.toml" ]]; then
+        cp "${DD_SHARED_DIR}/shell/starship.toml" "${XDG_CONFIG_HOME}/starship.toml"
+    fi
+    cat <<'EOF' >> "${XDG_CONFIG_HOME}/starship.toml"
 [container]
 disabled = true
 EOF
-# https://github.com/starship/starship/issues/896
-set-ev STARSHIP_CONFIG "${XDG_CONFIG_HOME}/starship.toml"
+    # https://github.com/starship/starship/issues/896
+    set-ev STARSHIP_CONFIG "${XDG_CONFIG_HOME}/starship.toml"
 
 
-
-# Persist remote SSH servers for VS Code-based editors
-vscode_editors_root="${XDG_DATA_HOME}/editors"
-if [[ ! -d "${vscode_editors_root}" ]]; then
-    mkdir -p "${vscode_editors_root}"
-    # Link each top level server directory in the home directory to the data root
-    for server_dir in ".vscode-server" ".cursor-server"; do
-        # The name of the persisted data directory is the part of the server directory name
-        # between the leading dot and the first hyphen
-        persisted_name="${server_dir#.}"
-        persisted_name="${persisted_name%%-*}"
-        persisted_data_dir="${vscode_editors_root}/${persisted_name}"
-        mkdir -p "${persisted_data_dir}"
-        ln -s "${persisted_data_dir}" "${HOME}/${server_dir}"
-    done
+    # Persist remote SSH servers for VS Code-based editors
+    vscode_editors_root="${XDG_DATA_HOME}/editors"
+    if [[ ! -d "${vscode_editors_root}" ]]; then
+        mkdir -p "${vscode_editors_root}"
+        # Link each top level server directory in the home directory to the data root
+        for server_dir in ".vscode-server" ".cursor-server"; do
+            # The name of the persisted data directory is the part of the server directory name
+            # between the leading dot and the first hyphen
+            persisted_name="${server_dir#.}"
+            persisted_name="${persisted_name%%-*}"
+            persisted_data_dir="${vscode_editors_root}/${persisted_name}"
+            mkdir -p "${persisted_data_dir}"
+            ln -s "${persisted_data_dir}" "${HOME}/${server_dir}"
+        done
+    fi
 fi
 
 # Configure gfold
@@ -84,30 +86,49 @@ if [[ -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
     git config --global user.email "${GIT_AUTHOR_EMAIL}"
 fi
 
-# Configure pass
-# NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
-# homedir. This ensures we don't conflict with a forwarded gpg-agent
-export PASS_GPG_HOME=${XDG_CONFIG_HOME}/.config/password-store/gpg
-export PASSWORD_STORE_GPG_OPTS="--homedir ${PASS_GPG_HOME}"
-export PASSWORD_STORE_DIR="${XDG_CONFIG_HOME}/.config/password-store"
-mkdir -m 700 -p ${PASS_GPG_HOME}
+# Bits Code uses its external credential broker; exec alone does not select it.
+if [[ "${DD_BITS_CODE:-0}" != "1" ]]; then
+    # Configure pass
+    # NOTE: We create a separate gpg dir for pass, and configure pass to always use that gpg
+    # homedir. This ensures we don't conflict with a forwarded gpg-agent
+    export PASS_GPG_HOME=${XDG_CONFIG_HOME}/.config/password-store/gpg
+    export PASSWORD_STORE_GPG_OPTS="--homedir ${PASS_GPG_HOME}"
+    export PASSWORD_STORE_DIR="${XDG_CONFIG_HOME}/.config/password-store"
+    mkdir -m 700 -p ${PASS_GPG_HOME}
 
-gpg --homedir ${PASS_GPG_HOME} --batch --passphrase '' --quick-generate-key --yes password-store
-pass init "password-store"
-set-ev PASSWORD_STORE_GPG_OPTS "--homedir ${PASS_GPG_HOME}"
-set-ev PASSWORD_STORE_DIR "${PASSWORD_STORE_DIR}"
+    gpg --homedir ${PASS_GPG_HOME} --batch --passphrase '' --quick-generate-key --yes password-store
+    pass init "password-store"
+    set-ev PASSWORD_STORE_GPG_OPTS "--homedir ${PASS_GPG_HOME}"
+    set-ev PASSWORD_STORE_DIR "${PASSWORD_STORE_DIR}"
 
-# A headless container has no OS keychain, so point aws-vault at the pass store configured above.
-set-ev AWS_VAULT_BACKEND "pass"
+    # A headless container has no OS keychain, so point aws-vault at the pass store configured above.
+    set-ev AWS_VAULT_BACKEND "pass"
+fi
 
-# Reset saved data/cache directories from previous runs
-dda config restore
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    for variable in SSL_CERT_FILE REQUESTS_CA_BUNDLE CURL_CA_BUNDLE GIT_SSL_CAINFO; do
+        set-ev "${variable}" /run/codegen-trust/ca-certificates.crt
+    done
+fi
+
+# Preserve workstation ordering; Bits Code disables telemetry before any DDA work.
+if [[ "${DD_BITS_CODE:-0}" != "1" ]]; then
+    dda config restore
+fi
 
 # Configure telemetry if enabled
 set +x
-if [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    # Bits owns telemetry for its managed session; avoid CLI submissions/prompts.
+    dda self telemetry disable
+elif [[ -n "${DDA_TELEMETRY_API_KEY:-}" ]]; then
     # Avoid exposing the API key in startup logs while persisting it for later sessions.
     set-ev DDA_TELEMETRY_API_KEY "${DDA_TELEMETRY_API_KEY}"
     dda self telemetry enable
 fi
 set -x
+
+# Restore persisted settings only after disabling Bits Code telemetry.
+if [[ "${DD_BITS_CODE:-0}" == "1" ]]; then
+    dda config restore
+fi
