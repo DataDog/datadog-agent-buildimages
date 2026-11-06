@@ -224,15 +224,11 @@ FROM build_base AS go_builder
 # Go setup
 ARG GO_VERSION
 ARG GO_SHA256
-ARG MSGO_SHA256
 ARG GO_ARCH
-ARG MSGO_PATCH
 
 ENV GOPATH=/go
-ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 
 ADD https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz /tmp/go/go.tar.gz
-ADD https://aka.ms/golang/release/latest/go${GO_VERSION}-${MSGO_PATCH}.linux-${GO_ARCH}.tar.gz /tmp/go/msgo.tar.gz
 RUN --mount=type=bind,src=./linux/scripts/go.sh,dst=/mnt/go.sh cd /tmp/go && /mnt/go.sh && rm -rf /tmp/go
 ENV PATH="${GOPATH}/bin:${PATH}"
 
@@ -520,7 +516,6 @@ RUN --mount=type=bind,from=rvm_builder,source=${RVM_PATH},target=/mnt/rvm \
 
 # Go
 COPY --from=go_builder /usr/local/go /usr/local/go
-COPY --from=go_builder /usr/local/msgo /usr/local/msgo
 COPY --from=go_builder /root/.config/go/telemetry/mode ${XDG_CONFIG_HOME}/go/telemetry/mode
 
 # Mold linker
@@ -603,7 +598,6 @@ ENV PATH="${CONDA_PATH}/condabin:${GOBIN}:${CARGO_INSTALL_ROOT}/bin:/usr/local/g
 ENV BUNDLE_GLOBAL_GEM_CACHE="true"
 
 # Set up missing environment variables
-ENV MS_GOTOOLCHAIN_TELEMETRY_ENABLED=0
 ENV PYTHONUTF8=1
 ENV DDA_NO_DYNAMIC_DEPS=1
 
