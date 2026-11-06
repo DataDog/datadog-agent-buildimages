@@ -17,7 +17,8 @@ variable "versions" {
     DDA_VERSION         = "v0.40.0"
     CMAKE_VERSION       = "3.30.2"
     RUST_VERSION        = "1.91.0"
-    RVM_VERSION         = "1.29.12"
+    RUBY_VERSION        = "2.7.2"
+    RUBY_BUILD_VERSION  = "20261013"
     RUSTUP_VERSION      = "1.26.0"
     BUNDLER_VERSION     = "2.4.20"
     VAULT_VERSION       = "1.17.2"
@@ -59,7 +60,7 @@ variable "checksums_common" {
   default = {
     DPKG_ARMHF_SHA256  = "19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41"
     MACOSX_SDK_SHA256  = "5e4d3be6b445f0eacc0333ff2117e93e4433d8c4fe44053a14f735033a98aaa9"
-    RVM_SHA256         = "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e"
+    RUBY_BUILD_SHA256  = "9e683b1d8efe337ae27c31f995641e22761af603bb0f783d22c5d2f99252758c"
     PULUMI_SHA256      = "319ffe2866c9976a72d924b14771e25c47ab474f9d612182df932369f5fe4f5b"
     AIX_CROSS_SHA256   = "90c071fc382ab81a9587e67a4a486954e86211ddfe1391d514aa4a313dec4664"
   }
