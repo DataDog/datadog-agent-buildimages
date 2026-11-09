@@ -25,6 +25,8 @@ variable "versions" {
     PROTOBUF_VERSION    = "34.0"
     AWSCLI_VERSION      = "2.39.0"
     DPKG_ARMHF_VERSION  = "1.18.4"
+    # Commit the DPKG_ARMHF_VERSION tag points at
+    DPKG_ARMHF_COMMIT   = "39ac56b186ba3fb0082156084a86aed07562fc3a"
     DATADOG_PACKAGES_VERSION = "42796a26609b975947ddaafe1672dd04f47418ea"
     MACOSX_SDK_VERSION       = "14.0"
     OSXCROSS_COMMIT          = "e6ab3fa7423f9235ce9ed6381d6d3af191b46b59"
@@ -57,7 +59,6 @@ variable "build_paths" {
 variable "checksums_common" {
   type = map(string)
   default = {
-    DPKG_ARMHF_SHA256  = "19f332e26d40ee45c976ff9ef1a3409792c1f303acff714deea3b43bb689dc41"
     MACOSX_SDK_SHA256  = "5e4d3be6b445f0eacc0333ff2117e93e4433d8c4fe44053a14f735033a98aaa9"
     RVM_SHA256         = "fea24461e98d41528d6e28684aa4c216dbe903869bc3fcdb3493b6518fae2e7e"
     PULUMI_SHA256      = "319ffe2866c9976a72d924b14771e25c47ab474f9d612182df932369f5fe4f5b"

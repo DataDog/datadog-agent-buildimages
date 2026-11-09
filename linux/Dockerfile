@@ -91,14 +91,17 @@ RUN --mount=type=bind,src=./toolchains,dst=/toolchains \
 FROM build_base AS dpkg_armhf_builder
 # Build dpkg-armhf
 ARG DPKG_ARMHF_VERSION
-ARG DPKG_ARMHF_SHA256
+ARG DPKG_ARMHF_COMMIT
 
 # Install dpkg-specific build dependencies
 RUN apt-get install -y --no-install-recommends \
     libmd-dev libbz2-dev liblzma-dev
 
-ADD --checksum=sha256:${DPKG_ARMHF_SHA256} "https://salsa.debian.org/dpkg-team/dpkg/-/archive/${DPKG_ARMHF_VERSION}/dpkg-${DPKG_ARMHF_VERSION}.tar.bz2" \
-    /tmp/dpkg-armhf/
+# Fetched over Git, pinned to the commit the version tag points at, rather than from the
+# archive GitLab generates on the fly: that one is served without a Content-Length, and the
+# truncated responses it regularly returns fail the checksum and the build with them.
+ADD "https://salsa.debian.org/dpkg-team/dpkg.git#${DPKG_ARMHF_COMMIT}" \
+    /tmp/dpkg-armhf/dpkg-${DPKG_ARMHF_VERSION}
 RUN --mount=type=bind,src=./linux/scripts/dpkg.sh,dst=/mnt/dpkg.sh cd /tmp/dpkg-armhf && /mnt/dpkg.sh && rm -rf /tmp/dpkg-armhf
 
 FROM build_base AS osxcross_builder
