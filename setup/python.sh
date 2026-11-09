@@ -33,7 +33,10 @@ case $DD_TARGET_ARCH in
         libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev \
         libc6-dev libbz2-dev libffi-dev zlib1g-dev
     elif [ -f /etc/redhat-release ] || [ "$DISTRIBUTION" == "RedHat" ] || [ "$DISTRIBUTION" == "CentOS" ] || [ "$DISTRIBUTION" == "Amazon" ]; then
-        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make perl-IPC-Cmd
+        # Same optional module dependencies as the Debian branch above. Without sqlite-devel
+        # for instance, Python builds without _sqlite3 and the AWS CLI build later refuses it.
+        yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make perl-IPC-Cmd \
+            sqlite-devel readline-devel ncurses-devel gdbm-devel zlib-devel
     fi
     OPENSSL_VERSION="3.0.13"
     OPENSSL_SHA256="88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"
