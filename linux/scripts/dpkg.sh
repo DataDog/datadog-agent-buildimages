@@ -2,7 +2,6 @@
 
 set -euxo pipefail
 
-tar -xf "dpkg-${DPKG_ARMHF_VERSION}.tar.bz2"
 cd "dpkg-${DPKG_ARMHF_VERSION}"
 
 echo "${DPKG_ARMHF_VERSION}" > .dist-version
