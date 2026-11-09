@@ -29,8 +29,10 @@ $SoftwareTable = @{
     "WIX_SHA256"="32bb76c478fcb356671d4aaf006ad81ca93eea32c22a9401b168fc7471feccd2";
     "CMAKE_VERSION"="3.23.0";
     "CMAKE_SHA256"="1e772025844f1cc648d28f42090038e5ca5cf72e2889de26d8d05ee25da17061";
-    "MSYS_VERSION"="20241208";
-    "MSYS_SHA256"="DFAED9EE4E1A28C24ED06EDBB0767846A1022EB3EC849D70B2B999129E472135";
+    "MSYS_VERSION"="20260927";
+    "MSYS_SHA256"="EA2F31A0B6ADE63914CE441FFB022F0F6AA96982BFEFA2326460A26D5FB01322";
+    # Last MINGW64 build of mingw-w64-tools, see https://github.com/msys2/MINGW-packages/pull/32818
+    "MSYS_MINGW64_TOOLS_VERSION"="14.0.0.r495.g63ebe6cdb-1";
     "NUGET_VERSION"="5.8.0";
     "NUGET_SHA256"="5c5b9c96165d3283b2cb9e5b65825d343e0e7139b9e70a250b4bb24c2285f3ba";
     "WINGET_VERSION"="1.6.5.0";
@@ -62,4 +64,9 @@ $SoftwareTable = @{
     # See https://github.com/ddoghq/ci-identities/blob/main/apps/ci-identities-gitlab-job-client/CHANGELOG.md
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_VERSION"="v0.6.7";
     "CI_IDENTITIES_GITLAB_JOB_CLIENT_SHA256"="c39c35f1db9daddaca6b47080e5bcb4b8ffd5cf7e7fe61b02ed56690e749928c";
+    # windows-code-signer.exe is copied from its container image during the "docker build"
+    # with a "COPY --from" instruction in the Dockerfile; this version and hash are used
+    # to check it. Update the image digest in the Dockerfile together with them.
+    "WINDOWS_CODE_SIGNER_VERSION"="v0.9.0";
+    "WINDOWS_CODE_SIGNER_SHA256"="5519b9e9c692f4b73437df21ab0c680433f50c46dee2890eff2001b38a3bdc25";
 }
