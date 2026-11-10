@@ -460,14 +460,6 @@ RUN ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws &&  \
 # Pulumi
 COPY --from=pulumi_builder /usr/local/bin/pulumi* /usr/local/bin/
 
-# Codecov uploader
-# Nothing to do except download the file, so no need to declare a stage for it
-ARG CODECOV_VERSION
-ARG CODECOV_ARCH
-ARG CODECOV_SHA256
-
-ADD --chmod=755 --checksum=sha256:${CODECOV_SHA256} "https://uploader.codecov.io/v${CODECOV_VERSION}/${CODECOV_ARCH}/codecov" /usr/local/bin/codecov
-
 # Bazelisk
 # Nothing to do except download the file, so no need to declare a stage for it
 ARG BAZELISK_VERSION
