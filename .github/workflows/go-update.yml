@@ -1,7 +1,7 @@
 name: Open Go Update PR
 
 # TODO: append "on ${{ inputs.target_branches }}" once target_branches input is added
-run-name: "Open Go ${{ inputs.go_version }} Update PR"
+run-name: "Open Go ${{ inputs.go_version }} Update PR - ${{ github.ref_name }}"
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ on:
         description: 'Open a Draft PR'
         required: false
         type: boolean
-        default: false
+        default: true
       branch:
         description: 'Git branch to use (defaults to "automation/go-update-<go_version>-<target_branch>")'
         required: false
