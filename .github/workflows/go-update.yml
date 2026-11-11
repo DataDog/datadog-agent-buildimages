@@ -1,7 +1,7 @@
 name: Open Go Update PR
 
-# TODO: append "on ${{ inputs.target_branches }}" once target_branches input is added
-run-name: "Open Go ${{ inputs.go_version }} Update PR"
+# TODO: replace github.ref_name with inputs.target_branches once target_branches input is added
+run-name: "Open Go ${{ inputs.go_version }} Update PR - ${{ github.ref_name }}"
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ on:
         description: 'Open a Draft PR'
         required: false
         type: boolean
-        default: false
+        default: true
       branch:
         description: 'Git branch to use (defaults to "automation/go-update-<go_version>-<target_branch>")'
         required: false
@@ -79,6 +79,7 @@ jobs:
           dda run update go "${{ inputs.go_version }}" --check-archive
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         if: ${{ inputs.open_pr }}
         with:
@@ -92,3 +93,8 @@ jobs:
               ## Update docker images to Go ${{ inputs.go_version }}
               For more information about this version, see the [Go release notes](https://golang.org/doc/devel/release.html#go${{ inputs.go_version }}) and the [Github milestone](https://github.com/golang/go/issues?q=milestone%3AGo${{ inputs.go_version }}+label%3ACherryPickApproved)
           draft: ${{ inputs.draft }}
+
+      - name: Go Update PR link
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          echo "Go Update PR link - ${{ steps.cpr.outputs.pull-request-url }}"
