@@ -1,6 +1,6 @@
 name: Open Go Update PR
 
-# TODO: append "on ${{ inputs.target_branches }}" once target_branches input is added
+# TODO: replace github.ref_name with inputs.target_branches once target_branches input is added
 run-name: "Open Go ${{ inputs.go_version }} Update PR - ${{ github.ref_name }}"
 
 on:
