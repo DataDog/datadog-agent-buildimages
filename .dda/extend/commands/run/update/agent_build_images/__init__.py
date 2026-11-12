@@ -131,9 +131,9 @@ def cmd(
         _post_pr_comment(
             token=token,
             pr_number=pr_number,
-            body=f"Final images `{images_id}` are building in {os.environ['CI_PIPELINE_URL']}. "
-                 "Do not update the image tag manually: when the builds pass, "
-                 "a bot commit replaces the test tag with the final tag.",
+            body=f"**Do not update the image tags manually.** Final images `{images_id}` are being built in "
+                 f"{os.environ['CI_PIPELINE_URL']}. When the builds pass, a bot commit updates the test tags "
+                 "to the final tags. If a build fails, retry it in that pipeline.",
         )
         return
     _update_pr_with_final_image_tags(
