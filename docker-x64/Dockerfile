@@ -122,3 +122,7 @@ COPY --from=dd_octo_sts_builder /usr/local/bin/dd-octo-sts /usr/local/bin/dd-oct
 LABEL dd_octo_sts_version="${DD_OCTO_STS_VERSION}"
 
 COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
+
+# Pin the internal client independently of the parent image's Docker packages.
+COPY scripts/install-buildx.sh /tmp/install-buildx.sh
+RUN sh /tmp/install-buildx.sh && rm /tmp/install-buildx.sh
