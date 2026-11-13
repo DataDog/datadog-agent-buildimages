@@ -246,7 +246,7 @@ variable "default_branch_name" {
 
 variable "build_branch_name" {
   type = string
-  default = sanitize(shorten_branch_name(CI_COMMIT_BRANCH))
+  default = CI_COMMIT_BRANCH
 }
 
 variable "cache_key_main" {
@@ -256,7 +256,7 @@ variable "cache_key_main" {
 
 variable "cache_key_branch" {
   type = string
-  default = "cache-${build_branch_name}-${get_arch()}"
+  default = "cache-${sanitize(shorten_branch_name(build_branch_name))}-${get_arch()}"
 }
 
 variable "linux_cache_details_main" {
