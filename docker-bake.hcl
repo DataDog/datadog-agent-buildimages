@@ -211,6 +211,12 @@ variable "BUILDENV_REGISTRY" {
 }
 
 # ====== Caching details ====== #
+function "shorten_branch_name" {
+  params = [branch_name]
+  // Keep the same 32-character prefix and 16-character SHA-256 suffix as build.sh.
+  result = strlen(branch_name) > 50 ? "${substr(branch_name, 0, 32)}-${substr(sha256(branch_name), 0, 16)}" : branch_name
+}
+
 variable "CI" {
   type = string
   // Will pull in the env var if it is defined in CI environments (GitLab CI sets this to "true")
@@ -240,12 +246,12 @@ variable "default_branch_name" {
 
 variable "build_branch_name" {
   type = string
-  default = sanitize("${CI_COMMIT_BRANCH}")
+  default = sanitize(shorten_branch_name(CI_COMMIT_BRANCH))
 }
 
 variable "cache_key_main" {
   type = string
-  default = "cache-${default_branch_name}-${get_arch()}"
+  default = "cache-${sanitize(shorten_branch_name(default_branch_name))}-${get_arch()}"
 }
 
 variable "cache_key_branch" {
