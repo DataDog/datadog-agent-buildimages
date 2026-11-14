@@ -3,16 +3,13 @@
 set -euxo pipefail
 
 # /opt/aix-cross must exist even when not populated below: the final image
-# stage COPYs it unconditionally.
+# stage COPYs it unconditionally. It won't be populated if fetching the
+# toolchain was skipped or failed (see the aix_cross_builder stage).
 mkdir -p /opt/aix-cross
 
-# The cross-compiler is a prebuilt x86_64 ELF toolchain: it can only run on
-# the amd64 image, so skip installing it anywhere else.
-if [ "${TARGETARCH}" != "amd64" ]; then
+if [ ! -d /opt/aix-cross/compiler/bin ]; then
     exit 0
 fi
-
-tar -xJf aix-cross-toolchain.tar.xz -C /opt/aix-cross
 
 # Thin wrapper scripts in bin/ call the real compiler drivers with --sysroot
 # so the toolchain is relocatable regardless of where the sysroot was during
