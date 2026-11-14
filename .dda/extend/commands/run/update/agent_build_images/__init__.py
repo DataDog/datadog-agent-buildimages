@@ -48,6 +48,11 @@ WORKFLOW_ID = 80540190
     help="Open a draft datadog-agent PR with test image tags (via peter-evans).",
 )
 @click.option(
+    "--notify-pending",
+    is_flag=True,
+    help="Comment on the open datadog-agent PR with a link to $CI_PIPELINE_URL.",
+)
+@click.option(
     "--merge-sha",
     default=None,
     envvar="CI_COMMIT_SHA",
@@ -73,27 +78,33 @@ def cmd(
     go_version: str,
     ref: str,
     test_version: bool,
+    notify_pending: bool,
     merge_sha: str | None,
     token: str,
 ) -> None:
     """
     Update Agent Build Images.
 
-    Three call patterns:
+    Four call patterns:
 
     1. Open PR with test image tags
        dda run update agent-build-images <images_id> <branch> --ref <ref> --test-version
        Opens a draft datadog-agent PR with peter-evans, pointing at test image tags.
 
-    2. Update open PR with final image tags (production)
+    2. Comment on open PR that final images are building
+       dda run update agent-build-images <images_id> --notify-pending
+       Posts a comment with a link to $CI_PIPELINE_URL. The target branch is
+       derived from $CI_COMMIT_SHA via --merge-sha.
+
+    3. Update open PR with final image tags (production)
        dda run update agent-build-images <images_id>
        Appends a signed commit to the open datadog-agent PR via GraphQL
        createCommitOnBranch, edits the PR body, posts a bot comment. The target
        branch is derived from $CI_COMMIT_SHA via --merge-sha.
 
-    3. Update test PR with final image tags
+    4. Update test PR with final image tags
        dda run update agent-build-images <images_id> <branch>
-       Used for e2e validation on test runs. Same as case 2 but points at an
+       Used for e2e validation on test runs. Same as case 3 but points at an
        explicit <branch> instead of resolving via --merge-sha.
     """
     if test_version:
@@ -111,9 +122,20 @@ def cmd(
         )
         return
 
-    # Second-dispatch: append a signed commit to the existing PR branch.
+    # Post-merge: resolve the open PR branch, then comment or append the final-tag commit.
     resolved_branch = branch or _resolve_pr_branch_from_merge_sha(token=token, merge_sha=merge_sha)
-    app.display_info(f"Second-dispatch target branch: {resolved_branch}")
+    app.display_info(f"Post-merge target branch: {resolved_branch}")
+    if notify_pending:
+        pr_number = _resolve_pr_number(token=token, branch=resolved_branch)
+        app.display_info(f"Posting pending comment on PR #{pr_number}...")
+        _post_pr_comment(
+            token=token,
+            pr_number=pr_number,
+            body=f"**Do not update the image tags manually.** Final images `{images_id}` are being built in "
+                 f"{os.environ['CI_PIPELINE_URL']}. When the builds pass, a bot commit updates the test tags "
+                 "to the final tags. If a build fails, retry it in that pipeline.",
+        )
+        return
     _update_pr_with_final_image_tags(
         app=app,
         token=token,
