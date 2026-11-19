@@ -12,6 +12,7 @@
 *                                   @DataDog/agent-devx
 
 go.env                              @DataDog/agent-runtimes
+docker-bake.override.json           @DataDog/agent-runtimes
 dda.env                             @DataDog/agent-devx
 
 .github/workflows/go-update.yml     @DataDog/agent-runtimes
