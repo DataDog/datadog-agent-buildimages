@@ -67,6 +67,9 @@ add_build_args_from_file "go.env"
 # Add build args from dda.env
 add_build_args_from_file "dda.env"
 
+# Add build args from node.env
+add_build_args_from_file "node.env"
+
 # Add build args from custom build args file
 add_build_args_from_file "${BUILD_ARGS_FILE:-}"
 
