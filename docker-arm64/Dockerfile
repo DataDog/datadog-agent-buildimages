@@ -94,3 +94,7 @@ RUN curl -fsSL https://github.com/DataDog/datadog-ci/releases/download/v${DATADO
   chmod +x /usr/local/bin/datadog-ci
 
 COPY --from=dd_pkg /usr/local/bin/dd-pkg /usr/local/bin/dd-pkg
+
+# Pin the internal client independently of the parent image's Docker packages.
+COPY scripts/install-buildx.sh /tmp/install-buildx.sh
+RUN sh /tmp/install-buildx.sh && rm /tmp/install-buildx.sh
