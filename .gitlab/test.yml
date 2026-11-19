@@ -84,6 +84,36 @@ trigger_tests:
     project: DataDog/datadog-agent
     strategy: depend
 
+# Comments on the datadog-agent PR at merge time with a link to the pipeline that builds the final images.
+notify_datadog_agent_pr_final_images_pending:
+  # Later stage so build jobs do not wait for it; needs: [] starts it at pipeline start.
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_AUTHOR !~ /^dd-octo-sts\[bot\]/
+      when: never
+    - if: $CI_COMMIT_TITLE !~ /^Update Go version to [0-9]+\.[0-9]+\.[0-9]+( \(#[0-9]+\))?$/
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^[0-9]+\.[0-9]+\.x$/
+      when: always
+  tags: ["arch:amd64"]
+  # The pipeline's images are not built yet. Any released image with Python and dd-octo-sts works.
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/linux:v152304741-28872584
+  needs: []
+  dependencies: []
+  allow_failure: true
+  id_tokens:
+    DDOCTOSTS_ID_TOKEN:
+      aud: dd-octo-sts
+  before_script: *octo_sts_token_acquire_pr_update
+  script:
+    - source .gitlab/scripts/setup-go-update-env.sh
+    - dda run update agent-build-images "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}" --notify-pending
+  after_script: *octo_sts_token_revoke
+
 update_datadog_agent_pr_with_final_images:
   stage: test
   rules:
