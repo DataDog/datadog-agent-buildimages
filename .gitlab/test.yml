@@ -51,7 +51,6 @@ trigger_tests:
           - windows/**/*
           - go.env
           - .gitlab/build.yml
-        compare_to: $COMPARE_TO_BRANCH
       when: manual
       allow_failure: true
       variables:
