@@ -34,7 +34,7 @@ set -euo pipefail
 # GCC stays on 13.x to match the GCC 13 runtime (libstdc++, libgcc) that IBM's
 # AIX Toolbox installs on the target machines.
 BINUTILS_GIT_URL="${BINUTILS_GIT_URL:-https://github.com/chouquette/binutils-gdb.git}"
-BINUTILS_GIT_REF="${BINUTILS_GIT_REF:-datadog-aix-binutils-2.47-1}"
+BINUTILS_GIT_REF="${BINUTILS_GIT_REF:-datadog-aix-binutils-2.47-2}"
 GCC_GIT_URL="${GCC_GIT_URL:-https://github.com/chouquette/gcc.git}"
 GCC_GIT_REF="${GCC_GIT_REF:-datadog-aix-gcc-13.5.0-1}"
 
