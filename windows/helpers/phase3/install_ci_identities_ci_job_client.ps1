@@ -1,17 +1,19 @@
-# Installs ci-identities-gitlab-job-client
-# see https://github.com/DataDog/ci-identities/tree/main/apps/ci-identities-gitlab-job-client
+# Installs ci-identities-ci-job-client,
+# also under its former name ci-identities-gitlab-job-client for the jobs still calling it
+# see https://github.com/ddoghq/ci-identities/tree/main/apps/ci-identities-ci-job-client
 
 param (
     [Parameter(Mandatory=$true)][string]$Version,
     [Parameter(Mandatory = $true)][string]$Sha256
 )
 
-$DESTINATION = "C:\devtools\ci-identities-gitlab-job-client.exe"
+$DESTINATION = "C:\devtools\ci-identities-ci-job-client.exe"
+$FORMER_NAME_DESTINATION = "C:\devtools\ci-identities-gitlab-job-client.exe"
 
 # the file was downloaded in the CI job before running the "docker build" command
 # because it's hard to run "aws s3 cp" in the build container;
 # see .gitlab/build.yml
-Copy-Item -Path "C:\mnt\ci-identities-gitlab-job-client-windows-amd64.exe" -Destination $DESTINATION
+Copy-Item -Path "C:\mnt\ci-identities-ci-job-client-windows-amd64.exe" -Destination $DESTINATION
 
 if ( -not (Test-Path $DESTINATION)) {
     Write-Host -ForegroundColor Red "$DESTINATION not found"
@@ -36,3 +38,6 @@ if ($versionOutput -notmatch [regex]::Escape($Version)) {
     Remove-Item $DESTINATION
     throw "Version mismatch for $DESTINATION. Expected: $Version, Got: $versionOutput"
 }
+
+# former name of the client, still used by jobs running in this image
+Copy-Item -Path $DESTINATION -Destination $FORMER_NAME_DESTINATION
