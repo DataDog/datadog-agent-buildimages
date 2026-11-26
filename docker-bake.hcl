@@ -19,6 +19,7 @@ variable "versions" {
     RUBY_VERSION        = "2.7.2"
     RUBY_BUILD_VERSION  = "20261013"
     RUSTUP_VERSION      = "1.26.0"
+    CARGO_DENY_VERSION  = "0.21.0"
     BUNDLER_VERSION     = "2.4.20"
     VAULT_VERSION       = "1.17.2"
     DATADOG_CI_VERSION  = "5.26.1"
