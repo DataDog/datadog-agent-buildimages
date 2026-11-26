@@ -289,7 +289,7 @@ FROM registry.ddbuild.io/ci/datadog-packages/artifact:${DATADOG_PACKAGES_VERSION
 FROM registry.ddbuild.io/agent-delivery/dd-pkg@sha256:8be3aa0cf72ceebe98f1683af84b943fec34d3ca410530f6301f13b6b6894eb1 AS dd_pkg_builder
 # Dummy stage to copy dd-pkg from the release image so CI jobs do not download it at runtime.
 
-FROM registry.ddbuild.io/ci-identities/ci-identities-ci-job-client:v0.12.1 AS ci_identities_builder
+FROM registry.ddbuild.io/ci-identities/ci-identities-ci-job-client:v0.12.3@sha256:2686a1abd3c29d7926ad61d16ce0b0d2426eb4df482785ac48419e079096f81a AS ci_identities_builder
 # Dummy stage to copy ci-identities as it is distributed as a container image
 
 FROM common_base AS final

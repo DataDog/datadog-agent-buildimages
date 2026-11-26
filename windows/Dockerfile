@@ -37,7 +37,7 @@ RUN --mount=type=bind,source=/windows/helpers/phase2,dst=/mnt/windows/helpers/ph
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 2
 COPY --from=windows-code-signer C:/windows-code-signer/windows-code-signer.exe C:/devtools/windows-code-signer.exe
 RUN --mount=type=bind,source=/windows/helpers/phase3,dst=/mnt/windows/helpers/phase3 `
-    --mount=type=bind,source=/ci-identities-gitlab-job-client-windows-amd64.exe,dst=/mnt/ci-identities-gitlab-job-client-windows-amd64.exe `
+    --mount=type=bind,source=/ci-identities-ci-job-client-windows-amd64.exe,dst=/mnt/ci-identities-ci-job-client-windows-amd64.exe `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 3
 RUN --mount=type=bind,source=/windows/helpers/phase4,dst=/mnt/windows/helpers/phase4 `
     /mnt/windows/install-all.ps1 -TargetContainer -Phase 4
