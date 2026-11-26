@@ -236,6 +236,7 @@ ARG RUST_VERSION
 ARG RUSTUP_VERSION
 ARG RUSTUP_SHA256
 ARG RUSTUP_ARCH
+ARG CARGO_DENY_VERSION
 
 ADD --checksum=sha256:${RUSTUP_SHA256} "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_ARCH}-unknown-linux-gnu/rustup-init" /tmp/rust/rustup-init
 RUN --mount=type=bind,src=./linux/scripts/rust.sh,dst=/mnt/rust.sh cd /tmp/rust && /mnt/rust.sh && rm -rf /tmp/rust
