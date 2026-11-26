@@ -17,10 +17,21 @@ function sanitize() {
     echo "$1" | tr -C '\na-zA-Z0-9_.-' '_'
 }
 
+function shorten_branch_name() {
+    local branch_name="$1"
+    if [[ ${#branch_name} -gt 50 ]]; then
+        # Keep a readable prefix and hash the full name to distinguish shared prefixes.
+        local branch_hash
+        branch_hash="$(printf '%s' "$branch_name" | sha256sum | cut -c1-16)"
+        branch_name="${branch_name:0:32}-${branch_hash}"
+    fi
+    printf '%s' "$branch_name"
+}
+
 # Setup keys
 BRANCH_NAME="${CI_COMMIT_BRANCH:-unknown}"
-CACHE_KEY_BRANCH="$(sanitize "cache-${BRANCH_NAME}-${DD_TARGET_ARCH}")"
-CACHE_KEY_MAIN="$(sanitize "cache-${CI_DEFAULT_BRANCH}-${DD_TARGET_ARCH}")"
+CACHE_KEY_BRANCH="$(sanitize "cache-$(shorten_branch_name "$BRANCH_NAME")-${DD_TARGET_ARCH}")"
+CACHE_KEY_MAIN="$(sanitize "cache-$(shorten_branch_name "$CI_DEFAULT_BRANCH")-${DD_TARGET_ARCH}")"
 
 CACHE_DETAILS_BRANCH="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_BRANCH}"
 CACHE_DETAILS_MAIN="type=registry,ref=registry.ddbuild.io/ci/datadog-agent-buildimages/$IMAGE:${CACHE_KEY_MAIN}"
